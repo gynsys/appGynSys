@@ -1,0 +1,39 @@
+# Virtual environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Environment files
+.env
+.env.*
+
+# Node / frontend
+node_modules/
+dist/
+build/
+/.vite/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Uploaded media / local runtime files
+/uploads/
+/uploads/*
+
+# Mac, Windows temp
+*.swp
+*.swo

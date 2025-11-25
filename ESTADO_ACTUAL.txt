@@ -1,0 +1,68 @@
+==========================================
+ESTADO ACTUAL DEL PROYECTO GYNSYS
+==========================================
+
+Fecha: 22 de Noviembre, 2025
+
+FUNCIONALIDADES IMPLEMENTADAS:
+-------------------------------
+✓ Sistema de autenticación (JWT)
+✓ Registro y login de médicos
+✓ Perfil público del médico (/dr/{slug})
+✓ Navbar personalizable con logo y nombre
+✓ Sección "Sobre Mí" con foto y biografía
+✓ Sección de Servicios
+✓ Sección de Testimonios (diseño moderno)
+✓ Sección de Galería (grid + lightbox)
+✓ Dashboard básico
+✓ Editor de perfil (subir logo, foto, editar biografía)
+✓ Sistema de citas (modal de agendamiento)
+✓ Endpoints API completos
+
+BASE DE DATOS:
+--------------
+✓ Tabla: doctors
+✓ Tabla: appointments
+✓ Tabla: patients (básico)
+✓ Tabla: testimonials
+✓ Tabla: gallery_images
+✓ Migraciones aplicadas
+
+ARCHIVOS CLAVE:
+---------------
+Backend:
+- app/main.py
+- app/api/v1/endpoints/*.py
+- app/db/models/*.py
+- app/schemas/*.py
+
+Frontend:
+- src/pages/DoctorProfilePage.jsx
+- src/components/features/TestimonialsSection.jsx
+- src/components/features/GallerySection.jsx
+- src/components/layout/Navbar.jsx
+- src/services/*.js
+
+PENDIENTE:
+----------
+- Dashboard completo (gestión de citas, estadísticas)
+- Blog con IA
+- Formularios de pre-consulta
+- Notificaciones por email
+- Google OAuth frontend
+- Gestión de testimonios desde dashboard
+- Gestión de galería desde dashboard
+
+PROBLEMAS CONOCIDOS:
+--------------------
+- Hot reload del frontend puede requerir recarga manual
+- Si frontend no actualiza: usar REINICIAR_MANUAL.bat
+
+PRÓXIMOS PASOS:
+---------------
+1. Continuar con desarrollo del bot
+2. Cuando regreses: ver DOCUMENTACION_COMPLETA.md
+3. Usar RESUMEN_RAPIDO.md para comandos rápidos
+
+==========================================
+
