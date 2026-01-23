@@ -3,6 +3,8 @@ import subprocess
 import uvicorn
 from alembic.config import Config
 from alembic import command
+from sqlalchemy import inspect
+from app.db.base import Base, engine
 
 def run_migrations():
     print("Running DB Migrations...")
@@ -19,10 +21,28 @@ def run_migrations():
         print(f"Error running migrations: {e}")
         # Retry with subprocess just in case alembic API fails due to path/config weirdness
         print("Retrying with subprocess...")
-        subprocess.run(["alembic", "upgrade", "head"], check=True)
+        try:
+            subprocess.run(["alembic", "upgrade", "head"], check=False)
+        except Exception as sub_e:
+            print(f"Subprocess migration failed: {sub_e}")
+
+def check_and_fix_schema():
+    print("Checking database schema integrity...")
+    try:
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        if "doctors" not in tables:
+            print("CRITICAL: 'doctors' table missing despite migrations. Forcing create_all()...")
+            Base.metadata.create_all(bind=engine)
+            print("Schema created successfully via create_all().")
+        else:
+            print(f"Schema looks good. Tables found: {len(tables)}")
+    except Exception as e:
+        print(f"Error checking/fixing schema: {e}")
 
 if __name__ == "__main__":
     run_migrations()
+    check_and_fix_schema()
     
     print("Starting Server...")
     # This replaces the process with Uvicorn (similar to exec) if possible, 
