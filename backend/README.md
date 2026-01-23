@@ -13,15 +13,18 @@ Backend API para GynSys - SaaS multi-inquilino para clínicas digitales.
 
 ## Configuración Inicial
 
-1. **Crear entorno virtual:**
+1. **Crear entorno virtual (solo la primera vez):**
 ```bash
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
+python -m venv .venv
+# Activar en Linux/macOS:
+source .venv/bin/activate
+# Activar en Windows:
+.venv\Scripts\activate
 ```
 
-2. **Instalar dependencias:**
+2. **Instalar dependencias (usando uv):**
 ```bash
-pip install -r requirements.txt
+uv pip sync --system --require-hashes requirements.lock
 ```
 
 3. **Configurar variables de entorno:**
@@ -60,10 +63,20 @@ backend/
 │   ├── schemas/       # Schemas Pydantic
 │   └── tasks/         # Tareas de Celery
 ├── alembic/           # Migraciones
+├── pyproject.toml
+├── requirements.lock
 └── requirements.txt
 ```
 
+
 ## Desarrollo
+
+### Agregar o actualizar dependencias:
+Edita `pyproject.toml` y luego ejecuta:
+```bash
+uv pip compile
+```
+Esto actualizará `requirements.lock` para entornos reproducibles.
 
 ### Crear una nueva migración:
 ```bash

@@ -1,0 +1,954 @@
+import { useState, useEffect, useRef } from 'react';
+import { getImageUrl } from '../../lib/imageUtils';
+import PropTypes from 'prop-types';
+import { appointmentService } from '../../services/appointmentService';
+import { onlineConsultationService } from '../../services/onlineConsultationService';
+import ModernLoader from '../common/ModernLoader';
+import { MdSend, MdCheckCircle, MdClose } from 'react-icons/md';
+
+// Helper: Capitalize words
+const capitalizeWords = (str) => {
+    return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+};
+
+// Helper: Generate smart dates (Mon-Fri by default for online)
+const generateOnlineDates = (count = 3) => {
+    const dates = [];
+    let current = new Date();
+    current.setDate(current.getDate() + 1); // Start tomorrow
+
+    let safety = 0;
+    while (dates.length < count && safety < 30) {
+        const day = current.getDay();
+        // Mon-Fri only (1-5)
+        if (day >= 1 && day <= 5) {
+            dates.push(new Date(current));
+        }
+        current.setDate(current.getDate() + 1);
+        safety++;
+    }
+    return dates;
+};
+
+// Helper: Format date for button
+const formatSmartDate = (date) => {
+    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    return `${days[date.getDay()]} ${date.getDate()}`;
+};
+
+// Simple Input Component
+const SimpleInput = ({ placeholder, onSubmit, type = 'text', autoFocus = true, numericOnly = false, primaryColor }) => {
+    const [value, setValue] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!value.trim()) return;
+        onSubmit(value);
+        setValue('');
+    };
+
+    const handleChange = (e) => {
+        let val = e.target.value;
+        if (numericOnly) {
+            val = val.replace(/[^0-9]/g, '');
+        }
+        setValue(val);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="flex gap-2 w-full">
+            <div className="relative flex-1 flex items-center">
+                <input
+                    type={type === 'number' ? 'text' : type}
+                    inputMode={numericOnly ? 'numeric' : undefined}
+                    value={value}
+                    onChange={handleChange}
+                    placeholder={placeholder}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-400 dark:border-gray-500 rounded-full px-5 py-3 pr-12 text-sm focus:outline-none focus:ring-2 dark:text-white transition-all shadow-sm"
+                    style={{
+                        '--tw-ring-color': primaryColor,
+                        borderColor: value ? primaryColor : undefined
+                    }}
+                    autoFocus={autoFocus}
+                />
+                <button
+                    type="submit"
+                    disabled={!value.trim()}
+                    className="absolute right-2 p-1.5 rounded-full disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center shadow-md"
+                    style={{
+                        backgroundColor: value.trim() ? primaryColor : '#9CA3AF',
+                        color: 'white'
+                    }}
+                    title="Enviar"
+                >
+                    <MdSend size={18} className={!value.trim() ? "ml-0.5" : ""} />
+                </button>
+            </div>
+        </form>
+    );
+};
+
+SimpleInput.propTypes = {
+    placeholder: PropTypes.string,
+    onSubmit: PropTypes.func.isRequired,
+    type: PropTypes.string,
+    autoFocus: PropTypes.bool,
+    numericOnly: PropTypes.bool,
+    primaryColor: PropTypes.string.isRequired,
+};
+
+export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
+    // Brand Color (Purple for online consultations)
+    const primaryColor = '#8B5CF6'; // Purple
+
+    // Steps
+    const STEPS = {
+        WELCOME_ONLINE: 'WELCOME_ONLINE',
+        EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
+        FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
+        ONLINE_PRICING: 'ONLINE_PRICING',
+        ONLINE_FAQ: 'ONLINE_FAQ',
+        ONLINE_CONFIRM: 'ONLINE_CONFIRM',
+        NAME: 'NAME',
+        DNI: 'DNI',
+        AGE: 'AGE',
+        RESIDENCE: 'RESIDENCE',
+        REASON: 'REASON',
+        DATE_SUGGESTION: 'DATE_SUGGESTION',
+        DATE_MANUAL: 'DATE_MANUAL',
+        TIME_SUGGESTION: 'TIME_SUGGESTION',
+        TIME_MANUAL: 'TIME_MANUAL',
+        PHONE: 'PHONE',
+        OCCUPATION: 'OCCUPATION',
+        EMAIL: 'EMAIL',
+        CONFIRM: 'CONFIRM',
+        SUCCESS: 'SUCCESS'
+    };
+
+    // State
+    const [step, setStep] = useState(STEPS.WELCOME_ONLINE);
+    const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [settings, setSettings] = useState(null);
+    const [suggestedDates, setSuggestedDates] = useState([]);
+    const [suggestedTimes, setSuggestedTimes] = useState([]);
+
+    const [formData, setFormData] = useState({
+        patient_name: '',
+        patient_dni: '',
+        patient_age: '',
+        residence: '',
+        appointment_type: 'Consulta Online', // Pre-assigned
+        reason_for_visit: '',
+        location: 'Online (Videollamada)', // Pre-assigned
+        date_part: '',
+        time_part: '',
+        patient_phone: '',
+        occupation: '',
+        patient_email: ''
+    });
+
+    const messagesEndRef = useRef(null);
+
+    // Load settings on mount
+    useEffect(() => {
+        const loadSettings = async () => {
+            if (doctor?.slug_url) {
+                try {
+                    const data = await onlineConsultationService.getPublicSettings(doctor.slug_url);
+                    setSettings(data);
+                } catch (err) {
+                    console.error("Error loading online consultation settings", err);
+                }
+            }
+        };
+        loadSettings();
+    }, [doctor]);
+
+    // Initialize chat with welcome
+    useEffect(() => {
+        const name = doctor?.nombre_completo || 'Doctor';
+        const hasTitle = name.toLowerCase().startsWith('dr');
+        const isFemale = name.toLowerCase().includes('dra.');
+        let prefix = 'de';
+        if (isFemale) prefix = 'de la';
+        else if (hasTitle) prefix = 'del';
+
+        setHistory([
+            {
+                type: 'bot',
+                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual ${prefix}</p><p class="font-bold mb-2">${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold text-purple-600">CONSULTAS ONLINE</span>.</p><p>Permíteme explicarte cómo funciona esta modalidad.</p>`
+            }
+        ]);
+
+        // Auto-advance to EXPLAIN after 1.5s
+        setTimeout(() => {
+            setStep(STEPS.EXPLAIN_ONLINE);
+        }, 1500);
+    }, [doctor, STEPS.EXPLAIN_ONLINE]);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [history]);
+
+    const addMessage = (text, type = 'user') => {
+        setHistory(prev => [...prev, { type, text }]);
+    };
+
+    /* ========== STEP HANDLERS ========== */
+
+    // EXPLAIN_ONLINE
+    useEffect(() => {
+        if (step === STEPS.EXPLAIN_ONLINE) {
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-2 font-bold">✨ ¿Cómo funciona la Consulta Online?</p>
+          <p class="mb-1"><strong>📹 Videollamada en Vivo</strong></p>
+          <p class="mb-2 text-xs">• Consulta por Zoom o Google Meet<br/>• Pantalla compartida para revisar exámenes</p>
+          <p class="mb-1"><strong>⏱️ Duración: 30-45 minutos</strong></p>
+          <p class="mb-2 text-xs">• Tiempo completo de atención personalizada</p>
+          <p class="mb-1"><strong>📄 Incluye:</strong></p>
+          <p class="mb-2 text-xs">✓ Receta médica digital firmada<br/>✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
+          <p class="mb-2"><strong>🔒 100% Privado y Confidencial</strong></p>
+          <p class="font-semibold">¿Te gustaría conocer los precios?</p>`,
+                    'bot'
+                );
+            }, 800);
+        }
+    }, [step, STEPS.EXPLAIN_ONLINE]);
+
+    const handleExplainResponse = (response) => {
+        if (response === 'YES') {
+            addMessage("Sí, continuar →", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_PRICING);
+            }, 500);
+        } else {
+            addMessage("← No, consulta presencial", 'user');
+            setTimeout(() => {
+                setStep(STEPS.FAREWELL_MESSAGE);
+            }, 500);
+        }
+    };
+
+    // FAREWELL_MESSAGE
+    useEffect(() => {
+        if (step === STEPS.FAREWELL_MESSAGE) {
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-3 font-bold">👋 ¡Entendido!</p>
+          <p class="mb-3">Mientras tanto, te invito a explorar:</p>
+          <p class="mb-2"><strong>📝 Blog de Salud</strong><br/><span class="text-xs">Lee artículos sobre salud femenina</span></p>
+          <p class="mb-2"><strong>📅 Calculadora Menstrual</strong><br/><span class="text-xs">Rastrea tu ciclo y predicciones</span></p>
+          <p class="mb-3"><strong>🔔 Suscríbete</strong><br/><span class="text-xs">Recibe notificaciones de contenido nuevo</span></p>
+          <p class="font-semibold">¿Prefieres agendar una consulta presencial?</p>`,
+                    'bot'
+                );
+            }, 600);
+        }
+    }, [step, STEPS.FAREWELL_MESSAGE]);
+
+    const handleFarewellResponse = (response) => {
+        if (response === 'PRESENCIAL') {
+            addMessage("📍 Sí, agendar presencial", 'user');
+            // Close online chat and ideally open regular ChatBooking
+            setTimeout(() => {
+                onClose();
+                // TODO: Parent should open regular ChatBooking modal
+            }, 500);
+        } else {
+            addMessage("Cerrar", 'user');
+            setTimeout(() => {
+                onClose();
+            }, 300);
+        }
+    };
+
+    // ONLINE_PRICING
+    useEffect(() => {
+        if (step === STEPS.ONLINE_PRICING && settings) {
+            const price1 = settings.first_consultation_price || 50;
+            const price2 = settings.followup_price || 40;
+            const currency = settings.currency || 'USD';
+
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
+          <div class="bg-white dark:bg-gray-700 p-3 rounded-lg mb-3 border border-purple-200">
+            <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
+            <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
+          </div>
+          <p class="mb-1 font-semibold">💳 Métodos de Pago:</p>
+          <p class="text-xs mb-2">• Zelle<br/>• PayPal<br/>• Transferencia bancaria<br/>• Pago móvil (Bs)</p>
+          <p class="text-xs mb-3">📌 Nota: El pago se confirma antes de la videollamada. Se enviarán los datos bancarios por email.</p>
+          <p class="font-semibold">¿Deseas agendar tu Consulta Online ahora?</p>`,
+                    'bot'
+                );
+            }, 800);
+        }
+    }, [step, settings, STEPS.ONLINE_PRICING]);
+
+    const handlePricingResponse = (response) => {
+        if (response === 'YES') {
+            addMessage("✓ Sí, agendar ahora!", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_CONFIRM);
+            }, 500);
+        } else if (response === 'FAQ') {
+            addMessage("Tengo dudas", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_FAQ);
+            }, 500);
+        } else {
+            addMessage("← Volver", 'user');
+            setTimeout(() => {
+                setStep(STEPS.EXPLAIN_ONLINE);
+            }, 500);
+        }
+    };
+
+    // ONLINE_FAQ
+    useEffect(() => {
+        if (step === STEPS.ONLINE_FAQ) {
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-2 font-bold">🤔 Preguntas Frecuentes</p>
+          <p class="mb-1 text-sm font-semibold">❓ ¿Cuándo recibo el link de la videollamada?</p>
+          <p class="text-xs mb-2">✅ 24 horas antes de tu cita por email y WhatsApp</p>
+          <p class="mb-1 text-sm font-semibold">❓ ¿Qué pasa si tengo problemas técnicos?</p>
+          <p class="text-xs mb-2">✅ Tenemos soporte técnico disponible</p>
+          <p class="mb-1 text-sm font-semibold">❓ ¿Puedo reagendar?</p>
+          <p class="text-xs mb-2">✅ Sí, hasta 24h antes sin costo</p>
+          <p class="mb-1 text-sm font-semibold">❓ ¿La receta es válida?</p>
+          <p class="text-xs mb-3">✅ Sí, es una receta digital con firma electrónica válida</p>
+          <p class="font-semibold">¿Listo para agendar?</p>`,
+                    'bot'
+                );
+            }, 800);
+        }
+    }, [step, STEPS.ONLINE_FAQ]);
+
+    const handleFaqResponse = (response) => {
+        if (response === 'YES') {
+            addMessage("✓ Sí, agendar", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_CONFIRM);
+            }, 500);
+        } else {
+            addMessage("← Volver a precios", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_PRICING);
+            }, 500);
+        }
+    };
+
+    // ONLINE_CONFIRM
+    useEffect(() => {
+        if (step === STEPS.ONLINE_CONFIRM) {
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-2">¡Perfecto! 🎉</p>
+          <p class="mb-2">Procederemos a agendar tu Consulta Online.</p>
+          <p class="mb-2">Necesitaré algunos datos básicos para crear tu expediente.</p>
+          <p class="font-semibold">Para comenzar, ¿podrías indicarme tu nombre completo?</p>`,
+                    'bot'
+                );
+                setTimeout(() => {
+                    setStep(STEPS.NAME);
+                }, 800);
+            }, 600);
+        }
+    }, [step, STEPS.ONLINE_CONFIRM, STEPS.NAME]);
+
+    // NAME
+    const handleNameSubmit = (value) => {
+        if (/\d/.test(value)) {
+            addMessage("El nombre no debe contener números. Por favor intenta de nuevo.", 'bot');
+            return;
+        }
+        const capsName = capitalizeWords(value);
+        addMessage(capsName, 'user');
+        setFormData(prev => ({ ...prev, patient_name: capsName }));
+        setTimeout(() => {
+            addMessage(`Un gusto Sra. ${capsName}. Por favor indíqueme su número de cédula o DNI`, 'bot');
+            setStep(STEPS.DNI);
+        }, 600);
+    };
+
+    // DNI
+    const handleDniSubmit = (value) => {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length < 7) {
+            addMessage("La cédula debe tener al menos 7 dígitos (millones). Por favor revisa.", 'bot');
+            return;
+        }
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, patient_dni: value }));
+        setTimeout(() => {
+            addMessage("¿Podría indicarme su edad?", 'bot');
+            setStep(STEPS.AGE);
+        }, 600);
+    };
+
+    // AGE
+    const handleAgeSubmit = (value) => {
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, patient_age: value }));
+        setTimeout(() => {
+            addMessage("¿En qué zona reside actualmente?", 'bot');
+            setStep(STEPS.RESIDENCE);
+        }, 600);
+    };
+
+    // RESIDENCE
+    const handleResidenceSubmit = (value) => {
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, residence: value }));
+        setTimeout(() => {
+            addMessage("Entendido. ¿Cuál es el motivo de tu consulta online?", 'bot');
+            setStep(STEPS.REASON);
+        }, 600);
+    };
+
+    // REASON (adapted for online)
+    const getOnlineReasonOptions = () => {
+        return [
+            'Control Ginecológico',
+            'Asesoría Anticonceptiva',
+            'Resultados de Exámenes',
+            'Seguimiento Post-Consulta',
+            'Planificación Familiar',
+            'Otro'
+        ];
+    };
+
+    const handleReasonSelect = (value) => {
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, reason_for_visit: value }));
+
+        // Generate dates and times for online
+        const dates = generateOnlineDates(3);
+        setSuggestedDates(dates);
+        setSuggestedTimes(['09:00', '11:00', '14:00', '16:00']);
+
+        setTimeout(() => {
+            const lastName = formData.patient_name.split(' ').pop();
+            addMessage(
+                `<p class="mb-1">La consulta será por videollamada 📹</p>
+        <p class="mb-2">Sra. ${lastName}, las consultas online están disponibles de <span class="font-semibold">Lunes a Viernes</span>.</p>
+        <p class="font-semibold">Le mostraré los próximos días disponibles:</p>`,
+                'bot'
+            );
+            setStep(STEPS.DATE_SUGGESTION);
+        }, 800);
+    };
+
+    // DATE
+    const handleSmartDateSelect = (dateObj) => {
+        const readable = dateObj.toLocaleDateString();
+        const isoDate = dateObj.toISOString().split('T')[0];
+        addMessage(readable, 'user');
+        setFormData(prev => ({ ...prev, date_part: isoDate }));
+
+        setTimeout(() => {
+            const lastName = formData.patient_name.split(' ').pop();
+            addMessage(`Perfecto Sra. ${lastName}, ¿A qué hora le gustaría su videollamada?`, 'bot');
+            setStep(STEPS.TIME_SUGGESTION);
+        }, 600);
+    };
+
+    const handleManualDateTrigger = () => {
+        addMessage("📅 Elegir otra fecha...", 'user');
+        setTimeout(() => {
+            addMessage("Por favor selecciona la fecha en el calendario.", 'bot');
+            setStep(STEPS.DATE_MANUAL);
+        }, 500);
+    };
+
+    const handleManualDateSubmit = (val) => {
+        const [y, m, d] = val.split('-');
+        const readable = `${d}/${m}/${y}`;
+        addMessage(readable, 'user');
+        setFormData(prev => ({ ...prev, date_part: val }));
+
+        setTimeout(() => {
+            const lastName = formData.patient_name.split(' ').pop();
+            addMessage(`Perfecto Sra. ${lastName}, ¿A qué hora le gustaría su videollamada?`, 'bot');
+            setStep(STEPS.TIME_MANUAL);
+        }, 600);
+    };
+
+    // TIME
+    const handleSmartTimeSelect = (timeStr) => {
+        addMessage(timeStr, 'user');
+        setFormData(prev => ({ ...prev, time_part: timeStr }));
+        setTimeout(() => {
+            addMessage("Entendido. Por favor indica tu número de teléfono (WhatsApp preferiblemente, mínimo 11 dígitos).", 'bot');
+            setStep(STEPS.PHONE);
+        }, 600);
+    };
+
+    const handleManualTimeTrigger = () => {
+        addMessage("🕐 Otra hora...", 'user');
+        setTimeout(() => {
+            addMessage("Por favor selecciona la hora.", 'bot');
+            setStep(STEPS.TIME_MANUAL);
+        }, 500);
+    };
+
+    const handleManualTimeSubmit = (val) => {
+        addMessage(val, 'user');
+        setFormData(prev => ({ ...prev, time_part: val }));
+        setTimeout(() => {
+            addMessage("Entendido. Por favor indica tu número de teléfono (WhatsApp preferiblemente, mínimo 11 dígitos).", 'bot');
+            setStep(STEPS.PHONE);
+        }, 600);
+    };
+
+    // PHONE
+    const handlePhoneSubmit = (value) => {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length < 11) {
+            addMessage("El teléfono debe tener al menos 11 dígitos. Ej: 04141234567.", 'bot');
+            return;
+        }
+        setFormData(prev => ({ ...prev, patient_phone: value }));
+        addMessage(value, 'user');
+        setTimeout(() => {
+            addMessage("Gracias. ¿Cuál es su ocupación actual?", 'bot');
+            setStep(STEPS.OCCUPATION);
+        }, 500);
+    };
+
+    // OCCUPATION
+    const handleOccupationSubmit = (value) => {
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, occupation: value }));
+        setTimeout(() => {
+            addMessage(
+                `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span> para tu Consulta Online:</p>
+        <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
+        <p class="text-xs mb-1">• Link de la videollamada (Zoom/Meet)</p>
+        <p class="text-xs mb-1">• Datos para el pago</p>
+        <p class="text-xs mb-3">• Recordatorios automáticos</p>
+        <p class="font-semibold">Correo electrónico:</p>`,
+                'bot'
+            );
+            setStep(STEPS.EMAIL);
+        }, 400);
+    };
+
+    // EMAIL
+    const handleEmailSubmit = (value) => {
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            addMessage("Por favor ingresa un correo electrónico válido.", 'bot');
+            return;
+        }
+        addMessage(value, 'user');
+        setFormData(prev => ({ ...prev, patient_email: value }));
+        setTimeout(() => {
+            addMessage("¡Gracias! Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+            setStep(STEPS.CONFIRM);
+        }, 600);
+    };
+
+    // CONFIRM
+    const handleConfirm = async () => {
+        setLoading(true);
+        try {
+            const fullDate = `${formData.date_part}T${formData.time_part}`;
+            const appointmentPayload = {
+                doctor_id: doctorId,
+                ...formData,
+                appointment_date: fullDate,
+                status: 'pending'
+            };
+            await appointmentService.createAppointment(appointmentPayload);
+
+            setLoading(false);
+            setStep(STEPS.SUCCESS);
+            setTimeout(() => {
+                onClose();
+            }, 5000);
+        } catch (error) {
+            console.error("Error booking online consultation", error);
+            setLoading(false);
+            addMessage("Hubo un error al agendar tu consulta. Por favor intenta nuevamente.", 'bot');
+        }
+    };
+
+    // ========== RENDER ==========
+
+    // SUCCESS VIEW
+    if (step === STEPS.SUCCESS) {
+        return (
+            <div className="flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl relative">
+                <MdCheckCircle size={80} className="mb-6 drop-shadow-md animate-bounce text-purple-600" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">✅ ¡Cita Agendada!</h2>
+                <p className="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-4">📹 Consulta Online Registrada</p>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg mb-4 max-w-sm">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
+                </div>
+                <p className="text-sm text-gray-500">Revisa tu bandeja de entrada y spam.</p>
+                <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col h-auto min-h-[300px] max-h-[500px] bg-white dark:bg-gray-800 relative rounded-lg overflow-hidden">
+            <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
+
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
+                        {doctor?.photo_url ? (
+                            <img
+                                src={getImageUrl(doctor.photo_url)}
+                                alt="Doctor"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center font-bold text-purple-600 text-sm">
+                                {doctor?.nombre_completo?.charAt(0) || 'D'}
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <p className="text-white font-bold text-sm">Consulta Online</p>
+                        <p className="text-purple-100 text-xs">📹 Videollamada</p>
+                    </div>
+                </div>
+                <button
+                    onClick={onClose}
+                    className="text-white hover:bg-white/20 p-1 rounded-full transition"
+                >
+                    <MdClose size={20} />
+                </button>
+            </div>
+
+            {/* Chat History */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+                {history.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                        {msg.type === 'bot' && (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-purple-100 border-2 border-purple-300">
+                                {doctor?.photo_url ? (
+                                    <img
+                                        src={getImageUrl(doctor.photo_url)}
+                                        alt="Doctor"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center font-bold text-xs text-purple-600">
+                                        {doctor?.nombre_completo?.charAt(0) || 'D'}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <div
+                            className={`max-w-[85%] p-3 text-sm rounded-2xl shadow-sm ${msg.type === 'user'
+                                ? 'bg-purple-600 text-white rounded-br-none'
+                                : 'bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-500 text-gray-800 dark:text-gray-200 rounded-bl-none'
+                                }`}
+                        >
+                            {msg.type === 'bot' ? (
+                                <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+                            ) : (
+                                msg.text
+                            )}
+                        </div>
+                    </div>
+                ))}
+
+                {/* Confirmation Summary */}
+                {step === STEPS.CONFIRM && (
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border-2 border-purple-300 dark:border-purple-500 shadow-lg mx-4 animate-fade-in">
+                        <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-3 text-sm border-b border-purple-200 pb-2">
+                            📹 CONSULTA ONLINE - RESUMEN
+                        </h3>
+                        <div className="space-y-1 text-xs">
+                            <p><span className="font-semibold">Nombre:</span> {formData.patient_name}</p>
+                            <p><span className="font-semibold">Cédula:</span> {formData.patient_dni}</p>
+                            <p><span className="font-semibold">Edad:</span> {formData.patient_age} años</p>
+                            <p><span className="font-semibold">Zona:</span> {formData.residence}</p>
+                            <div className="border-t border-purple-100 my-2"></div>
+                            <p><span className="font-semibold">Motivo:</span> {formData.reason_for_visit}</p>
+                            <p><span className="font-semibold">Fecha:</span> {new Date(`${formData.date_part}T${formData.time_part}`).toLocaleString()}</p>
+                            <p><span className="font-semibold">Medio:</span> Videollamada Zoom/Meet 📹</p>
+                            <div className="border-t border-purple-100 my-2"></div>
+                            <p><span className="font-semibold">Teléfono:</span> {formData.patient_phone}</p>
+                            <p><span className="font-semibold">Email:</span> {formData.patient_email}</p>
+                            <div className="border-t border-purple-100 my-2"></div>
+                            <p className="font-bold text-purple-600">💰 Costo: {settings?.currency || 'USD'} ${settings?.first_consultation_price || 50}</p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3 mb-3">📧 Recibirás un email con datos para el pago, link de videollamada y recomendaciones pre-consulta.</p>
+                        <button
+                            onClick={handleConfirm}
+                            disabled={loading}
+                            className="w-full py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            ✓ Confirmar Cita
+                        </button>
+                    </div>
+                )}
+
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                {/* EXPLAIN_ONLINE buttons */}
+                {step === STEPS.EXPLAIN_ONLINE && (
+                    <div className="flex gap-2 justify-center">
+                        <button
+                            onClick={() => handleExplainResponse('YES')}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            Sí, continuar →
+                        </button>
+                        <button
+                            onClick={() => handleExplainResponse('NO')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            ← No, consulta presencial
+                        </button>
+                    </div>
+                )}
+
+                {/* FAREWELL buttons */}
+                {step === STEPS.FAREWELL_MESSAGE && (
+                    <div className="flex gap-2 justify-center">
+                        <button
+                            onClick={() => handleFarewellResponse('PRESENCIAL')}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            📍 Sí, agendar presencial
+                        </button>
+                        <button
+                            onClick={() => handleFarewellResponse('CLOSE')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                )}
+
+                {/* PRICING buttons */}
+                {step === STEPS.ONLINE_PRICING && (
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        <button
+                            onClick={() => handlePricingResponse('YES')}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            ✓ Sí, agendar ahora!
+                        </button>
+                        <button
+                            onClick={() => handlePricingResponse('FAQ')}
+                            className="px-6 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 transition shadow-md"
+                        >
+                            Tengo dudas
+                        </button>
+                        <button
+                            onClick={() => handlePricingResponse('BACK')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            ← Volver
+                        </button>
+                    </div>
+                )}
+
+                {/* FAQ buttons */}
+                {step === STEPS.ONLINE_FAQ && (
+                    <div className="flex gap-2 justify-center">
+                        <button
+                            onClick={() => handleFaqResponse('YES')}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            ✓ Sí, agendar
+                        </button>
+                        <button
+                            onClick={() => handleFaqResponse('BACK')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            ← Volver a precios
+                        </button>
+                    </div>
+                )}
+
+                {/* NAME input */}
+                {step === STEPS.NAME && (
+                    <SimpleInput
+                        placeholder="Escribe tu nombre completo..."
+                        onSubmit={handleNameSubmit}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* DNI input */}
+                {step === STEPS.DNI && (
+                    <SimpleInput
+                        placeholder="Ej: V-12345678"
+                        onSubmit={handleDniSubmit}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* AGE input */}
+                {step === STEPS.AGE && (
+                    <SimpleInput
+                        placeholder="Ej: 30"
+                        onSubmit={handleAgeSubmit}
+                        type="text"
+                        numericOnly={true}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* RESIDENCE input */}
+                {step === STEPS.RESIDENCE && (
+                    <SimpleInput
+                        placeholder="Ej: Centro, Norte..."
+                        onSubmit={handleResidenceSubmit}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* REASON buttons */}
+                {step === STEPS.REASON && (
+                    <div className="flex flex-wrap gap-2">
+                        {getOnlineReasonOptions().map(reason => (
+                            <button
+                                key={reason}
+                                onClick={() => handleReasonSelect(reason)}
+                                className="px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium border border-purple-300 hover:bg-purple-100 transition"
+                            >
+                                {reason}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* DATE_SUGGESTION buttons */}
+                {step === STEPS.DATE_SUGGESTION && (
+                    <div className="flex flex-wrap gap-2">
+                        {suggestedDates.map((date, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleSmartDateSelect(date)}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                            >
+                                {formatSmartDate(date)}
+                            </button>
+                        ))}
+                        <button
+                            onClick={handleManualDateTrigger}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
+                        >
+                            📅 Elegir otra fecha...
+                        </button>
+                    </div>
+                )}
+
+                {/* DATE_MANUAL input */}
+                {step === STEPS.DATE_MANUAL && (
+                    <input
+                        type="date"
+                        onChange={(e) => e.target.value && handleManualDateSubmit(e.target.value)}
+                        className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                )}
+
+                {/* TIME_SUGGESTION buttons */}
+                {step === STEPS.TIME_SUGGESTION && (
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <p className="text-xs text-gray-500 mb-2">Mañana:</p>
+                            {suggestedTimes.slice(0, 2).map((time, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSmartTimeSelect(time)}
+                                    className="w-full mb-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                                >
+                                    {time}
+                                </button>
+                            ))}
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 mb-2">Tarde:</p>
+                            {suggestedTimes.slice(2, 4).map((time, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSmartTimeSelect(time)}
+                                    className="w-full mb-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                                >
+                                    {time}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={handleManualTimeTrigger}
+                            className="col-span-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
+                        >
+                            🕐 Otra hora...
+                        </button>
+                    </div>
+                )}
+
+                {/* TIME_MANUAL input */}
+                {step === STEPS.TIME_MANUAL && (
+                    <input
+                        type="time"
+                        onChange={(e) => e.target.value && handleManualTimeSubmit(e.target.value)}
+                        className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                )}
+
+                {/* PHONE input */}
+                {step === STEPS.PHONE && (
+                    <SimpleInput
+                        placeholder="Ej: 04141234567"
+                        onSubmit={handlePhoneSubmit}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* OCCUPATION input */}
+                {step === STEPS.OCCUPATION && (
+                    <SimpleInput
+                        placeholder="Ej: Ingeniera, Estudiante..."
+                        onSubmit={handleOccupationSubmit}
+                        primaryColor={primaryColor}
+                    />
+                )}
+
+                {/* EMAIL input */}
+                {step === STEPS.EMAIL && (
+                    <SimpleInput
+                        placeholder="ejemplo@email.com"
+                        onSubmit={handleEmailSubmit}
+                        type="email"
+                        primaryColor={primaryColor}
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+OnlineChatBooking.propTypes = {
+    doctorId: PropTypes.number.isRequired,
+    doctor: PropTypes.object,
+    onClose: PropTypes.func.isRequired
+};

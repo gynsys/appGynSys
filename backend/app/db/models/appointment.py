@@ -23,13 +23,23 @@ class Appointment(Base):
     patient_email = Column(String, nullable=True)
     patient_phone = Column(String, nullable=True)
     
+    # New fields for Preconsultation data capture
+    occupation = Column(String, nullable=True)
+    residence = Column(String, nullable=True)
+    patient_dni = Column(String, nullable=True)
+    patient_age = Column(Integer, nullable=True)
+    
     # Appointment details
     appointment_date = Column(DateTime(timezone=True), nullable=False)
-    appointment_type = Column(String, nullable=True)  # e.g., "Consulta", "Control", etc.
+    appointment_type = Column(String, nullable=True)  # e.g., "Ginecológica", "Prenatal"
+    reason_for_visit = Column(String, nullable=True)  # e.g., "Control Ginecológico", "Dolor pélvico"
     notes = Column(Text, nullable=True)
     
     # Status
     status = Column(String, default="scheduled")  # scheduled, confirmed, cancelled, completed
+    
+    # Pre-consultation Data
+    preconsulta_answers = Column(Text, nullable=True)  # JSON string of answers
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

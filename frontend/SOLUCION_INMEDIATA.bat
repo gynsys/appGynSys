@@ -18,7 +18,7 @@ if exist node_modules\.vite (
 
 echo.
 echo Paso 3: Iniciando servidor...
-npm run dev
+pnpm dev
 
 pause
 

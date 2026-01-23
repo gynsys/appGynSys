@@ -1,0 +1,121 @@
+{
+  "persona": "E1_Anti_AI_Designer",
+  "project_context": {
+    "app_name": "GynTrack",
+    "app_type": "SaaS / Health / Femtech",
+    "target_audience": "Women in reproductive age seeking professional, trustworthy cycle tracking",
+    "emotional_tone": "Intimate, Professional, Calm, Trustworthy, Empowering",
+    "theme_strategy": "Light Mode Dominant (Soft/Pastel Archetype with High-Contrast Typography)"
+  },
+  "design_system": {
+    "typography": {
+      "font_family_heading": "Playfair Display, serif",
+      "font_family_body": "Manrope, sans-serif",
+      "scale": {
+        "h1": "text-5xl md:text-7xl font-medium tracking-tight leading-[1.1]",
+        "h2": "text-4xl md:text-5xl font-medium tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body": "text-base md:text-lg leading-relaxed text-muted-foreground",
+        "caption": "text-sm font-medium tracking-widest uppercase text-muted-foreground/80"
+      }
+    },
+    "colors": {
+      "palette_name": "Botanical Trust",
+      "light": {
+        "background": "330 30% 99%",
+        "foreground": "330 20% 20%",
+        "card": "0 0% 100%",
+        "card_foreground": "330 20% 20%",
+        "popover": "0 0% 100%",
+        "popover_foreground": "330 20% 20%",
+        "primary": "330 60% 55%",
+        "primary_foreground": "0 0% 100%",
+        "secondary": "260 40% 96%",
+        "secondary_foreground": "260 30% 30%",
+        "muted": "330 20% 96%",
+        "muted_foreground": "330 10% 40%",
+        "accent": "170 40% 40%",
+        "accent_foreground": "0 0% 100%",
+        "destructive": "0 84.2% 60.2%",
+        "destructive_foreground": "0 0% 98%",
+        "border": "330 20% 92%",
+        "input": "330 20% 92%",
+        "ring": "330 60% 55%"
+      },
+      "chart_colors": {
+        "chart_1": "330 60% 55%",
+        "chart_2": "170 40% 40%",
+        "chart_3": "260 40% 60%",
+        "chart_4": "35 80% 60%",
+        "chart_5": "200 50% 50%"
+      }
+    },
+    "radius": {
+      "default": "1rem",
+      "sm": "0.75rem",
+      "lg": "1.5rem",
+      "full": "9999px"
+    },
+    "shadows": {
+      "soft": "0 4px 20px -2px rgba(200, 180, 190, 0.15)",
+      "float": "0 10px 40px -10px rgba(200, 180, 190, 0.25)"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "bg-white/60 backdrop-blur-xl border border-white/40 shadow-sm",
+    "gradients": {
+      "hero_blob": "bg-gradient-to-tr from-pink-200/40 via-purple-200/40 to-teal-100/40 blur-3xl",
+      "subtle_mesh": "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-pink-100/50 via-transparent to-transparent"
+    },
+    "textures": "Use subtle noise overlay (opacity 0.03) on solid backgrounds to prevent sterility."
+  },
+  "layout_strategies": {
+    "dashboard_grid": "Bento Grid Mode B: Dense, data-correlated. Use 'col-span-2 row-span-2' for the main Calendar/Cycle view.",
+    "landing_page": "Tetris Grid Mode A: Asymmetric. Overlap images with text. Use generous whitespace (py-24 or py-32).",
+    "container_padding": "px-6 md:px-12 lg:px-24"
+  },
+  "component_strategies": {
+    "buttons": "Pill-shaped (rounded-full). Primary buttons should have a subtle shadow. Secondary buttons should be 'ghost' style with hover bg-pink-50.",
+    "cards": "Clean, white cards with 'shadow-soft'. No heavy borders. Use 'p-6' or 'p-8' internal padding.",
+    "inputs": "Minimalist. Remove default heavy borders. Use 'bg-muted/50' with 'focus:ring-1 focus:ring-primary'.",
+    "calendar": "Custom Shadcn Calendar. Style the 'selected' day with a soft circle (rounded-full) and brand color. Weekdays should be uppercase and small (text-xs tracking-widest)."
+  },
+  "assets": {
+    "hero_images": [
+      {
+        "url": "https://images.unsplash.com/photo-1600185340571-b91ca9a8adea?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHx3b21hbiUyMGhlYWx0aHklMjBsaWZlc3R5bGUlMjBjYWxtfGVufDB8fHx3aGl0ZXwxNzY2NDQ0MTM3fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Woman in white dress holding flowers - Hero Section",
+        "category": "hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1594181355508-c38c5cc4d9f5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGhlYWx0aHklMjBsaWZlc3R5bGUlMjBjYWxtfGVufDB8fHx3aGl0ZXwxNzY2NDQ0MTM3fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Woman active lifestyle - Feature Section",
+        "category": "feature"
+      }
+    ],
+    "textures": [
+      {
+        "url": "https://images.unsplash.com/photo-1650391110174-a35f04ffe9bc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3MjQyMTd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMHNvZnQlMjBvcmdhbmljJTIwc2hhcGVzJTIwcGluayUyMGxhdmVuZGVyJTIwdGV4dHVyZXxlbnwwfHx8bWFnZW50YXwxNzY2NDQ0MTQxfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Soft pink abstract flower - Background/Card Accent",
+        "category": "texture"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Install 'lucide-react' and 'recharts' immediately.",
+    "2. THEME: Update 'tailwind.config.js' and 'index.css' with the 'Botanical Trust' color palette defined above. This is CRITICAL for the 'soft' look.",
+    "3. FONTS: Import 'Playfair Display' and 'Manrope' from Google Fonts in 'index.css'. Apply 'font-serif' to headings and 'font-sans' to body.",
+    "4. COMPONENTS: Customize Shadcn components. Remove default 'rounded-md' and replace with 'rounded-2xl' or 'rounded-full' as per strategy.",
+    "5. DASHBOARD: Build the 'Dashboard' using the 'Bento Grid'. The Calendar is the hero element (col-span-2). Use 'Recharts' for the Cycle History graph.",
+    "6. LANDING: Use the 'Tetris Grid'. Hero section must use the 'Woman in white dress' image with a 'glassmorphism' overlay for the CTA.",
+    "7. PRIVACY: Add a 'Privacy Mode' toggle in the UI that blurs sensitive data (simulated visual effect).",
+    "8. TESTING: Add 'data-testid' to all interactive elements (buttons, inputs, calendar dates)."
+  ],
+  "universal_guidelines": [
+    "Avoid generic 'SaaS Blue'. Stick to the Pink/Lavender/Teal palette.",
+    "Use 2x more padding than you think is necessary.",
+    "Never use pure black (#000000). Use the deep charcoal defined in 'foreground'.",
+    "Animations must be slow and smooth (duration-500 or duration-700), not snappy.",
+    "Do not use 'Inter' font."
+  ]
+}

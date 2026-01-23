@@ -1,17 +1,31 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from './useAuth'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuthStore } from '../../store/authStore'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card'
+import { Label } from '../../components/ui/label'
+import { User, Mail, Lock, Loader2, Sparkles } from 'lucide-react'
+import LoginModal from '../../components/features/LoginModal'
 
 export default function RegisterForm() {
-  const { register, loginWithGoogle } = useAuth()
+  const { registerCycleUser } = useAuthStore()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [formData, setFormData] = useState({
+    nombre_completo: '',
     email: '',
     password: '',
-    nombre_completo: '',
-    especialidad: '',
+    confirmPassword: '',
+    doctor_slug: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Get doctor_slug from URL params
+    const doctorSlug = searchParams.get('doctor') || 'mariel-herrera' // Default fallback
+    setFormData(prev => ({ ...prev, doctor_slug: doctorSlug }))
+  }, [searchParams])
 
   const handleChange = (e) => {
     setFormData({
@@ -23,167 +37,181 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await register(formData)
-      // Navigation is handled by useAuth
-      window.location.href = '/dashboard'
+      await registerCycleUser({
+        email: formData.email,
+        password: formData.password,
+        nombre_completo: formData.nombre_completo,
+        doctor_slug: formData.doctor_slug,
+      })
+      navigate('/cycles/dashboard')
     } catch (err) {
-      setError(
-        err.response?.data?.detail || 'Error al registrar. Por favor intenta de nuevo.'
-      )
+      const detail = err.response?.data?.detail
+      setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleLogin = () => {
-    loginWithGoogle()
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <Link to="/" className="flex justify-center">
-            <h1 className="text-3xl font-bold text-indigo-600">GynSys</h1>
-          </Link>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Crea tu cuenta
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            O{' '}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              inicia sesión si ya tienes cuenta
-            </Link>
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 relative overflow-hidden px-4 py-8">
+      {/* Background blobs */}
+      <div className="absolute w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -top-20 -left-20 animate-blob"></div>
+      <div className="absolute w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 bottom-10 -right-10 animate-blob animation-delay-2000"></div>
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <Sparkles className="w-7 h-7 text-white" />
+          </div>
+          <span className="text-3xl font-semibold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+            GynTrack
+          </span>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="nombre_completo" className="block text-sm font-medium text-gray-700">
-                Nombre Completo
-              </label>
-              <input
-                id="nombre_completo"
-                name="nombre_completo"
-                type="text"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Dr. Juan Pérez"
-                value={formData.nombre_completo}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="tu@email.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="especialidad" className="block text-sm font-medium text-gray-700">
-                Especialidad (Opcional)
-              </label>
-              <input
-                id="especialidad"
-                name="especialidad"
-                type="text"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Ginecología"
-                value={formData.especialidad}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Mínimo 8 caracteres"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? 'Registrando...' : 'Registrarse'}
-            </button>
-          </div>
+        <Card className="shadow-2xl border-0 backdrop-blur-sm bg-white/90">
+          <CardHeader className="space-y-1 text-center pb-6">
+            <CardTitle className="text-3xl text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Crear cuenta
+            </CardTitle>
+            <CardDescription className="text-base text-gray-600">
+              Comienza a llevar el control de tu ciclo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-xl text-center">
+                  {error}
+                </div>
+              )}
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+              <div className="space-y-2">
+                <Label htmlFor="nombre_completo" className="text-sm font-medium text-gray-700">
+                  Nombre
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="nombre_completo"
+                    name="nombre_completo"
+                    type="text"
+                    required
+                    placeholder="Tu nombre"
+                    value={formData.nombre_completo}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 h-12 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-pink-500/30 transition-all outline-none text-gray-800"
+                    data-testid="register-name-input"
+                  />
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 text-gray-500">O continúa con</span>
-              </div>
-            </div>
 
-            <div className="mt-6">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Correo electrónico
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 h-12 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-pink-500/30 transition-all outline-none text-gray-800"
+                    data-testid="register-email-input"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Contraseña
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 h-12 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-pink-500/30 transition-all outline-none text-gray-800"
+                    data-testid="register-password-input"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                  Confirmar contraseña
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 h-12 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-pink-500/30 transition-all outline-none text-gray-800"
+                    data-testid="register-confirm-password-input"
+                  />
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={handleGoogleLogin}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 rounded-xl text-base font-medium bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                data-testid="register-submit-btn"
               >
-                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Continuar con Google
+                {loading ? (
+                  <>
+                    <Loader2 className="inline mr-2 h-4 w-4 animate-spin" />
+                    Creando cuenta...
+                  </>
+                ) : (
+                  "Crear Cuenta"
+                )}
+              </button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4 pt-0 pb-6">
+            <div className="text-center text-sm text-gray-600">
+              ¿Ya tienes cuenta?{" "}
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="text-pink-600 hover:text-pink-700 font-medium hover:underline"
+                data-testid="register-login-link"
+              >
+                Iniciar sesión
               </button>
             </div>
-          </div>
-        </form>
+          </CardFooter>
+        </Card>
       </div>
-    </div>
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+    </div >
   )
 }
-

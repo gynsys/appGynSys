@@ -1,0 +1,5 @@
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#d946ef"/>
+  <text x="50%" y="40%" text-anchor="middle" font-size="56" fill="#fff" font-family="Arial, sans-serif" font-weight="bold">¡Personaliza tu galería!</text>
+  <text x="50%" y="55%" text-anchor="middle" font-size="36" fill="#f3e8ff" font-family="Arial, sans-serif">Sube tus fotos aquí desde el panel de administración</text>
+</svg>

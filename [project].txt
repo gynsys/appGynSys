@@ -1,0 +1,29 @@
+[project]
+name = "appgynsys-backend"
+version = "0.1.0"
+description = "Backend FastAPI para SaaS Gynsys"
+requires-python = ">=3.10"
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "alembic",
+    "sqlalchemy",
+    "pydantic[email]",
+    "python-dotenv",
+    "python-multipart",
+    "passlib",
+    "bcrypt",
+    "celery",
+    "redis",
+    "httpx",
+    "qrcode",
+    "reportlab",
+    "pillow",
+    "python-jose",
+    "email-validator",
+    # agrega aquí cualquier otra dependencia de tu requirements.txt
+]
+
+[tool.uv]
+# Puedes agregar configuraciones específicas de uv aquí si lo necesitas

@@ -5,13 +5,8 @@ echo ========================================
 echo.
 
 REM Activar entorno virtual si existe
-if exist "..\..\gynsys\venv\Scripts\activate.bat" (
-    echo Activando entorno virtual desde gynsys...
-    call ..\..\gynsys\venv\Scripts\activate.bat
-) else if exist "..\venv\Scripts\activate.bat" (
-    echo Activando entorno virtual...
-    call ..\venv\Scripts\activate.bat
-) else if exist "venv\Scripts\activate.bat" (
+REM Activar entorno virtual si existe
+if exist "venv\Scripts\activate.bat" (
     echo Activando entorno virtual local...
     call venv\Scripts\activate.bat
 ) else (

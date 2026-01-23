@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+
+/* Módulo de Predictor de Ciclos - Estilos Adaptados */
+.cycle-predictor-root {
+    --background: 0 0% 100%;
+    --foreground: 330 20% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 330 20% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 330 20% 20%;
+    --primary: 330 60% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 260 40% 96%;
+    --secondary-foreground: 260 30% 30%;
+    --muted: 330 20% 96%;
+    --muted-foreground: 330 10% 40%;
+    --accent: 170 40% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 330 20% 92%;
+    --input: 330 20% 92%;
+    --ring: 330 60% 55%;
+    --radius: 1rem;
+
+    font-family: 'Manrope', sans-serif;
+}
+
+.cycle-predictor-root h1,
+.cycle-predictor-root h2,
+.cycle-predictor-root h3 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Glassmorphism utility */
+.cycle-glass {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 20px -2px rgba(200, 180, 190, 0.15);
+}
+
+.shadow-float {
+    box-shadow: 0 10px 25px -5px rgba(200, 180, 190, 0.2), 0 8px 10px -6px rgba(200, 180, 190, 0.2);
+}
+
+.shadow-soft {
+    box-shadow: 0 4px 12px -2px rgba(200, 180, 190, 0.1);
+}
+
+/* Hero blob gradient */
+.hero-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(60px);
+    opacity: 0.4;
+    background: linear-gradient(135deg,
+            hsl(330 60% 85%) 0%,
+            hsl(260 40% 90%) 50%,
+            hsl(170 40% 85%) 100%);
+    z-index: -1;
+}
+
+/* Animations */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInSlide 0.5s ease-out forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        height: 0;
+    }
+
+    to {
+        opacity: 1;
+        height: auto;
+    }
+}
+
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out forwards;
+}
+
+/* Day Picker Overrides for Cycle Theme */
+.rdp-day_selected:not([disabled]) {
+    background-color: hsl(330 60% 55%) !important;
+    color: white !important;
+}
+
+.rdp-day_today {
+    font-weight: bold;
+    color: hsl(330 60% 55%);
+    border: 1px solid hsl(330 60% 55%);
+}

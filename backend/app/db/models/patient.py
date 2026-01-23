@@ -3,10 +3,13 @@ Patient model - represents patients in the system.
 """
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.db.base import Base
+from app.db.mixins import TenantMixin
+from app.core.security_fields import EncryptedText
 
 
-class Patient(Base):
+class Patient(Base, TenantMixin):
     """
     Patient model representing a patient.
     Patients can have appointments with multiple doctors.
@@ -22,9 +25,12 @@ class Patient(Base):
     date_of_birth = Column(DateTime(timezone=True), nullable=True)
     
     # Medical information
-    medical_history = Column(Text, nullable=True)
+    medical_history = Column(EncryptedText, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    consultations = relationship("Consultation", back_populates="patient")
 

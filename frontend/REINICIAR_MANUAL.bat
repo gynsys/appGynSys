@@ -26,5 +26,5 @@ echo El servidor se iniciara en http://localhost:5173
 echo Presiona Ctrl+C para detenerlo cuando termines.
 echo.
 pause
-npm run dev
+pnpm dev
 

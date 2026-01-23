@@ -16,14 +16,14 @@ from app.schemas.gallery import (
     GalleryImagePublic
 )
 from app.api.v1.endpoints.auth import get_current_user
-from app.api.v1.endpoints.uploads import save_uploaded_file, validate_image
+from app.api.v1.endpoints.uploads import validate_image
 from pathlib import Path
 from app.core.config import settings
 
 # Gallery directory
 GALLERY_DIR = Path(settings.UPLOAD_DIR) / "gallery"
 GALLERY_DIR.mkdir(parents=True, exist_ok=True)
-from app.core.config import settings
+UPLOAD_DIR = Path(settings.UPLOAD_DIR).resolve()
 
 router = APIRouter()
 
@@ -158,6 +158,100 @@ async def update_gallery_image(
     update_data = gallery_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(gallery_image, field, value)
+    
+    db.commit()
+    db.refresh(gallery_image)
+    
+    return gallery_image
+
+
+@router.get("/{gallery_id}/debug", response_model=dict)
+async def debug_gallery_image(
+    gallery_id: int,
+    current_user: Annotated[Doctor, Depends(get_current_user)],
+    db: Session = Depends(get_db)
+):
+    """
+    Debug endpoint to check gallery image crop data.
+    """
+    gallery_image = db.query(GalleryImage).filter(
+        GalleryImage.id == gallery_id,
+        GalleryImage.doctor_id == current_user.id
+    ).first()
+    
+    if not gallery_image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Gallery image not found"
+        )
+    
+    return {
+        "id": gallery_image.id,
+        "crop": gallery_image.crop,
+        "title": gallery_image.title,
+        "featured": gallery_image.featured
+    }
+
+@router.put("/{gallery_id}/image", response_model=GalleryImageInDB)
+async def replace_gallery_image(
+    gallery_id: int,
+    current_user: Annotated[Doctor, Depends(get_current_user)],
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Replace the image of an existing gallery entry.
+    """
+    gallery_image = db.query(GalleryImage).filter(
+        GalleryImage.id == gallery_id,
+        GalleryImage.doctor_id == current_user.id
+    ).first()
+    
+    if not gallery_image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Gallery image not found"
+        )
+    
+    if not validate_image(file):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only JPEG, PNG, and WebP images are allowed."
+        )
+    
+    # Check file size
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    
+    if file_size > settings.MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum size is {settings.MAX_UPLOAD_SIZE / 1024 / 1024}MB"
+        )
+    
+    # Delete old image file if it exists
+    if gallery_image.image_url:
+        old_image_path = UPLOAD_DIR / gallery_image.image_url.lstrip('/uploads/')
+        if old_image_path.exists():
+            try:
+                old_image_path.unlink()
+            except Exception as e:
+                pass
+    
+    # Save new file
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_extension = Path(file.filename).suffix
+    filename = f"{current_user.id}_gallery_{timestamp}{file_extension}"
+    file_path = GALLERY_DIR / filename
+    
+    with open(file_path, "wb") as buffer:
+        import shutil
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update image_url
+    gallery_image.image_url = f"/uploads/gallery/{filename}"
     
     db.commit()
     db.refresh(gallery_image)

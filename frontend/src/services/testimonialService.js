@@ -3,6 +3,7 @@ import api from '../lib/axios'
 
 export const testimonialService = {
   async getPublicTestimonials(doctorSlug) {
+    // Always use the API, no local mocks
     const response = await api.get(`/testimonials/public/${doctorSlug}`)
     return response.data
   },
@@ -24,6 +25,17 @@ export const testimonialService = {
 
   async deleteTestimonial(testimonialId) {
     await api.delete(`/testimonials/${testimonialId}`)
+  },
+
+  async uploadTestimonialPhoto(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/testimonial-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
   },
 }
 

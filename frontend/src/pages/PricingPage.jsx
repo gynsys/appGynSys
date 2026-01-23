@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import LoginModal from '../components/features/LoginModal'
 
 export default function PricingPage() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const plans = [
     {
       name: 'Básico',
@@ -53,12 +56,12 @@ export default function PricingPage() {
               GynSys
             </Link>
             <nav className="flex items-center space-x-4">
-              <Link
-                to="/login"
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
                 className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
               >
                 Iniciar Sesión
-              </Link>
+              </button>
               <Link
                 to="/register"
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
@@ -66,6 +69,7 @@ export default function PricingPage() {
                 Registrarse
               </Link>
             </nav>
+            <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
           </div>
         </div>
       </header>
@@ -85,11 +89,10 @@ export default function PricingPage() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`bg-white rounded-lg shadow-lg p-8 ${
-                plan.popular
-                  ? 'ring-2 ring-indigo-600 transform scale-105'
-                  : ''
-              }`}
+              className={`bg-white rounded-lg shadow-lg p-8 ${plan.popular
+                ? 'ring-2 ring-indigo-600 transform scale-105'
+                : ''
+                }`}
             >
               {plan.popular && (
                 <div className="text-center mb-4">
@@ -131,11 +134,10 @@ export default function PricingPage() {
               </ul>
               <Link
                 to="/register"
-                className={`block w-full text-center py-3 px-4 rounded-lg font-medium ${
-                  plan.popular
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                }`}
+                className={`block w-full text-center py-3 px-4 rounded-lg font-medium ${plan.popular
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
               >
                 Comenzar
               </Link>

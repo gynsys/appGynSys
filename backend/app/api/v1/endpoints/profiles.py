@@ -1,7 +1,7 @@
 """
 Public profile endpoints for doctor profiles.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
@@ -10,9 +10,13 @@ from app.schemas.doctor import DoctorPublic
 
 router = APIRouter()
 
+@router.options("/{slug}")
+async def options_doctor_profile(slug: str):
+    """Handle OPTIONS requests for CORS preflight."""
+    return {"message": "OK"}
 
 @router.get("/{slug}", response_model=DoctorPublic)
-async def get_doctor_profile(
+def get_doctor_profile(
     slug: str,
     db: Session = Depends(get_db)
 ):

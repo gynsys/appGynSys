@@ -1,0 +1,8 @@
+{
+    "email": "test_tenant_final@example.com",
+    "password": "password123",
+    "nombre_completo": "Test Tenant Final",
+    "especialidad": "Gyn",
+    "plan_id": 1,
+    "payment_reference": "REF_FINAL"
+}

@@ -15,3 +15,13 @@ class TokenData(BaseModel):
     email: str | None = None
     doctor_id: int | None = None
 
+
+class PasswordResetRequest(BaseModel):
+    """Schema for password reset request."""
+    email: str
+
+
+class PasswordResetConfirm(BaseModel):
+    """Schema for password reset confirmation."""
+    token: str
+    new_password: str

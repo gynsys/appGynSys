@@ -1,8 +1,9 @@
 """
 Doctor model - represents a medical professional (tenant) in the system.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 
@@ -17,10 +18,16 @@ class Doctor(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=True)  # Nullable for Google OAuth users
     
+    # Password Recovery
+    reset_password_token = Column(String, nullable=True)
+    reset_password_expires = Column(DateTime(timezone=True), nullable=True)
+    
     # Profile information
     nombre_completo = Column(String, nullable=False)
     especialidad = Column(String, nullable=True)
+    universidad = Column(String, nullable=True)
     biografia = Column(String, nullable=True)
+    services_section_title = Column(String, nullable=True)
     
     # Multi-tenant URL identifier
     slug_url = Column(String, unique=True, index=True, nullable=False)
@@ -29,12 +36,84 @@ class Doctor(Base):
     logo_url = Column(String, nullable=True)
     photo_url = Column(String, nullable=True)  # Doctor's profile photo
     theme_primary_color = Column(String, nullable=True)  # Hex color code
+    theme_body_bg_color = Column(String, nullable=True)  # Custom body background color
+    theme_container_bg_color = Column(String, nullable=True)  # Custom container background color
+    design_template = Column(String, default='glass', nullable=True)  # 'glass', 'minimal', 'soft', 'dark'
+    profile_image_border = Column(Boolean, default=True)  # Whether to show border around profile photo
+    card_shadow = Column(Boolean, default=True)  # Whether to show shadows on cards
+    container_shadow = Column(Boolean, default=True)  # Whether to show shadows on containers/headers/footers
+    gallery_width = Column(String, nullable=True, default='100%')  # Gallery width for home page
+    contact_email = Column(String, nullable=True)  # Email for contact form submissions
+    schedule = Column(JSON, nullable=True)  # Doctor's consultation schedule
+    pdf_config = Column(JSON, nullable=True)  # Configuration for PDF generation
+    
+    # Social Media
+    social_youtube = Column(String, nullable=True)
+    social_instagram = Column(String, nullable=True)
+    social_tiktok = Column(String, nullable=True)
+    social_x = Column(String, nullable=True)
+    social_facebook = Column(String, nullable=True)
     
     # Account status
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
+    status = Column(String, default='pending', nullable=False)  # 'pending', 'approved', 'rejected'
+    
+    # Subscription & Payment
+    plan_id = Column(Integer, ForeignKey('plans.id'), nullable=True)
+    payment_reference = Column(String, nullable=True)
+    stripe_customer_id = Column(String, nullable=True)
+    subscription_end_date = Column(DateTime(timezone=True), nullable=True)
+    
+    # Role-based access control
+    role = Column(String, default='user', nullable=False)  # 'user' or 'admin'
+    
+    # Certifications Section
+    show_certifications_carousel = Column(Boolean, default=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    plan = relationship("Plan", backref="doctors")
+    
+    # Many-to-many relationship with modules
+    tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
+
+    # Content relationships
+    faqs = relationship("FAQ", back_populates="doctor", cascade="all, delete-orphan")
+    consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
+    testimonials = relationship("Testimonial", back_populates="doctor", cascade="all, delete-orphan")
+    gallery_images = relationship("GalleryImage", back_populates="doctor", cascade="all, delete-orphan")
+    locations = relationship("Location", back_populates="doctor", cascade="all, delete-orphan")
+    services = relationship("Service", back_populates="doctor", cascade="all, delete-orphan")
+    certifications = relationship("DoctorCertification", back_populates="doctor", cascade="all, delete-orphan")
+    blog_posts = relationship("BlogPost", back_populates="doctor", cascade="all, delete-orphan")
+    cycle_users = relationship("CycleUser", back_populates="doctor", cascade="all, delete-orphan")
+
+    @property
+    def enabled_module_codes(self):
+        """Return list of codes of enabled modules."""
+        try:
+            return [tm.module.code for tm in self.tenant_modules if tm.is_enabled]
+        except Exception:
+            return []
+
+
+class DoctorCertification(Base):
+    """
+    Model for doctor certifications and authority logos.
+    """
+    __tablename__ = "doctor_certifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    name = Column(String, nullable=False)  # e.g., Universidad Central de Venezuela
+    title = Column(String, nullable=False)  # e.g., Médico Ginecólogo
+    logo_url = Column(String, nullable=False)
+    order = Column(Integer, default=0)
+    
+    doctor = relationship("Doctor", back_populates="certifications")
+
 

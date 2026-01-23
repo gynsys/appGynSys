@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import Button from '../common/Button'
+import LoginModal from '../features/LoginModal'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuthStore()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   return (
     <header className="bg-white shadow-sm">
@@ -27,18 +30,19 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link
-                  to="/login"
+                <button
+                  onClick={() => setIsLoginModalOpen(true)}
                   className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Iniciar Sesión
-                </Link>
+                </button>
                 <Link to="/register">
                   <Button size="sm">Registrarse</Button>
                 </Link>
               </>
             )}
           </nav>
+          <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
         </div>
       </div>
     </header>

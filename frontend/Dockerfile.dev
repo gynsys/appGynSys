@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Instalar pnpm
+RUN npm install -g pnpm
+
+# Copiar archivos de dependencias
+COPY package.json pnpm-lock.yaml ./
+
+# Instalar dependencias
+RUN pnpm install
+
+# Copiar el resto del código
+COPY . .
+
+# Exponer el puerto de Vite
+EXPOSE 5173
+
+# Comando para ejecutar en modo desarrollo con host expuesto
+CMD ["pnpm", "run", "dev", "--host"]

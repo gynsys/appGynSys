@@ -20,7 +20,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Import all models so Alembic can detect them
-from app.db.models import doctor, appointment, patient, testimonial, gallery
+from app.db.models import doctor, appointment, patient, testimonial, gallery, consultation, location, service, cycle_user, preconsultation_template
+from app.blog import models as blog
+from app.chat import models as chat
 
 
 def get_db():

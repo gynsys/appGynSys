@@ -19,6 +19,7 @@ class Testimonial(Base):
     # Patient information
     patient_name = Column(String, nullable=False)
     patient_email = Column(String, nullable=True)
+    photo_url = Column(String, nullable=True)
     
     # Testimonial content
     content = Column(Text, nullable=False)
@@ -33,5 +34,5 @@ class Testimonial(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationship
-    doctor = relationship("Doctor", backref="testimonials")
+    doctor = relationship("Doctor", back_populates="testimonials")
 

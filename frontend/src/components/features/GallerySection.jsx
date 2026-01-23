@@ -1,142 +1,232 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { galleryService } from '../../services/galleryService'
 
-export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5' }) {
-  const [galleryImages, setGalleryImages] = useState([])
+import SectionCard from '../common/SectionCard'
+
+export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', cardShadow = true, containerShadow = true, containerBgColor, galleryWidth = '100%', theme }) {
+  const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedImage, setSelectedImage] = useState(null)
+  const [index, setIndex] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(true)
+  const touchStartX = useRef(null)
+  const autoRef = useRef(null)
 
   useEffect(() => {
-    console.log('GallerySection: Cargando galería para:', doctorSlug)
+    let mounted = true;
+    if (doctorSlug === 'preview') {
+      // Hardcoded preview image
+      setImages([
+        {
+          id: 'preview-img',
+          image_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+          title: 'Ejemplo de galería',
+          description: 'Esta es una imagen de ejemplo para la previsualización.',
+        },
+      ]);
+      setLoading(false);
+      return () => { };
+    }
     const fetchGallery = async () => {
       try {
         const data = await galleryService.getPublicGallery(doctorSlug)
-        console.log('GallerySection: Imágenes recibidas:', data)
-        setGalleryImages(data)
+        if (!mounted) return
+        setImages(data || [])
       } catch (err) {
-        console.error('Error fetching gallery:', err)
+        setImages([])
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
-
-    if (doctorSlug) {
-      fetchGallery()
-    }
+    if (doctorSlug) fetchGallery()
+    return () => { mounted = false }
   }, [doctorSlug])
+
+  useEffect(() => {
+    if (!autoPlay || images.length <= 1) return
+    autoRef.current = setInterval(() => {
+      setIndex((i) => (i + 1) % images.length)
+    }, 4000)
+    return () => clearInterval(autoRef.current)
+  }, [autoPlay, images.length])
 
   const getImageUrl = (url) => {
     if (!url) return null
     if (url.startsWith('http')) return url
-    return `http://localhost:8000${url}`
+    // For relative URLs, prepend the backend URL
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+    // Remove /api/v1 suffix if present
+    const backendURL = baseURL.replace(/\/api\/v1$/, '')
+    return `${backendURL}${url.startsWith('/') ? url : '/' + url}`
   }
+
+  const prev = () => {
+    setAutoPlay(false)
+    setIndex((i) => (i - 1 + images.length) % images.length)
+  }
+
+  const next = () => {
+    setAutoPlay(false)
+    setIndex((i) => (i + 1) % images.length)
+  }
+
+  const goTo = (i) => {
+    setAutoPlay(false)
+    setIndex(i)
+  }
+
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches ? e.touches[0].clientX : e.clientX
+  }
+
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return
+    const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX
+    const diff = touchStartX.current - x
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next()
+      else prev()
+    }
+    touchStartX.current = null
+  }
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowLeft') prev()
+      if (e.key === 'ArrowRight') next()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [images.length])
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl p-10">
+      <SectionCard
+        id="galeria"
+        scrollMargin="scroll-mt-32"
+        containerBgColor={containerBgColor}
+        containerShadow={containerShadow}
+        theme={theme}
+      >
         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Galería</h2>
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
+          {/* Height placeholder to prevent layout shift */}
+          <div className="w-full h-[56vw] md:h-[40vw] lg:h-[30vw] max-h-[720px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
+          </div>
         </div>
-      </div>
+      </SectionCard>
     )
   }
 
-  // Always show gallery section, even if empty
-
   return (
-    <>
-      <section id="galeria" className="mb-20">
-        <div className="bg-white rounded-2xl shadow-xl p-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Galería de Trabajo</h2>
-          
-          {galleryImages.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">📸</div>
-              <p className="text-gray-600 text-lg">
-                La galería de trabajo se mostrará aquí próximamente.
-              </p>
+    <SectionCard
+      id="galeria"
+      scrollMargin="scroll-mt-32"
+      containerBgColor={containerBgColor}
+      containerShadow={containerShadow}
+      className="w-full"
+      theme={theme}
+    >
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Galería de Trabajo</h2>
+
+      </div>
+
+      {images.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">📸</div>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">La galería de trabajo se mostrará aquí próximamente.</p>
+        </div>
+      ) : (
+        <div>
+          <div className="flex justify-center">
+            <div
+              className="relative h-[56vw] md:h-[40vw] lg:h-[30vw] max-h-[720px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
+              style={{ width: galleryWidth, maxWidth: '100%', boxSizing: 'border-box' }}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+              onMouseDown={onTouchStart}
+              onMouseUp={onTouchEnd}
+            >
+              <button
+                onClick={prev}
+                aria-label="Anterior"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <button
+                onClick={next}
+                aria-label="Siguiente"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Slider principal sin crop ni centrado avanzado */}
+              <div className="w-full h-full flex items-center justify-center">
+                {images.map((img, i) => (
+                  <div
+                    key={img.id}
+                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${i === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    aria-hidden={i !== index}
+                  >
+                    <div
+                      className="w-full h-full absolute inset-0 overflow-hidden bg-gray-100"
+                    >
+                      <img
+                        src={img.image_url.startsWith('http') ? img.image_url : getImageUrl(img.image_url)}
+                        alt={img.title || `Imagen ${i + 1}`}
+                        className="w-full h-full object-contain"
+                        loading={i === index ? 'eager' : 'lazy'}
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    </div>
+                    {(img.title || img.description) && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        {img.title && <h3 className="text-white font-semibold">{img.title}</h3>}
+                        {img.description && <p className="text-gray-200 text-sm">{img.description}</p>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {galleryImages.map((image) => (
-              <div
-                key={image.id}
-                className="relative group cursor-pointer overflow-hidden rounded-lg aspect-square"
-                onClick={() => setSelectedImage(image)}
+          </div>
+
+          {/* Thumbnails */}
+          <div className="mt-4 flex items-center justify-center space-x-3 overflow-auto py-2">
+            {images.map((img, i) => (
+              <button
+                key={img.id}
+                onClick={() => goTo(i)}
+                className={`border rounded-md overflow-hidden ${i === index ? 'ring-2 ring-offset-2' : ''}`}
+                style={{ borderColor: i === index ? primaryColor : 'transparent', width: '6rem', height: '4rem', aspectRatio: '3/2', background: '#f3f4f6', position: 'relative' }}
               >
                 <img
-                  src={getImageUrl(image.image_url)}
-                  alt={image.title || 'Gallery image'}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                  }}
+                  src={img.image_url.startsWith('http') ? img.image_url : getImageUrl(img.image_url)}
+                  alt={img.title || `Thumb ${i + 1}`}
+                  className="w-24 h-16 object-contain"
+                  loading="lazy"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <svg
-                      className="w-12 h-12 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                {image.title && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-sm font-medium">{image.title}</p>
-                  </div>
-                )}
-              </div>
+              </button>
             ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Lightbox Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <img
-              src={getImageUrl(selectedImage.image_url)}
-              alt={selectedImage.title || 'Gallery image'}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-            {(selectedImage.title || selectedImage.description) && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6 rounded-b-lg">
-                {selectedImage.title && (
-                  <h3 className="text-white text-xl font-semibold mb-2">{selectedImage.title}</h3>
-                )}
-                {selectedImage.description && (
-                  <p className="text-gray-200">{selectedImage.description}</p>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
-    </>
+    </SectionCard>
   )
 }
 

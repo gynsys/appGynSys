@@ -1,0 +1,31 @@
+[project]
+name = "appgynsys-backend"
+version = "0.1.0"
+description = "Backend FastAPI para SaaS Gynsys"
+requires-python = ">=3.10"
+
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0",
+    "aiofiles==23.2.1",
+    "sqlalchemy==2.0.23",
+    "alembic==1.12.1",
+    "celery==5.3.4",
+    "redis==5.0.1",
+    "pydantic[email]==2.5.0",
+    "pydantic-settings==2.1.0",
+    "email-validator>=2.0.0",
+    "python-jose[cryptography]==3.3.0",
+    "reportlab==4.0.7",
+    "qrcode[pil]==7.4.2",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt==4.0.1",
+    "python-multipart==0.0.6",
+    "httpx==0.25.2",
+    "python-dotenv==1.0.0",
+    "urllib3>=2.6.0",
+    "Pillow==10.0.0"
+]
+
+[tool.uv]
+# Configuración opcional para uv

@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+.env
+.venv
+venv
+.git
+.gitignore
+uploads/
+gynsys.db
+alembic/versions/__pycache__/

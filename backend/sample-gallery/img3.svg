@@ -1,0 +1,5 @@
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#64748b"/>
+  <text x="50%" y="40%" text-anchor="middle" font-size="56" fill="#fff" font-family="Arial, sans-serif" font-weight="bold">Muestra tus servicios</text>
+  <text x="50%" y="55%" text-anchor="middle" font-size="36" fill="#f1f5f9" font-family="Arial, sans-serif">Sube fotos de tu consultorio, equipo o staff</text>
+</svg>

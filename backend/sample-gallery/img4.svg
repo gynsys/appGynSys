@@ -1,0 +1,5 @@
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#06b6d4"/>
+  <text x="50%" y="40%" text-anchor="middle" font-size="56" fill="#fff" font-family="Arial, sans-serif" font-weight="bold">Imágenes de ejemplo</text>
+  <text x="50%" y="55%" text-anchor="middle" font-size="36" fill="#e0f2fe" font-family="Arial, sans-serif">Estas se reemplazarán al subir tus propias fotos</text>
+</svg>

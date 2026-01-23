@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 300px;
+            padding: 16px;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        h1 {
+            margin: 0 0 16px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .logo {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #toggleBtn {
+            background: white;
+            color: #667eea;
+        }
+
+        #toggleBtn:hover {
+            background: #f8f8f8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #toggleBtn.active {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status.inactive {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status.active {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .shortcuts {
+            margin-top: 12px;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .shortcuts strong {
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">🔍</div>
+    <h1>DOM Inspector Pro</h1>
+    
+    <button id="toggleBtn">Activar Inspector</button>
+    
+    <div class="info">
+        <div id="status">
+            Estado: <span class="status inactive">Inactivo</span>
+        </div>
+        
+        <div class="shortcuts">
+            <strong>Cómo usar:</strong><br>
+            1. Click en "Activar"<br>
+            2. Haz clic en elementos<br>
+            3. Copia instrucciones IA
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

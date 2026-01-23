@@ -7,6 +7,11 @@ export const doctorService = {
     return response.data
   },
 
+  // Alias for legacy support
+  async getDoctorBySlug(slug) {
+    return this.getDoctorProfileBySlug(slug)
+  },
+
   async getCurrentUser() {
     const response = await api.get('/users/me')
     return response.data
@@ -36,6 +41,22 @@ export const doctorService = {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return response.data
+  },
+
+  async uploadSignature(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/signature', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  async updatePdfConfig(config) {
+    const response = await api.put('/users/me', { pdf_config: config })
     return response.data
   },
 }

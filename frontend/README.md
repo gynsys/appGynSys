@@ -1,6 +1,6 @@
 # GynSys Frontend
 
-Frontend React para GynSys - SaaS multi-inquilino para clínicas digitales.
+Frontend React para GynSys - SaaS multi-inquilino para tu asistente.
 
 ## Stack Tecnológico
 
@@ -16,7 +16,7 @@ Frontend React para GynSys - SaaS multi-inquilino para clínicas digitales.
 
 1. **Instalar dependencias:**
 ```bash
-npm install
+pnpm install
 ```
 
 2. **Configurar variables de entorno:**
@@ -27,17 +27,17 @@ cp .env.example .env
 
 3. **Iniciar servidor de desarrollo:**
 ```bash
-npm run dev
+pnpm dev
 ```
 
 El servidor estará disponible en `http://localhost:5173`
 
 ## Scripts Disponibles
 
-- `npm run dev`: Inicia el servidor de desarrollo
-- `npm run build`: Construye la aplicación para producción
-- `npm run preview`: Previsualiza la build de producción
-- `npm run lint`: Ejecuta el linter
+- `pnpm dev`: Inicia el servidor de desarrollo
+- `pnpm build`: Construye la aplicación para producción
+- `pnpm preview`: Previsualiza la build de producción
+- `pnpm lint`: Ejecuta el linter
 
 ## Estructura del Proyecto
 

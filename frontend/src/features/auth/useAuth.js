@@ -12,8 +12,14 @@ export function useAuth() {
   // Fetch user info from API
   const fetchUserInfo = async () => {
     try {
-      const userData = await doctorService.getCurrentUser()
+      const userData = await authService.getCurrentUser()
       setUser(userData)
+      // Persist theme preference for login page
+      if (userData?.design_template === 'dark') {
+        localStorage.setItem('theme_preference', 'dark')
+      } else {
+        localStorage.setItem('theme_preference', 'light')
+      }
       return userData
     } catch (error) {
       // If token is invalid, clear it
@@ -65,10 +71,14 @@ export function useAuth() {
     }
   }
 
-  const logout = () => {
+  const logout = (redirectToLogin = false) => {
     authService.logout()
     logoutStore()
-    navigate('/login')
+    // Only redirect if explicitly requested
+    if (redirectToLogin === true) {
+      navigate('/login')
+    }
+    // Otherwise, stay on current page (don't navigate)
   }
 
   const loginWithGoogle = () => {
@@ -84,6 +94,9 @@ export function useAuth() {
     logout,
     loginWithGoogle,
     refreshUser: fetchUserInfo,
+    requestPasswordReset: authService.requestPasswordReset,
+    resetPassword: authService.resetPassword,
+    resetCyclePassword: authService.resetCyclePassword,
   }
 }
 

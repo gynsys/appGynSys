@@ -50,16 +50,16 @@ echo [OK] Node.js encontrado
 node --version
 echo.
 
-echo [2/5] Verificando npm...
-where npm >nul 2>&1
+echo [2/5] Verificando pnpm...
+where pnpm >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] npm no encontrado
-    echo npm deberia venir con Node.js
+    echo [ERROR] pnpm no encontrado
+    echo Instala pnpm con: npm install -g pnpm
     pause
     exit /b 1
 )
-echo [OK] npm encontrado
-npm --version
+echo [OK] pnpm encontrado
+pnpm --version
 echo.
 
 echo [3/5] Verificando directorio actual...
@@ -72,7 +72,7 @@ if not exist "node_modules" (
     echo node_modules no existe. Instalando dependencias...
     echo Esto puede tardar 1-2 minutos...
     echo.
-    call npm install
+    call pnpm install
     if %ERRORLEVEL% NEQ 0 (
         echo.
         echo [ERROR] Fallo la instalacion de dependencias
@@ -95,7 +95,7 @@ echo Presiona Ctrl+C para detener el servidor
 echo.
 timeout /t 2 /nobreak >nul
 
-call npm run dev
+call pnpm dev
 
 echo.
 echo ========================================

@@ -48,7 +48,7 @@ Deberías ver:
 
 1. Cierra completamente el navegador
 2. Detén el frontend (Ctrl+C en la terminal)
-3. Reinicia el frontend: `npm run dev`
+3. Reinicia el frontend: `pnpm dev`
 4. Abre el navegador de nuevo
 5. Ve a la URL correcta
 

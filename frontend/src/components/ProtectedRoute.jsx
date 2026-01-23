@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore'
 import Spinner from './common/Spinner'
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuthStore()
+  const { isAuthenticated, user, loading } = useAuthStore()
 
   if (loading) {
     return (
@@ -15,6 +15,11 @@ export default function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  // Redirect admin users to admin panel, they shouldn't access tenant dashboard
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />
   }
 
   return children

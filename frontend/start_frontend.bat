@@ -71,29 +71,28 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
 )
 
-REM Verificar si npm esta instalado
-where npm >nul 2>&1
+REM Verificar si pnpm esta instalado
+where pnpm >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo ========================================
-    echo ERROR: npm no esta instalado
+    echo ERROR: pnpm no esta instalado
     echo ========================================
     echo.
-    echo npm deberia venir con Node.js
-    echo Por favor reinstala Node.js desde:
-    echo https://nodejs.org/
+    echo Este proyecto usa pnpm en lugar de npm.
+    echo Instala pnpm con: npm install -g pnpm
     echo.
     pause
     exit /b 1
 )
 
-echo Node.js y npm encontrados correctamente.
+echo Node.js y pnpm encontrados correctamente.
 echo.
 
 echo Verificando dependencias...
 if not exist "node_modules" (
-    echo Instalando dependencias npm (esto puede tardar unos minutos)...
-    call npm install
+    echo Instalando dependencias pnpm (esto puede tardar unos minutos)...
+    call pnpm install
     if %ERRORLEVEL% NEQ 0 (
         echo.
         echo ERROR al instalar dependencias
@@ -110,7 +109,7 @@ echo.
 echo Presiona Ctrl+C para detener el servidor
 echo.
 
-call npm run dev
+call pnpm dev
 
 if %ERRORLEVEL% NEQ 0 (
     echo.

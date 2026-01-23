@@ -1,145 +1,108 @@
 # GynSys - SaaS Multi-Inquilino para Clínicas Digitales
 
-GynSys es una plataforma SaaS que permite a médicos crear y gestionar sus propias "Clínicas Digitales" personalizables con herramientas integradas para citas, blog médico y pre-consultas.
+GynSys es una plataforma integral para la gestión de clínicas digitales, diseñada para ofrecer a médicos herramientas potentes de administración, comunicación y marketing en un entorno multi-inquilino.
 
-## 🏗️ Arquitectura
+## 🏗️ Stack Tecnológico Moderno
 
-Este es un **monorepo** que contiene:
-
-- **Backend**: API RESTful construida con FastAPI
-- **Frontend**: SPA construida con React y Vite
+- **Backend**: FastAPI (Python) gestionado con `uv`.
+- **Frontend**: React + Vite gestionado con `pnpm`.
+- **Base de Datos**: PostgreSQL 15.
+- **Caché/Colas**: Redis + Celery.
+- **Infraestructura**: Docker & Docker Compose.
 
 ## 📁 Estructura del Proyecto
 
 ```
 appgynsys/
-├── backend/          # Proyecto FastAPI
-│   ├── app/          # Código de la aplicación
-│   ├── alembic/      # Migraciones de base de datos
-│   └── requirements.txt
-│
-└── frontend/         # Proyecto React
-    ├── src/          # Código fuente
-    └── package.json
+├── backend/          # API FastAPI (con scripts de Python y configuración)
+├── frontend/         # SPA React (UI del sistema)
+├── docs/             # Manuales, logs y documentación detallada
+├── scripts/          # Scripts de utilidad (.bat, .ps1) para inicio rápido
+├── backups/          # Respaldos automáticos de la BD y archivos
+├── docker-compose.yml # Orquestación de contenedores
+└── README.md         # Este archivo
 ```
 
-## 🚀 Inicio Rápido
+## 🚀 Inicio Rápido (Recomendado)
 
-### Backend
+La forma más sencilla de ejecutar el sistema es utilizando **Docker**.
 
-1. **Navegar al directorio backend:**
+### Prerrequisitos
+- Docker Desktop instalado y corriendo.
+
+### Ejecución
+1. En la raíz del proyecto:
+   ```bash
+   docker-compose up --build
+   ```
+2. Accede a los servicios:
+   - **Frontend**: `http://localhost:5173`
+   - **Backend API**: `http://localhost:8000`
+   - **Documentación API**: `http://localhost:8000/docs`
+
+---
+
+## 🛠️ Desarrollo Manual (Sin Docker)
+
+Si prefieres correr los servicios individualmente en tu máquina local:
+
+### 1. Backend (Python/FastAPI)
+Requiere [uv](https://github.com/astral-sh/uv) para gestión de paquetes.
+
 ```bash
 cd backend
-```
-
-2. **Crear entorno virtual:**
-```bash
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-```
-
-3. **Instalar dependencias:**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configurar variables de entorno:**
-```bash
-cp .env.example .env
-# Editar .env con tus configuraciones
-```
-
-5. **Ejecutar migraciones:**
-```bash
-alembic upgrade head
-```
-
-6. **Iniciar servidor:**
-```bash
+# Crear entorno virtual e instalar dependencias
+uv pip install -r requirements.txt
+# Activar entorno
+.venv\Scripts\activate
+# Iniciar servidor
 uvicorn app.main:app --reload
 ```
 
-El servidor estará disponible en `http://localhost:8000`
+### 2. Frontend (React/Vite)
+Requiere [pnpm](https://pnpm.io/) para gestión de paquetes.
 
-### Frontend
-
-1. **Navegar al directorio frontend:**
 ```bash
 cd frontend
+# Instalar dependencias
+pnpm install
+# Iniciar servidor de desarrollo
+pnpm dev
 ```
 
-2. **Instalar dependencias:**
-```bash
-npm install
+---
+
+## 🛡️ Sistema de Respaldos
+
+El sistema cuenta con una estrategia de respaldo de doble capa para proteger la base de datos **PostgreSQL** y los archivos subidos (`uploads/`).
+
+### Automático
+Un servicio interno genera respaldos horarios en la carpeta `backend/backups/`.
+
+### Manual (Script)
+Ejecuta el script para generar un archivo `.zip` completo (BD + Imágenes):
+```powershell
+.\backend\backup_pg.ps1
 ```
+*Tip: Puedes automatizar esto con el Programador de Tareas de Windows usando `backend/setup_auto_backup.bat`.*
 
-3. **Configurar variables de entorno:**
-```bash
-cp .env.example .env
-# Editar .env con la URL de la API
-```
+---
 
-4. **Iniciar servidor de desarrollo:**
-```bash
-npm run dev
-```
+## 🎯 Características Activas
 
-El servidor estará disponible en `http://localhost:5173`
+### Gestión Médica
+- **Panel Administrativo**: Dashboard completo para gestión de pacientes y citas.
+- **Historias Médicas**: Registro digital de expedientes.
+- **Agenda**: Gestión de citas y horarios.
 
-## 📚 Documentación
+### Perfil Público (Marketing)
+- **Sitio Web del Doctor**: `app.gynsys.com/dr/{slug}`.
+- **Blog Médico**: CMS integrado para publicar artículos.
+- **Galería y Testimonios**: Secciones autoadministrables.
 
-- **Backend API Docs**: `http://localhost:8000/docs` (Swagger UI)
-- **Backend README**: Ver `backend/README.md`
-- **Frontend README**: Ver `frontend/README.md`
-
-## 🎯 Características Principales
-
-### Para Médicos (Inquilinos)
-- ✅ Registro y autenticación (Email/Password y Google OAuth)
-- ✅ Perfil personalizable (logo, colores)
-- ✅ URL única por médico (`app.gynsys.com/dr/{slug}`)
-- ✅ Dashboard privado para gestión
-
-### Para Pacientes
-- ✅ Visualización de perfil público del médico
-- ✅ Agendamiento de citas (próximamente)
-- ✅ Formularios de pre-consulta (próximamente)
-- ✅ Blog médico (próximamente)
-
-## 🛠️ Stack Tecnológico
-
-### Backend
-- FastAPI
-- SQLAlchemy + Alembic
-- Celery + Redis
-- JWT Authentication
-- Pydantic
-
-### Frontend
-- React 18
-- Vite
-- Tailwind CSS
-- React Router
-- Axios
-- Zustand
-
-## 📝 Estado del Proyecto
-
-### ✅ Completado
-- Estructura base del proyecto
-- Configuración de backend y frontend
-- Modelos de base de datos (Doctor, Appointment, Patient)
-- Endpoints de autenticación y perfiles
-- Páginas públicas del frontend
-- Sistema de autenticación JWT
-
-### 🚧 En Desarrollo
-- Gestión completa de citas
-- Sistema de blog con IA
-- Formularios de pre-consulta
-- Personalización avanzada
+### Herramientas para Pacientes
+- **Predictor de Ciclos**: Modal integrado para seguimiento de salud menstrual.
+- **Pre-consulta**: Formularios digitales previos a la visita.
 
 ## 📄 Licencia
-
 Este proyecto es privado y propietario.
-

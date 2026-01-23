@@ -1,0 +1,5 @@
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#a3a3a3"/>
+  <text x="50%" y="40%" text-anchor="middle" font-size="56" fill="#fff" font-family="Arial, sans-serif" font-weight="bold">¿Dudas?</text>
+  <text x="50%" y="55%" text-anchor="middle" font-size="36" fill="#f5f5f5" font-family="Arial, sans-serif">Consulta la ayuda para personalizar tu galería</text>
+</svg>

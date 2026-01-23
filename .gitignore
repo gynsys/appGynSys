@@ -37,3 +37,6 @@ Thumbs.db
 # Mac, Windows temp
 *.swp
 *.swo
+
+# Vite temp files
+vite.config.js.timestamp*

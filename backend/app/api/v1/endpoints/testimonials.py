@@ -20,7 +20,7 @@ from app.api.v1.endpoints.auth import get_current_user
 router = APIRouter()
 
 
-@router.get("/public/{doctor_slug}", response_model=List[TestimonialPublic])
+@router.get("/public/{doctor_slug}")
 async def get_public_testimonials(
     doctor_slug: str,
     db: Session = Depends(get_db)
@@ -42,8 +42,12 @@ async def get_public_testimonials(
         desc(Testimonial.is_featured),
         desc(Testimonial.created_at)
     ).all()
+
+    # Manual serialization to ensure stability
+    serialized = [TestimonialPublic.model_validate(t).model_dump(mode='json') for t in testimonials]
     
-    return testimonials
+    from fastapi.responses import JSONResponse
+    return JSONResponse(content=serialized)
 
 
 @router.post("/", response_model=TestimonialInDB, status_code=status.HTTP_201_CREATED)
@@ -115,11 +119,21 @@ async def update_testimonial(
     
     # Update fields
     update_data = testimonial_update.model_dump(exclude_unset=True)
+    pass
+    
+    # Check if photo_url was explicitly provided (even if None)
+    if 'photo_url' in testimonial_update.model_dump(exclude_unset=False):
+        update_data['photo_url'] = testimonial_update.photo_url
+        pass
+    
     for field, value in update_data.items():
         setattr(testimonial, field, value)
+        pass
     
     db.commit()
     db.refresh(testimonial)
+    
+    pass
     
     return testimonial
 
@@ -148,4 +162,3 @@ async def delete_testimonial(
     db.commit()
     
     return None
-

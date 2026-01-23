@@ -2,7 +2,7 @@
 Pydantic schemas for Gallery entity.
 """
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 
 
@@ -11,6 +11,7 @@ class GalleryImageBase(BaseModel):
     image_url: str
     title: Optional[str] = None
     description: Optional[str] = None
+    crop: Optional[Dict[str, Any]] = None
 
 
 class GalleryImageCreate(GalleryImageBase):
@@ -26,6 +27,8 @@ class GalleryImageUpdate(BaseModel):
     description: Optional[str] = None
     display_order: Optional[int] = None
     is_active: Optional[bool] = None
+    featured: Optional[bool] = None
+    crop: Optional[Dict[str, Any]] = None
 
 
 class GalleryImageInDB(GalleryImageBase):
@@ -34,6 +37,7 @@ class GalleryImageInDB(GalleryImageBase):
     doctor_id: int
     display_order: int
     is_active: bool
+    featured: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -44,6 +48,7 @@ class GalleryImageInDB(GalleryImageBase):
 class GalleryImagePublic(GalleryImageBase):
     """Schema for public API (only active images)."""
     id: int
+    featured: bool
     created_at: datetime
 
     class Config:

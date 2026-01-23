@@ -15,7 +15,7 @@ timeout /t 2 /nobreak >nul
 
 echo.
 echo Iniciando servidor de desarrollo...
-npm run dev
+pnpm dev
 
 pause
 
