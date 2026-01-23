@@ -78,8 +78,8 @@ class Doctor(Base):
     # Relationships
     plan = relationship("Plan", backref="doctors")
     
-    # Many-to-many relationship with modules
-    tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
+    # Many-to-many relationship with modules - MOVED TO TENANT MODEL
+    # tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
 
     # Content relationships
     faqs = relationship("FAQ", back_populates="doctor", cascade="all, delete-orphan")
@@ -95,10 +95,11 @@ class Doctor(Base):
     @property
     def enabled_module_codes(self):
         """Return list of codes of enabled modules."""
-        try:
-            return [tm.module.code for tm in self.tenant_modules if tm.is_enabled]
-        except Exception:
-            return []
+        # try:
+        #     return [tm.module.code for tm in self.tenant_modules if tm.is_enabled]
+        # except Exception:
+        #     return []
+        return []
 
 
 class DoctorCertification(Base):
