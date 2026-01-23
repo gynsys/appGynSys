@@ -14,7 +14,7 @@ class TenantModule(Base):
     """
     __tablename__ = "tenant_modules"
 
-    tenant_id = Column(Integer, ForeignKey("doctors.id"), primary_key=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), primary_key=True)
     module_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
 
     # Whether this module is enabled for this tenant
@@ -25,5 +25,5 @@ class TenantModule(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    # tenant relationship is handled by backref in Doctor model
+    tenant = relationship("Tenant", back_populates="tenant_modules")
     module = relationship("Module", back_populates="tenant_modules")
