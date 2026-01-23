@@ -64,6 +64,13 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error creating admin: {e}")
 
+    # NEW: Run the comprehensive repair script
+    try:
+        from fix_deployment_sync import fix_deployment_sync
+        fix_deployment_sync()
+    except Exception as e:
+        print(f"Error executing fix_deployment_sync: {e}")
+
     print("Starting Server...")
     # This replaces the process with Uvicorn (similar to exec) if possible, 
     # but calling uvicorn.run is fine for this context.
