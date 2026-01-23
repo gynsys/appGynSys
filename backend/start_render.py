@@ -1,0 +1,30 @@
+import os
+import subprocess
+import uvicorn
+from alembic.config import Config
+from alembic import command
+
+def run_migrations():
+    print("Running DB Migrations...")
+    try:
+        # Construct path to alembic.ini (assuming it's in the same directory as this script)
+        alembic_ini_path = os.path.join(os.path.dirname(__file__), "alembic.ini")
+        alembic_cfg = Config(alembic_ini_path)
+        # Point to the script location (backend/alembic)
+        alembic_cfg.set_main_option("script_location", "alembic")
+        
+        command.upgrade(alembic_cfg, "head")
+        print("Migrations complete.")
+    except Exception as e:
+        print(f"Error running migrations: {e}")
+        # Retry with subprocess just in case alembic API fails due to path/config weirdness
+        print("Retrying with subprocess...")
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
+
+if __name__ == "__main__":
+    run_migrations()
+    
+    print("Starting Server...")
+    # This replaces the process with Uvicorn (similar to exec) if possible, 
+    # but calling uvicorn.run is fine for this context.
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
