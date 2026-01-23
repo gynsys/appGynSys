@@ -52,6 +52,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error executing seed_mariel: {e}")
 
+    try:
+        from populate_mariel import populate_data
+        populate_data()
+    except Exception as e:
+        print(f"Error executing populate_data: {e}")
+
     print("Starting Server...")
     # This replaces the process with Uvicorn (similar to exec) if possible, 
     # but calling uvicorn.run is fine for this context.
