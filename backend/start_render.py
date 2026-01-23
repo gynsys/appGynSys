@@ -58,6 +58,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error executing populate_data: {e}")
 
+    try:
+        from create_admin_user import create_super_admin
+        create_super_admin()
+    except Exception as e:
+        print(f"Error creating admin: {e}")
+
     print("Starting Server...")
     # This replaces the process with Uvicorn (similar to exec) if possible, 
     # but calling uvicorn.run is fine for this context.
