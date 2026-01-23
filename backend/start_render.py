@@ -44,6 +44,14 @@ if __name__ == "__main__":
     run_migrations()
     check_and_fix_schema()
     
+    # Auto-seed initial data (Mariel Herrera)
+    print("Checking/Seeding initial data...")
+    try:
+        from seed_mariel import seed_mariel
+        seed_mariel()
+    except Exception as e:
+        print(f"Error executing seed_mariel: {e}")
+
     print("Starting Server...")
     # This replaces the process with Uvicorn (similar to exec) if possible, 
     # but calling uvicorn.run is fine for this context.
