@@ -95,11 +95,7 @@ class Doctor(Base):
     @property
     def enabled_module_codes(self):
         """Return list of codes of enabled modules."""
-        # try:
-        #     return [tm.module.code for tm in self.tenant_modules if tm.is_enabled]
-        # except Exception:
-        #     return []
-        return []
+        return ["blog", "chat_widget", "online_consultations", "gallery", "testimonials", "services", "faq", "cycle_predictor", "recommendations"]
 
 
 class DoctorCertification(Base):
