@@ -20,7 +20,13 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-y: scroll !important;
+  /* Force scrollbar */
+  padding-right: 0px !important;
+  /* Prevent layout shift from library padding */
 }
 
 html.dark body {
