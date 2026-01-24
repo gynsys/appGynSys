@@ -95,8 +95,10 @@ def seed_tenant_data(db: Session, doctor: Doctor):
         db.add(doctor)
 
     # 2. Seed FAQs if none exist
-    existing_faqs = db.query(FAQ).filter(FAQ.doctor_id == doctor.id).count()
-    if existing_faqs == 0:
+    # FIXED: Do not re-seed if user deleted them. Only seed on creation (handled elsewhere) or if explicitly requested.
+    # existing_faqs = db.query(FAQ).filter(FAQ.doctor_id == doctor.id).count()
+    # if existing_faqs == 0:
+    if False: # Disable auto-seeding on restart/update
         default_faqs = [
             {
                 "question": "¿Cómo edito esta pregunta?",
@@ -121,8 +123,9 @@ def seed_tenant_data(db: Session, doctor: Doctor):
             db.add(faq)
 
     # 3. Seed Testimonials if none exist
-    existing_testimonials = db.query(Testimonial).filter(Testimonial.doctor_id == doctor.id).count()
-    if existing_testimonials == 0:
+    # existing_testimonials = db.query(Testimonial).filter(Testimonial.doctor_id == doctor.id).count()
+    # if existing_testimonials == 0:
+    if False: # Disable auto-seeding
         default_testimonials = [
             {
                 "patient_name": "Paciente Ejemplo",
@@ -151,8 +154,9 @@ def seed_tenant_data(db: Session, doctor: Doctor):
             db.add(testimonial)
     
     # 4. Seed Gallery if none exist
-    existing_gallery = db.query(GalleryImage).filter(GalleryImage.doctor_id == doctor.id).count()
-    if existing_gallery == 0:
+    # existing_gallery = db.query(GalleryImage).filter(GalleryImage.doctor_id == doctor.id).count()
+    # if existing_gallery == 0:
+    if False: # Disable auto-seeding
         default_gallery = [
             {
                 "image_url": "https://placehold.co/800x600/e2e8f0/475569?text=Consultorio+Ejemplo",
