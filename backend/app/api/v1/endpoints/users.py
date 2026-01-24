@@ -35,7 +35,11 @@ async def get_current_user_info(
         
         # Populate modules_status
         all_modules = db.query(Module).all()
-        user_modules_map = {tm.module_id: tm.is_enabled for tm in current_user.tenant_modules}
+        
+        # FIX: Query TenantModule directly instead of relationship
+        # user_modules_map = {tm.module_id: tm.is_enabled for tm in current_user.tenant_modules}
+        tenant_modules_records = db.query(TenantModule).filter(TenantModule.tenant_id == current_user.id).all()
+        user_modules_map = {tm.module_id: tm.is_enabled for tm in tenant_modules_records}
         
         modules_status = []
         for mod in all_modules:
@@ -138,7 +142,9 @@ async def update_current_user(
         module_map = {m.code: m.id for m in all_modules}
         
         # Get current tenant modules map [module_id -> TenantModule]
-        current_tenant_modules = {tm.module_id: tm for tm in current_user.tenant_modules}
+        # current_tenant_modules = {tm.module_id: tm for tm in current_user.tenant_modules}
+        tenant_modules_records = db.query(TenantModule).filter(TenantModule.tenant_id == current_user.id).all()
+        current_tenant_modules = {tm.module_id: tm for tm in tenant_modules_records}
         
         target_enabled_codes = set(doctor_update.enabled_modules)
         
@@ -170,10 +176,11 @@ async def update_current_user(
     
     # Re-calculate modules_status for response
     all_modules = db.query(Module).all()
-    # Need to reload tenant_modules relationship
-    db.refresh(current_user, attribute_names=["tenant_modules"])
+    # Need to reload tenant_modules relationship - relationship is disabled, query manually
+    # db.refresh(current_user, attribute_names=["tenant_modules"])
     
-    user_modules_map = {tm.module_id: tm.is_enabled for tm in current_user.tenant_modules}
+    tenant_modules_records_updated = db.query(TenantModule).filter(TenantModule.tenant_id == current_user.id).all()
+    user_modules_map = {tm.module_id: tm.is_enabled for tm in tenant_modules_records_updated}
     
     modules_status = []
     for mod in all_modules:
