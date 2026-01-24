@@ -237,51 +237,7 @@ export default function DoctorProfilePage() {
         containerBgColor={containerBgColor}
       />
 
-      {/* Admin Panel & Edit Profile Buttons - Always visible, but require authentication */}
-      {doctor && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="flex items-center justify-end space-x-3">
-            {/* Login/Logout Button */}
-            {!isAuthenticated ? (
-              <button
-                onClick={() => {
-                  // Save current page as redirect target
-                  localStorage.setItem('redirect_after_login', window.location.pathname)
-                  setIsLoginModalOpen(true)
-                }}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span>Login</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span>Logout</span>
-              </button>
-            )}
-            <button
-              onClick={() => handleProtectedAction('/dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span>Panel Admin</span>
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
