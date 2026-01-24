@@ -20,7 +20,12 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
+  overflow-y: scroll !important; /* Always show scrollbar */
+}
+
+body {
+  padding-right: 0 !important; /* Prevent HeadlessUI from adding padding */
+  overflow-y: scroll !important; /* Ensure scrollbar persists */
 }
 
 html.dark body {
