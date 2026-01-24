@@ -95,6 +95,12 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 FAQ
               </a>
 
+              {
+                showBlog && (
+                  <MegaMenu doctorSlug={doctor?.slug_url} primaryColor={primaryColor} />
+                )
+              }
+
               {/* Authentication Logic */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
@@ -115,12 +121,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   <span>Login</span>
                 </button>
               )}
-
-              {
-                showBlog && (
-                  <MegaMenu doctorSlug={doctor?.slug_url} primaryColor={primaryColor} />
-                )
-              }
             </div >
 
             {/* Mobile Menu Button */}
