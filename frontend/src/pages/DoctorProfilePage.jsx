@@ -424,10 +424,7 @@ export default function DoctorProfilePage() {
       </main>
 
       {/* Floating Action Buttons */}
-      <div
-        className={`fixed bottom-6 right-6 flex flex-col space-y-3 z-40 items-center transition-all duration-200 ${isAnyModalOpen ? 'mr-4' : ''}`}
-        style={{ paddingRight: isAnyModalOpen ? '17px' : '0' }}
-      >
+      <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-40 items-center">
 
         {/* Back to Top Button */}
         <button
