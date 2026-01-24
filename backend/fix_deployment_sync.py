@@ -57,6 +57,16 @@ def fix_deployment_sync():
                 module_map[mod_data["code"]] = existing.id
                 print(f"    [=] Module exists: {mod_data['name']}")
         
+        # --- CLEANUP: REMOVE CHAT MODULES IF EXIST ---
+        print("--> Cleaning up removed modules...")
+        for dead_code in ['chat', 'chat_widget']:
+            dead_mod = db.query(Module).filter(Module.code == dead_code).first()
+            if dead_mod:
+                print(f"    [-] Deleting deprecated module: {dead_code}")
+                # Delete associated TenantModules first (cascade should handle, but explicit is safer)
+                db.query(TenantModule).filter(TenantModule.module_id == dead_mod.id).delete()
+                db.delete(dead_mod)
+        
         db.commit()
 
         # --- 2. FIX MARIEL HERRERA USER ---
