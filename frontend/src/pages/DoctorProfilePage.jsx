@@ -392,7 +392,7 @@ export default function DoctorProfilePage() {
         )}
 
         {/* Online Consultation Section - Marketing */}
-        {onlineSettings?.is_active && isModuleEnabled('online_consultation') && (
+        {onlineSettings?.is_active && (isModuleEnabled('online_consultation') || isModuleEnabled('online_consultations')) && (
           <ScrollReveal variant="fade-up" delay={0.1}>
             <OnlineConsultationSection
               doctor={doctor}
@@ -576,7 +576,7 @@ export default function DoctorProfilePage() {
       )}
 
       {/* Persistent Chat Widget for Patients */}
-      {isModuleEnabled('chat') && (
+      {(isModuleEnabled('chat') || isModuleEnabled('chat_widget')) && (
         <PatientChatFloatingButton
           primaryColor={primaryColor}
           doctorName={doctor.nombre_completo}
