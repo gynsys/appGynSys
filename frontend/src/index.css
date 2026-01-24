@@ -23,10 +23,6 @@ html {
   scrollbar-gutter: stable;
 }
 
-body {
-  /* Default behavior allows HeadlessUI to manage overflow correctly */
-}
-
 html.dark body {
   background-color: #111827;
   /* gray-900 */
