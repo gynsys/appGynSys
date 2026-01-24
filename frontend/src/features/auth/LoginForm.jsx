@@ -44,7 +44,13 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
           localStorage.removeItem('redirect_after_login')
           navigate(savedRedirect, { replace: true })
         } else {
-          navigate(redirect || '/dashboard', { replace: true })
+          // If it's a modal login, stay on current page (don't redirect to dashboard)
+          // Unless explicitly passed a redirect prop that isn't default
+          if (!isModal) {
+            navigate(redirect || '/dashboard', { replace: true })
+          }
+          // If isModal is true, we simply do nothing (onSuccess closes the modal)
+          // and the user stays where they are.
         }
       }
     } catch (err) {
