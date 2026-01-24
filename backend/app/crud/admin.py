@@ -95,10 +95,8 @@ def seed_tenant_data(db: Session, doctor: Doctor):
         db.add(doctor)
 
     # 2. Seed FAQs if none exist
-    # FIXED: Do not re-seed if user deleted them. Only seed on creation (handled elsewhere) or if explicitly requested.
-    # existing_faqs = db.query(FAQ).filter(FAQ.doctor_id == doctor.id).count()
-    # if existing_faqs == 0:
-    if False: # Disable auto-seeding on restart/update
+    existing_faqs = db.query(FAQ).filter(FAQ.doctor_id == doctor.id).count()
+    if existing_faqs == 0:
         default_faqs = [
             {
                 "question": "¿Cómo edito esta pregunta?",
@@ -123,9 +121,8 @@ def seed_tenant_data(db: Session, doctor: Doctor):
             db.add(faq)
 
     # 3. Seed Testimonials if none exist
-    # existing_testimonials = db.query(Testimonial).filter(Testimonial.doctor_id == doctor.id).count()
-    # if existing_testimonials == 0:
-    if False: # Disable auto-seeding
+    existing_testimonials = db.query(Testimonial).filter(Testimonial.doctor_id == doctor.id).count()
+    if existing_testimonials == 0:
         default_testimonials = [
             {
                 "patient_name": "Paciente Ejemplo",
@@ -154,9 +151,8 @@ def seed_tenant_data(db: Session, doctor: Doctor):
             db.add(testimonial)
     
     # 4. Seed Gallery if none exist
-    # existing_gallery = db.query(GalleryImage).filter(GalleryImage.doctor_id == doctor.id).count()
-    # if existing_gallery == 0:
-    if False: # Disable auto-seeding
+    existing_gallery = db.query(GalleryImage).filter(GalleryImage.doctor_id == doctor.id).count()
+    if existing_gallery == 0:
         default_gallery = [
             {
                 "image_url": "https://placehold.co/800x600/e2e8f0/475569?text=Consultorio+Ejemplo",
@@ -198,15 +194,15 @@ def update_tenant_status(db: Session, tenant_id: int, status_update: TenantStatu
         if new_status in ['active', 'approved']:
             db_tenant.is_active = True
             
-            # Seed default data (Bio, FAQs, Testimonials)
-            seed_tenant_data(db, db_tenant)
-            
-            # If status changed from pending/inactive to active/approved, send email
+            # If status changed from pending/inactive to active/approved
             if old_status not in ['active', 'approved']:
+                # Seed default data (Bio, FAQs, Testimonials) ONLY on new activation
+                seed_tenant_data(db, db_tenant)
+
                 try:
                     # Ensure slug is set (it should be from registration)
                     if not db_tenant.slug_url:
-                        # Fallback if slug is missing (shouldn't happen with current register flow)
+                        # Fallback if slug is missing
                         from app.api.v1.endpoints.auth import generate_slug_from_name
                         db_tenant.slug_url = generate_slug_from_name(db_tenant.nombre_completo)
                         
