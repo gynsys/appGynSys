@@ -95,7 +95,27 @@ class Doctor(Base):
     @property
     def enabled_module_codes(self):
         """Return list of codes of enabled modules."""
-        return ["blog", "chat_widget", "online_consultations", "gallery", "testimonials", "services", "faq", "cycle_predictor", "recommendations"]
+        from sqlalchemy.orm import object_session
+        from app.db.models.tenant_module import TenantModule
+        from app.db.models.module import Module
+        
+        session = object_session(self)
+        if not session:
+            return []
+        
+        try:
+            # Query enabled modules for this tenant
+            enabled_modules = session.query(Module.code).join(
+                TenantModule,
+                TenantModule.module_id == Module.id
+            ).filter(
+                TenantModule.tenant_id == self.id,
+                TenantModule.is_enabled == True
+            ).all()
+            
+            return [code for (code,) in enabled_modules]
+        except Exception:
+            return []
 
 
 class DoctorCertification(Base):
