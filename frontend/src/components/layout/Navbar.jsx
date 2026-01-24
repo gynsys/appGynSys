@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getImageUrl } from '../../lib/imageUtils'
 import { Link } from 'react-router-dom'
-import { FiMenu, FiX } from 'react-icons/fi'
+import { FiMenu, FiX, FiLogIn, FiBarChart2 } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
@@ -9,7 +9,7 @@ import { useAuthStore } from '../../store/authStore'
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const { isAuthenticated, user, logout } = useAuthStore() // Added auth hook
+  const { isAuthenticated, user, logout } = useAuthStore()
 
   // Usage: if containerBgColor is explicitly passed (even null), use it. Only fallback to doctor.theme... if undefined.
   // In Dark Mode, parent passes 'null', so effectiveBgColor becomes 'null', preventing the legacy color override.
@@ -88,39 +88,41 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 Ubicaciones
               </a>
 
-              < a
+              <a
                 href="#preguntas-frecuentes"
                 className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
               >
                 FAQ
-              </a >
+              </a>
 
               {/* Authentication Logic */}
-              {
-                isAuthenticated ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition"
-                    >
-                      Panel Admin
-                    </Link>
-                    <button
-                      onClick={() => logout()}
-                      className="text-gray-700 hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white font-medium"
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
+                    style={{ backgroundColor: 'rgb(174, 55, 103)' }}
                   >
-                    Iniciar Sesión
+                    <FiBarChart2 className="w-5 h-5" />
+                    <span>Panel Admin</span>
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    className="text-sm font-medium text-red-600 hover:text-red-700 transition"
+                  >
+                    Cerrar Sesión
                   </button>
-                )
-              }
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
+                  style={{ backgroundColor: 'rgb(174, 55, 103)' }}
+                >
+                  <FiLogIn className="w-5 h-5" />
+                  <span>Login</span>
+                </button>
+              )}
 
               {
                 showBlog && (
