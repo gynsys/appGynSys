@@ -1,4 +1,4 @@
-"""
+        """
 Database base configuration and session management.
 """
 from sqlalchemy import create_engine
@@ -20,7 +20,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Import all models so Alembic can detect them
-from app.db.models import doctor, appointment, patient, testimonial, gallery, consultation, location, service, cycle_user, preconsultation_template
+from app.db.models import doctor, appointment, patient, testimonial, gallery, consultation, location, service, cycle_user, preconsultation_template, tenant
 from app.blog import models as blog
 
 
