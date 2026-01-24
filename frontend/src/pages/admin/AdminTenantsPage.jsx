@@ -651,7 +651,7 @@ export default function AdminTenantsPage() {
                 // ---------------------------------------------------------------------
                 // ⚠️ IMPORTANTE: TAMBIÉN ACTUALIZAR ESTE FILTRO SI AGREGAS UN NUEVO MÓDULO
                 // ---------------------------------------------------------------------
-                .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations', 'chat'].includes(m.code))
+                .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations'].includes(m.code))
                 .map((module) => {
                   const isSelected = moduleSelections.find(s => s.module_id === module.id)?.is_enabled || false
                   return (

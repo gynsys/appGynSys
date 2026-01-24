@@ -34,7 +34,7 @@ def fix_deployment_sync():
             {"code": "certifications", "name": "Acreditaciones", "description": "Sección para mostrar sus títulos y certificados.", "is_active": True},
             # Extra Modules (SaaS)
             {"code": "blog", "name": "Blog Médico", "description": "Módulo de artículos y noticias de salud.", "is_active": True},
-            {"code": "chat_widget", "name": "Chat en Vivo", "description": "Widget de chat para comunicación con pacientes.", "is_active": True},
+            # {"code": "chat_widget", "name": "Chat en Vivo", "description": "Widget de chat para comunicación con pacientes.", "is_active": True}, # REMOVED
             {"code": "online_consultations", "name": "Telemedicina", "description": "Módulo de consultas virtuales.", "is_active": True},
             {"code": "recommendations", "name": "Recomendaciones Clínicas", "description": "Guías y recomendaciones para pacientes.", "is_active": True},
             {"code": "cycle_predictor", "name": "Predictor de Ciclo", "description": "Herramienta de seguimiento del ciclo menstrual.", "is_active": True},

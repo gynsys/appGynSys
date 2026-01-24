@@ -29,7 +29,8 @@ docker exec -i $ContainerName pg_dump -U postgres -d gynsys --clean --if-exists 
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Respaldo create exitosamente: backup.sql" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Error creando respaldo. Verifica que el contenedor esté sano." -ForegroundColor Red
     exit 1
 }
@@ -43,13 +44,14 @@ Write-Host "   Usando contenedor temporal de 'postgres:15-alpine' para enviar lo
 # 'Get-Content ... | docker run ...' works in PowerShell for text but tricky with specialized encoding.
 # Better: Mount the file.
 
-docker run --rm -v "${PWD}/backup.sql:/backup.sql" -e PG_URL=$RenderURL postgres:15-alpine sh -c "psql "`$PG_URL" < /backup.sql"
+docker run --rm -v "${PWD}/backup.sql:/backup.sql" -e PG_URL=$RenderURL postgres:15-alpine sh -c "psql `$PG_URL < /backup.sql"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`n✅ ¡MIGRACIÓN COMPLETADA EXITOSAMENTE!" -ForegroundColor Green
     Write-Host "   Tu Render ahora tiene los mismos datos que tu Local."
     Write-Host "   Recarga la página de Admin en Netlify para verificar."
-} else {
+}
+else {
     Write-Host "`n❌ Error durante la restauración." -ForegroundColor Red
     Write-Host "   Verifica que la URL Externa sea correcta y accesible."
 }

@@ -2,15 +2,14 @@
 -- PostgreSQL database dump
 --
 
-\restrict jLu9SevnIK18JzCZWsvRUPQvqupeVIFaXGWraEObz1kTqvwD6Ges1WplPFhVdl0
+\restrict E0BB2B67CokC1zfcknI8DJm0kgEmO5irACVqog6IIsfddZFpaTo4IhfXrZNtaBh
 
 -- Dumped from database version 15.15
--- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
+-- Dumped by pg_dump version 15.15
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -19,8 +18,209 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+DROP POLICY IF EXISTS tenant_isolation_policy ON public.chat_rooms;
+DROP POLICY IF EXISTS tenant_isolation_policy ON public.chat_participants;
+DROP POLICY IF EXISTS tenant_isolation_policy ON public.chat_messages;
+ALTER TABLE IF EXISTS ONLY public.testimonials DROP CONSTRAINT IF EXISTS testimonials_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.tenants DROP CONSTRAINT IF EXISTS tenants_plan_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.tenant_modules DROP CONSTRAINT IF EXISTS tenant_modules_module_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.symptom_logs DROP CONSTRAINT IF EXISTS symptom_logs_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.symptom_logs DROP CONSTRAINT IF EXISTS symptom_logs_cycle_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.services DROP CONSTRAINT IF EXISTS services_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.recommendations DROP CONSTRAINT IF EXISTS recommendations_tenant_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.recommendations DROP CONSTRAINT IF EXISTS recommendations_category_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.recommendation_categories DROP CONSTRAINT IF EXISTS recommendation_categories_tenant_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.pregnancy_logs DROP CONSTRAINT IF EXISTS pregnancy_logs_cycle_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.preconsultation_questions DROP CONSTRAINT IF EXISTS preconsultation_questions_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.online_consultation_settings DROP CONSTRAINT IF EXISTS online_consultation_settings_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.locations DROP CONSTRAINT IF EXISTS locations_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.gallery_images DROP CONSTRAINT IF EXISTS gallery_images_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.tenant_modules DROP CONSTRAINT IF EXISTS fk_tenant_modules_doctors;
+ALTER TABLE IF EXISTS ONLY public.faqs DROP CONSTRAINT IF EXISTS faqs_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.doctors DROP CONSTRAINT IF EXISTS doctors_plan_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.doctor_certifications DROP CONSTRAINT IF EXISTS doctor_certifications_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_users DROP CONSTRAINT IF EXISTS cycle_users_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_notification_settings DROP CONSTRAINT IF EXISTS cycle_notification_settings_cycle_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_logs DROP CONSTRAINT IF EXISTS cycle_logs_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_logs DROP CONSTRAINT IF EXISTS cycle_logs_cycle_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.consultations DROP CONSTRAINT IF EXISTS consultations_patient_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.consultations DROP CONSTRAINT IF EXISTS consultations_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.chat_participants DROP CONSTRAINT IF EXISTS chat_participants_room_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.chat_messages DROP CONSTRAINT IF EXISTS chat_messages_room_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.blog_posts_seo DROP CONSTRAINT IF EXISTS blog_posts_seo_post_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.blog_posts DROP CONSTRAINT IF EXISTS blog_posts_doctor_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.blog_comments DROP CONSTRAINT IF EXISTS blog_comments_post_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.appointments DROP CONSTRAINT IF EXISTS appointments_doctor_id_fkey;
+DROP INDEX IF EXISTS public.ix_testimonials_id;
+DROP INDEX IF EXISTS public.ix_testimonials_doctor_id;
+DROP INDEX IF EXISTS public.ix_tenants_slug;
+DROP INDEX IF EXISTS public.ix_tenants_id;
+DROP INDEX IF EXISTS public.ix_tenants_email;
+DROP INDEX IF EXISTS public.ix_symptom_logs_id;
+DROP INDEX IF EXISTS public.ix_symptom_logs_doctor_id;
+DROP INDEX IF EXISTS public.ix_symptom_logs_cycle_user_id;
+DROP INDEX IF EXISTS public.ix_services_id;
+DROP INDEX IF EXISTS public.ix_pregnancy_logs_id;
+DROP INDEX IF EXISTS public.ix_pregnancy_logs_cycle_user_id;
+DROP INDEX IF EXISTS public.ix_preconsultation_templates_id;
+DROP INDEX IF EXISTS public.ix_preconsultation_questions_id;
+DROP INDEX IF EXISTS public.ix_plans_id;
+DROP INDEX IF EXISTS public.ix_patients_tenant_id;
+DROP INDEX IF EXISTS public.ix_patients_id;
+DROP INDEX IF EXISTS public.ix_patients_email;
+DROP INDEX IF EXISTS public.ix_online_consultation_settings_id;
+DROP INDEX IF EXISTS public.ix_online_consultation_settings_doctor_id;
+DROP INDEX IF EXISTS public.ix_modules_id;
+DROP INDEX IF EXISTS public.ix_modules_code;
+DROP INDEX IF EXISTS public.ix_locations_id;
+DROP INDEX IF EXISTS public.ix_gallery_images_id;
+DROP INDEX IF EXISTS public.ix_gallery_images_doctor_id;
+DROP INDEX IF EXISTS public.ix_faqs_id;
+DROP INDEX IF EXISTS public.ix_faqs_doctor_id;
+DROP INDEX IF EXISTS public.ix_doctors_slug_url;
+DROP INDEX IF EXISTS public.ix_doctors_id;
+DROP INDEX IF EXISTS public.ix_doctors_email;
+DROP INDEX IF EXISTS public.ix_doctor_certifications_id;
+DROP INDEX IF EXISTS public.ix_cycle_users_id;
+DROP INDEX IF EXISTS public.ix_cycle_users_email;
+DROP INDEX IF EXISTS public.ix_cycle_notification_settings_id;
+DROP INDEX IF EXISTS public.ix_cycle_notification_settings_cycle_user_id;
+DROP INDEX IF EXISTS public.ix_cycle_logs_id;
+DROP INDEX IF EXISTS public.ix_cycle_logs_doctor_id;
+DROP INDEX IF EXISTS public.ix_cycle_logs_cycle_user_id;
+DROP INDEX IF EXISTS public.ix_consultations_id;
+DROP INDEX IF EXISTS public.ix_chat_rooms_tenant_id;
+DROP INDEX IF EXISTS public.ix_chat_participants_tenant_id;
+DROP INDEX IF EXISTS public.ix_chat_messages_tenant_id;
+DROP INDEX IF EXISTS public.ix_chat_messages_room_id;
+DROP INDEX IF EXISTS public.ix_chat_messages_client_side_uuid;
+DROP INDEX IF EXISTS public.ix_blog_posts_title;
+DROP INDEX IF EXISTS public.ix_blog_posts_slug;
+DROP INDEX IF EXISTS public.ix_blog_posts_seo_id;
+DROP INDEX IF EXISTS public.ix_blog_posts_is_in_menu;
+DROP INDEX IF EXISTS public.ix_blog_posts_id;
+DROP INDEX IF EXISTS public.ix_blog_comments_id;
+DROP INDEX IF EXISTS public.ix_appointments_id;
+DROP INDEX IF EXISTS public.ix_appointments_doctor_id;
+DROP INDEX IF EXISTS public.idx_recommendations_tenant;
+DROP INDEX IF EXISTS public.idx_recommendation_categories_tenant;
+ALTER TABLE IF EXISTS ONLY public.testimonials DROP CONSTRAINT IF EXISTS testimonials_pkey;
+ALTER TABLE IF EXISTS ONLY public.tenants DROP CONSTRAINT IF EXISTS tenants_pkey;
+ALTER TABLE IF EXISTS ONLY public.tenant_modules DROP CONSTRAINT IF EXISTS tenant_modules_pkey;
+ALTER TABLE IF EXISTS ONLY public.symptom_logs DROP CONSTRAINT IF EXISTS symptom_logs_pkey;
+ALTER TABLE IF EXISTS ONLY public.services DROP CONSTRAINT IF EXISTS services_pkey;
+ALTER TABLE IF EXISTS ONLY public.recommendations DROP CONSTRAINT IF EXISTS recommendations_pkey;
+ALTER TABLE IF EXISTS ONLY public.recommendation_categories DROP CONSTRAINT IF EXISTS recommendation_categories_pkey;
+ALTER TABLE IF EXISTS ONLY public.pregnancy_logs DROP CONSTRAINT IF EXISTS pregnancy_logs_pkey;
+ALTER TABLE IF EXISTS ONLY public.preconsultation_templates DROP CONSTRAINT IF EXISTS preconsultation_templates_pkey;
+ALTER TABLE IF EXISTS ONLY public.preconsultation_questions DROP CONSTRAINT IF EXISTS preconsultation_questions_pkey;
+ALTER TABLE IF EXISTS ONLY public.plans DROP CONSTRAINT IF EXISTS plans_pkey;
+ALTER TABLE IF EXISTS ONLY public.patients DROP CONSTRAINT IF EXISTS patients_pkey;
+ALTER TABLE IF EXISTS ONLY public.online_consultation_settings DROP CONSTRAINT IF EXISTS online_consultation_settings_pkey;
+ALTER TABLE IF EXISTS ONLY public.online_consultation_settings DROP CONSTRAINT IF EXISTS online_consultation_settings_doctor_id_key;
+ALTER TABLE IF EXISTS ONLY public.modules DROP CONSTRAINT IF EXISTS modules_pkey;
+ALTER TABLE IF EXISTS ONLY public.locations DROP CONSTRAINT IF EXISTS locations_pkey;
+ALTER TABLE IF EXISTS ONLY public.gallery_images DROP CONSTRAINT IF EXISTS gallery_images_pkey;
+ALTER TABLE IF EXISTS ONLY public.faqs DROP CONSTRAINT IF EXISTS faqs_pkey;
+ALTER TABLE IF EXISTS ONLY public.doctors DROP CONSTRAINT IF EXISTS doctors_pkey;
+ALTER TABLE IF EXISTS ONLY public.doctor_certifications DROP CONSTRAINT IF EXISTS doctor_certifications_pkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_users DROP CONSTRAINT IF EXISTS cycle_users_pkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_notification_settings DROP CONSTRAINT IF EXISTS cycle_notification_settings_pkey;
+ALTER TABLE IF EXISTS ONLY public.cycle_logs DROP CONSTRAINT IF EXISTS cycle_logs_pkey;
+ALTER TABLE IF EXISTS ONLY public.consultations DROP CONSTRAINT IF EXISTS consultations_pkey;
+ALTER TABLE IF EXISTS ONLY public.chat_rooms DROP CONSTRAINT IF EXISTS chat_rooms_pkey;
+ALTER TABLE IF EXISTS ONLY public.chat_participants DROP CONSTRAINT IF EXISTS chat_participants_pkey;
+ALTER TABLE IF EXISTS ONLY public.chat_messages DROP CONSTRAINT IF EXISTS chat_messages_pkey;
+ALTER TABLE IF EXISTS ONLY public.blog_posts_seo DROP CONSTRAINT IF EXISTS blog_posts_seo_post_id_key;
+ALTER TABLE IF EXISTS ONLY public.blog_posts_seo DROP CONSTRAINT IF EXISTS blog_posts_seo_pkey;
+ALTER TABLE IF EXISTS ONLY public.blog_posts DROP CONSTRAINT IF EXISTS blog_posts_pkey;
+ALTER TABLE IF EXISTS ONLY public.blog_comments DROP CONSTRAINT IF EXISTS blog_comments_pkey;
+ALTER TABLE IF EXISTS ONLY public.appointments DROP CONSTRAINT IF EXISTS appointments_pkey;
+ALTER TABLE IF EXISTS ONLY public.alembic_version DROP CONSTRAINT IF EXISTS alembic_version_pkc;
+ALTER TABLE IF EXISTS public.testimonials ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.tenants ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.symptom_logs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.services ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.recommendations ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.recommendation_categories ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.pregnancy_logs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.preconsultation_templates ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.plans ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.patients ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.online_consultation_settings ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.modules ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.locations ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.gallery_images ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.faqs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.doctors ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.doctor_certifications ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.cycle_users ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.cycle_notification_settings ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.cycle_logs ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.consultations ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.blog_posts_seo ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.blog_posts ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.blog_comments ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.appointments ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.testimonials_id_seq;
+DROP TABLE IF EXISTS public.testimonials;
+DROP SEQUENCE IF EXISTS public.tenants_id_seq;
+DROP TABLE IF EXISTS public.tenants;
+DROP TABLE IF EXISTS public.tenant_modules;
+DROP SEQUENCE IF EXISTS public.symptom_logs_id_seq;
+DROP TABLE IF EXISTS public.symptom_logs;
+DROP SEQUENCE IF EXISTS public.services_id_seq;
+DROP TABLE IF EXISTS public.services;
+DROP SEQUENCE IF EXISTS public.recommendations_id_seq;
+DROP TABLE IF EXISTS public.recommendations;
+DROP SEQUENCE IF EXISTS public.recommendation_categories_id_seq;
+DROP TABLE IF EXISTS public.recommendation_categories;
+DROP SEQUENCE IF EXISTS public.pregnancy_logs_id_seq;
+DROP TABLE IF EXISTS public.pregnancy_logs;
+DROP SEQUENCE IF EXISTS public.preconsultation_templates_id_seq;
+DROP TABLE IF EXISTS public.preconsultation_templates;
+DROP TABLE IF EXISTS public.preconsultation_questions;
+DROP SEQUENCE IF EXISTS public.plans_id_seq;
+DROP TABLE IF EXISTS public.plans;
+DROP SEQUENCE IF EXISTS public.patients_id_seq;
+DROP TABLE IF EXISTS public.patients;
+DROP SEQUENCE IF EXISTS public.online_consultation_settings_id_seq;
+DROP TABLE IF EXISTS public.online_consultation_settings;
+DROP SEQUENCE IF EXISTS public.modules_id_seq;
+DROP TABLE IF EXISTS public.modules;
+DROP SEQUENCE IF EXISTS public.locations_id_seq;
+DROP TABLE IF EXISTS public.locations;
+DROP SEQUENCE IF EXISTS public.gallery_images_id_seq;
+DROP TABLE IF EXISTS public.gallery_images;
+DROP SEQUENCE IF EXISTS public.faqs_id_seq;
+DROP TABLE IF EXISTS public.faqs;
+DROP SEQUENCE IF EXISTS public.doctors_id_seq;
+DROP TABLE IF EXISTS public.doctors;
+DROP SEQUENCE IF EXISTS public.doctor_certifications_id_seq;
+DROP TABLE IF EXISTS public.doctor_certifications;
+DROP SEQUENCE IF EXISTS public.cycle_users_id_seq;
+DROP TABLE IF EXISTS public.cycle_users;
+DROP SEQUENCE IF EXISTS public.cycle_notification_settings_id_seq;
+DROP TABLE IF EXISTS public.cycle_notification_settings;
+DROP SEQUENCE IF EXISTS public.cycle_logs_id_seq;
+DROP TABLE IF EXISTS public.cycle_logs;
+DROP SEQUENCE IF EXISTS public.consultations_id_seq;
+DROP TABLE IF EXISTS public.consultations;
+DROP TABLE IF EXISTS public.chat_rooms;
+DROP TABLE IF EXISTS public.chat_participants;
+DROP TABLE IF EXISTS public.chat_messages;
+DROP SEQUENCE IF EXISTS public.blog_posts_seo_id_seq;
+DROP TABLE IF EXISTS public.blog_posts_seo;
+DROP SEQUENCE IF EXISTS public.blog_posts_id_seq;
+DROP TABLE IF EXISTS public.blog_posts;
+DROP SEQUENCE IF EXISTS public.blog_comments_id_seq;
+DROP TABLE IF EXISTS public.blog_comments;
+DROP SEQUENCE IF EXISTS public.appointments_id_seq;
+DROP TABLE IF EXISTS public.appointments;
+DROP TABLE IF EXISTS public.alembic_version;
+DROP TYPE IF EXISTS public.tenantstatus;
 --
--- Name: tenantstatus; Type: TYPE; Schema: public; Owner: postgres
+-- Name: tenantstatus; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.tenantstatus AS ENUM (
@@ -30,14 +230,12 @@ CREATE TYPE public.tenantstatus AS ENUM (
 );
 
 
-ALTER TYPE public.tenantstatus OWNER TO postgres;
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.alembic_version (
@@ -45,10 +243,8 @@ CREATE TABLE public.alembic_version (
 );
 
 
-ALTER TABLE public.alembic_version OWNER TO postgres;
-
 --
--- Name: appointments; Type: TABLE; Schema: public; Owner: postgres
+-- Name: appointments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.appointments (
@@ -72,10 +268,8 @@ CREATE TABLE public.appointments (
 );
 
 
-ALTER TABLE public.appointments OWNER TO postgres;
-
 --
--- Name: appointments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: appointments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.appointments_id_seq
@@ -87,17 +281,15 @@ CREATE SEQUENCE public.appointments_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.appointments_id_seq OWNER TO postgres;
-
 --
--- Name: appointments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: appointments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.appointments_id_seq OWNED BY public.appointments.id;
 
 
 --
--- Name: blog_comments; Type: TABLE; Schema: public; Owner: postgres
+-- Name: blog_comments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.blog_comments (
@@ -110,10 +302,8 @@ CREATE TABLE public.blog_comments (
 );
 
 
-ALTER TABLE public.blog_comments OWNER TO postgres;
-
 --
--- Name: blog_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: blog_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.blog_comments_id_seq
@@ -125,17 +315,15 @@ CREATE SEQUENCE public.blog_comments_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.blog_comments_id_seq OWNER TO postgres;
-
 --
--- Name: blog_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: blog_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.blog_comments_id_seq OWNED BY public.blog_comments.id;
 
 
 --
--- Name: blog_posts; Type: TABLE; Schema: public; Owner: postgres
+-- Name: blog_posts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.blog_posts (
@@ -156,10 +344,8 @@ CREATE TABLE public.blog_posts (
 );
 
 
-ALTER TABLE public.blog_posts OWNER TO postgres;
-
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: blog_posts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.blog_posts_id_seq
@@ -171,17 +357,15 @@ CREATE SEQUENCE public.blog_posts_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.blog_posts_id_seq OWNER TO postgres;
-
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: blog_posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.blog_posts_id_seq OWNED BY public.blog_posts.id;
 
 
 --
--- Name: blog_posts_seo; Type: TABLE; Schema: public; Owner: postgres
+-- Name: blog_posts_seo; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.blog_posts_seo (
@@ -202,10 +386,8 @@ CREATE TABLE public.blog_posts_seo (
 );
 
 
-ALTER TABLE public.blog_posts_seo OWNER TO postgres;
-
 --
--- Name: blog_posts_seo_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: blog_posts_seo_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.blog_posts_seo_id_seq
@@ -217,17 +399,15 @@ CREATE SEQUENCE public.blog_posts_seo_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.blog_posts_seo_id_seq OWNER TO postgres;
-
 --
--- Name: blog_posts_seo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: blog_posts_seo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.blog_posts_seo_id_seq OWNED BY public.blog_posts_seo.id;
 
 
 --
--- Name: chat_messages; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_messages; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_messages (
@@ -246,10 +426,8 @@ CREATE TABLE public.chat_messages (
 );
 
 
-ALTER TABLE public.chat_messages OWNER TO postgres;
-
 --
--- Name: chat_participants; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_participants; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_participants (
@@ -262,10 +440,8 @@ CREATE TABLE public.chat_participants (
 );
 
 
-ALTER TABLE public.chat_participants OWNER TO postgres;
-
 --
--- Name: chat_rooms; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_rooms; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_rooms (
@@ -278,10 +454,8 @@ CREATE TABLE public.chat_rooms (
 );
 
 
-ALTER TABLE public.chat_rooms OWNER TO postgres;
-
 --
--- Name: consultations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: consultations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.consultations (
@@ -313,10 +487,8 @@ CREATE TABLE public.consultations (
 );
 
 
-ALTER TABLE public.consultations OWNER TO postgres;
-
 --
--- Name: consultations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: consultations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.consultations_id_seq
@@ -328,17 +500,15 @@ CREATE SEQUENCE public.consultations_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.consultations_id_seq OWNER TO postgres;
-
 --
--- Name: consultations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: consultations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.consultations_id_seq OWNED BY public.consultations.id;
 
 
 --
--- Name: cycle_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cycle_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cycle_logs (
@@ -352,10 +522,8 @@ CREATE TABLE public.cycle_logs (
 );
 
 
-ALTER TABLE public.cycle_logs OWNER TO postgres;
-
 --
--- Name: cycle_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: cycle_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.cycle_logs_id_seq
@@ -367,17 +535,15 @@ CREATE SEQUENCE public.cycle_logs_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.cycle_logs_id_seq OWNER TO postgres;
-
 --
--- Name: cycle_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: cycle_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.cycle_logs_id_seq OWNED BY public.cycle_logs.id;
 
 
 --
--- Name: cycle_notification_settings; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cycle_notification_settings (
@@ -397,10 +563,8 @@ CREATE TABLE public.cycle_notification_settings (
 );
 
 
-ALTER TABLE public.cycle_notification_settings OWNER TO postgres;
-
 --
--- Name: cycle_notification_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.cycle_notification_settings_id_seq
@@ -412,17 +576,15 @@ CREATE SEQUENCE public.cycle_notification_settings_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.cycle_notification_settings_id_seq OWNER TO postgres;
-
 --
--- Name: cycle_notification_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.cycle_notification_settings_id_seq OWNED BY public.cycle_notification_settings.id;
 
 
 --
--- Name: cycle_users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cycle_users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cycle_users (
@@ -441,10 +603,8 @@ CREATE TABLE public.cycle_users (
 );
 
 
-ALTER TABLE public.cycle_users OWNER TO postgres;
-
 --
--- Name: cycle_users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: cycle_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.cycle_users_id_seq
@@ -456,17 +616,15 @@ CREATE SEQUENCE public.cycle_users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.cycle_users_id_seq OWNER TO postgres;
-
 --
--- Name: cycle_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: cycle_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.cycle_users_id_seq OWNED BY public.cycle_users.id;
 
 
 --
--- Name: doctor_certifications; Type: TABLE; Schema: public; Owner: postgres
+-- Name: doctor_certifications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.doctor_certifications (
@@ -479,10 +637,8 @@ CREATE TABLE public.doctor_certifications (
 );
 
 
-ALTER TABLE public.doctor_certifications OWNER TO postgres;
-
 --
--- Name: doctor_certifications_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: doctor_certifications_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.doctor_certifications_id_seq
@@ -494,17 +650,15 @@ CREATE SEQUENCE public.doctor_certifications_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.doctor_certifications_id_seq OWNER TO postgres;
-
 --
--- Name: doctor_certifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: doctor_certifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.doctor_certifications_id_seq OWNED BY public.doctor_certifications.id;
 
 
 --
--- Name: doctors; Type: TABLE; Schema: public; Owner: postgres
+-- Name: doctors; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.doctors (
@@ -551,10 +705,8 @@ CREATE TABLE public.doctors (
 );
 
 
-ALTER TABLE public.doctors OWNER TO postgres;
-
 --
--- Name: doctors_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: doctors_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.doctors_id_seq
@@ -566,17 +718,15 @@ CREATE SEQUENCE public.doctors_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.doctors_id_seq OWNER TO postgres;
-
 --
--- Name: doctors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: doctors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.doctors_id_seq OWNED BY public.doctors.id;
 
 
 --
--- Name: faqs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: faqs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.faqs (
@@ -590,10 +740,8 @@ CREATE TABLE public.faqs (
 );
 
 
-ALTER TABLE public.faqs OWNER TO postgres;
-
 --
--- Name: faqs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: faqs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.faqs_id_seq
@@ -605,17 +753,15 @@ CREATE SEQUENCE public.faqs_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.faqs_id_seq OWNER TO postgres;
-
 --
--- Name: faqs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: faqs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.faqs_id_seq OWNED BY public.faqs.id;
 
 
 --
--- Name: gallery_images; Type: TABLE; Schema: public; Owner: postgres
+-- Name: gallery_images; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.gallery_images (
@@ -633,10 +779,8 @@ CREATE TABLE public.gallery_images (
 );
 
 
-ALTER TABLE public.gallery_images OWNER TO postgres;
-
 --
--- Name: gallery_images_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: gallery_images_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.gallery_images_id_seq
@@ -648,17 +792,15 @@ CREATE SEQUENCE public.gallery_images_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.gallery_images_id_seq OWNER TO postgres;
-
 --
--- Name: gallery_images_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: gallery_images_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.gallery_images_id_seq OWNED BY public.gallery_images.id;
 
 
 --
--- Name: locations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: locations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.locations (
@@ -675,10 +817,8 @@ CREATE TABLE public.locations (
 );
 
 
-ALTER TABLE public.locations OWNER TO postgres;
-
 --
--- Name: locations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: locations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.locations_id_seq
@@ -690,17 +830,15 @@ CREATE SEQUENCE public.locations_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.locations_id_seq OWNER TO postgres;
-
 --
--- Name: locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.locations_id_seq OWNED BY public.locations.id;
 
 
 --
--- Name: modules; Type: TABLE; Schema: public; Owner: postgres
+-- Name: modules; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.modules (
@@ -714,10 +852,8 @@ CREATE TABLE public.modules (
 );
 
 
-ALTER TABLE public.modules OWNER TO postgres;
-
 --
--- Name: modules_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: modules_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.modules_id_seq
@@ -729,17 +865,15 @@ CREATE SEQUENCE public.modules_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.modules_id_seq OWNER TO postgres;
-
 --
--- Name: modules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: modules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.modules_id_seq OWNED BY public.modules.id;
 
 
 --
--- Name: online_consultation_settings; Type: TABLE; Schema: public; Owner: postgres
+-- Name: online_consultation_settings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.online_consultation_settings (
@@ -758,10 +892,8 @@ CREATE TABLE public.online_consultation_settings (
 );
 
 
-ALTER TABLE public.online_consultation_settings OWNER TO postgres;
-
 --
--- Name: online_consultation_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: online_consultation_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.online_consultation_settings_id_seq
@@ -773,17 +905,15 @@ CREATE SEQUENCE public.online_consultation_settings_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.online_consultation_settings_id_seq OWNER TO postgres;
-
 --
--- Name: online_consultation_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: online_consultation_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.online_consultation_settings_id_seq OWNED BY public.online_consultation_settings.id;
 
 
 --
--- Name: patients; Type: TABLE; Schema: public; Owner: postgres
+-- Name: patients; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patients (
@@ -799,10 +929,8 @@ CREATE TABLE public.patients (
 );
 
 
-ALTER TABLE public.patients OWNER TO postgres;
-
 --
--- Name: patients_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: patients_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.patients_id_seq
@@ -814,17 +942,15 @@ CREATE SEQUENCE public.patients_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.patients_id_seq OWNER TO postgres;
-
 --
--- Name: patients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: patients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.patients_id_seq OWNED BY public.patients.id;
 
 
 --
--- Name: plans; Type: TABLE; Schema: public; Owner: postgres
+-- Name: plans; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.plans (
@@ -845,10 +971,8 @@ CREATE TABLE public.plans (
 );
 
 
-ALTER TABLE public.plans OWNER TO postgres;
-
 --
--- Name: plans_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: plans_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.plans_id_seq
@@ -860,17 +984,15 @@ CREATE SEQUENCE public.plans_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.plans_id_seq OWNER TO postgres;
-
 --
--- Name: plans_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: plans_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.plans_id_seq OWNED BY public.plans.id;
 
 
 --
--- Name: preconsultation_questions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: preconsultation_questions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.preconsultation_questions (
@@ -886,10 +1008,8 @@ CREATE TABLE public.preconsultation_questions (
 );
 
 
-ALTER TABLE public.preconsultation_questions OWNER TO postgres;
-
 --
--- Name: preconsultation_templates; Type: TABLE; Schema: public; Owner: postgres
+-- Name: preconsultation_templates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.preconsultation_templates (
@@ -903,10 +1023,8 @@ CREATE TABLE public.preconsultation_templates (
 );
 
 
-ALTER TABLE public.preconsultation_templates OWNER TO postgres;
-
 --
--- Name: preconsultation_templates_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: preconsultation_templates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.preconsultation_templates_id_seq
@@ -918,17 +1036,15 @@ CREATE SEQUENCE public.preconsultation_templates_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.preconsultation_templates_id_seq OWNER TO postgres;
-
 --
--- Name: preconsultation_templates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: preconsultation_templates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.preconsultation_templates_id_seq OWNED BY public.preconsultation_templates.id;
 
 
 --
--- Name: pregnancy_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: pregnancy_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.pregnancy_logs (
@@ -943,10 +1059,8 @@ CREATE TABLE public.pregnancy_logs (
 );
 
 
-ALTER TABLE public.pregnancy_logs OWNER TO postgres;
-
 --
--- Name: pregnancy_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: pregnancy_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.pregnancy_logs_id_seq
@@ -958,17 +1072,15 @@ CREATE SEQUENCE public.pregnancy_logs_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.pregnancy_logs_id_seq OWNER TO postgres;
-
 --
--- Name: pregnancy_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: pregnancy_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.pregnancy_logs_id_seq OWNED BY public.pregnancy_logs.id;
 
 
 --
--- Name: recommendation_categories; Type: TABLE; Schema: public; Owner: postgres
+-- Name: recommendation_categories; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.recommendation_categories (
@@ -978,10 +1090,8 @@ CREATE TABLE public.recommendation_categories (
 );
 
 
-ALTER TABLE public.recommendation_categories OWNER TO postgres;
-
 --
--- Name: recommendation_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: recommendation_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.recommendation_categories_id_seq
@@ -993,17 +1103,15 @@ CREATE SEQUENCE public.recommendation_categories_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.recommendation_categories_id_seq OWNER TO postgres;
-
 --
--- Name: recommendation_categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: recommendation_categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.recommendation_categories_id_seq OWNED BY public.recommendation_categories.id;
 
 
 --
--- Name: recommendations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: recommendations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.recommendations (
@@ -1020,10 +1128,8 @@ CREATE TABLE public.recommendations (
 );
 
 
-ALTER TABLE public.recommendations OWNER TO postgres;
-
 --
--- Name: recommendations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: recommendations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.recommendations_id_seq
@@ -1035,17 +1141,15 @@ CREATE SEQUENCE public.recommendations_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.recommendations_id_seq OWNER TO postgres;
-
 --
--- Name: recommendations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: recommendations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.recommendations_id_seq OWNED BY public.recommendations.id;
 
 
 --
--- Name: services; Type: TABLE; Schema: public; Owner: postgres
+-- Name: services; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.services (
@@ -1060,10 +1164,8 @@ CREATE TABLE public.services (
 );
 
 
-ALTER TABLE public.services OWNER TO postgres;
-
 --
--- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.services_id_seq
@@ -1075,17 +1177,15 @@ CREATE SEQUENCE public.services_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.services_id_seq OWNER TO postgres;
-
 --
--- Name: services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.services_id_seq OWNED BY public.services.id;
 
 
 --
--- Name: symptom_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: symptom_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.symptom_logs (
@@ -1101,10 +1201,8 @@ CREATE TABLE public.symptom_logs (
 );
 
 
-ALTER TABLE public.symptom_logs OWNER TO postgres;
-
 --
--- Name: symptom_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: symptom_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.symptom_logs_id_seq
@@ -1116,17 +1214,15 @@ CREATE SEQUENCE public.symptom_logs_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.symptom_logs_id_seq OWNER TO postgres;
-
 --
--- Name: symptom_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: symptom_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.symptom_logs_id_seq OWNED BY public.symptom_logs.id;
 
 
 --
--- Name: tenant_modules; Type: TABLE; Schema: public; Owner: postgres
+-- Name: tenant_modules; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.tenant_modules (
@@ -1138,10 +1234,8 @@ CREATE TABLE public.tenant_modules (
 );
 
 
-ALTER TABLE public.tenant_modules OWNER TO postgres;
-
 --
--- Name: tenants; Type: TABLE; Schema: public; Owner: postgres
+-- Name: tenants; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.tenants (
@@ -1166,10 +1260,8 @@ CREATE TABLE public.tenants (
 );
 
 
-ALTER TABLE public.tenants OWNER TO postgres;
-
 --
--- Name: tenants_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: tenants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.tenants_id_seq
@@ -1181,17 +1273,15 @@ CREATE SEQUENCE public.tenants_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.tenants_id_seq OWNER TO postgres;
-
 --
--- Name: tenants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: tenants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.tenants_id_seq OWNED BY public.tenants.id;
 
 
 --
--- Name: testimonials; Type: TABLE; Schema: public; Owner: postgres
+-- Name: testimonials; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.testimonials (
@@ -1209,10 +1299,8 @@ CREATE TABLE public.testimonials (
 );
 
 
-ALTER TABLE public.testimonials OWNER TO postgres;
-
 --
--- Name: testimonials_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: testimonials_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.testimonials_id_seq
@@ -1224,192 +1312,190 @@ CREATE SEQUENCE public.testimonials_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.testimonials_id_seq OWNER TO postgres;
-
 --
--- Name: testimonials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: testimonials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.testimonials_id_seq OWNED BY public.testimonials.id;
 
 
 --
--- Name: appointments id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: appointments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments ALTER COLUMN id SET DEFAULT nextval('public.appointments_id_seq'::regclass);
 
 
 --
--- Name: blog_comments id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: blog_comments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_comments ALTER COLUMN id SET DEFAULT nextval('public.blog_comments_id_seq'::regclass);
 
 
 --
--- Name: blog_posts id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: blog_posts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts ALTER COLUMN id SET DEFAULT nextval('public.blog_posts_id_seq'::regclass);
 
 
 --
--- Name: blog_posts_seo id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: blog_posts_seo id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts_seo ALTER COLUMN id SET DEFAULT nextval('public.blog_posts_seo_id_seq'::regclass);
 
 
 --
--- Name: consultations id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: consultations id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.consultations ALTER COLUMN id SET DEFAULT nextval('public.consultations_id_seq'::regclass);
 
 
 --
--- Name: cycle_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: cycle_logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_logs ALTER COLUMN id SET DEFAULT nextval('public.cycle_logs_id_seq'::regclass);
 
 
 --
--- Name: cycle_notification_settings id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_notification_settings ALTER COLUMN id SET DEFAULT nextval('public.cycle_notification_settings_id_seq'::regclass);
 
 
 --
--- Name: cycle_users id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: cycle_users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_users ALTER COLUMN id SET DEFAULT nextval('public.cycle_users_id_seq'::regclass);
 
 
 --
--- Name: doctor_certifications id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: doctor_certifications id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctor_certifications ALTER COLUMN id SET DEFAULT nextval('public.doctor_certifications_id_seq'::regclass);
 
 
 --
--- Name: doctors id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: doctors id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors ALTER COLUMN id SET DEFAULT nextval('public.doctors_id_seq'::regclass);
 
 
 --
--- Name: faqs id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: faqs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.faqs ALTER COLUMN id SET DEFAULT nextval('public.faqs_id_seq'::regclass);
 
 
 --
--- Name: gallery_images id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: gallery_images id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.gallery_images ALTER COLUMN id SET DEFAULT nextval('public.gallery_images_id_seq'::regclass);
 
 
 --
--- Name: locations id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: locations id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.locations ALTER COLUMN id SET DEFAULT nextval('public.locations_id_seq'::regclass);
 
 
 --
--- Name: modules id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: modules id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.modules ALTER COLUMN id SET DEFAULT nextval('public.modules_id_seq'::regclass);
 
 
 --
--- Name: online_consultation_settings id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: online_consultation_settings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.online_consultation_settings ALTER COLUMN id SET DEFAULT nextval('public.online_consultation_settings_id_seq'::regclass);
 
 
 --
--- Name: patients id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: patients id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients ALTER COLUMN id SET DEFAULT nextval('public.patients_id_seq'::regclass);
 
 
 --
--- Name: plans id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: plans id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.plans ALTER COLUMN id SET DEFAULT nextval('public.plans_id_seq'::regclass);
 
 
 --
--- Name: preconsultation_templates id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: preconsultation_templates id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.preconsultation_templates ALTER COLUMN id SET DEFAULT nextval('public.preconsultation_templates_id_seq'::regclass);
 
 
 --
--- Name: pregnancy_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: pregnancy_logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pregnancy_logs ALTER COLUMN id SET DEFAULT nextval('public.pregnancy_logs_id_seq'::regclass);
 
 
 --
--- Name: recommendation_categories id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: recommendation_categories id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendation_categories ALTER COLUMN id SET DEFAULT nextval('public.recommendation_categories_id_seq'::regclass);
 
 
 --
--- Name: recommendations id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: recommendations id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendations ALTER COLUMN id SET DEFAULT nextval('public.recommendations_id_seq'::regclass);
 
 
 --
--- Name: services id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: services id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.services ALTER COLUMN id SET DEFAULT nextval('public.services_id_seq'::regclass);
 
 
 --
--- Name: symptom_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: symptom_logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptom_logs ALTER COLUMN id SET DEFAULT nextval('public.symptom_logs_id_seq'::regclass);
 
 
 --
--- Name: tenants id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: tenants id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenants ALTER COLUMN id SET DEFAULT nextval('public.tenants_id_seq'::regclass);
 
 
 --
--- Name: testimonials id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: testimonials id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.testimonials ALTER COLUMN id SET DEFAULT nextval('public.testimonials_id_seq'::regclass);
 
 
 --
--- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
@@ -1419,7 +1505,7 @@ acfb5f99cde1
 
 
 --
--- Data for Name: appointments; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: appointments; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.appointments (id, doctor_id, patient_name, patient_email, patient_phone, appointment_date, appointment_type, notes, status, created_at, updated_at, reason_for_visit, preconsulta_answers, occupation, residence, patient_dni, patient_age) FROM stdin;
@@ -1450,7 +1536,7 @@ COPY public.appointments (id, doctor_id, patient_name, patient_email, patient_ph
 
 
 --
--- Data for Name: blog_comments; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: blog_comments; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.blog_comments (id, post_id, author_name, content, created_at, ip_address) FROM stdin;
@@ -1458,7 +1544,7 @@ COPY public.blog_comments (id, post_id, author_name, content, created_at, ip_add
 
 
 --
--- Data for Name: blog_posts; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: blog_posts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.blog_posts (id, title, slug, content, summary, cover_image, is_published, published_at, created_at, updated_at, doctor_id, is_in_menu, menu_weight, menu_icon) FROM stdin;
@@ -1477,7 +1563,7 @@ COPY public.blog_posts (id, title, slug, content, summary, cover_image, is_publi
 
 
 --
--- Data for Name: blog_posts_seo; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: blog_posts_seo; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.blog_posts_seo (id, post_id, meta_title, meta_description, focus_keyword, canonical_url, schema_type, robots_index, robots_follow, social_title, social_description, social_image, seo_score, last_validation) FROM stdin;
@@ -1490,7 +1576,7 @@ COPY public.blog_posts_seo (id, post_id, meta_title, meta_description, focus_key
 
 
 --
--- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.chat_messages (id, room_id, sender_id, tenant_id, client_side_uuid, content, message_type, media_url, media_meta, status, is_deleted, created_at) FROM stdin;
@@ -1522,7 +1608,7 @@ bc2179a3-3bce-4af3-9201-e19768d9ef7d	1e95ec51-acce-4316-9db5-da81e24b24dc	1	1	ea
 
 
 --
--- Data for Name: chat_participants; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: chat_participants; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.chat_participants (room_id, user_id, tenant_id, role, last_read_at, joined_at) FROM stdin;
@@ -1560,7 +1646,7 @@ a28894d7-35fe-498f-987f-726a78d8b5b2	1	1	owner	\N	2026-01-21 23:17:36.075773+00
 
 
 --
--- Data for Name: chat_rooms; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: chat_rooms; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.chat_rooms (id, tenant_id, type, created_at, updated_at, meta_data) FROM stdin;
@@ -1583,7 +1669,7 @@ a28894d7-35fe-498f-987f-726a78d8b5b2	1	direct	2026-01-21 23:17:36.075773+00	\N	{
 
 
 --
--- Data for Name: consultations; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: consultations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.consultations (id, doctor_id, patient_id, patient_name, patient_ci, patient_age, patient_phone, reason_for_visit, family_history_mother, family_history_father, personal_history, supplements, surgical_history, obstetric_history_summary, functional_exam_summary, habits_summary, physical_exam, ultrasound, diagnosis, plan, observations, history_number, pdf_path, created_at, updated_at) FROM stdin;
@@ -1595,7 +1681,7 @@ COPY public.consultations (id, doctor_id, patient_id, patient_name, patient_ci, 
 
 
 --
--- Data for Name: cycle_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: cycle_logs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.cycle_logs (id, doctor_id, start_date, end_date, cycle_length, notes, cycle_user_id) FROM stdin;
@@ -1605,17 +1691,17 @@ COPY public.cycle_logs (id, doctor_id, start_date, end_date, cycle_length, notes
 
 
 --
--- Data for Name: cycle_notification_settings; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: cycle_notification_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.cycle_notification_settings (id, cycle_user_id, contraceptive_enabled, contraceptive_time, contraceptive_frequency, rhythm_method_enabled, fertile_window_alerts, ovulation_alert, gyn_checkup_alert, last_contraceptive_sent_date, rhythm_abstinence_alerts, period_confirmation_reminder, last_period_reminder_sent) FROM stdin;
 3	9	t	11:00	daily	t	t	t	f	2026-01-21	t	t	\N
-4	10	t	15:00	daily	t	t	t	f	2026-01-22	t	t	\N
+4	10	t	15:00	daily	t	t	t	f	2026-01-23	t	t	\N
 \.
 
 
 --
--- Data for Name: cycle_users; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: cycle_users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, is_active, created_at, updated_at, cycle_avg_length, period_avg_length, reset_password_token, reset_password_expires) FROM stdin;
@@ -1625,7 +1711,7 @@ COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, i
 
 
 --
--- Data for Name: doctor_certifications; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: doctor_certifications; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order") FROM stdin;
@@ -1636,7 +1722,7 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 
 --
--- Data for Name: doctors; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: doctors; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border) FROM stdin;
@@ -1646,7 +1732,7 @@ COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, bi
 
 
 --
--- Data for Name: faqs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: faqs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.faqs (id, doctor_id, question, answer, display_order, created_at, updated_at) FROM stdin;
@@ -1655,7 +1741,7 @@ COPY public.faqs (id, doctor_id, question, answer, display_order, created_at, up
 
 
 --
--- Data for Name: gallery_images; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: gallery_images; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.gallery_images (id, doctor_id, image_url, title, description, display_order, is_active, created_at, updated_at, featured, crop) FROM stdin;
@@ -1668,7 +1754,7 @@ COPY public.gallery_images (id, doctor_id, image_url, title, description, displa
 
 
 --
--- Data for Name: locations; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: locations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.locations (id, doctor_id, name, address, city, google_maps_url, phone, is_active, image_url, schedule) FROM stdin;
@@ -1678,7 +1764,7 @@ COPY public.locations (id, doctor_id, name, address, city, google_maps_url, phon
 
 
 --
--- Data for Name: modules; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: modules; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.modules (id, name, description, code, is_active, created_at, updated_at) FROM stdin;
@@ -1698,7 +1784,7 @@ COPY public.modules (id, name, description, code, is_active, created_at, updated
 
 
 --
--- Data for Name: online_consultation_settings; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: online_consultation_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.online_consultation_settings (id, doctor_id, first_consultation_price, followup_price, currency, payment_methods, available_hours, session_duration_minutes, is_active, created_at, updated_at, video_url) FROM stdin;
@@ -1708,7 +1794,7 @@ COPY public.online_consultation_settings (id, doctor_id, first_consultation_pric
 
 
 --
--- Data for Name: patients; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: patients; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.patients (id, name, email, phone, date_of_birth, medical_history, created_at, updated_at, tenant_id) FROM stdin;
@@ -1716,7 +1802,7 @@ COPY public.patients (id, name, email, phone, date_of_birth, medical_history, cr
 
 
 --
--- Data for Name: plans; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: plans; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.plans (id, name, description, price, features, max_testimonials, max_gallery_images, max_faqs, custom_domain, analytics_dashboard, priority_support, is_active, created_at, updated_at) FROM stdin;
@@ -1725,7 +1811,7 @@ COPY public.plans (id, name, description, price, features, max_testimonials, max
 
 
 --
--- Data for Name: preconsultation_questions; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: preconsultation_questions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.preconsultation_questions (id, text, type, category, required, options, "order", is_active, doctor_id) FROM stdin;
@@ -1783,7 +1869,7 @@ IMPORTED_1767021850989_0	¿Confirmar e Importar?	boolean	general	t	[]	0	t	\N
 
 
 --
--- Data for Name: preconsultation_templates; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: preconsultation_templates; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.preconsultation_templates (id, name, description, questions, is_active, created_at, updated_at) FROM stdin;
@@ -1793,7 +1879,7 @@ COPY public.preconsultation_templates (id, name, description, questions, is_acti
 
 
 --
--- Data for Name: pregnancy_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: pregnancy_logs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.pregnancy_logs (id, cycle_user_id, is_active, last_period_date, due_date, notifications_enabled, created_at, ended_at) FROM stdin;
@@ -1819,7 +1905,7 @@ COPY public.pregnancy_logs (id, cycle_user_id, is_active, last_period_date, due_
 
 
 --
--- Data for Name: recommendation_categories; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: recommendation_categories; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.recommendation_categories (id, tenant_id, name) FROM stdin;
@@ -1830,7 +1916,7 @@ COPY public.recommendation_categories (id, tenant_id, name) FROM stdin;
 
 
 --
--- Data for Name: recommendations; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: recommendations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.recommendations (id, tenant_id, category_id, title, description, image_url, action_type, action_url, price, is_active) FROM stdin;
@@ -1846,7 +1932,7 @@ COPY public.recommendations (id, tenant_id, category_id, title, description, ima
 
 
 --
--- Data for Name: services; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: services; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.services (id, doctor_id, title, description, image_url, is_active, "order", blog_slug) FROM stdin;
@@ -1857,7 +1943,7 @@ COPY public.services (id, doctor_id, title, description, image_url, is_active, "
 
 
 --
--- Data for Name: symptom_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: symptom_logs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.symptom_logs (id, doctor_id, date, flow_intensity, pain_level, mood, symptoms, notes, cycle_user_id) FROM stdin;
@@ -1866,7 +1952,7 @@ COPY public.symptom_logs (id, doctor_id, date, flow_intensity, pain_level, mood,
 
 
 --
--- Data for Name: tenant_modules; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: tenant_modules; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.tenant_modules (tenant_id, module_id, is_enabled, created_at, updated_at) FROM stdin;
@@ -1893,7 +1979,7 @@ COPY public.tenant_modules (tenant_id, module_id, is_enabled, created_at, update
 
 
 --
--- Data for Name: tenants; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: tenants; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.tenants (id, email, password_hash, nombre_completo, telefono, especialidad, biografia, slug, logo_url, photo_url, theme_primary_color, plan_id, status, is_verified, stripe_customer_id, subscription_end_date, created_at, updated_at) FROM stdin;
@@ -1901,7 +1987,7 @@ COPY public.tenants (id, email, password_hash, nombre_completo, telefono, especi
 
 
 --
--- Data for Name: testimonials; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: testimonials; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.testimonials (id, doctor_id, patient_name, patient_email, photo_url, content, rating, is_approved, is_featured, created_at, updated_at) FROM stdin;
@@ -1912,182 +1998,182 @@ COPY public.testimonials (id, doctor_id, patient_name, patient_email, photo_url,
 
 
 --
--- Name: appointments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: appointments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.appointments_id_seq', 48, true);
 
 
 --
--- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.blog_comments_id_seq', 1, false);
 
 
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.blog_posts_id_seq', 13, true);
 
 
 --
--- Name: blog_posts_seo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: blog_posts_seo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.blog_posts_seo_id_seq', 5, true);
 
 
 --
--- Name: consultations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: consultations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.consultations_id_seq', 34, true);
 
 
 --
--- Name: cycle_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: cycle_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.cycle_logs_id_seq', 21, true);
 
 
 --
--- Name: cycle_notification_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.cycle_notification_settings_id_seq', 4, true);
 
 
 --
--- Name: cycle_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: cycle_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.cycle_users_id_seq', 10, true);
 
 
 --
--- Name: doctor_certifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: doctor_certifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.doctor_certifications_id_seq', 4, true);
 
 
 --
--- Name: doctors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: doctors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.doctors_id_seq', 3, true);
 
 
 --
--- Name: faqs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: faqs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.faqs_id_seq', 4, true);
 
 
 --
--- Name: gallery_images_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: gallery_images_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.gallery_images_id_seq', 5, true);
 
 
 --
--- Name: locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.locations_id_seq', 4, true);
 
 
 --
--- Name: modules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: modules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.modules_id_seq', 23, true);
 
 
 --
--- Name: online_consultation_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: online_consultation_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.online_consultation_settings_id_seq', 2, true);
 
 
 --
--- Name: patients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: patients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.patients_id_seq', 1, false);
 
 
 --
--- Name: plans_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: plans_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.plans_id_seq', 3, true);
 
 
 --
--- Name: preconsultation_templates_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: preconsultation_templates_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.preconsultation_templates_id_seq', 3, true);
 
 
 --
--- Name: pregnancy_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: pregnancy_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.pregnancy_logs_id_seq', 18, true);
 
 
 --
--- Name: recommendation_categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: recommendation_categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.recommendation_categories_id_seq', 4, true);
 
 
 --
--- Name: recommendations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: recommendations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.recommendations_id_seq', 8, true);
 
 
 --
--- Name: services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.services_id_seq', 4, true);
 
 
 --
--- Name: symptom_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: symptom_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.symptom_logs_id_seq', 6, true);
 
 
 --
--- Name: tenants_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: tenants_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.tenants_id_seq', 1, false);
 
 
 --
--- Name: testimonials_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: testimonials_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.testimonials_id_seq', 3, true);
 
 
 --
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.alembic_version
@@ -2095,7 +2181,7 @@ ALTER TABLE ONLY public.alembic_version
 
 
 --
--- Name: appointments appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: appointments appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -2103,7 +2189,7 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: blog_comments blog_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_comments blog_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_comments
@@ -2111,7 +2197,7 @@ ALTER TABLE ONLY public.blog_comments
 
 
 --
--- Name: blog_posts blog_posts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_posts blog_posts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts
@@ -2119,7 +2205,7 @@ ALTER TABLE ONLY public.blog_posts
 
 
 --
--- Name: blog_posts_seo blog_posts_seo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_posts_seo blog_posts_seo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts_seo
@@ -2127,7 +2213,7 @@ ALTER TABLE ONLY public.blog_posts_seo
 
 
 --
--- Name: blog_posts_seo blog_posts_seo_post_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_posts_seo blog_posts_seo_post_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts_seo
@@ -2135,7 +2221,7 @@ ALTER TABLE ONLY public.blog_posts_seo
 
 
 --
--- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_messages
@@ -2143,7 +2229,7 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- Name: chat_participants chat_participants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_participants chat_participants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_participants
@@ -2151,7 +2237,7 @@ ALTER TABLE ONLY public.chat_participants
 
 
 --
--- Name: chat_rooms chat_rooms_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_rooms chat_rooms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_rooms
@@ -2159,7 +2245,7 @@ ALTER TABLE ONLY public.chat_rooms
 
 
 --
--- Name: consultations consultations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: consultations consultations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.consultations
@@ -2167,7 +2253,7 @@ ALTER TABLE ONLY public.consultations
 
 
 --
--- Name: cycle_logs cycle_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_logs cycle_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_logs
@@ -2175,7 +2261,7 @@ ALTER TABLE ONLY public.cycle_logs
 
 
 --
--- Name: cycle_notification_settings cycle_notification_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings cycle_notification_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_notification_settings
@@ -2183,7 +2269,7 @@ ALTER TABLE ONLY public.cycle_notification_settings
 
 
 --
--- Name: cycle_users cycle_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_users cycle_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_users
@@ -2191,7 +2277,7 @@ ALTER TABLE ONLY public.cycle_users
 
 
 --
--- Name: doctor_certifications doctor_certifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: doctor_certifications doctor_certifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctor_certifications
@@ -2199,7 +2285,7 @@ ALTER TABLE ONLY public.doctor_certifications
 
 
 --
--- Name: doctors doctors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: doctors doctors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -2207,7 +2293,7 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: faqs faqs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: faqs faqs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.faqs
@@ -2215,7 +2301,7 @@ ALTER TABLE ONLY public.faqs
 
 
 --
--- Name: gallery_images gallery_images_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: gallery_images gallery_images_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.gallery_images
@@ -2223,7 +2309,7 @@ ALTER TABLE ONLY public.gallery_images
 
 
 --
--- Name: locations locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: locations locations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.locations
@@ -2231,7 +2317,7 @@ ALTER TABLE ONLY public.locations
 
 
 --
--- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.modules
@@ -2239,7 +2325,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- Name: online_consultation_settings online_consultation_settings_doctor_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: online_consultation_settings online_consultation_settings_doctor_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.online_consultation_settings
@@ -2247,7 +2333,7 @@ ALTER TABLE ONLY public.online_consultation_settings
 
 
 --
--- Name: online_consultation_settings online_consultation_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: online_consultation_settings online_consultation_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.online_consultation_settings
@@ -2255,7 +2341,7 @@ ALTER TABLE ONLY public.online_consultation_settings
 
 
 --
--- Name: patients patients_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: patients patients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
@@ -2263,7 +2349,7 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.plans
@@ -2271,7 +2357,7 @@ ALTER TABLE ONLY public.plans
 
 
 --
--- Name: preconsultation_questions preconsultation_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: preconsultation_questions preconsultation_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.preconsultation_questions
@@ -2279,7 +2365,7 @@ ALTER TABLE ONLY public.preconsultation_questions
 
 
 --
--- Name: preconsultation_templates preconsultation_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: preconsultation_templates preconsultation_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.preconsultation_templates
@@ -2287,7 +2373,7 @@ ALTER TABLE ONLY public.preconsultation_templates
 
 
 --
--- Name: pregnancy_logs pregnancy_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: pregnancy_logs pregnancy_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pregnancy_logs
@@ -2295,7 +2381,7 @@ ALTER TABLE ONLY public.pregnancy_logs
 
 
 --
--- Name: recommendation_categories recommendation_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: recommendation_categories recommendation_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendation_categories
@@ -2303,7 +2389,7 @@ ALTER TABLE ONLY public.recommendation_categories
 
 
 --
--- Name: recommendations recommendations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: recommendations recommendations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendations
@@ -2311,7 +2397,7 @@ ALTER TABLE ONLY public.recommendations
 
 
 --
--- Name: services services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: services services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.services
@@ -2319,7 +2405,7 @@ ALTER TABLE ONLY public.services
 
 
 --
--- Name: symptom_logs symptom_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: symptom_logs symptom_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptom_logs
@@ -2327,7 +2413,7 @@ ALTER TABLE ONLY public.symptom_logs
 
 
 --
--- Name: tenant_modules tenant_modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tenant_modules tenant_modules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenant_modules
@@ -2335,7 +2421,7 @@ ALTER TABLE ONLY public.tenant_modules
 
 
 --
--- Name: tenants tenants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tenants tenants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenants
@@ -2343,7 +2429,7 @@ ALTER TABLE ONLY public.tenants
 
 
 --
--- Name: testimonials testimonials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: testimonials testimonials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.testimonials
@@ -2351,378 +2437,378 @@ ALTER TABLE ONLY public.testimonials
 
 
 --
--- Name: idx_recommendation_categories_tenant; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_recommendation_categories_tenant; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_recommendation_categories_tenant ON public.recommendation_categories USING btree (tenant_id);
 
 
 --
--- Name: idx_recommendations_tenant; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_recommendations_tenant; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_recommendations_tenant ON public.recommendations USING btree (tenant_id);
 
 
 --
--- Name: ix_appointments_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_appointments_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_appointments_doctor_id ON public.appointments USING btree (doctor_id);
 
 
 --
--- Name: ix_appointments_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_appointments_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_appointments_id ON public.appointments USING btree (id);
 
 
 --
--- Name: ix_blog_comments_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_comments_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_blog_comments_id ON public.blog_comments USING btree (id);
 
 
 --
--- Name: ix_blog_posts_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_posts_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_blog_posts_id ON public.blog_posts USING btree (id);
 
 
 --
--- Name: ix_blog_posts_is_in_menu; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_posts_is_in_menu; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_blog_posts_is_in_menu ON public.blog_posts USING btree (is_in_menu);
 
 
 --
--- Name: ix_blog_posts_seo_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_posts_seo_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_blog_posts_seo_id ON public.blog_posts_seo USING btree (id);
 
 
 --
--- Name: ix_blog_posts_slug; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_posts_slug; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_blog_posts_slug ON public.blog_posts USING btree (slug);
 
 
 --
--- Name: ix_blog_posts_title; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_blog_posts_title; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_blog_posts_title ON public.blog_posts USING btree (title);
 
 
 --
--- Name: ix_chat_messages_client_side_uuid; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_chat_messages_client_side_uuid; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_chat_messages_client_side_uuid ON public.chat_messages USING btree (client_side_uuid);
 
 
 --
--- Name: ix_chat_messages_room_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_chat_messages_room_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_chat_messages_room_id ON public.chat_messages USING btree (room_id);
 
 
 --
--- Name: ix_chat_messages_tenant_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_chat_messages_tenant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_chat_messages_tenant_id ON public.chat_messages USING btree (tenant_id);
 
 
 --
--- Name: ix_chat_participants_tenant_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_chat_participants_tenant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_chat_participants_tenant_id ON public.chat_participants USING btree (tenant_id);
 
 
 --
--- Name: ix_chat_rooms_tenant_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_chat_rooms_tenant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_chat_rooms_tenant_id ON public.chat_rooms USING btree (tenant_id);
 
 
 --
--- Name: ix_consultations_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_consultations_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_consultations_id ON public.consultations USING btree (id);
 
 
 --
--- Name: ix_cycle_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cycle_logs_cycle_user_id ON public.cycle_logs USING btree (cycle_user_id);
 
 
 --
--- Name: ix_cycle_logs_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_logs_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cycle_logs_doctor_id ON public.cycle_logs USING btree (doctor_id);
 
 
 --
--- Name: ix_cycle_logs_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_logs_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cycle_logs_id ON public.cycle_logs USING btree (id);
 
 
 --
--- Name: ix_cycle_notification_settings_cycle_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_notification_settings_cycle_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_cycle_notification_settings_cycle_user_id ON public.cycle_notification_settings USING btree (cycle_user_id);
 
 
 --
--- Name: ix_cycle_notification_settings_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_notification_settings_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cycle_notification_settings_id ON public.cycle_notification_settings USING btree (id);
 
 
 --
--- Name: ix_cycle_users_email; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_users_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_cycle_users_email ON public.cycle_users USING btree (email);
 
 
 --
--- Name: ix_cycle_users_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_cycle_users_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cycle_users_id ON public.cycle_users USING btree (id);
 
 
 --
--- Name: ix_doctor_certifications_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_doctor_certifications_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_doctor_certifications_id ON public.doctor_certifications USING btree (id);
 
 
 --
--- Name: ix_doctors_email; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_doctors_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_doctors_email ON public.doctors USING btree (email);
 
 
 --
--- Name: ix_doctors_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_doctors_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_doctors_id ON public.doctors USING btree (id);
 
 
 --
--- Name: ix_doctors_slug_url; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_doctors_slug_url; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_doctors_slug_url ON public.doctors USING btree (slug_url);
 
 
 --
--- Name: ix_faqs_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_faqs_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_faqs_doctor_id ON public.faqs USING btree (doctor_id);
 
 
 --
--- Name: ix_faqs_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_faqs_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_faqs_id ON public.faqs USING btree (id);
 
 
 --
--- Name: ix_gallery_images_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_gallery_images_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_gallery_images_doctor_id ON public.gallery_images USING btree (doctor_id);
 
 
 --
--- Name: ix_gallery_images_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_gallery_images_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_gallery_images_id ON public.gallery_images USING btree (id);
 
 
 --
--- Name: ix_locations_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_locations_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_locations_id ON public.locations USING btree (id);
 
 
 --
--- Name: ix_modules_code; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_modules_code; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_modules_code ON public.modules USING btree (code);
 
 
 --
--- Name: ix_modules_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_modules_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_modules_id ON public.modules USING btree (id);
 
 
 --
--- Name: ix_online_consultation_settings_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_online_consultation_settings_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_online_consultation_settings_doctor_id ON public.online_consultation_settings USING btree (doctor_id);
 
 
 --
--- Name: ix_online_consultation_settings_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_online_consultation_settings_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_online_consultation_settings_id ON public.online_consultation_settings USING btree (id);
 
 
 --
--- Name: ix_patients_email; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_patients_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_patients_email ON public.patients USING btree (email);
 
 
 --
--- Name: ix_patients_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_patients_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_patients_id ON public.patients USING btree (id);
 
 
 --
--- Name: ix_patients_tenant_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_patients_tenant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_patients_tenant_id ON public.patients USING btree (tenant_id);
 
 
 --
--- Name: ix_plans_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plans_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plans_id ON public.plans USING btree (id);
 
 
 --
--- Name: ix_preconsultation_questions_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_preconsultation_questions_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_preconsultation_questions_id ON public.preconsultation_questions USING btree (id);
 
 
 --
--- Name: ix_preconsultation_templates_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_preconsultation_templates_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_preconsultation_templates_id ON public.preconsultation_templates USING btree (id);
 
 
 --
--- Name: ix_pregnancy_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_pregnancy_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_pregnancy_logs_cycle_user_id ON public.pregnancy_logs USING btree (cycle_user_id);
 
 
 --
--- Name: ix_pregnancy_logs_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_pregnancy_logs_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_pregnancy_logs_id ON public.pregnancy_logs USING btree (id);
 
 
 --
--- Name: ix_services_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_services_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_services_id ON public.services USING btree (id);
 
 
 --
--- Name: ix_symptom_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_symptom_logs_cycle_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_symptom_logs_cycle_user_id ON public.symptom_logs USING btree (cycle_user_id);
 
 
 --
--- Name: ix_symptom_logs_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_symptom_logs_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_symptom_logs_doctor_id ON public.symptom_logs USING btree (doctor_id);
 
 
 --
--- Name: ix_symptom_logs_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_symptom_logs_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_symptom_logs_id ON public.symptom_logs USING btree (id);
 
 
 --
--- Name: ix_tenants_email; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_tenants_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_tenants_email ON public.tenants USING btree (email);
 
 
 --
--- Name: ix_tenants_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_tenants_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_tenants_id ON public.tenants USING btree (id);
 
 
 --
--- Name: ix_tenants_slug; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_tenants_slug; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX ix_tenants_slug ON public.tenants USING btree (slug);
 
 
 --
--- Name: ix_testimonials_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_testimonials_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_testimonials_doctor_id ON public.testimonials USING btree (doctor_id);
 
 
 --
--- Name: ix_testimonials_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_testimonials_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_testimonials_id ON public.testimonials USING btree (id);
 
 
 --
--- Name: appointments appointments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: appointments appointments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -2730,7 +2816,7 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: blog_comments blog_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_comments blog_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_comments
@@ -2738,7 +2824,7 @@ ALTER TABLE ONLY public.blog_comments
 
 
 --
--- Name: blog_posts blog_posts_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_posts blog_posts_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts
@@ -2746,7 +2832,7 @@ ALTER TABLE ONLY public.blog_posts
 
 
 --
--- Name: blog_posts_seo blog_posts_seo_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blog_posts_seo blog_posts_seo_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blog_posts_seo
@@ -2754,7 +2840,7 @@ ALTER TABLE ONLY public.blog_posts_seo
 
 
 --
--- Name: chat_messages chat_messages_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_messages chat_messages_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_messages
@@ -2762,7 +2848,7 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- Name: chat_participants chat_participants_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_participants chat_participants_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_participants
@@ -2770,7 +2856,7 @@ ALTER TABLE ONLY public.chat_participants
 
 
 --
--- Name: consultations consultations_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: consultations consultations_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.consultations
@@ -2778,7 +2864,7 @@ ALTER TABLE ONLY public.consultations
 
 
 --
--- Name: consultations consultations_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: consultations consultations_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.consultations
@@ -2786,7 +2872,7 @@ ALTER TABLE ONLY public.consultations
 
 
 --
--- Name: cycle_logs cycle_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_logs cycle_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_logs
@@ -2794,7 +2880,7 @@ ALTER TABLE ONLY public.cycle_logs
 
 
 --
--- Name: cycle_logs cycle_logs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_logs cycle_logs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_logs
@@ -2802,7 +2888,7 @@ ALTER TABLE ONLY public.cycle_logs
 
 
 --
--- Name: cycle_notification_settings cycle_notification_settings_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_notification_settings cycle_notification_settings_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_notification_settings
@@ -2810,7 +2896,7 @@ ALTER TABLE ONLY public.cycle_notification_settings
 
 
 --
--- Name: cycle_users cycle_users_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cycle_users cycle_users_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cycle_users
@@ -2818,7 +2904,7 @@ ALTER TABLE ONLY public.cycle_users
 
 
 --
--- Name: doctor_certifications doctor_certifications_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: doctor_certifications doctor_certifications_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctor_certifications
@@ -2826,7 +2912,7 @@ ALTER TABLE ONLY public.doctor_certifications
 
 
 --
--- Name: doctors doctors_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: doctors doctors_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -2834,7 +2920,7 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: faqs faqs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: faqs faqs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.faqs
@@ -2842,7 +2928,7 @@ ALTER TABLE ONLY public.faqs
 
 
 --
--- Name: tenant_modules fk_tenant_modules_doctors; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tenant_modules fk_tenant_modules_doctors; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenant_modules
@@ -2850,7 +2936,7 @@ ALTER TABLE ONLY public.tenant_modules
 
 
 --
--- Name: gallery_images gallery_images_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: gallery_images gallery_images_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.gallery_images
@@ -2858,7 +2944,7 @@ ALTER TABLE ONLY public.gallery_images
 
 
 --
--- Name: locations locations_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: locations locations_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.locations
@@ -2866,7 +2952,7 @@ ALTER TABLE ONLY public.locations
 
 
 --
--- Name: online_consultation_settings online_consultation_settings_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: online_consultation_settings online_consultation_settings_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.online_consultation_settings
@@ -2874,7 +2960,7 @@ ALTER TABLE ONLY public.online_consultation_settings
 
 
 --
--- Name: preconsultation_questions preconsultation_questions_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: preconsultation_questions preconsultation_questions_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.preconsultation_questions
@@ -2882,7 +2968,7 @@ ALTER TABLE ONLY public.preconsultation_questions
 
 
 --
--- Name: pregnancy_logs pregnancy_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: pregnancy_logs pregnancy_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pregnancy_logs
@@ -2890,7 +2976,7 @@ ALTER TABLE ONLY public.pregnancy_logs
 
 
 --
--- Name: recommendation_categories recommendation_categories_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: recommendation_categories recommendation_categories_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendation_categories
@@ -2898,7 +2984,7 @@ ALTER TABLE ONLY public.recommendation_categories
 
 
 --
--- Name: recommendations recommendations_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: recommendations recommendations_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendations
@@ -2906,7 +2992,7 @@ ALTER TABLE ONLY public.recommendations
 
 
 --
--- Name: recommendations recommendations_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: recommendations recommendations_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.recommendations
@@ -2914,7 +3000,7 @@ ALTER TABLE ONLY public.recommendations
 
 
 --
--- Name: services services_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: services services_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.services
@@ -2922,7 +3008,7 @@ ALTER TABLE ONLY public.services
 
 
 --
--- Name: symptom_logs symptom_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: symptom_logs symptom_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptom_logs
@@ -2930,7 +3016,7 @@ ALTER TABLE ONLY public.symptom_logs
 
 
 --
--- Name: symptom_logs symptom_logs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: symptom_logs symptom_logs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptom_logs
@@ -2938,7 +3024,7 @@ ALTER TABLE ONLY public.symptom_logs
 
 
 --
--- Name: tenant_modules tenant_modules_module_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tenant_modules tenant_modules_module_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenant_modules
@@ -2946,7 +3032,7 @@ ALTER TABLE ONLY public.tenant_modules
 
 
 --
--- Name: tenants tenants_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tenants tenants_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tenants
@@ -2954,7 +3040,7 @@ ALTER TABLE ONLY public.tenants
 
 
 --
--- Name: testimonials testimonials_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: testimonials testimonials_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.testimonials
@@ -2962,39 +3048,39 @@ ALTER TABLE ONLY public.testimonials
 
 
 --
--- Name: chat_messages; Type: ROW SECURITY; Schema: public; Owner: postgres
+-- Name: chat_messages; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: chat_participants; Type: ROW SECURITY; Schema: public; Owner: postgres
+-- Name: chat_participants; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.chat_participants ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: chat_rooms; Type: ROW SECURITY; Schema: public; Owner: postgres
+-- Name: chat_rooms; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.chat_rooms ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: chat_messages tenant_isolation_policy; Type: POLICY; Schema: public; Owner: postgres
+-- Name: chat_messages tenant_isolation_policy; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY tenant_isolation_policy ON public.chat_messages USING (((tenant_id)::text = current_setting('app.current_tenant'::text, true)));
 
 
 --
--- Name: chat_participants tenant_isolation_policy; Type: POLICY; Schema: public; Owner: postgres
+-- Name: chat_participants tenant_isolation_policy; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY tenant_isolation_policy ON public.chat_participants USING (((tenant_id)::text = current_setting('app.current_tenant'::text, true)));
 
 
 --
--- Name: chat_rooms tenant_isolation_policy; Type: POLICY; Schema: public; Owner: postgres
+-- Name: chat_rooms tenant_isolation_policy; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::text = current_setting('app.current_tenant'::text, true)));
@@ -3004,5 +3090,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict jLu9SevnIK18JzCZWsvRUPQvqupeVIFaXGWraEObz1kTqvwD6Ges1WplPFhVdl0
+\unrestrict E0BB2B67CokC1zfcknI8DJm0kgEmO5irACVqog6IIsfddZFpaTo4IhfXrZNtaBh
 

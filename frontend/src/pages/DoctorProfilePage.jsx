@@ -29,7 +29,7 @@ import { getImageUrl } from '../lib/imageUtils'
 import LoginModal from '../components/features/LoginModal'
 import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
-import PatientChatFloatingButton from '../modules/chat/components/PatientChatFloatingButton'
+// import PatientChatFloatingButton from '../modules/chat/components/PatientChatFloatingButton'
 
 export default function DoctorProfilePage() {
   const { slug } = useParams()
@@ -392,7 +392,7 @@ export default function DoctorProfilePage() {
         )}
 
         {/* Online Consultation Section - Marketing */}
-        {onlineSettings?.is_active && (isModuleEnabled('online_consultation') || isModuleEnabled('online_consultations')) && (
+        {onlineSettings?.is_active && isModuleEnabled('online_consultation') && (
           <ScrollReveal variant="fade-up" delay={0.1}>
             <OnlineConsultationSection
               doctor={doctor}
@@ -576,13 +576,14 @@ export default function DoctorProfilePage() {
       )}
 
       {/* Persistent Chat Widget for Patients */}
-      {(isModuleEnabled('chat') || isModuleEnabled('chat_widget')) && (
+      {/* Persistent Chat Widget for Patients (REMOVED) */}
+      {/* {isModuleEnabled('chat') && (
         <PatientChatFloatingButton
           primaryColor={primaryColor}
           doctorName={doctor.nombre_completo}
           doctorId={doctor.id}
         />
-      )}
+      )} */}
     </div >
   )
 }

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 1B3JVefKs0PzXsiS0Kqm0wtI6LaTqyHvGbse3lMsz5wcdbYJuTk80pfZEYnO0So
+\restrict n8muLcWJYH6joL3sfFsawHHrW5f69Tac2szMCrYrZZG5H2P5ginS2QgnCHq278b
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -1610,7 +1610,7 @@ COPY public.cycle_logs (id, doctor_id, start_date, end_date, cycle_length, notes
 
 COPY public.cycle_notification_settings (id, cycle_user_id, contraceptive_enabled, contraceptive_time, contraceptive_frequency, rhythm_method_enabled, fertile_window_alerts, ovulation_alert, gyn_checkup_alert, last_contraceptive_sent_date, rhythm_abstinence_alerts, period_confirmation_reminder, last_period_reminder_sent) FROM stdin;
 3	9	t	11:00	daily	t	t	t	f	2026-01-21	t	t	\N
-4	10	t	15:00	daily	t	t	t	f	2026-01-22	t	t	\N
+4	10	t	15:00	daily	t	t	t	f	2026-01-23	t	t	\N
 \.
 
 
@@ -3004,5 +3004,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 1B3JVefKs0PzXsiS0Kqm0wtI6LaTqyHvGbse3lMsz5wcdbYJuTk80pfZEYnO0So
+\unrestrict n8muLcWJYH6joL3sfFsawHHrW5f69Tac2szMCrYrZZG5H2P5ginS2QgnCHq278b
 

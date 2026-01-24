@@ -37,18 +37,11 @@ app.add_middleware(
 )
 
 # Include API router
+# Include API router
 app.include_router(api_router, prefix="/api/v1")
-from app.chat.api import router as chat_router
-app.include_router(chat_router, prefix="/api/v1/chat", tags=["chat"])
+# Chat module removed
 
-# Mount Socket.IO
-from app.chat.websockets import app as socket_app
-# Mount at root because socket.io client connects to /socket.io by default at the root
-# But since this is ASGI, we can just replace the 'app' export OR mount.
-# Mounting at / causes issues with FastAPI routes.
-# The standard solution is to wrap FastAPI with socketio.
-app.mount("/ws", socket_app) # This maps localhost:8000/ws/socket.io
-# Client must connect to url: "http://localhost:8000", path: "/ws/socket.io"
+# Mount static files for uploads
 
 
 # Mount static files for uploads
