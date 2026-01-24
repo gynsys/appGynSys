@@ -1,4 +1,4 @@
-        """
+"""
 Database base configuration and session management.
 """
 from sqlalchemy import create_engine
