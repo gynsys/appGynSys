@@ -25,5 +25,6 @@ class TenantModule(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    tenant = relationship("Tenant", back_populates="tenant_modules")
+    # Relationships
+    tenant = relationship("Doctor", back_populates="tenant_modules")
     module = relationship("Module", back_populates="tenant_modules")
