@@ -78,8 +78,8 @@ class Doctor(Base):
     # Relationships
     plan = relationship("Plan", backref="doctors")
     
-    # Many-to-many relationship with modules
-    tenant_modules = relationship("TenantModule", back_populates="tenant", cascade="all, delete-orphan")
+    # Many-to-many relationship with modules - MOVED TO TENANT MODEL
+    # tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
 
     # Content relationships
     faqs = relationship("FAQ", back_populates="doctor", cascade="all, delete-orphan")
