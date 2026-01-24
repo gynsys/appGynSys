@@ -7,7 +7,7 @@ from app.api.v1.endpoints.auth import verify_access_token
 # CORS allowed origins should match FastAPI config
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+    cors_allowed_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "https://gynsys.netlify.app", "https://appgynsys.onrender.com"],
     logger=True,
     engineio_logger=True
 )
