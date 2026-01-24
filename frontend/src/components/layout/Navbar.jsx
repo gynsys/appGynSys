@@ -1,4 +1,10 @@
-import { useAuthStore } from '../../store/authStore' // Added import
+import { useState } from 'react'
+import { getImageUrl } from '../../lib/imageUtils'
+import { Link } from 'react-router-dom'
+import { FiMenu, FiX } from 'react-icons/fi'
+import MegaMenu from './MegaMenu'
+import LoginModal from '../features/LoginModal'
+import { useAuthStore } from '../../store/authStore'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
