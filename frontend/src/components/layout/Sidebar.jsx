@@ -14,6 +14,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
 
   const allMenuItems = [
 
+    { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
     { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
     { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
     { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
@@ -26,7 +27,6 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
     { icon: FiStar, label: 'Recomendaciones', path: '/dashboard/recommendations' },
     { icon: FiSettings, label: 'Config. Preconsulta', path: '/dashboard/preconsulta-config' },
     { icon: FiSettings, label: 'Config. PDF', path: '/dashboard/pdf-config' },
-    { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
   ];
 
   // Filter menu items based on enabled modules
