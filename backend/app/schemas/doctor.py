@@ -103,6 +103,7 @@ class DoctorUpdate(BaseModel):
     social_tiktok: Optional[str] = None
     social_x: Optional[str] = None
     social_facebook: Optional[str] = None
+    whatsapp_url: Optional[str] = None
     
     password: Optional[str] = Field(None, min_length=8)
     role: Optional[str] = Field(None, description="User role: 'user' or 'admin' - Admin only")
