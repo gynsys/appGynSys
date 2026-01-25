@@ -53,6 +53,7 @@ class Doctor(Base):
     social_tiktok = Column(String, nullable=True)
     social_x = Column(String, nullable=True)
     social_facebook = Column(String, nullable=True)
+    whatsapp_url = Column(String, nullable=True)
     
     # Account status
     is_active = Column(Boolean, default=True)

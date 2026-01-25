@@ -82,6 +82,21 @@ const ContactTab = ({
                         Si se deja vacío, se usará el email de registro.
                     </p>
                 </div>
+
+                <div className="mt-6">
+                    <Input
+                        label="Enlace de WhatsApp (Ejem: https://wa.me/num)"
+                        name="whatsapp_url"
+                        value={formData.whatsapp_url || ''}
+                        onChange={handleChange}
+                        placeholder="https://wa.me/XXXXXXXXXXX"
+                        className="border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        labelClassName="dark:text-gray-300"
+                    />
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Este enlace se usará para el botón flotante en tu home.
+                    </p>
+                </div>
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-700 my-6"></div>

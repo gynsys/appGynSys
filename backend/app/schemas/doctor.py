@@ -26,6 +26,7 @@ class DoctorBase(BaseModel):
     social_tiktok: Optional[str] = None
     social_x: Optional[str] = None
     social_facebook: Optional[str] = None
+    whatsapp_url: Optional[str] = None
 
 
 class DoctorCreate(DoctorBase):

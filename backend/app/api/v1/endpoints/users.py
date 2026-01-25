@@ -128,6 +128,8 @@ async def update_current_user(
         current_user.social_x = doctor_update.social_x
     if doctor_update.social_facebook is not None:
         current_user.social_facebook = doctor_update.social_facebook
+    if doctor_update.whatsapp_url is not None:
+        current_user.whatsapp_url = doctor_update.whatsapp_url
 
     if doctor_update.show_certifications_carousel is not None:
         current_user.show_certifications_carousel = doctor_update.show_certifications_carousel
