@@ -27,6 +27,19 @@ export const useAuthStore = create((set, get) => {
       }
     },
 
+    loginWithGoogle: async (token) => {
+      set({ loading: true })
+      try {
+        const data = await authService.loginGoogle(token)
+        const user = await authService.getCurrentUser()
+        set({ user, isAuthenticated: true, loading: false })
+        return data
+      } catch (error) {
+        set({ loading: false })
+        throw error
+      }
+    },
+
     loginCycleUser: async (email, password) => {
       set({ loading: true })
       try {

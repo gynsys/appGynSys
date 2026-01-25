@@ -6,9 +6,24 @@ import { useAuthStore } from '../../store/authStore'
 
 export function useAuth() {
   const navigate = useNavigate()
-  const { user, isAuthenticated, setUser, logout: logoutStore } = useAuthStore()
+  const { user, isAuthenticated, setUser, logout: logoutStore, loginWithGoogle: loginWithGoogleStore } = useAuthStore()
   const [loading, setLoading] = useState(true)
 
+  // ... (existing code)
+
+  const loginWithGoogle = async (token) => {
+    try {
+      const response = await loginWithGoogleStore(token);
+      // Fetch user info after successful login
+      if (response.access_token) {
+        const userData = await fetchUserInfo()
+        return { ...response, user: userData }
+      }
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
   // Fetch user info from API
   const fetchUserInfo = async () => {
     try {
@@ -81,9 +96,7 @@ export function useAuth() {
     // Otherwise, stay on current page (don't navigate)
   }
 
-  const loginWithGoogle = () => {
-    authService.loginWithGoogle()
-  }
+
 
   return {
     user,

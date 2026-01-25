@@ -30,6 +30,7 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 
 
+
 def generate_slug_from_name(name: str) -> str:
     """
     Generate a URL-friendly slug from a name.
@@ -229,12 +230,20 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/login/google")
-async def login_google():
+class GoogleLoginRequest(BaseModel):
+    token: str
+
+@router.post("/login/google", response_model=Token)
+async def login_google(
+    login_data: GoogleLoginRequest,
+    db: Session = Depends(get_db)
+):
     """
-    Initiate Google OAuth login flow.
-    Redirects to Google's OAuth consent screen.
+    Login with Google ID Token (from Frontend).
+    Verifies the token and returns a JWT access token.
     """
+    from google.oauth2 import id_token
+    from google.auth.transport import requests
     from app.core.config import settings
     
     if not settings.GOOGLE_CLIENT_ID:
@@ -242,86 +251,31 @@ async def login_google():
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
             detail="Google OAuth is not configured"
         )
-    
-    # Build Google OAuth URL
-    redirect_uri = settings.GOOGLE_REDIRECT_URI or "http://localhost:8000/api/v1/auth/login/google/callback"
-    google_auth_url = (
-        f"https://accounts.google.com/o/oauth2/v2/auth?"
-        f"client_id={settings.GOOGLE_CLIENT_ID}&"
-        f"redirect_uri={redirect_uri}&"
-        f"response_type=code&"
-        f"scope=openid email profile&"
-        f"access_type=offline"
-    )
-    
-    # In a real implementation, you would redirect here
-    # For now, return the URL for the frontend to handle
-    return {"auth_url": google_auth_url}
-
-
-@router.get("/login/google/callback")
-async def login_google_callback(
-    code: str,
-    db: Session = Depends(get_db)
-):
-    """
-    Handle Google OAuth callback.
-    Exchanges authorization code for user info and creates/updates doctor account.
-    """
-    from app.core.config import settings
-    import httpx
-    
-    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Google OAuth is not configured"
-        )
-    
-    redirect_uri = settings.GOOGLE_REDIRECT_URI or "http://localhost:8000/api/v1/auth/login/google/callback"
-    
-    # Exchange code for token
-    async with httpx.AsyncClient() as client:
-        token_response = await client.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": code,
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "redirect_uri": redirect_uri,
-                "grant_type": "authorization_code"
-            }
-        )
         
-        if token_response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to exchange authorization code"
+    try:
+        # Verify the token
+        print(f"Verifying Google Token: {login_data.token[:20]}...")
+        try:
+            id_info = id_token.verify_oauth2_token(
+                login_data.token,
+                requests.Request(),
+                settings.GOOGLE_CLIENT_ID
             )
-        
-        token_data = token_response.json()
-        access_token = token_data.get("access_token")
-        
-        # Get user info from Google
-        user_info_response = await client.get(
-            "https://www.googleapis.com/oauth2/v2/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"}
-        )
-        
-        if user_info_response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to get user info from Google"
-            )
-        
-        user_info = user_info_response.json()
-        email = user_info.get("email")
-        name = user_info.get("name", "")
+        except Exception as e:
+            print(f"Token Verification Failed: {e}")
+            raise ValueError(f"Token Verification Failed: {e}")
+
+        # Get user info
+        email = id_info.get("email")
+        name = id_info.get("name", "")
+        print(f"Google User Verified: {email} ({name})")
         
         # Check if doctor exists
         doctor = get_user_by_email(db, email)
         
         if not doctor:
-            # Create new doctor account
+            print("User not found, registering new...")
+            # Create new doctor account (Auto-Registration)
             slug = generate_slug_from_name(name)
             # Ensure slug is unique
             counter = 1
@@ -335,24 +289,56 @@ async def login_google_callback(
                 password_hash=None,  # No password for OAuth users
                 nombre_completo=name,
                 slug_url=slug,
-                is_verified=True  # Google email is verified
+                is_verified=True,  # Google email is verified
+                is_active=True,    
+                status='approved' 
             )
             db.add(doctor)
+            db.commit()
+            db.refresh(doctor)
+            
+            # Apply Template
+            try:
+                apply_mariel_template(db, doctor)
+                db.commit()
+            except Exception as e:
+                 print(f"Template Error (Non-fatal): {e}")
+            
         else:
-            # Update existing doctor
+            print("User found, updating...")
+            # Update existing doctor info if needed
             if not doctor.nombre_completo:
                 doctor.nombre_completo = name
-            doctor.is_verified = True
-        
-        db.commit()
-        db.refresh(doctor)
-        
+                db.commit()
+                
+        # Check active status (if user existed and was banned/inactive)
+        if not doctor.is_active:
+             print("User inactive!")
+             raise HTTPException(status_code=403, detail="Account is inactive")
+
         # Create JWT token
-        jwt_token = create_access_token(
+        access_token = create_access_token(
             data={"sub": doctor.email, "doctor_id": doctor.id}
         )
+        print("Generated JWT Token successfully.")
         
-        return {"access_token": jwt_token, "token_type": "bearer"}
+        return {"access_token": access_token, "token_type": "bearer"}
+        
+    except ValueError as e:
+        # Invalid token
+        print(f"ValueError: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e)
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Google Login Critical Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Google Login Failed: {str(e)}"
+        )
 
 
 

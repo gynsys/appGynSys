@@ -30,6 +30,8 @@ python-multipart==0.0.6
 
 # OAuth
 httpx==0.25.2
+google-auth==2.23.4
+requests>=2.31.0
 
 # Environment
 python-dotenv==1.0.0

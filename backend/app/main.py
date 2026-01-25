@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="GynSys API",
     description="SaaS multi-inquilino para clínicas digitales",
-    version="1.0.0"
+    version="1.0.0",
+    debug=settings.DEBUG
 )
 
 # Configure CORS

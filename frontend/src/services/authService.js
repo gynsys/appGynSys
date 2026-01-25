@@ -55,6 +55,14 @@ export const authService = {
     return response.data
   },
 
+  async loginGoogle(token) {
+    const response = await api.post('/auth/login/google', { token })
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token)
+    }
+    return response.data
+  },
+
   async logout() {
     localStorage.removeItem('access_token')
   },
@@ -74,10 +82,7 @@ export const authService = {
     return response.data
   },
 
-  async loginWithGoogle() {
-    // Redirect to backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/auth/login/google`
-  },
+
 
   async requestPasswordReset(email) {
     const response = await api.post('/auth/password-recovery', { email })
