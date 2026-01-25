@@ -488,9 +488,9 @@ export default function DoctorProfilePage() {
             href={doctor.whatsapp_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-14 h-14 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200 flex items-center justify-center animate-pulse z-50"
+            className="w-14 h-14 transform hover:scale-110 transition-all duration-200 flex items-center justify-center animate-pulse z-50"
             style={{
-              backgroundColor: '#25D366', // Original WhatsApp Green
+              // Background removed to be transparent
             }}
             title="Chatear por WhatsApp"
           >
