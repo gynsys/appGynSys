@@ -70,7 +70,14 @@ class Settings(BaseSettings):
     MINIO_BUCKET: str = "gynsys-media"
     
     class Config:
-        env_file = ".env"
+        # Check both local .env and Render's secret path
+        import os
+        render_env = "/etc/secrets/.env"
+        if os.path.exists(render_env):
+            env_file = render_env
+        else:
+            env_file = ".env"
+            
         env_file_encoding = "utf-8"
         case_sensitive = True
         extra = "ignore"
