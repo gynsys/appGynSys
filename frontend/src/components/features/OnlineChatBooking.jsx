@@ -98,17 +98,18 @@ SimpleInput.propTypes = {
 };
 
 export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
-    // Brand Color (Purple for online consultations)
-    const primaryColor = '#8B5CF6'; // Purple
+    // Brand Color
+    const primaryColor = doctor?.theme_primary_color || '#4F46E5';
 
     // Steps
     const STEPS = {
         WELCOME_ONLINE: 'WELCOME_ONLINE',
         EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
         FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
-        ONLINE_PRICING: 'ONLINE_PRICING',
-        ONLINE_FAQ: 'ONLINE_FAQ',
-        ONLINE_CONFIRM: 'ONLINE_CONFIRM',
+        WELCOME_ONLINE: 'WELCOME_ONLINE',
+        EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
+        FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
+        // Consolidated info replaces PRICING/FAQ
         NAME: 'NAME',
         DNI: 'DNI',
         AGE: 'AGE',
@@ -168,19 +169,12 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     // Initialize chat with welcome
     useEffect(() => {
         const name = doctor?.nombre_completo || 'Doctor';
-        const hasTitle = name.toLowerCase().startsWith('dr');
-        const isFemale = name.toLowerCase().includes('dra.');
-        let prefix = 'de';
-        if (isFemale) prefix = 'de la';
-        else if (hasTitle) prefix = 'del';
-
         setHistory([
             {
                 type: 'bot',
-                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual ${prefix}</p><p class="font-bold mb-2">${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold text-purple-600">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
+                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
             }
         ]);
-        // Auto-advance removed as per request
     }, [doctor]);
 
     const scrollToBottom = () => {
@@ -207,7 +201,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         } else {
             addMessage("No, en otra ocasión", 'user');
             setTimeout(() => {
-                onClose(); // Close directly as per flow implication
+                onClose();
             }, 500);
         }
     };
@@ -230,10 +224,10 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
           <p class="mb-2 text-xs">✓ Receta médica digital firmada<br/>✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
           <p class="mb-2"><strong>🔒 100% Privado y Confidencial</strong></p>
           
-          <div class="border-t border-purple-100 my-3"></div>
+          <div class="border-t border-gray-200 dark:border-gray-700 my-3"></div>
           
           <p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
-          <div class="bg-white dark:bg-gray-700 p-3 rounded-lg mb-3 border border-purple-200">
+          <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mb-3 border border-gray-200 dark:border-gray-700">
             <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
             <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
           </div>
@@ -251,128 +245,26 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     const handleExplainResponse = (response) => {
         if (response === 'YES') {
-            addMessage("¡Sí, agendar ahora!", 'user');
+            addMessage("📆 Sí, agendar", 'user');
             setTimeout(() => {
-                setStep(STEPS.ONLINE_CONFIRM);
+                addMessage(
+                    `<p class="mb-2">¡Perfecto! 🎉</p>
+          <p class="mb-2">Procederemos a agendar tu Consulta Online.</p>
+          <p class="mb-2">Necesitaré algunos datos básicos para crear tu expediente.</p>
+          <p class="font-semibold">Para comenzar, ¿podrías indicarme tu nombre completo?</p>`,
+                    'bot'
+                );
+                setStep(STEPS.NAME);
             }, 500);
         } else {
-            addMessage("No, en otra ocasión", 'user');
+            addMessage("En otra ocasión", 'user');
             setTimeout(() => {
                 onClose();
             }, 500);
         }
     };
 
-    // FAREWELL_MESSAGE
-    useEffect(() => {
-        if (step === STEPS.FAREWELL_MESSAGE) {
-            setTimeout(() => {
-                addMessage(
-                    `<p class="mb-3 font-bold">👋 ¡Entendido!</p>
-          <p class="mb-3">Mientras tanto, te invito a explorar:</p>
-          <p class="mb-2"><strong>📝 Blog de Salud</strong><br/><span class="text-xs">Lee artículos sobre salud femenina</span></p>
-          <p class="mb-2"><strong>📅 Calculadora Menstrual</strong><br/><span class="text-xs">Rastrea tu ciclo y predicciones</span></p>
-          <p class="mb-3"><strong>🔔 Suscríbete</strong><br/><span class="text-xs">Recibe notificaciones de contenido nuevo</span></p>
-          <p class="font-semibold">¿Prefieres agendar una consulta presencial?</p>`,
-                    'bot'
-                );
-            }, 600);
-        }
-    }, [step, STEPS.FAREWELL_MESSAGE]);
 
-    const handleFarewellResponse = (response) => {
-        if (response === 'PRESENCIAL') {
-            addMessage("📍 Sí, agendar presencial", 'user');
-            // Close online chat and ideally open regular ChatBooking
-            setTimeout(() => {
-                onClose();
-                // TODO: Parent should open regular ChatBooking modal
-            }, 500);
-        } else {
-            addMessage("Cerrar", 'user');
-            setTimeout(() => {
-                onClose();
-            }, 300);
-        }
-    };
-
-    // ONLINE_PRICING
-    useEffect(() => {
-        if (step === STEPS.ONLINE_PRICING && settings) {
-            const price1 = settings.first_consultation_price || 50;
-            const price2 = settings.followup_price || 40;
-            const currency = settings.currency || 'USD';
-
-            setTimeout(() => {
-                addMessage(
-                    `<p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
-          <div class="bg-white dark:bg-gray-700 p-3 rounded-lg mb-3 border border-purple-200">
-            <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
-            <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
-          </div>
-          <p class="mb-1 font-semibold">💳 Métodos de Pago:</p>
-          <p class="text-xs mb-2">• Zelle<br/>• PayPal<br/>• Transferencia bancaria<br/>• Pago móvil (Bs)</p>
-          <p class="text-xs mb-3">📌 Nota: El pago se confirma antes de la videollamada. Se enviarán los datos bancarios por email.</p>
-          <p class="font-semibold">¿Deseas agendar tu Consulta Online ahora?</p>`,
-                    'bot'
-                );
-            }, 800);
-        }
-    }, [step, settings, STEPS.ONLINE_PRICING]);
-
-    const handlePricingResponse = (response) => {
-        if (response === 'YES') {
-            addMessage("✓ Sí, agendar ahora!", 'user');
-            setTimeout(() => {
-                setStep(STEPS.ONLINE_CONFIRM);
-            }, 500);
-        } else if (response === 'FAQ') {
-            addMessage("Tengo dudas", 'user');
-            setTimeout(() => {
-                setStep(STEPS.ONLINE_FAQ);
-            }, 500);
-        } else {
-            addMessage("← Volver", 'user');
-            setTimeout(() => {
-                setStep(STEPS.EXPLAIN_ONLINE);
-            }, 500);
-        }
-    };
-
-    // ONLINE_FAQ
-    useEffect(() => {
-        if (step === STEPS.ONLINE_FAQ) {
-            setTimeout(() => {
-                addMessage(
-                    `<p class="mb-2 font-bold">🤔 Preguntas Frecuentes</p>
-          <p class="mb-1 text-sm font-semibold">❓ ¿Cuándo recibo el link de la videollamada?</p>
-          <p class="text-xs mb-2">✅ 24 horas antes de tu cita por email y WhatsApp</p>
-          <p class="mb-1 text-sm font-semibold">❓ ¿Qué pasa si tengo problemas técnicos?</p>
-          <p class="text-xs mb-2">✅ Tenemos soporte técnico disponible</p>
-          <p class="mb-1 text-sm font-semibold">❓ ¿Puedo reagendar?</p>
-          <p class="text-xs mb-2">✅ Sí, hasta 24h antes sin costo</p>
-          <p class="mb-1 text-sm font-semibold">❓ ¿La receta es válida?</p>
-          <p class="text-xs mb-3">✅ Sí, es una receta digital con firma electrónica válida</p>
-          <p class="font-semibold">¿Listo para agendar?</p>`,
-                    'bot'
-                );
-            }, 800);
-        }
-    }, [step, STEPS.ONLINE_FAQ]);
-
-    const handleFaqResponse = (response) => {
-        if (response === 'YES') {
-            addMessage("✓ Sí, agendar", 'user');
-            setTimeout(() => {
-                setStep(STEPS.ONLINE_CONFIRM);
-            }, 500);
-        } else {
-            addMessage("← Volver a información", 'user');
-            setTimeout(() => {
-                setStep(STEPS.EXPLAIN_ONLINE);
-            }, 500);
-        }
-    };
 
     // ONLINE_CONFIRM
     useEffect(() => {
@@ -466,7 +358,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         setTimeout(() => {
             const lastName = formData.patient_name.split(' ').pop();
             addMessage(
-                `<p class="mb-1">La consulta será por videollamada 📹</p>
+                `<p class="mb-1">La consulta será por videollamada 📹.</p>
         <p class="mb-2">Sra. ${lastName}, las consultas online están disponibles de <span class="font-semibold">Lunes a Viernes</span>.</p>
         <p class="font-semibold">Le mostraré los próximos días disponibles:</p>`,
                 'bot'
@@ -560,9 +452,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
             addMessage(
                 `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span> para tu Consulta Online:</p>
         <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
-        <p class="text-xs mb-1">• Link de la videollamada (Zoom/Meet)</p>
-        <p class="text-xs mb-1">• Datos para el pago</p>
-        <p class="text-xs mb-3">• Recordatorios automáticos</p>
+        <div class="ml-2 mb-3">
+            <p class="text-xs mb-1">• Link de la videollamada (Zoom/Meet)</p>
+            <p class="text-xs mb-1">• Datos para el pago</p>
+            <p class="text-xs mb-1">• Recordatorios automáticos</p>
+        </div>
         <p class="font-semibold">Correo electrónico:</p>`,
                 'bot'
             );
@@ -616,16 +510,18 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     // SUCCESS VIEW
     if (step === STEPS.SUCCESS) {
         return (
-            <div className="flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl relative">
-                <MdCheckCircle size={80} className="mb-6 drop-shadow-md animate-bounce text-purple-600" />
+            <div className={`flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 rounded-2xl relative`}>
+                <MdCheckCircle size={80} className="mb-6 drop-shadow-md animate-bounce" style={{ color: primaryColor }} />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">✅ ¡Cita Agendada!</h2>
-                <p className="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-4">📹 Consulta Online Registrada</p>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg mb-4 max-w-sm">
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
+                <p className="text-lg font-semibold mb-4" style={{ color: primaryColor }}>📹 Consulta Online Registrada</p>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-lg mb-4 max-w-sm w-full">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
+                    <div className="text-left space-y-1 ml-4">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
+                    </div>
                 </div>
                 <p className="text-sm text-gray-500">Revisa tu bandeja de entrada y spam.</p>
                 <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
@@ -638,7 +534,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
             <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
 
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 flex items-center justify-between">
+            <div className="p-3 flex items-center justify-between text-white" style={{ backgroundColor: primaryColor }}>
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
                         {doctor?.photo_url ? (
@@ -655,7 +551,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     </div>
                     <div>
                         <p className="text-white font-bold text-sm">Consulta Online</p>
-                        <p className="text-purple-100 text-xs">📹 Videollamada</p>
+                        <p className="text-white/80 text-xs">📹 Videollamada</p>
                     </div>
                 </div>
                 <button
@@ -667,7 +563,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
             </div>
 
             {/* Chat History */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                 {history.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
                         {msg.type === 'bot' && (
@@ -687,9 +583,12 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                         )}
                         <div
                             className={`max-w-[85%] p-3 text-sm rounded-2xl shadow-sm ${msg.type === 'user'
-                                ? 'bg-purple-600 text-white rounded-br-none'
-                                : 'bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-500 text-gray-800 dark:text-gray-200 rounded-bl-none'
+                                ? 'text-white rounded-br-none'
+                                : 'border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
                                 }`}
+                            style={{
+                                backgroundColor: msg.type === 'user' ? primaryColor : `${primaryColor}33`
+                            }}
                         >
                             {msg.type === 'bot' ? (
                                 <span dangerouslySetInnerHTML={{ __html: msg.text }} />
@@ -725,7 +624,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                         <button
                             onClick={handleConfirm}
                             disabled={loading}
-                            className="w-full py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition shadow-md"
+                            className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition shadow-md"
+                            style={{ backgroundColor: primaryColor }}
                         >
                             ✓ Confirmar Cita
                         </button>
@@ -737,12 +637,13 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
             {/* Input Area */}
             <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                {/* EXPLAIN_ONLINE buttons */}
+                {/* WELCOME_ONLINE buttons */}
                 {step === STEPS.WELCOME_ONLINE && (
                     <div className="flex gap-2 justify-center">
                         <button
                             onClick={() => handleWelcomeResponse('YES')}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                            style={{ backgroundColor: primaryColor }}
                         >
                             Sí, continuar →
                         </button>
@@ -760,7 +661,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     <div className="flex gap-2 justify-center">
                         <button
                             onClick={() => handleExplainResponse('YES')}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                            style={{ backgroundColor: primaryColor }}
                         >
                             📆 Sí, agendar
                         </button>
@@ -778,7 +680,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     <div className="flex gap-2 justify-center">
                         <button
                             onClick={() => handleFarewellResponse('PRESENCIAL')}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                            style={{ backgroundColor: primaryColor }}
                         >
                             📍 Sí, agendar presencial
                         </button>
@@ -791,47 +694,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     </div>
                 )}
 
-                {/* PRICING buttons */}
-                {step === STEPS.ONLINE_PRICING && (
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        <button
-                            onClick={() => handlePricingResponse('YES')}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
-                        >
-                            ✓ Sí, agendar ahora!
-                        </button>
-                        <button
-                            onClick={() => handlePricingResponse('FAQ')}
-                            className="px-6 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 transition shadow-md"
-                        >
-                            Tengo dudas
-                        </button>
-                        <button
-                            onClick={() => handlePricingResponse('BACK')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            ← Volver
-                        </button>
-                    </div>
-                )}
 
-                {/* FAQ buttons */}
-                {step === STEPS.ONLINE_FAQ && (
-                    <div className="flex gap-2 justify-center">
-                        <button
-                            onClick={() => handleFaqResponse('YES')}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
-                        >
-                            ✓ Sí, agendar
-                        </button>
-                        <button
-                            onClick={() => handleFaqResponse('BACK')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            ← Volver a precios
-                        </button>
-                    </div>
-                )}
+
+
 
                 {/* NAME input */}
                 {step === STEPS.NAME && (
@@ -878,7 +743,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                             <button
                                 key={reason}
                                 onClick={() => handleReasonSelect(reason)}
-                                className="px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium border border-purple-300 hover:bg-purple-100 transition"
+                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                style={{
+                                    borderColor: primaryColor,
+                                    color: primaryColor,
+                                }}
                             >
                                 {reason}
                             </button>
@@ -893,7 +762,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                             <button
                                 key={idx}
                                 onClick={() => handleSmartDateSelect(date)}
-                                className="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                                className="px-4 py-2 text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-md"
+                                style={{ backgroundColor: primaryColor }}
                             >
                                 {formatSmartDate(date)}
                             </button>
@@ -925,7 +795,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                                 <button
                                     key={idx}
                                     onClick={() => handleSmartTimeSelect(time)}
-                                    className="w-full mb-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                                    className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                    style={{ backgroundColor: primaryColor }}
                                 >
                                     {time}
                                 </button>
@@ -937,7 +808,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                                 <button
                                     key={idx}
                                     onClick={() => handleSmartTimeSelect(time)}
-                                    className="w-full mb-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-md"
+                                    className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                    style={{ backgroundColor: primaryColor }}
                                 >
                                     {time}
                                 </button>
@@ -957,7 +829,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     <input
                         type="time"
                         onChange={(e) => e.target.value && handleManualTimeSubmit(e.target.value)}
-                        className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+                        style={{
+                            '--tw-ring-color': primaryColor,
+                            borderColor: primaryColor
+                        }}
                     />
                 )}
 
