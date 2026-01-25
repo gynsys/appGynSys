@@ -252,22 +252,43 @@ async def login_google(
             detail="Google OAuth is not configured"
         )
         
+    import requests as py_requests
     try:
-        # Verify the token
-        print(f"Verifying Google Token: {login_data.token[:20]}...")
-        try:
-            id_info = id_token.verify_oauth2_token(
-                login_data.token,
-                requests.Request(),
-                settings.GOOGLE_CLIENT_ID
+        # Verify via ID Token OR fetch via Access Token
+        email = None
+        name = ""
+        
+        if len(login_data.token) > 500: # Likely an ID Token (JWT)
+            print(f"Verifying Google ID Token...")
+            try:
+                id_info = id_token.verify_oauth2_token(
+                    login_data.token,
+                    requests.Request(),
+                    settings.GOOGLE_CLIENT_ID
+                )
+                email = id_info.get("email")
+                name = id_info.get("name", "")
+            except Exception as e:
+                print(f"ID Token Verification Failed: {e}")
+                raise ValueError(f"ID Token Verification Failed: {e}")
+        else:
+            print(f"Fetching Google Profile via Access Token...")
+            # If it's short, it's likely an Access Token
+            response = py_requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {login_data.token}"}
             )
-        except Exception as e:
-            print(f"Token Verification Failed: {e}")
-            raise ValueError(f"Token Verification Failed: {e}")
+            if response.status_code != 200:
+                print(f"Access Token verification failed: {response.text}")
+                raise ValueError("Invalid Google Access Token")
+            
+            user_info = response.json()
+            email = user_info.get("email")
+            name = user_info.get("name", "")
 
-        # Get user info
-        email = id_info.get("email")
-        name = id_info.get("name", "")
+        if not email:
+            raise ValueError("Could not retrieve email from Google")
+            
         print(f"Google User Verified: {email} ({name})")
         
         # Check if doctor exists
