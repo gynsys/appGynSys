@@ -177,15 +177,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         setHistory([
             {
                 type: 'bot',
-                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual ${prefix}</p><p class="font-bold mb-2">${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold text-purple-600">CONSULTAS ONLINE</span>.</p><p>Permíteme explicarte cómo funciona esta modalidad.</p>`
+                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual ${prefix}</p><p class="font-bold mb-2">${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold text-purple-600">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
             }
         ]);
-
-        // Auto-advance to EXPLAIN after 1.5s
-        setTimeout(() => {
-            setStep(STEPS.EXPLAIN_ONLINE);
-        }, 1500);
-    }, [doctor, STEPS.EXPLAIN_ONLINE]);
+        // Auto-advance removed as per request
+    }, [doctor]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -202,35 +198,67 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     /* ========== STEP HANDLERS ========== */
 
     // EXPLAIN_ONLINE
+    const handleWelcomeResponse = (response) => {
+        if (response === 'YES') {
+            addMessage("Sí, continuar →", 'user');
+            setTimeout(() => {
+                setStep(STEPS.EXPLAIN_ONLINE);
+            }, 500);
+        } else {
+            addMessage("No, en otra ocasión", 'user');
+            setTimeout(() => {
+                onClose(); // Close directly as per flow implication
+            }, 500);
+        }
+    };
+
+    // EXPLAIN_ONLINE (Consolidated Step)
     useEffect(() => {
-        if (step === STEPS.EXPLAIN_ONLINE) {
+        if (step === STEPS.EXPLAIN_ONLINE && settings) {
+            const price1 = settings.first_consultation_price || 50;
+            const price2 = settings.followup_price || 40;
+            const currency = settings.currency || 'USD';
+
             setTimeout(() => {
                 addMessage(
                     `<p class="mb-2 font-bold">✨ ¿Cómo funciona la Consulta Online?</p>
-          <p class="mb-1"><strong>📹 Videollamada en Vivo</strong></p>
+          <p class="mb-1"><strong>📹 Se realiza Videollamada en Vivo de acuerdo a la cita pautada.</strong></p>
           <p class="mb-2 text-xs">• Consulta por Zoom o Google Meet<br/>• Pantalla compartida para revisar exámenes</p>
           <p class="mb-1"><strong>⏱️ Duración: 30-45 minutos</strong></p>
           <p class="mb-2 text-xs">• Tiempo completo de atención personalizada</p>
           <p class="mb-1"><strong>📄 Incluye:</strong></p>
           <p class="mb-2 text-xs">✓ Receta médica digital firmada<br/>✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
           <p class="mb-2"><strong>🔒 100% Privado y Confidencial</strong></p>
-          <p class="font-semibold">¿Te gustaría conocer los precios?</p>`,
+          
+          <div class="border-t border-purple-100 my-3"></div>
+          
+          <p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
+          <div class="bg-white dark:bg-gray-700 p-3 rounded-lg mb-3 border border-purple-200">
+            <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
+            <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
+          </div>
+          
+          <p class="mb-1 font-semibold">💳 Métodos de Pago:</p>
+          <p class="text-xs mb-2">• Zelle<br/>• PayPal<br/>• Transferencia bancaria<br/>• Pago móvil (Bs)</p>
+          <p class="text-xs mb-3">📌 Nota: El pago se confirma antes de la videollamada. Se enviarán los datos bancarios por email.</p>
+          
+          <p class="font-semibold">¿Deseas agendar tu Consulta Online ahora?</p>`,
                     'bot'
                 );
             }, 800);
         }
-    }, [step, STEPS.EXPLAIN_ONLINE]);
+    }, [step, settings, STEPS.EXPLAIN_ONLINE]);
 
     const handleExplainResponse = (response) => {
         if (response === 'YES') {
-            addMessage("Sí, continuar →", 'user');
+            addMessage("¡Sí, agendar ahora!", 'user');
             setTimeout(() => {
-                setStep(STEPS.ONLINE_PRICING);
+                setStep(STEPS.ONLINE_CONFIRM);
             }, 500);
         } else {
-            addMessage("← No, consulta presencial", 'user');
+            addMessage("No, en otra ocasión", 'user');
             setTimeout(() => {
-                setStep(STEPS.FAREWELL_MESSAGE);
+                onClose();
             }, 500);
         }
     };
@@ -339,9 +367,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                 setStep(STEPS.ONLINE_CONFIRM);
             }, 500);
         } else {
-            addMessage("← Volver a precios", 'user');
+            addMessage("← Volver a información", 'user');
             setTimeout(() => {
-                setStep(STEPS.ONLINE_PRICING);
+                setStep(STEPS.EXPLAIN_ONLINE);
             }, 500);
         }
     };
@@ -710,19 +738,37 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
             {/* Input Area */}
             <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                 {/* EXPLAIN_ONLINE buttons */}
+                {step === STEPS.WELCOME_ONLINE && (
+                    <div className="flex gap-2 justify-center">
+                        <button
+                            onClick={() => handleWelcomeResponse('YES')}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
+                        >
+                            Sí, continuar →
+                        </button>
+                        <button
+                            onClick={() => handleWelcomeResponse('NO')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            ✘ No, en otra ocasión
+                        </button>
+                    </div>
+                )}
+
+                {/* EXPLAIN_ONLINE buttons */}
                 {step === STEPS.EXPLAIN_ONLINE && (
                     <div className="flex gap-2 justify-center">
                         <button
                             onClick={() => handleExplainResponse('YES')}
                             className="px-6 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition shadow-md"
                         >
-                            Sí, continuar →
+                            📆 Sí, agendar
                         </button>
                         <button
                             onClick={() => handleExplainResponse('NO')}
                             className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                         >
-                            ← No, consulta presencial
+                            En otra ocasión
                         </button>
                     </div>
                 )}
