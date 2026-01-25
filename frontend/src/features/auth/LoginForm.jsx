@@ -105,7 +105,7 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
   const content = (
     <div className={containerClasses}>
       <div>
-        <h2 className={`text-center text-3xl font-extrabold ${isModal || isDark ? 'text-gray-900 dark:text-white' : 'text-gray-900'}`}>
+        <h2 className={`text-center text-[22px] font-extrabold ${isModal || isDark ? 'text-gray-900 dark:text-white' : 'text-gray-900'}`}>
           Inicia sesión en tu cuenta
         </h2>
       </div>
@@ -190,13 +190,12 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
         </div>
 
         <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className={`w-full border-t ${isModal || isDark ? 'border-gray-300 dark:border-gray-600' : 'border-gray-300'}`} />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className={`px-2 text-gray-500 bg-transparent ${isModal || isDark ? 'dark:text-gray-400' : ''}`}>O continúa con</span>
-            </div>
+          <div className="flex items-center">
+            <div className={`flex-grow border-t ${isModal || isDark ? 'border-gray-300 dark:border-gray-600' : 'border-gray-300'}`} />
+            <span className={`flex-shrink mx-4 text-sm text-gray-500 ${isModal || isDark ? 'dark:text-gray-400' : ''}`}>
+              O continúa con
+            </span>
+            <div className={`flex-grow border-t ${isModal || isDark ? 'border-gray-300 dark:border-gray-600' : 'border-gray-300'}`} />
           </div>
 
           <div className="mt-6">
