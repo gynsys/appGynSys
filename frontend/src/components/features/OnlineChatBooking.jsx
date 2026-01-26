@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { appointmentService } from '../../services/appointmentService';
 import { onlineConsultationService } from '../../services/onlineConsultationService';
 import ModernLoader from '../common/ModernLoader';
-import { MdSend, MdCheckCircle, MdClose } from 'react-icons/md';
+import { MdSend, MdCheckCircle, MdClose, MdCalendarToday } from 'react-icons/md';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from 'axios';
 
@@ -132,6 +132,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     const [settings, setSettings] = useState(null);
     const [suggestedDates, setSuggestedDates] = useState([]);
     const [suggestedTimes, setSuggestedTimes] = useState([]);
+    const [availableSlotsMap, setAvailableSlotsMap] = useState({}); // { "2023-10-27": ["09:00", "10:00"] }
 
     const [formData, setFormData] = useState({
         patient_name: '',
@@ -230,7 +231,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
           <p class="mb-1"><strong>⏱️ Duración: 30-45 minutos</strong></p>
           <p class="mb-2 text-xs">• Tiempo completo de atención personalizada</p>
           <p class="mb-1"><strong>📄 Incluye:</strong></p>
-          <p class="mb-2 text-xs">✓ Receta médica digital firmada<br/>✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
+          <p class="mb-2 text-xs">✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
           <p class="mb-2"><strong>🔒 100% Privado y Confidencial</strong></p>
           <p class="font-semibold">¿Deseas que te explique los precios?</p>`,
                     'bot'
@@ -255,10 +256,10 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     // ONLINE_PRICING (Prices & Payment)
     useEffect(() => {
-        if (step === STEPS.ONLINE_PRICING && settings) {
-            const price1 = settings.first_consultation_price || 50;
-            const price2 = settings.followup_price || 40;
-            const currency = settings.currency || 'USD';
+        if (step === STEPS.ONLINE_PRICING) {
+            const price1 = settings?.first_consultation_price || 50;
+            const price2 = settings?.followup_price || 40;
+            const currency = settings?.currency || 'USD';
 
             setTimeout(() => {
                 addMessage(
@@ -382,25 +383,67 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         ];
     };
 
-    const handleReasonSelect = (value) => {
+    const handleReasonSelect = async (value) => {
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, reason_for_visit: value }));
 
-        // Generate dates and times for online
-        const dates = generateOnlineDates(3);
-        setSuggestedDates(dates);
-        setSuggestedTimes(['09:00', '11:00', '14:00', '16:00']);
+        // Show "Searching" feedback
+        addMessage("🔍 Buscando disponibilidad en tiempo real...", 'bot');
 
-        setTimeout(() => {
-            const lastName = formData.patient_name.split(' ').pop();
-            addMessage(
-                `<p class="mb-1">La consulta será por videollamada 📹.</p>
-        <p class="mb-2">Sra. ${lastName}, las consultas online están disponibles de <span class="font-semibold">Lunes a Viernes</span>.</p>
-        <p class="font-semibold">Le mostraré los próximos días disponibles:</p>`,
-                'bot'
-            );
-            setStep(STEPS.DATE_SUGGESTION);
-        }, 800);
+        try {
+            // Fetch next 14 days
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() + 1); // From tomorrow
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 14);
+
+            const startStr = startDate.toISOString().split('T')[0];
+            const endStr = endDate.toISOString().split('T')[0];
+
+            let slots = [];
+            if (doctor?.slug_url) {
+                slots = await onlineConsultationService.getAvailableSlots(doctor.slug_url, startStr, endStr);
+            }
+
+            // Process slots into map: { "YYYY-MM-DD": ["HH:mm", ...] }
+            const map = {};
+            slots.forEach(isoStr => {
+                const [datePart, timePart] = isoStr.split('T');
+                const timeHM = timePart.substring(0, 5); // HH:mm
+                if (!map[datePart]) map[datePart] = [];
+                map[datePart].push(timeHM);
+            });
+
+            setAvailableSlotsMap(map);
+
+            // Get unique dates
+            const uniqueDateKeys = Object.keys(map).sort();
+            const datesObj = uniqueDateKeys.slice(0, 3).map(d => new Date(d + 'T12:00:00')); // mid-day to avoid timezone shifting
+
+            if (datesObj.length === 0) {
+                setTimeout(() => {
+                    addMessage("Lo siento, no encontré horarios disponibles en los próximos días. Por favor intente más tarde.", 'bot');
+                    onClose();
+                }, 1000);
+                return;
+            }
+
+            setSuggestedDates(datesObj);
+
+            setTimeout(() => {
+                const lastName = formData.patient_name.split(' ').pop();
+                addMessage(
+                    `<p class="mb-1">La consulta será por videollamada 📹.</p>
+            <p class="mb-2">Sra. ${lastName}, le mostraré los próximos días disponibles según la agenda:</p>`,
+                    'bot'
+                );
+                setStep(STEPS.DATE_SUGGESTION);
+            }, 800);
+
+        } catch (err) {
+            console.error("Error fetching slots", err);
+            addMessage("Ocurrió un error consultando la agenda.", 'bot');
+        }
     };
 
     // DATE
@@ -409,6 +452,10 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         const isoDate = dateObj.toISOString().split('T')[0];
         addMessage(readable, 'user');
         setFormData(prev => ({ ...prev, date_part: isoDate }));
+
+        // Set times based on availability map
+        const availableTimes = availableSlotsMap[isoDate] || [];
+        setSuggestedTimes(availableTimes);
 
         setTimeout(() => {
             const lastName = formData.patient_name.split(' ').pop();
@@ -846,22 +893,25 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
                 {/* DATE_SUGGESTION buttons */}
                 {step === STEPS.DATE_SUGGESTION && (
-                    <div className="flex flex-wrap gap-2">
-                        {suggestedDates.map((date, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => handleSmartDateSelect(date)}
-                                className="px-4 py-2 text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-md"
-                                style={{ backgroundColor: primaryColor }}
-                            >
-                                {formatSmartDate(date)}
-                            </button>
-                        ))}
+                    <div className="space-y-3">
+                        <div className="flex gap-2 justify-center overflow-x-auto pb-2">
+                            {suggestedDates.map((date, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSmartDateSelect(date)}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 min-w-[100px] flex flex-col items-center"
+                                    style={{ backgroundColor: primaryColor }}
+                                >
+                                    <span className="text-xs font-light uppercase">{formatSmartDate(date).split(' ')[0]}</span>
+                                    <span className="font-bold text-lg">{date.getDate()}</span>
+                                </button>
+                            ))}
+                        </div>
                         <button
                             onClick={handleManualDateTrigger}
-                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
+                            className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center justify-center gap-2"
                         >
-                            📅 Elegir otra fecha...
+                            <MdCalendarToday /> Elegir otra fecha...
                         </button>
                     </div>
                 )}

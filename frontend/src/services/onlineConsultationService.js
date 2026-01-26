@@ -32,5 +32,19 @@ export const onlineConsultationService = {
     async updateSettings(settingsData) {
         const response = await api.put('/online-consultation/settings', settingsData);
         return response.data;
+    },
+
+    /**
+     * Get available slots for online consultation
+     * @param {string} doctorSlug 
+     * @param {string} startDate YYYY-MM-DD
+     * @param {string} endDate YYYY-MM-DD
+     * @returns {Promise} List of ISO slot strings
+     */
+    async getAvailableSlots(doctorSlug, startDate, endDate) {
+        const response = await api.get('/online-consultation/available-slots', {
+            params: { doctor_slug: doctorSlug, start_date: startDate, end_date: endDate }
+        });
+        return response.data;
     }
 };
