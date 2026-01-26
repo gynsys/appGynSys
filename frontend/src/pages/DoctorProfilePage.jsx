@@ -563,6 +563,7 @@ export default function DoctorProfilePage() {
         doctor={doctor}
         isOpen={isOnlineConsultationModalOpen}
         onClose={() => setIsOnlineConsultationModalOpen(false)}
+        settings={onlineSettings}
       />
 
       {/* Persistent Chat Widget for Patients */}

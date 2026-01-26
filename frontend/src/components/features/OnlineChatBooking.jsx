@@ -99,7 +99,7 @@ SimpleInput.propTypes = {
     primaryColor: PropTypes.string.isRequired,
 };
 
-export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOpen = true }) {
+export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOpen = true, settings: propSettings }) {
     // Brand Color
     const primaryColor = doctor?.theme_primary_color || '#4F46E5';
 
@@ -129,10 +129,17 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     const [step, setStep] = useState(STEPS.WELCOME_ONLINE);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [settings, setSettings] = useState(null);
+    const [settings, setSettings] = useState(propSettings || null);
     const [suggestedDates, setSuggestedDates] = useState([]);
     const [suggestedTimes, setSuggestedTimes] = useState([]);
     const [availableSlotsMap, setAvailableSlotsMap] = useState({});
+
+    // Sync settings from prop
+    useEffect(() => {
+        if (propSettings) {
+            setSettings(propSettings);
+        }
+    }, [propSettings]);
 
     // Animation & UX State
     const [isVisible, setIsVisible] = useState(false);
@@ -156,7 +163,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     const [paypalConfig, setPaypalConfig] = useState(null);
 
     // Body Scroll Lock
-    // Body Scroll Lock
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -170,16 +176,26 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
 
     const messagesEndRef = useRef(null);
 
-    // Load settings and PayPal config
+    // Load settings (fallback) and PayPal config
     useEffect(() => {
         const loadData = async () => {
             if (doctor?.slug_url) {
                 try {
-                    const [settingsData, paypalData] = await Promise.all([
-                        onlineConsultationService.getPublicSettings(doctor.slug_url),
-                        axios.get(`${import.meta.env.VITE_API_URL}/api/v1/payment/config`)
-                    ]);
-                    setSettings(settingsData);
+                    const requests = [];
+                    // Only fetch settings if not provided by prop
+                    if (!propSettings) {
+                        requests.push(onlineConsultationService.getPublicSettings(doctor.slug_url));
+                    } else {
+                        requests.push(Promise.resolve(propSettings));
+                    }
+
+                    requests.push(axios.get(`${import.meta.env.VITE_API_URL}/api/v1/payment/config`));
+
+                    const [settingsData, paypalData] = await Promise.all(requests);
+
+                    if (!propSettings) {
+                        setSettings(settingsData);
+                    }
                     setPaypalConfig(paypalData.data);
                 } catch (err) {
                     console.error("Error loading data", err);
@@ -187,7 +203,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             }
         };
         loadData();
-    }, [doctor]);
+    }, [doctor, propSettings]);
 
     // Initialize chat with welcome
     useEffect(() => {
@@ -1072,7 +1088,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                             'mobile_payment': 'Pago móvil (Bs)'
                                         };
                                         const activeMethods = settings?.payment_methods || ['zelle', 'paypal'];
-                                        
+
                                         return activeMethods.map(methodKey => (
                                             <button
                                                 key={methodKey}
