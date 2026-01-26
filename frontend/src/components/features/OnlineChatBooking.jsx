@@ -156,12 +156,17 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     const [paypalConfig, setPaypalConfig] = useState(null);
 
     // Body Scroll Lock
+    // Body Scroll Lock
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, []);
+    }, [isOpen]);
 
     const messagesEndRef = useRef(null);
 
@@ -187,6 +192,23 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     // Initialize chat with welcome
     useEffect(() => {
         if (isOpen) {
+            // Reset State for fresh session
+            setStep(STEPS.WELCOME_ONLINE);
+            setFormData({
+                patient_name: '',
+                patient_dni: '',
+                patient_age: '',
+                residence: '',
+                appointment_type: 'Consulta Online',
+                reason_for_visit: '',
+                location: 'Online (Videollamada)',
+                date_part: '',
+                time_part: '',
+                patient_phone: '',
+                payment_method: '',
+                patient_email: ''
+            });
+
             // Slight delay for entrance animation
             setTimeout(() => setIsVisible(true), 50);
 
