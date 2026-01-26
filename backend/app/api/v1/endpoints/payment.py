@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.base import Base
-from app.api import deps
+from app.db.base import Base, get_db
+# from app.api import deps  <-- REMOVED
 from app.services.paypal_service import paypal_service
 from app.db.models.appointment import Appointment
 from app.db.models.doctor import Doctor
@@ -21,7 +21,7 @@ def get_paypal_config():
 @router.post("/create-order")
 def create_order(
     request: PayPalOrderRequest,
-    db: Session = Depends(deps.get_db)
+    db: Session = Depends(get_db)
 ):
     # 1. Get Doctor
     doctor = db.query(Doctor).filter(Doctor.id == request.doctor_id).first()
