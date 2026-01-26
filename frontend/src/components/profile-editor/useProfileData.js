@@ -24,6 +24,7 @@ export const useProfileData = () => {
     card_shadow: true,
     container_shadow: true,
     contact_email: '',
+    whatsapp_url: '',
     show_certifications_carousel: false,
     enabled_modules: []
   })
@@ -57,6 +58,7 @@ export const useProfileData = () => {
         card_shadow: data.card_shadow !== undefined ? data.card_shadow : true,
         container_shadow: data.container_shadow !== undefined ? data.container_shadow : true,
         contact_email: data.contact_email || '',
+        whatsapp_url: data.whatsapp_url || '',
         social_youtube: data.social_youtube || '',
         social_instagram: data.social_instagram || '',
         social_tiktok: data.social_tiktok || '',

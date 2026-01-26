@@ -5,6 +5,8 @@ import { appointmentService } from '../../services/appointmentService';
 import { onlineConsultationService } from '../../services/onlineConsultationService';
 import ModernLoader from '../common/ModernLoader';
 import { MdSend, MdCheckCircle, MdClose } from 'react-icons/md';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import axios from 'axios';
 
 // Helper: Capitalize words
 const capitalizeWords = (str) => {
@@ -106,10 +108,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         WELCOME_ONLINE: 'WELCOME_ONLINE',
         EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
         FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
-        WELCOME_ONLINE: 'WELCOME_ONLINE',
-        EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
-        FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
-        // Consolidated info replaces PRICING/FAQ
         NAME: 'NAME',
         DNI: 'DNI',
         AGE: 'AGE',
@@ -120,7 +118,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         TIME_SUGGESTION: 'TIME_SUGGESTION',
         TIME_MANUAL: 'TIME_MANUAL',
         PHONE: 'PHONE',
-        OCCUPATION: 'OCCUPATION',
+        PAYMENT_METHOD: 'PAYMENT_METHOD',
         EMAIL: 'EMAIL',
         CONFIRM: 'CONFIRM',
         SUCCESS: 'SUCCESS'
@@ -145,25 +143,39 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         date_part: '',
         time_part: '',
         patient_phone: '',
-        occupation: '',
+        payment_method: '',
         patient_email: ''
     });
 
+    const [paypalConfig, setPaypalConfig] = useState(null);
+
+    // Body Scroll Lock
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     const messagesEndRef = useRef(null);
 
-    // Load settings on mount
+    // Load settings and PayPal config
     useEffect(() => {
-        const loadSettings = async () => {
+        const loadData = async () => {
             if (doctor?.slug_url) {
                 try {
-                    const data = await onlineConsultationService.getPublicSettings(doctor.slug_url);
-                    setSettings(data);
+                    const [settingsData, paypalData] = await Promise.all([
+                        onlineConsultationService.getPublicSettings(doctor.slug_url),
+                        axios.get(`${import.meta.env.VITE_API_URL}/api/v1/payment/config`)
+                    ]);
+                    setSettings(settingsData);
+                    setPaypalConfig(paypalData.data);
                 } catch (err) {
-                    console.error("Error loading online consultation settings", err);
+                    console.error("Error loading data", err);
                 }
             }
         };
-        loadSettings();
+        loadData();
     }, [doctor]);
 
     // Initialize chat with welcome
@@ -439,15 +451,15 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         setFormData(prev => ({ ...prev, patient_phone: value }));
         addMessage(value, 'user');
         setTimeout(() => {
-            addMessage("Gracias. ¿Cuál es su ocupación actual?", 'bot');
-            setStep(STEPS.OCCUPATION);
+            addMessage("Por favor, indíqueme su método de pago.", 'bot');
+            setStep(STEPS.PAYMENT_METHOD);
         }, 500);
     };
 
-    // OCCUPATION
-    const handleOccupationSubmit = (value) => {
-        addMessage(value, 'user');
-        setFormData(prev => ({ ...prev, occupation: value }));
+    // PAYMENT METHOD
+    const handlePaymentMethodSubmit = (method) => {
+        addMessage(method, 'user');
+        setFormData(prev => ({ ...prev, payment_method: method }));
         setTimeout(() => {
             addMessage(
                 `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span> para tu Consulta Online:</p>
@@ -484,26 +496,29 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     const handleConfirm = async () => {
         setLoading(true);
         try {
-            const fullDate = `${formData.date_part}T${formData.time_part}`;
-            const appointmentPayload = {
-                doctor_id: doctorId,
-                ...formData,
-                appointment_date: fullDate,
-                status: 'pending'
-            };
-            await appointmentService.createAppointment(appointmentPayload);
-
-            setLoading(false);
-            setStep(STEPS.SUCCESS);
-            setTimeout(() => {
-                onClose();
-            }, 5000);
+            await submitAppointment('pending');
         } catch (error) {
             console.error("Error booking online consultation", error);
             setLoading(false);
             addMessage("Hubo un error al agendar tu consulta. Por favor intenta nuevamente.", 'bot');
         }
     };
+
+    const submitAppointment = async (status = 'pending') => {
+        const fullDate = `${formData.date_part}T${formData.time_part}`;
+        const appointmentPayload = {
+            doctor_id: doctorId,
+            ...formData,
+            appointment_date: fullDate,
+            status: status
+        };
+        await appointmentService.createAppointment(appointmentPayload);
+        setLoading(false);
+        setStep(STEPS.SUCCESS);
+        setTimeout(() => {
+            onClose();
+        }, 5000);
+    }
 
     // ========== RENDER ==========
 
@@ -617,18 +632,49 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                             <div className="border-t border-purple-100 my-2"></div>
                             <p><span className="font-semibold">Teléfono:</span> {formData.patient_phone}</p>
                             <p><span className="font-semibold">Email:</span> {formData.patient_email}</p>
+                            <p><span className="font-semibold">Pago:</span> {formData.payment_method}</p>
                             <div className="border-t border-purple-100 my-2"></div>
                             <p className="font-bold text-purple-600">💰 Costo: {settings?.currency || 'USD'} ${settings?.first_consultation_price || 50}</p>
                         </div>
                         <p className="text-xs text-gray-500 mt-3 mb-3">📧 Recibirás un email con datos para el pago, link de videollamada y recomendaciones pre-consulta.</p>
-                        <button
-                            onClick={handleConfirm}
-                            disabled={loading}
-                            className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition shadow-md"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            ✓ Confirmar Cita
-                        </button>
+
+                        {formData.payment_method === 'PayPal' && paypalConfig ? (
+                            <PayPalScriptProvider options={{ "client-id": paypalConfig.client_id, currency: "USD" }}>
+                                <PayPalButtons
+                                    style={{ layout: "vertical" }}
+                                    createOrder={async (data, actions) => {
+                                        try {
+                                            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/create-order`, {
+                                                doctor_id: doctorId,
+                                                patient_dni: formData.patient_dni
+                                            });
+                                            return response.data.id;
+                                        } catch (err) {
+                                            console.error("Error creating order", err);
+                                            throw err;
+                                        }
+                                    }}
+                                    onApprove={async (data, actions) => {
+                                        try {
+                                            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/capture-order/${data.orderID}`);
+                                            await submitAppointment('confirmed'); // Mark as confirmed/paid
+                                        } catch (err) {
+                                            console.error("Capture error", err);
+                                            addMessage("Error al procesar el pago. Contacte soporte.", 'bot');
+                                        }
+                                    }}
+                                />
+                            </PayPalScriptProvider>
+                        ) : (
+                            <button
+                                onClick={handleConfirm}
+                                disabled={loading}
+                                className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition shadow-md"
+                                style={{ backgroundColor: primaryColor }}
+                            >
+                                ✓ Confirmar Cita
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -846,13 +892,23 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     />
                 )}
 
-                {/* OCCUPATION input */}
-                {step === STEPS.OCCUPATION && (
-                    <SimpleInput
-                        placeholder="Ej: Ingeniera, Estudiante..."
-                        onSubmit={handleOccupationSubmit}
-                        primaryColor={primaryColor}
-                    />
+                {/* PAYMENT METHOD buttons */}
+                {step === STEPS.PAYMENT_METHOD && (
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        {['Zelle', 'PayPal', 'Transferencia bancaria', 'Pago móvil (Bs)'].map(method => (
+                            <button
+                                key={method}
+                                onClick={() => handlePaymentMethodSubmit(method)}
+                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                style={{
+                                    borderColor: primaryColor,
+                                    color: primaryColor,
+                                }}
+                            >
+                                {method}
+                            </button>
+                        ))}
+                    </div>
                 )}
 
                 {/* EMAIL input */}
