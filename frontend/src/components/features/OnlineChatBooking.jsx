@@ -313,16 +313,29 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             const price2 = settings?.followup_price || 40;
             const currency = settings?.currency || 'USD';
 
+            // Dynamic Payment Methods List for Message
+            const methodLabels = {
+                'zelle': '• Zelle',
+                'paypal': '• PayPal',
+                'bank_transfer': '• Transferencia bancaria',
+                'mobile_payment': '• Pago móvil (Bs)'
+            };
+
+            const activeMethods = settings?.payment_methods || ['zelle', 'paypal'];
+            const methodsListHtml = activeMethods
+                .map(m => methodLabels[m] || `• ${capitalizeWords(m)}`)
+                .join('<br/>');
+
             setTimeout(() => {
                 addMessage(
                     `<p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
           <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mb-3 border border-gray-200 dark:border-gray-700">
-            <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
-            <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
+            <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} ${price1}</span></p>
+            <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} ${price2}</span></p>
           </div>
           
           <p class="mb-1 font-semibold">💳 Métodos de Pago:</p>
-          <p class="text-xs mb-2">• Zelle<br/>• PayPal<br/>• Transferencia bancaria<br/>• Pago móvil (Bs)</p>
+          <p class="text-xs mb-2">${methodsListHtml || '• A convenir'}</p>
           <p class="text-xs mb-3">📌 Nota: El pago se confirma antes de la videollamada. Se enviarán los datos bancarios por email.</p>
           
           <p class="font-semibold">¿Deseas agendar tu Consulta Online ahora?</p>`,
@@ -1051,19 +1064,29 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                             {/* PAYMENT METHOD buttons */}
                             {step === STEPS.PAYMENT_METHOD && (
                                 <div className="flex flex-wrap gap-2 justify-center">
-                                    {['Zelle', 'PayPal', 'Transferencia bancaria', 'Pago móvil (Bs)'].map(method => (
-                                        <button
-                                            key={method}
-                                            onClick={() => handlePaymentMethodSubmit(method)}
-                                            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
-                                            style={{
-                                                borderColor: primaryColor,
-                                                color: primaryColor,
-                                            }}
-                                        >
-                                            {method}
-                                        </button>
-                                    ))}
+                                    {(() => {
+                                        const methodLabels = {
+                                            'zelle': 'Zelle',
+                                            'paypal': 'PayPal',
+                                            'bank_transfer': 'Transferencia bancaria',
+                                            'mobile_payment': 'Pago móvil (Bs)'
+                                        };
+                                        const activeMethods = settings?.payment_methods || ['zelle', 'paypal'];
+                                        
+                                        return activeMethods.map(methodKey => (
+                                            <button
+                                                key={methodKey}
+                                                onClick={() => handlePaymentMethodSubmit(methodLabels[methodKey] || capitalizeWords(methodKey))}
+                                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                                style={{
+                                                    borderColor: primaryColor,
+                                                    color: primaryColor,
+                                                }}
+                                            >
+                                                {methodLabels[methodKey] || capitalizeWords(methodKey)}
+                                            </button>
+                                        ));
+                                    })()}
                                 </div>
                             )}
 
