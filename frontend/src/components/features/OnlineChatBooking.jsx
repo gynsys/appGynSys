@@ -618,9 +618,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
             <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
 
             {/* Header */}
-            <div className="p-3 flex items-center justify-between text-white" style={{ backgroundColor: primaryColor }}>
+            <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-600">
                         {doctor?.photo_url ? (
                             <img
                                 src={getImageUrl(doctor.photo_url)}
@@ -628,19 +628,19 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center font-bold text-purple-600 text-sm">
+                            <div className="w-full h-full flex items-center justify-center font-bold text-sm" style={{ color: primaryColor }}>
                                 {doctor?.nombre_completo?.charAt(0) || 'D'}
                             </div>
                         )}
                     </div>
                     <div>
-                        <p className="text-white font-bold text-sm">Consulta Online</p>
-                        <p className="text-white/80 text-xs">📹 Videollamada</p>
+                        <p className="font-bold text-sm text-gray-800 dark:text-white">Consulta Online</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">📹 Videollamada</p>
                     </div>
                 </div>
                 <button
                     onClick={onClose}
-                    className="text-white hover:bg-white/20 p-1 rounded-full transition"
+                    className="text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 p-1 rounded-full transition"
                 >
                     <MdClose size={20} />
                 </button>
