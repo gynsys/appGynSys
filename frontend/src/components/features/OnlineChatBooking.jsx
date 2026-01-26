@@ -1020,32 +1020,41 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                             {/* TIME_SUGGESTION buttons */}
                             {step === STEPS.TIME_SUGGESTION && (
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-2">Mañana:</p>
-                                        {suggestedTimes.slice(0, 2).map((time, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => handleSmartTimeSelect(time)}
-                                                className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
-                                                style={{ backgroundColor: primaryColor }}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-2">Tarde:</p>
-                                        {suggestedTimes.slice(2, 4).map((time, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => handleSmartTimeSelect(time)}
-                                                className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
-                                                style={{ backgroundColor: primaryColor }}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {(() => {
+                                        const morningTimes = suggestedTimes.filter(t => parseInt(t.split(':')[0]) < 12).slice(0, 3);
+                                        const afternoonTimes = suggestedTimes.filter(t => parseInt(t.split(':')[0]) >= 12).slice(0, 3);
+
+                                        return (
+                                            <>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-2">Mañana:</p>
+                                                    {morningTimes.length > 0 ? morningTimes.map((time, idx) => (
+                                                        <button
+                                                            key={`am-${idx}`}
+                                                            onClick={() => handleSmartTimeSelect(time)}
+                                                            className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                            style={{ backgroundColor: primaryColor }}
+                                                        >
+                                                            {time}
+                                                        </button>
+                                                    )) : <p className="text-xs text-gray-400 italic">No disponible</p>}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-2">Tarde:</p>
+                                                    {afternoonTimes.length > 0 ? afternoonTimes.map((time, idx) => (
+                                                        <button
+                                                            key={`pm-${idx}`}
+                                                            onClick={() => handleSmartTimeSelect(time)}
+                                                            className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                            style={{ backgroundColor: primaryColor }}
+                                                        >
+                                                            {time}
+                                                        </button>
+                                                    )) : <p className="text-xs text-gray-400 italic">No disponible</p>}
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                     <button
                                         onClick={handleManualTimeTrigger}
                                         className="col-span-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
