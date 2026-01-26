@@ -597,9 +597,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     if (step === STEPS.SUCCESS) {
         return (
             <div className={`flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 rounded-2xl relative`}>
-                <MdCheckCircle size={80} className="mb-6 drop-shadow-md animate-bounce" style={{ color: primaryColor }} />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">✅ ¡Cita Agendada!</h2>
-                <p className="text-lg font-semibold mb-4" style={{ color: primaryColor }}>📹 Consulta Online Registrada</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">¡Cita Agendada!</h2>
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-lg mb-4 max-w-sm w-full">
                     <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
                     <div className="text-left space-y-1 ml-4">
