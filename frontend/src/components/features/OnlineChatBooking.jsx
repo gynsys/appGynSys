@@ -99,7 +99,7 @@ SimpleInput.propTypes = {
     primaryColor: PropTypes.string.isRequired,
 };
 
-export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
+export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOpen = true }) {
     // Brand Color
     const primaryColor = doctor?.theme_primary_color || '#4F46E5';
 
@@ -132,16 +132,20 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     const [settings, setSettings] = useState(null);
     const [suggestedDates, setSuggestedDates] = useState([]);
     const [suggestedTimes, setSuggestedTimes] = useState([]);
-    const [availableSlotsMap, setAvailableSlotsMap] = useState({}); // { "2023-10-27": ["09:00", "10:00"] }
+    const [availableSlotsMap, setAvailableSlotsMap] = useState({});
+
+    // Animation & UX State
+    const [isVisible, setIsVisible] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
 
     const [formData, setFormData] = useState({
         patient_name: '',
         patient_dni: '',
         patient_age: '',
         residence: '',
-        appointment_type: 'Consulta Online', // Pre-assigned
+        appointment_type: 'Consulta Online',
         reason_for_visit: '',
-        location: 'Online (Videollamada)', // Pre-assigned
+        location: 'Online (Videollamada)',
         date_part: '',
         time_part: '',
         patient_phone: '',
@@ -182,14 +186,35 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     // Initialize chat with welcome
     useEffect(() => {
-        const name = doctor?.nombre_completo || 'Doctor';
-        setHistory([
-            {
-                type: 'bot',
-                text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
-            }
-        ]);
-    }, [doctor]);
+        if (isOpen) {
+            // Slight delay for entrance animation
+            setTimeout(() => setIsVisible(true), 50);
+
+            // Initial Welcome Message
+            const name = doctor?.nombre_completo || 'Doctor';
+            setHistory([
+                {
+                    type: 'bot',
+                    text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
+                }
+            ]);
+
+            // Show options after message "appears"
+            setShowOptions(false);
+            setTimeout(() => {
+                setShowOptions(true);
+            }, 1000);
+        } else {
+            setIsVisible(false);
+        }
+    }, [doctor, isOpen]);
+
+    const handleClose = () => {
+        setIsVisible(false);
+        setTimeout(() => {
+            onClose();
+        }, 300);
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -197,7 +222,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     useEffect(() => {
         scrollToBottom();
-    }, [history]);
+    }, [history, showOptions]); // Scroll when history OR options update
 
     const addMessage = (text, type = 'user') => {
         setHistory(prev => [...prev, { type, text }]);
@@ -207,6 +232,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     // EXPLAIN_ONLINE
     const handleWelcomeResponse = (response) => {
+        setShowOptions(false); // Hide immediately
         if (response === 'YES') {
             addMessage("Sí, continuar →", 'user');
             setTimeout(() => {
@@ -215,7 +241,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         } else {
             addMessage("No, en otra ocasión", 'user');
             setTimeout(() => {
-                onClose();
+                handleClose();
             }, 500);
         }
     };
@@ -223,6 +249,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     // EXPLAIN_ONLINE (Info Only)
     useEffect(() => {
         if (step === STEPS.EXPLAIN_ONLINE) {
+            setShowOptions(false);
             setTimeout(() => {
                 addMessage(
                     `<p class="mb-2 font-bold">✨ ¿Cómo funciona la Consulta Online?</p>
@@ -236,6 +263,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
           <p class="font-semibold">¿Deseas que te explique los precios?</p>`,
                     'bot'
                 );
+                // Show options AFTER message
+                setTimeout(() => setShowOptions(true), 500);
             }, 800);
         }
     }, [step, STEPS.EXPLAIN_ONLINE]);
@@ -249,7 +278,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         } else {
             addMessage("No, en otra ocasión", 'user');
             setTimeout(() => {
-                onClose();
+                handleClose();
             }, 500);
         }
     };
@@ -257,6 +286,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     // ONLINE_PRICING (Prices & Payment)
     useEffect(() => {
         if (step === STEPS.ONLINE_PRICING) {
+            setShowOptions(false);
             const price1 = settings?.first_consultation_price || 50;
             const price2 = settings?.followup_price || 40;
             const currency = settings?.currency || 'USD';
@@ -276,11 +306,13 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
           <p class="font-semibold">¿Deseas agendar tu Consulta Online ahora?</p>`,
                     'bot'
                 );
+                setTimeout(() => setShowOptions(true), 500);
             }, 800);
         }
     }, [step, settings, STEPS.ONLINE_PRICING]);
 
     const handlePricingResponse = (response) => {
+        setShowOptions(false); // Hide immediately
         if (response === 'YES') {
             addMessage("📆 Sí, agendar", 'user');
             setTimeout(() => {
@@ -292,11 +324,12 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                     'bot'
                 );
                 setStep(STEPS.NAME);
+                setShowOptions(true);
             }, 500);
         } else {
             addMessage("En otra ocasión", 'user');
             setTimeout(() => {
-                onClose();
+                handleClose();
             }, 500);
         }
     };
@@ -593,431 +626,445 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
 
     // ========== RENDER ==========
 
-    // SUCCESS VIEW
-    if (step === STEPS.SUCCESS) {
-        return (
-            <div className={`flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 rounded-2xl relative`}>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">¡Cita Agendada!</h2>
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-lg mb-4 max-w-sm w-full">
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
-                    <div className="text-left space-y-1 ml-4">
-                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
-                    </div>
-                </div>
-                <p className="text-sm text-gray-500">Revisa tu bandeja de entrada y spam.</p>
-                <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
-            </div>
-        );
-    }
+    // Check if open to render at all (allows exit animation time if managed by parent, but here we manage internally)
+    if (!isOpen && !isVisible) return null;
 
     return (
-        <div className="flex flex-col h-auto min-h-[300px] max-h-[500px] bg-white dark:bg-gray-800 relative rounded-lg overflow-hidden">
-            <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={handleClose}
+            ></div>
 
-            {/* Header */}
-            <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-600">
-                        {doctor?.photo_url ? (
-                            <img
-                                src={getImageUrl(doctor.photo_url)}
-                                alt="Doctor"
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center font-bold text-sm" style={{ color: primaryColor }}>
-                                {doctor?.nombre_completo?.charAt(0) || 'D'}
+            {/* Modal Content */}
+            <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+                <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
+
+                {/* SUCCESS VIEW */}
+                {step === STEPS.SUCCESS ? (
+                    <div className="flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 relative">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">¡Cita Agendada!</h2>
+                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-lg mb-4 max-w-sm w-full">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
+                            <div className="text-left space-y-1 ml-4">
+                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
                             </div>
-                        )}
+                        </div>
+                        <p className="text-sm text-gray-500">Revisa tu bandeja de entrada y spam.</p>
+                        <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
                     </div>
-                    <div>
-                        <p className="font-bold text-sm text-gray-800 dark:text-white">Consulta Online</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">📹 Videollamada</p>
-                    </div>
-                </div>
-                <button
-                    onClick={onClose}
-                    className="text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 p-1 rounded-full transition"
-                >
-                    <MdClose size={20} />
-                </button>
-            </div>
+                ) : (
+                    <div className="flex flex-col h-[500px] max-h-[80vh]">
+                        {/* Header */}
+                        <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
 
-            {/* Chat History */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-                {history.map((msg, idx) => (
-                    <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
-                        {msg.type === 'bot' && (
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-purple-100 border-2 border-purple-300">
-                                {doctor?.photo_url ? (
-                                    <img
-                                        src={getImageUrl(doctor.photo_url)}
-                                        alt="Doctor"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-bold text-xs text-purple-600">
-                                        {doctor?.nombre_completo?.charAt(0) || 'D'}
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-600">
+                                    {doctor?.photo_url ? (
+                                        <img
+                                            src={getImageUrl(doctor.photo_url)}
+                                            alt="Doctor"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center font-bold text-sm" style={{ color: primaryColor }}>
+                                            {doctor?.nombre_completo?.charAt(0) || 'D'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="font-bold text-sm text-gray-800 dark:text-white">Consulta Online</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">📹 Videollamada</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleClose}
+                                className="text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 p-1 rounded-full transition"
+                            >
+                                <MdClose size={20} />
+                            </button>
+                        </div>
+
+                        {/* Chat History */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+                            {history.map((msg, idx) => (
+                                <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                                    {msg.type === 'bot' && (
+                                        <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-purple-100 border-2 border-purple-300">
+                                            {doctor?.photo_url ? (
+                                                <img
+                                                    src={getImageUrl(doctor.photo_url)}
+                                                    alt="Doctor"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center font-bold text-xs text-purple-600">
+                                                    {doctor?.nombre_completo?.charAt(0) || 'D'}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div
+                                        className={`max-w-[85%] p-3 text-sm rounded-2xl shadow-sm ${msg.type === 'user'
+                                            ? 'text-white rounded-br-none'
+                                            : 'border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
+                                            }`}
+                                        style={{
+                                            backgroundColor: msg.type === 'user' ? primaryColor : `${primaryColor}33`
+                                        }}
+                                    >
+                                        {msg.type === 'bot' ? (
+                                            <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+                                        ) : (
+                                            msg.text
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        )}
-                        <div
-                            className={`max-w-[85%] p-3 text-sm rounded-2xl shadow-sm ${msg.type === 'user'
-                                ? 'text-white rounded-br-none'
-                                : 'border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
-                                }`}
-                            style={{
-                                backgroundColor: msg.type === 'user' ? primaryColor : `${primaryColor}33`
-                            }}
-                        >
-                            {msg.type === 'bot' ? (
-                                <span dangerouslySetInnerHTML={{ __html: msg.text }} />
-                            ) : (
-                                msg.text
+                                </div>
+                            ))}
+
+                            {/* Confirmation Summary */}
+                            {step === STEPS.CONFIRM && (
+                                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border-2 border-purple-300 dark:border-purple-500 shadow-lg mx-4 animate-fade-in">
+                                    <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-3 text-sm border-b border-purple-200 pb-2">
+                                        📹 CONSULTA ONLINE - RESUMEN
+                                    </h3>
+                                    <div className="space-y-1 text-xs">
+                                        <p><span className="font-semibold">Nombre:</span> {formData.patient_name}</p>
+                                        <p><span className="font-semibold">Cédula:</span> {formData.patient_dni}</p>
+                                        <p><span className="font-semibold">Edad:</span> {formData.patient_age} años</p>
+                                        <p><span className="font-semibold">Zona:</span> {formData.residence}</p>
+                                        <div className="border-t border-purple-100 my-2"></div>
+                                        <p><span className="font-semibold">Motivo:</span> {formData.reason_for_visit}</p>
+                                        <p><span className="font-semibold">Fecha:</span> {new Date(`${formData.date_part}T${formData.time_part}`).toLocaleString()}</p>
+                                        <p><span className="font-semibold">Medio:</span> Videollamada Zoom/Meet 📹</p>
+                                        <div className="border-t border-purple-100 my-2"></div>
+                                        <p><span className="font-semibold">Teléfono:</span> {formData.patient_phone}</p>
+                                        <p><span className="font-semibold">Email:</span> {formData.patient_email}</p>
+                                        <p><span className="font-semibold">Pago:</span> {formData.payment_method}</p>
+                                        <div className="border-t border-purple-100 my-2"></div>
+                                        <p className="font-bold text-purple-600">💰 Costo: {settings?.currency || 'USD'} ${settings?.first_consultation_price || 50}</p>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-3 mb-3">📧 Recibirás un email con datos para el pago, link de videollamada y recomendaciones pre-consulta.</p>
+
+                                    {formData.payment_method === 'PayPal' && paypalConfig ? (
+                                        <PayPalScriptProvider options={{ "client-id": paypalConfig.client_id, currency: "USD" }}>
+                                            <PayPalButtons
+                                                style={{ layout: "vertical" }}
+                                                createOrder={async (data, actions) => {
+                                                    try {
+                                                        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/create-order`, {
+                                                            doctor_id: doctorId,
+                                                            patient_dni: formData.patient_dni
+                                                        });
+                                                        return response.data.id;
+                                                    } catch (err) {
+                                                        console.error("Error creating order", err);
+                                                        throw err;
+                                                    }
+                                                }}
+                                                onApprove={async (data, actions) => {
+                                                    try {
+                                                        await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/capture-order/${data.orderID}`);
+                                                        await submitAppointment('confirmed'); // Mark as confirmed/paid
+                                                    } catch (err) {
+                                                        console.error("Capture error", err);
+                                                        addMessage("Error al procesar el pago. Contacte soporte.", 'bot');
+                                                    }
+                                                }}
+                                            />
+                                        </PayPalScriptProvider>
+                                    ) : (
+                                        <button
+                                            onClick={handleConfirm}
+                                            disabled={loading}
+                                            className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition shadow-md"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            ✓ Confirmar Cita
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Input Area */}
+                        <div className={`p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 transition-opacity duration-300 ${showOptions ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                            {/* WELCOME_ONLINE buttons */}
+                            {step === STEPS.WELCOME_ONLINE && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handleWelcomeResponse('YES')}
+                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Sí, continuar →
+                                    </button>
+                                    <button
+                                        onClick={() => handleWelcomeResponse('NO')}
+                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        ✘ No, en otra ocasión
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* EXPLAIN_ONLINE buttons */}
+                            {step === STEPS.EXPLAIN_ONLINE && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handleExplainResponse('YES')}
+                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Sí, explicame
+                                    </button>
+                                    <button
+                                        onClick={() => handleExplainResponse('NO')}
+                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        No, en otra ocasión
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* ONLINE_PRICING buttons */}
+                            {step === STEPS.ONLINE_PRICING && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handlePricingResponse('YES')}
+                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        📆 Sí, agendar
+                                    </button>
+                                    <button
+                                        onClick={() => handlePricingResponse('NO')}
+                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        En otra ocasión
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* FAREWELL buttons */}
+                            {step === STEPS.FAREWELL_MESSAGE && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handleFarewellResponse('PRESENCIAL')}
+                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        📍 Sí, agendar presencial
+                                    </button>
+                                    <button
+                                        onClick={() => handleFarewellResponse('CLOSE')}
+                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        Cerrar
+                                    </button>
+                                </div>
+                            )}
+
+
+
+
+
+                            {/* NAME input */}
+                            {step === STEPS.NAME && (
+                                <SimpleInput
+                                    placeholder="Escribe tu nombre completo..."
+                                    onSubmit={handleNameSubmit}
+                                    primaryColor={primaryColor}
+                                />
+                            )}
+
+                            {/* DNI input */}
+                            {step === STEPS.DNI && (
+                                <SimpleInput
+                                    placeholder="Ej: V-12345678"
+                                    onSubmit={handleDniSubmit}
+                                    primaryColor={primaryColor}
+                                />
+                            )}
+
+                            {/* AGE input */}
+                            {step === STEPS.AGE && (
+                                <SimpleInput
+                                    placeholder="Ej: 30"
+                                    onSubmit={handleAgeSubmit}
+                                    type="text"
+                                    numericOnly={true}
+                                    primaryColor={primaryColor}
+                                />
+                            )}
+
+                            {/* RESIDENCE input */}
+                            {step === STEPS.RESIDENCE && (
+                                <SimpleInput
+                                    placeholder="Ej: Centro, Norte..."
+                                    onSubmit={handleResidenceSubmit}
+                                    primaryColor={primaryColor}
+                                />
+                            )}
+
+                            {/* REASON buttons */}
+                            {step === STEPS.REASON && (
+                                <div className="flex flex-wrap gap-2">
+                                    {getOnlineReasonOptions().map(reason => (
+                                        <button
+                                            key={reason}
+                                            onClick={() => handleReasonSelect(reason)}
+                                            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                            style={{
+                                                borderColor: primaryColor,
+                                                color: primaryColor,
+                                            }}
+                                        >
+                                            {reason}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* DATE_SUGGESTION buttons */}
+                            {step === STEPS.DATE_SUGGESTION && (
+                                <div className="space-y-3">
+                                    <div className="flex gap-2 justify-center overflow-x-auto pb-2">
+                                        {suggestedDates.map((date, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleSmartDateSelect(date)}
+                                                className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 min-w-[100px] flex flex-col items-center"
+                                                style={{ backgroundColor: primaryColor }}
+                                            >
+                                                <span className="text-xs font-light uppercase">{formatSmartDate(date).split(' ')[0]}</span>
+                                                <span className="font-bold text-lg">{date.getDate()}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={handleManualDateTrigger}
+                                        className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center justify-center gap-2"
+                                    >
+                                        <MdCalendarToday /> Elegir otra fecha...
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* DATE_MANUAL input */}
+                            {step === STEPS.DATE_MANUAL && (
+                                <input
+                                    type="date"
+                                    onChange={(e) => e.target.value && handleManualDateSubmit(e.target.value)}
+                                    className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                />
+                            )}
+
+                            {/* TIME_SUGGESTION buttons */}
+                            {step === STEPS.TIME_SUGGESTION && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-2">Mañana:</p>
+                                        {suggestedTimes.slice(0, 2).map((time, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleSmartTimeSelect(time)}
+                                                className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                style={{ backgroundColor: primaryColor }}
+                                            >
+                                                {time}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-2">Tarde:</p>
+                                        {suggestedTimes.slice(2, 4).map((time, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleSmartTimeSelect(time)}
+                                                className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                style={{ backgroundColor: primaryColor }}
+                                            >
+                                                {time}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={handleManualTimeTrigger}
+                                        className="col-span-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
+                                    >
+                                        🕐 Otra hora...
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* TIME_MANUAL input */}
+                            {step === STEPS.TIME_MANUAL && (
+                                <input
+                                    type="time"
+                                    onChange={(e) => e.target.value && handleManualTimeSubmit(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+                                    style={{
+                                        '--tw-ring-color': primaryColor,
+                                        borderColor: primaryColor
+                                    }}
+                                />
+                            )}
+
+                            {/* PHONE input */}
+                            {step === STEPS.PHONE && (
+                                <SimpleInput
+                                    placeholder="Ej: 04141234567"
+                                    onSubmit={handlePhoneSubmit}
+                                    primaryColor={primaryColor}
+                                />
+                            )}
+
+                            {/* PAYMENT METHOD buttons */}
+                            {step === STEPS.PAYMENT_METHOD && (
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {['Zelle', 'PayPal', 'Transferencia bancaria', 'Pago móvil (Bs)'].map(method => (
+                                        <button
+                                            key={method}
+                                            onClick={() => handlePaymentMethodSubmit(method)}
+                                            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                            style={{
+                                                borderColor: primaryColor,
+                                                color: primaryColor,
+                                            }}
+                                        >
+                                            {method}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* EMAIL input */}
+                            {step === STEPS.EMAIL && (
+                                <SimpleInput
+                                    placeholder="ejemplo@email.com"
+                                    onSubmit={handleEmailSubmit}
+                                    type="email"
+                                    primaryColor={primaryColor}
+                                />
                             )}
                         </div>
                     </div>
-                ))}
-
-                {/* Confirmation Summary */}
-                {step === STEPS.CONFIRM && (
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border-2 border-purple-300 dark:border-purple-500 shadow-lg mx-4 animate-fade-in">
-                        <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-3 text-sm border-b border-purple-200 pb-2">
-                            📹 CONSULTA ONLINE - RESUMEN
-                        </h3>
-                        <div className="space-y-1 text-xs">
-                            <p><span className="font-semibold">Nombre:</span> {formData.patient_name}</p>
-                            <p><span className="font-semibold">Cédula:</span> {formData.patient_dni}</p>
-                            <p><span className="font-semibold">Edad:</span> {formData.patient_age} años</p>
-                            <p><span className="font-semibold">Zona:</span> {formData.residence}</p>
-                            <div className="border-t border-purple-100 my-2"></div>
-                            <p><span className="font-semibold">Motivo:</span> {formData.reason_for_visit}</p>
-                            <p><span className="font-semibold">Fecha:</span> {new Date(`${formData.date_part}T${formData.time_part}`).toLocaleString()}</p>
-                            <p><span className="font-semibold">Medio:</span> Videollamada Zoom/Meet 📹</p>
-                            <div className="border-t border-purple-100 my-2"></div>
-                            <p><span className="font-semibold">Teléfono:</span> {formData.patient_phone}</p>
-                            <p><span className="font-semibold">Email:</span> {formData.patient_email}</p>
-                            <p><span className="font-semibold">Pago:</span> {formData.payment_method}</p>
-                            <div className="border-t border-purple-100 my-2"></div>
-                            <p className="font-bold text-purple-600">💰 Costo: {settings?.currency || 'USD'} ${settings?.first_consultation_price || 50}</p>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-3 mb-3">📧 Recibirás un email con datos para el pago, link de videollamada y recomendaciones pre-consulta.</p>
-
-                        {formData.payment_method === 'PayPal' && paypalConfig ? (
-                            <PayPalScriptProvider options={{ "client-id": paypalConfig.client_id, currency: "USD" }}>
-                                <PayPalButtons
-                                    style={{ layout: "vertical" }}
-                                    createOrder={async (data, actions) => {
-                                        try {
-                                            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/create-order`, {
-                                                doctor_id: doctorId,
-                                                patient_dni: formData.patient_dni
-                                            });
-                                            return response.data.id;
-                                        } catch (err) {
-                                            console.error("Error creating order", err);
-                                            throw err;
-                                        }
-                                    }}
-                                    onApprove={async (data, actions) => {
-                                        try {
-                                            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/capture-order/${data.orderID}`);
-                                            await submitAppointment('confirmed'); // Mark as confirmed/paid
-                                        } catch (err) {
-                                            console.error("Capture error", err);
-                                            addMessage("Error al procesar el pago. Contacte soporte.", 'bot');
-                                        }
-                                    }}
-                                />
-                            </PayPalScriptProvider>
-                        ) : (
-                            <button
-                                onClick={handleConfirm}
-                                disabled={loading}
-                                className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition shadow-md"
-                                style={{ backgroundColor: primaryColor }}
-                            >
-                                ✓ Confirmar Cita
-                            </button>
-                        )}
-                    </div>
-                )}
-
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                {/* WELCOME_ONLINE buttons */}
-                {step === STEPS.WELCOME_ONLINE && (
-                    <div className="flex gap-2 justify-center">
-                        <button
-                            onClick={() => handleWelcomeResponse('YES')}
-                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            Sí, continuar →
-                        </button>
-                        <button
-                            onClick={() => handleWelcomeResponse('NO')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            ✘ No, en otra ocasión
-                        </button>
-                    </div>
-                )}
-
-                {/* EXPLAIN_ONLINE buttons */}
-                {step === STEPS.EXPLAIN_ONLINE && (
-                    <div className="flex gap-2 justify-center">
-                        <button
-                            onClick={() => handleExplainResponse('YES')}
-                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            Sí, explicame
-                        </button>
-                        <button
-                            onClick={() => handleExplainResponse('NO')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            No, en otra ocasión
-                        </button>
-                    </div>
-                )}
-
-                {/* ONLINE_PRICING buttons */}
-                {step === STEPS.ONLINE_PRICING && (
-                    <div className="flex gap-2 justify-center">
-                        <button
-                            onClick={() => handlePricingResponse('YES')}
-                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            📆 Sí, agendar
-                        </button>
-                        <button
-                            onClick={() => handlePricingResponse('NO')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            En otra ocasión
-                        </button>
-                    </div>
-                )}
-
-                {/* FAREWELL buttons */}
-                {step === STEPS.FAREWELL_MESSAGE && (
-                    <div className="flex gap-2 justify-center">
-                        <button
-                            onClick={() => handleFarewellResponse('PRESENCIAL')}
-                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            📍 Sí, agendar presencial
-                        </button>
-                        <button
-                            onClick={() => handleFarewellResponse('CLOSE')}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-                )}
-
-
-
-
-
-                {/* NAME input */}
-                {step === STEPS.NAME && (
-                    <SimpleInput
-                        placeholder="Escribe tu nombre completo..."
-                        onSubmit={handleNameSubmit}
-                        primaryColor={primaryColor}
-                    />
-                )}
-
-                {/* DNI input */}
-                {step === STEPS.DNI && (
-                    <SimpleInput
-                        placeholder="Ej: V-12345678"
-                        onSubmit={handleDniSubmit}
-                        primaryColor={primaryColor}
-                    />
-                )}
-
-                {/* AGE input */}
-                {step === STEPS.AGE && (
-                    <SimpleInput
-                        placeholder="Ej: 30"
-                        onSubmit={handleAgeSubmit}
-                        type="text"
-                        numericOnly={true}
-                        primaryColor={primaryColor}
-                    />
-                )}
-
-                {/* RESIDENCE input */}
-                {step === STEPS.RESIDENCE && (
-                    <SimpleInput
-                        placeholder="Ej: Centro, Norte..."
-                        onSubmit={handleResidenceSubmit}
-                        primaryColor={primaryColor}
-                    />
-                )}
-
-                {/* REASON buttons */}
-                {step === STEPS.REASON && (
-                    <div className="flex flex-wrap gap-2">
-                        {getOnlineReasonOptions().map(reason => (
-                            <button
-                                key={reason}
-                                onClick={() => handleReasonSelect(reason)}
-                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
-                                style={{
-                                    borderColor: primaryColor,
-                                    color: primaryColor,
-                                }}
-                            >
-                                {reason}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* DATE_SUGGESTION buttons */}
-                {step === STEPS.DATE_SUGGESTION && (
-                    <div className="space-y-3">
-                        <div className="flex gap-2 justify-center overflow-x-auto pb-2">
-                            {suggestedDates.map((date, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleSmartDateSelect(date)}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 min-w-[100px] flex flex-col items-center"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    <span className="text-xs font-light uppercase">{formatSmartDate(date).split(' ')[0]}</span>
-                                    <span className="font-bold text-lg">{date.getDate()}</span>
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            onClick={handleManualDateTrigger}
-                            className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center justify-center gap-2"
-                        >
-                            <MdCalendarToday /> Elegir otra fecha...
-                        </button>
-                    </div>
-                )}
-
-                {/* DATE_MANUAL input */}
-                {step === STEPS.DATE_MANUAL && (
-                    <input
-                        type="date"
-                        onChange={(e) => e.target.value && handleManualDateSubmit(e.target.value)}
-                        className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                )}
-
-                {/* TIME_SUGGESTION buttons */}
-                {step === STEPS.TIME_SUGGESTION && (
-                    <div className="grid grid-cols-2 gap-2">
-                        <div>
-                            <p className="text-xs text-gray-500 mb-2">Mañana:</p>
-                            {suggestedTimes.slice(0, 2).map((time, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleSmartTimeSelect(time)}
-                                    className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    {time}
-                                </button>
-                            ))}
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 mb-2">Tarde:</p>
-                            {suggestedTimes.slice(2, 4).map((time, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleSmartTimeSelect(time)}
-                                    className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    {time}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            onClick={handleManualTimeTrigger}
-                            className="col-span-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-300 transition"
-                        >
-                            🕐 Otra hora...
-                        </button>
-                    </div>
-                )}
-
-                {/* TIME_MANUAL input */}
-                {step === STEPS.TIME_MANUAL && (
-                    <input
-                        type="time"
-                        onChange={(e) => e.target.value && handleManualTimeSubmit(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
-                        style={{
-                            '--tw-ring-color': primaryColor,
-                            borderColor: primaryColor
-                        }}
-                    />
-                )}
-
-                {/* PHONE input */}
-                {step === STEPS.PHONE && (
-                    <SimpleInput
-                        placeholder="Ej: 04141234567"
-                        onSubmit={handlePhoneSubmit}
-                        primaryColor={primaryColor}
-                    />
-                )}
-
-                {/* PAYMENT METHOD buttons */}
-                {step === STEPS.PAYMENT_METHOD && (
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {['Zelle', 'PayPal', 'Transferencia bancaria', 'Pago móvil (Bs)'].map(method => (
-                            <button
-                                key={method}
-                                onClick={() => handlePaymentMethodSubmit(method)}
-                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
-                                style={{
-                                    borderColor: primaryColor,
-                                    color: primaryColor,
-                                }}
-                            >
-                                {method}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* EMAIL input */}
-                {step === STEPS.EMAIL && (
-                    <SimpleInput
-                        placeholder="ejemplo@email.com"
-                        onSubmit={handleEmailSubmit}
-                        type="email"
-                        primaryColor={primaryColor}
-                    />
                 )}
             </div>
-        </div>
+        </div >
     );
 }
 
 OnlineChatBooking.propTypes = {
     doctorId: PropTypes.number.isRequired,
     doctor: PropTypes.object,
-    onClose: PropTypes.func.isRequired
+    onClose: PropTypes.func.isRequired,
+    isOpen: PropTypes.bool
 };
