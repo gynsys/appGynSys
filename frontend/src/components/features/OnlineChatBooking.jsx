@@ -107,6 +107,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
     const STEPS = {
         WELCOME_ONLINE: 'WELCOME_ONLINE',
         EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
+        ONLINE_PRICING: 'ONLINE_PRICING',
         FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
         NAME: 'NAME',
         DNI: 'DNI',
@@ -218,13 +219,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
         }
     };
 
-    // EXPLAIN_ONLINE (Consolidated Step)
+    // EXPLAIN_ONLINE (Info Only)
     useEffect(() => {
-        if (step === STEPS.EXPLAIN_ONLINE && settings) {
-            const price1 = settings.first_consultation_price || 50;
-            const price2 = settings.followup_price || 40;
-            const currency = settings.currency || 'USD';
-
+        if (step === STEPS.EXPLAIN_ONLINE) {
             setTimeout(() => {
                 addMessage(
                     `<p class="mb-2 font-bold">✨ ¿Cómo funciona la Consulta Online?</p>
@@ -235,10 +232,37 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
           <p class="mb-1"><strong>📄 Incluye:</strong></p>
           <p class="mb-2 text-xs">✓ Receta médica digital firmada<br/>✓ Recomendaciones por escrito<br/>✓ Seguimiento vía email</p>
           <p class="mb-2"><strong>🔒 100% Privado y Confidencial</strong></p>
-          
-          <div class="border-t border-gray-200 dark:border-gray-700 my-3"></div>
-          
-          <p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
+          <p class="font-semibold">¿Deseas que te explique los precios?</p>`,
+                    'bot'
+                );
+            }, 800);
+        }
+    }, [step, STEPS.EXPLAIN_ONLINE]);
+
+    const handleExplainResponse = (response) => {
+        if (response === 'YES') {
+            addMessage("Sí, explicame", 'user');
+            setTimeout(() => {
+                setStep(STEPS.ONLINE_PRICING);
+            }, 500);
+        } else {
+            addMessage("No, en otra ocasión", 'user');
+            setTimeout(() => {
+                onClose();
+            }, 500);
+        }
+    };
+
+    // ONLINE_PRICING (Prices & Payment)
+    useEffect(() => {
+        if (step === STEPS.ONLINE_PRICING && settings) {
+            const price1 = settings.first_consultation_price || 50;
+            const price2 = settings.followup_price || 40;
+            const currency = settings.currency || 'USD';
+
+            setTimeout(() => {
+                addMessage(
+                    `<p class="mb-2 font-bold">💰 Precios - Consulta Online</p>
           <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mb-3 border border-gray-200 dark:border-gray-700">
             <p class="text-sm">Primera Consulta: <span class="font-bold">${currency} $${price1}</span></p>
             <p class="text-sm">Control/Seguimiento: <span class="font-bold">${currency} $${price2}</span></p>
@@ -253,9 +277,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                 );
             }, 800);
         }
-    }, [step, settings, STEPS.EXPLAIN_ONLINE]);
+    }, [step, settings, STEPS.ONLINE_PRICING]);
 
-    const handleExplainResponse = (response) => {
+    const handlePricingResponse = (response) => {
         if (response === 'YES') {
             addMessage("📆 Sí, agendar", 'user');
             setTimeout(() => {
@@ -710,10 +734,29 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose }) {
                             className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
                             style={{ backgroundColor: primaryColor }}
                         >
-                            📆 Sí, agendar
+                            Sí, explicame
                         </button>
                         <button
                             onClick={() => handleExplainResponse('NO')}
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                        >
+                            No, en otra ocasión
+                        </button>
+                    </div>
+                )}
+
+                {/* ONLINE_PRICING buttons */}
+                {step === STEPS.ONLINE_PRICING && (
+                    <div className="flex gap-2 justify-center">
+                        <button
+                            onClick={() => handlePricingResponse('YES')}
+                            className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                            style={{ backgroundColor: primaryColor }}
+                        >
+                            📆 Sí, agendar
+                        </button>
+                        <button
+                            onClick={() => handlePricingResponse('NO')}
                             className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                         >
                             En otra ocasión
