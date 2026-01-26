@@ -658,7 +658,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col h-[500px] max-h-[80vh]">
+                    <div className="flex flex-col max-h-[600px] w-full">
                         {/* Header */}
                         <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
 
