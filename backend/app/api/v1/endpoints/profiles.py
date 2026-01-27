@@ -10,11 +10,6 @@ from app.schemas.doctor import DoctorPublic
 
 router = APIRouter()
 
-@router.options("/{slug}")
-async def options_doctor_profile(slug: str):
-    """Handle OPTIONS requests for CORS preflight."""
-    return {"message": "OK"}
-
 @router.get("/{slug}", response_model=DoctorPublic)
 def get_doctor_profile(
     slug: str,
@@ -22,9 +17,6 @@ def get_doctor_profile(
 ):
     """
     Get public profile of a doctor by their slug URL.
-    
-    This is the public endpoint used by patients to view a doctor's digital clinic.
-    Returns only public information (excludes sensitive data).
     """
     doctor = db.query(Doctor).filter(Doctor.slug_url == slug).first()
     
@@ -40,5 +32,11 @@ def get_doctor_profile(
             detail="Doctor profile not found"
         )
     
+    # Increment visitor count
+    try:
+        doctor.visitor_count += 1
+        db.commit()
+    except Exception:
+        db.rollback()
+    
     return doctor
-

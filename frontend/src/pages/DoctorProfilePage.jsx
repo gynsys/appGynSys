@@ -510,6 +510,7 @@ export default function DoctorProfilePage() {
             onClose={() => setIsTestModalOpen(false)}
             primaryColor={primaryColor}
             doctorName={doctor?.nombre_completo}
+            doctorId={doctor?.id}
             doctorPhoto={doctor?.photo_url}
             isDarkMode={isDarkTheme}
             onSchedule={() => setIsAppointmentModalOpen(true)}

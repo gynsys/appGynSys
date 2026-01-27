@@ -82,7 +82,9 @@ class Doctor(Base):
     # Many-to-many relationship with modules - MOVED TO TENANT MODEL
     # tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
 
-    # Content relationships
+    # Content # Analytics
+    visitor_count = Column(Integer, default=0, nullable=False)
+    
     faqs = relationship("FAQ", back_populates="doctor", cascade="all, delete-orphan")
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
     testimonials = relationship("Testimonial", back_populates="doctor", cascade="all, delete-orphan")

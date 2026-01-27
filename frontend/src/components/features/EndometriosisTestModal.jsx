@@ -16,9 +16,12 @@ const QUESTIONS = [
   "¿Tienes antecedentes familiares de endometriosis (madre, tía, hermana)?"
 ]
 
+import { testService } from '../../services/testService'
+
 export default function EndometriosisTestModal({
   isOpen,
   onClose,
+  doctorId, // New prop
   primaryColor = '#4F46E5',
   doctorName = 'tu doctora',
   doctorPhoto = null,
@@ -53,9 +56,39 @@ export default function EndometriosisTestModal({
       setCurrentQuestion(currentQuestion + 1)
     } else {
       setIsAnalyzing(true)
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsAnalyzing(false)
         setShowResult(true)
+
+        // Calculate result and save to backend
+        try {
+          const score = [...newAnswers].filter(a => a).length
+          const total = QUESTIONS.length
+          const percentage = (score / total) * 100
+          let nivel = "BAJA COINCIDENCIA"
+          if (percentage >= 70) nivel = "ALTA COINCIDENCIA"
+          else if (percentage >= 40) nivel = "MODERADA COINCIDENCIA"
+
+          // We need doctor_id. If not passed directly (it isn't), we might need to rely on identifying the doctor from context.
+          // Actually, the modal receives `doctorName` but not `doctorId`.
+          // Wait, this modal is used on public profile. We need to know WHICH doctor owns this test.
+          // The modal is usually rendered in `DoctorProfilePage`, inside `EndometriosisTestModal`.
+          // User needs to pass `doctorId` prop to `EndometriosisTestModal`.
+          // I will assume `doctorId` prop is added. If not, I need to add it to usage in DoctorProfilePage too.
+          // For now, I'll add `doctorId` to props and usage here.
+
+          if (doctorId) {
+            await testService.saveEndometriosisResult({
+              doctor_id: doctorId,
+              score,
+              total_questions: total,
+              result_level: nivel,
+              patient_identifier: "Anonymous" // or enhanced later
+            });
+          }
+        } catch (err) {
+          console.error("Error saving test result", err)
+        }
       }, 2000) // 2 second delay for "calculation" effect
     }
   }
