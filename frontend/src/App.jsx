@@ -48,9 +48,15 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       // Try to load user if token exists (restore session)
-      const token = localStorage.getItem('access_token');
       if (token && !useAuthStore.getState().user) {
         await useAuthStore.getState().loadUser();
+      }
+
+      // Preload appointments if user is authenticated (after loadUser)
+      if (useAuthStore.getState().user) {
+        import('./store/appointmentStore').then(({ useAppointmentStore }) => {
+          useAppointmentStore.getState().fetchAppointments()
+        })
       }
 
       const applyTheme = () => {

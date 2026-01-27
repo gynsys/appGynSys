@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict XbFkxsM32ghw4VdKArvAFAYGOQO7u3YjCD0vlRpZCBJ9X2q5dF7Dj4ax0bndxSn
+\restrict yLpWR5LNI6cZl6dbDjLTETo1qtzwSFdp4dM2USHsWANz6jfqutMcCSHnhHfNqwm
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -575,6 +575,45 @@ ALTER SEQUENCE public.doctors_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.doctors_id_seq OWNED BY public.doctors.id;
+
+
+--
+-- Name: endometriosis_results; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.endometriosis_results (
+    id integer NOT NULL,
+    doctor_id integer NOT NULL,
+    patient_identifier character varying,
+    score integer NOT NULL,
+    total_questions integer NOT NULL,
+    result_level character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.endometriosis_results OWNER TO postgres;
+
+--
+-- Name: endometriosis_results_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.endometriosis_results_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.endometriosis_results_id_seq OWNER TO postgres;
+
+--
+-- Name: endometriosis_results_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.endometriosis_results_id_seq OWNED BY public.endometriosis_results.id;
 
 
 --
@@ -1306,6 +1345,13 @@ ALTER TABLE ONLY public.doctors ALTER COLUMN id SET DEFAULT nextval('public.doct
 
 
 --
+-- Name: endometriosis_results id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.endometriosis_results ALTER COLUMN id SET DEFAULT nextval('public.endometriosis_results_id_seq'::regclass);
+
+
+--
 -- Name: faqs id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1647,7 +1693,16 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border, whatsapp_url, visitor_count) FROM stdin;
 3	admin@appgynsys.com	$2b$12$V14Yrd3MgtDl9OfLMQOCh.mFTraJLb.kktTxxivgZq4ke5I1mn4/y	Administrador	\N	\N	admin-system	\N	\N	\N	t	\N	approved	\N	\N	admin	2025-12-22 23:27:24.69904+00	\N	\N	\N	\N	\N	\N	\N	\N	t	t	\N	\N	\N	\N	\N	100%	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-27 03:01:33.867419+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	64
+1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-27 23:16:07.987893+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	80
+\.
+
+
+--
+-- Data for Name: endometriosis_results; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.endometriosis_results (id, doctor_id, patient_identifier, score, total_questions, result_level, created_at) FROM stdin;
+1	1	Anonymous	6	10	MODERADA COINCIDENCIA	2026-01-27 11:25:09.951992+00
 \.
 
 
@@ -1988,6 +2043,13 @@ SELECT pg_catalog.setval('public.doctors_id_seq', 3, true);
 
 
 --
+-- Name: endometriosis_results_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.endometriosis_results_id_seq', 1, true);
+
+
+--
 -- Name: faqs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -2210,6 +2272,14 @@ ALTER TABLE ONLY public.doctor_certifications
 
 ALTER TABLE ONLY public.doctors
     ADD CONSTRAINT doctors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: endometriosis_results endometriosis_results_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.endometriosis_results
+    ADD CONSTRAINT endometriosis_results_pkey PRIMARY KEY (id);
 
 
 --
@@ -2546,6 +2616,20 @@ CREATE UNIQUE INDEX ix_doctors_slug_url ON public.doctors USING btree (slug_url)
 
 
 --
+-- Name: ix_endometriosis_results_doctor_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_endometriosis_results_doctor_id ON public.endometriosis_results USING btree (doctor_id);
+
+
+--
+-- Name: ix_endometriosis_results_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_endometriosis_results_id ON public.endometriosis_results USING btree (id);
+
+
+--
 -- Name: ix_faqs_doctor_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2840,6 +2924,14 @@ ALTER TABLE ONLY public.doctors
 
 
 --
+-- Name: endometriosis_results endometriosis_results_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.endometriosis_results
+    ADD CONSTRAINT endometriosis_results_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id);
+
+
+--
 -- Name: faqs faqs_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3010,5 +3102,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict XbFkxsM32ghw4VdKArvAFAYGOQO7u3YjCD0vlRpZCBJ9X2q5dF7Dj4ax0bndxSn
+\unrestrict yLpWR5LNI6cZl6dbDjLTETo1qtzwSFdp4dM2USHsWANz6jfqutMcCSHnhHfNqwm
 

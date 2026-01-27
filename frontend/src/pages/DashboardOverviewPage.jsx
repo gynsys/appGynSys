@@ -11,6 +11,7 @@ import { getImageUrl } from '../lib/imageUtils'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { dashboardService } from '../services/dashboardService'
 import DashboardCalendar from '../components/dashboard/DashboardCalendar'
+import { useAppointmentStore } from '../store/appointmentStore'
 
 export default function DashboardOverviewPage() {
   const navigate = useNavigate()
@@ -24,6 +25,16 @@ export default function DashboardOverviewPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [darkMode, toggleDarkMode] = useDarkMode()
 
+  // Use global store for appointments
+  const { appointments: appointmentsList, fetchAppointments, loading: appointmentsLoading } = useAppointmentStore()
+
+  // Failsafe: Fetch appointments if store is empty on mount
+  useEffect(() => {
+    if (appointmentsList.length === 0 && !appointmentsLoading) {
+      fetchAppointments()
+    }
+  }, [appointmentsList.length, appointmentsLoading, fetchAppointments])
+
   // New Stats State
   const [stats, setStats] = useState({
     test_count: 0,
@@ -31,7 +42,7 @@ export default function DashboardOverviewPage() {
     visitor_count: 0,
     appointments_month_count: 0
   })
-  const [appointmentsList, setAppointmentsList] = useState([])
+  // const [appointmentsList, setAppointmentsList] = useState([]) // REMOVED: Managed by store
 
   const isModuleEnabled = (moduleCode) => {
     return doctor?.enabled_modules?.some(m => (typeof m === 'string' ? m === moduleCode : m.code === moduleCode))
@@ -47,16 +58,18 @@ export default function DashboardOverviewPage() {
     // Fetch current user data to get logo and name
     const fetchData = async () => {
       try {
-        const [doctorData, posts, appointments, dashboardStats] = await Promise.all([
+        // Appointments are now preloaded in App.jsx via store
+        const [doctorData, posts, dashboardStats] = await Promise.all([
           doctorService.getCurrentUser(),
           blogService.getMyPosts(),
-          appointmentService.getAppointments(),
+          // appointmentService.getAppointments(), // REMOVED
           dashboardService.getStats()
         ])
         setDoctor(doctorData)
         setArticleCount(posts.length)
-        setPendingAppointmentsCount(appointments.filter(a => ['scheduled', 'preconsulta_completed'].includes(a.status)).length)
-        setAppointmentsList(appointments)
+        // Recalculate pending from store data if needed, or rely on store derived state later
+        setPendingAppointmentsCount(appointmentsList.filter(a => ['scheduled', 'preconsulta_completed'].includes(a.status)).length)
+        // setAppointmentsList(appointments) // REMOVED
         setStats(dashboardStats)
       } catch (err) {
         console.error("Error fetching dashboard data", err)
@@ -66,7 +79,7 @@ export default function DashboardOverviewPage() {
     }
 
     fetchData()
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate, appointmentsList]) // Added appointmentsList dependency to re-calc local derived stats
 
   const handleSaveSchedule = async (tenantId, scheduleData) => {
     try {
