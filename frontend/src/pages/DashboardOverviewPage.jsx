@@ -98,68 +98,71 @@ export default function DashboardOverviewPage() {
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Panel de Administración
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Bienvenido, Dr(a). {doctor?.nombre_completo}. Aquí tiene el resumen de su actividad actual.
-          </p>
+
         </div>
 
         {/* Stats Grid - Row 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 max-w-6xl mx-auto w-full">
+        <div className="flex flex-wrap justify-center gap-x-[90px] gap-y-6 mb-6 max-w-6xl mx-auto w-full">
           {/* Citas del Mes */}
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Citas del Mes</h3>
-            <p className="text-4xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
+          {/* Citas del Mes */}
+          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Citas del Mes</h3>
+            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
           </div>
 
           {/* Pacientes (Placeholder logic for now, or total appointments) */}
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Pacientes Atendidos</h3>
-            <p className="text-4xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p> {/* Using same metric for now as proxy */}
+          {/* Pacientes (Placeholder logic for now, or total appointments) */}
+          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Pacientes</h3>
+            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p> {/* Using same metric for now as proxy */}
           </div>
 
           {/* Artículos */}
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Artículos Publicados</h3>
-            <p className="text-4xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
+          {/* Artículos */}
+          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Artículos</h3>
+            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
           </div>
         </div>
 
         {/* Stats Grid - Row 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-6xl mx-auto w-full">
+        <div className="flex flex-wrap justify-center gap-x-[90px] gap-y-6 mb-12 max-w-6xl mx-auto w-full">
           {/* Test Realizados (Conditional) */}
           {hasEndometriosisModule && (
-            <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Test Endometriosis</h3>
-              <p className="text-4xl font-extrabold text-pink-500">{stats.test_count}</p>
+            <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Test Endo</h3>
+              <p className="text-3xl font-extrabold text-pink-500">{stats.test_count}</p>
             </div>
           )}
 
           {/* Usuarios Predictor */}
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Usuarias Ciclo</h3>
-            <p className="text-4xl font-extrabold text-purple-500">{stats.cycle_users_count}</p>
+          {/* Usuarios Predictor */}
+          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Ciclo</h3>
+            <p className="text-3xl font-extrabold text-purple-500">{stats.cycle_users_count}</p>
           </div>
 
           {/* Visitantes */}
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Visitantes Perfil</h3>
-            <p className="text-4xl font-extrabold text-blue-500">{stats.visitor_count}</p>
+          {/* Visitantes */}
+          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[100px]">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Visitantes</h3>
+            <p className="text-3xl font-extrabold text-blue-500">{stats.visitor_count}</p>
           </div>
         </div>
 
         {/* Calendars Section */}
         <div className="max-w-6xl mx-auto w-full mb-12">
           <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Agenda de Citas</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-wrap justify-center gap-[90px]">
             <DashboardCalendar
               appointments={appointmentsList}
-              title="Consultas Online 📹"
+              title="Consultas Online"
               type="online"
               primaryColor={primaryColor}
             />
             <DashboardCalendar
               appointments={appointmentsList}
-              title="Consultas Presenciales 🏥"
+              title="Consultas Presenciales"
               type="presencial"
               primaryColor={primaryColor}
             />

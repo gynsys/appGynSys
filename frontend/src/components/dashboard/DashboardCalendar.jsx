@@ -33,9 +33,9 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-[350px] h-[376px] mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     {title}
                 </h3>
@@ -64,12 +64,12 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5 w-fit mx-auto">
                 {/* Week Day Headers */}
                 {weekDays.map((day, idx) => (
                     <div
                         key={idx}
-                        className="h-9 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        className="h-8 w-[40px] flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                         {day}
                     </div>
@@ -91,7 +91,7 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
                         <div
                             key={idx}
                             className={`
-                                h-10 w-full rounded-md flex flex-col items-center justify-center text-sm relative
+                                h-[34px] w-[40px] rounded-md flex flex-col items-center justify-center text-sm relative
                                 ${outsideClass}
                             `}
                             style={isToday(day) ? todayStyle : {}}
@@ -114,7 +114,7 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
                 })}
             </div>
 
-            <div className="mt-4 flex items-center gap-4 text-xs text-gray-500 justify-center">
+            <div className="mt-4 flex items-center gap-4 text-base text-gray-500 justify-center">
                 <div className="flex items-center gap-1">
                     <div
                         className="w-2 h-2 rounded-full"
