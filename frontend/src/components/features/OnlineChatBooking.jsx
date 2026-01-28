@@ -113,6 +113,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         DNI: 'DNI',
         AGE: 'AGE',
         RESIDENCE: 'RESIDENCE',
+        CONSULTATION_TYPE: 'CONSULTATION_TYPE',
         REASON: 'REASON',
         DATE_SUGGESTION: 'DATE_SUGGESTION',
         DATE_MANUAL: 'DATE_MANUAL',
@@ -151,6 +152,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         patient_age: '',
         residence: '',
         appointment_type: 'Consulta Online',
+        consultation_category: '',
         reason_for_visit: '',
         location: 'Online (Videollamada)',
         date_part: '',
@@ -175,6 +177,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     }, [isOpen]);
 
     const messagesEndRef = useRef(null);
+    const lastMessageRef = useRef(null);
 
     // Load settings (fallback) and PayPal config
     useEffect(() => {
@@ -216,6 +219,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                 patient_age: '',
                 residence: '',
                 appointment_type: 'Consulta Online',
+                consultation_category: '', // Reset new field
                 reason_for_visit: '',
                 location: 'Online (Videollamada)',
                 date_part: '',
@@ -258,8 +262,14 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Smart Scroll: If last message is tall (>150px), scroll to its TOP. Otherwise bottom.
     useEffect(() => {
-        scrollToBottom();
+        const lastMsg = lastMessageRef.current;
+        if (lastMsg && lastMsg.offsetHeight > 150) {
+            lastMsg.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+            scrollToBottom();
+        }
     }, [history, showOptions]); // Scroll when history OR options update
 
     const addMessage = (text, type = 'user') => {
@@ -450,19 +460,36 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, residence: value }));
         setTimeout(() => {
-            addMessage("Entendido. ¿Cuál es el motivo de tu consulta online?", 'bot');
+            addMessage("¿Qué tipo de consulta necesitas?", 'bot');
+            setStep(STEPS.CONSULTATION_TYPE);
+        }, 600);
+    };
+
+    // CONSULTATION TYPE
+    const handleConsultationTypeSelect = (type) => {
+        addMessage(type, 'user');
+        setFormData(prev => ({ ...prev, consultation_category: type }));
+        setTimeout(() => {
+            addMessage(`Entendido. ¿Cuál es el motivo de tu consulta?`, 'bot');
             setStep(STEPS.REASON);
         }, 600);
     };
 
     // REASON (adapted for online)
-    const getOnlineReasonOptions = () => {
+    const getOnlineReasonOptions = (category) => {
+        if (category === 'Prenatal') {
+            return [
+                'Control Prenatal',
+                'Dolor Pélvico',
+                'Sangrado',
+                'Otro'
+            ];
+        }
+        // Default / Ginecológica
         return [
             'Control Ginecológico',
-            'Asesoría Anticonceptiva',
-            'Resultados de Exámenes',
-            'Seguimiento Post-Consulta',
-            'Planificación Familiar',
+            'Dolor Pélvico',
+            'Sangrado',
             'Otro'
         ];
     };
@@ -689,27 +716,28 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             ></div>
 
             {/* Modal Content */}
-            <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+            <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-[360px] h-[400px] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
                 <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
 
                 {/* SUCCESS VIEW */}
                 {step === STEPS.SUCCESS ? (
-                    <div className="flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 relative">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">¡Cita Agendada!</h2>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-lg mb-4 max-w-sm w-full">
-                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
-                            <div className="text-left space-y-1 ml-4">
-                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
+                    <div className="flex flex-col h-full items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 relative">
+                        <MdCheckCircle size={60} style={{ color: primaryColor }} className="mb-4 drop-shadow-md animate-bounce" />
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">¡Cita Agendada!</h2>
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl shadow-lg mb-4 w-full max-w-sm">
+                            <p className="text-xs text-gray-700 dark:text-gray-300 mb-1 font-medium">Tu solicitud ha sido enviada con éxito. En breve recibirás:</p>
+                            <div className="text-left space-y-0.5 ml-4">
+                                <p className="text-[10px] text-gray-600 dark:text-gray-400">✓ Confirmación por email</p>
+                                <p className="text-[10px] text-gray-600 dark:text-gray-400">✓ Datos para el pago</p>
+                                <p className="text-[10px] text-gray-600 dark:text-gray-400">✓ Link de videollamada</p>
+                                <p className="text-[10px] text-gray-600 dark:text-gray-400">✓ Recordatorios automáticos</p>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500">Revisa tu bandeja de entrada y spam.</p>
-                        <p className="text-xs text-gray-400 mt-4">Cerrando en unos segundos...</p>
+                        <p className="text-xs text-gray-500">Revisa tu bandeja de entrada y spam.</p>
+                        <p className="text-[10px] text-gray-400 mt-2">Cerrando en unos segundos...</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col max-h-[600px] w-full">
+                    <div className="flex flex-col h-full w-full">
                         {/* Header */}
                         <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
 
@@ -743,7 +771,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         {/* Chat History */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                             {history.map((msg, idx) => (
-                                <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                                <div
+                                    key={idx}
+                                    ref={idx === history.length - 1 ? lastMessageRef : null}
+                                    className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}
+                                >
                                     {msg.type === 'bot' && (
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-purple-100 border-2 border-purple-300">
                                             {doctor?.photo_url ? (
@@ -851,14 +883,14 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 <div className="flex gap-2 justify-center">
                                     <button
                                         onClick={() => handleWelcomeResponse('YES')}
-                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Sí, continuar →
                                     </button>
                                     <button
                                         onClick={() => handleWelcomeResponse('NO')}
-                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                                     >
                                         ✘ No, en otra ocasión
                                     </button>
@@ -870,14 +902,14 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 <div className="flex gap-2 justify-center">
                                     <button
                                         onClick={() => handleExplainResponse('YES')}
-                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         Sí, explicame
                                     </button>
                                     <button
                                         onClick={() => handleExplainResponse('NO')}
-                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                                     >
                                         No, en otra ocasión
                                     </button>
@@ -889,14 +921,14 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 <div className="flex gap-2 justify-center">
                                     <button
                                         onClick={() => handlePricingResponse('YES')}
-                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
                                         style={{ backgroundColor: primaryColor }}
                                     >
-                                        📆 Sí, agendar
+                                        Sí, agendar
                                     </button>
                                     <button
                                         onClick={() => handlePricingResponse('NO')}
-                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                                     >
                                         En otra ocasión
                                     </button>
@@ -908,14 +940,14 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 <div className="flex gap-2 justify-center">
                                     <button
                                         onClick={() => handleFarewellResponse('PRESENCIAL')}
-                                        className="px-6 py-2 text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         📍 Sí, agendar presencial
                                     </button>
                                     <button
                                         onClick={() => handleFarewellResponse('CLOSE')}
-                                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
                                     >
                                         Cerrar
                                     </button>
@@ -964,14 +996,33 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 />
                             )}
 
+                            {/* CONSULTATION_TYPE buttons */}
+                            {step === STEPS.CONSULTATION_TYPE && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handleConsultationTypeSelect('Ginecológica')}
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Ginecológica
+                                    </button>
+                                    <button
+                                        onClick={() => handleConsultationTypeSelect('Prenatal')}
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        Prenatal
+                                    </button>
+                                </div>
+                            )}
+
                             {/* REASON buttons */}
                             {step === STEPS.REASON && (
-                                <div className="flex flex-wrap gap-2">
-                                    {getOnlineReasonOptions().map(reason => (
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {getOnlineReasonOptions(formData.consultation_category).map(reason => (
                                         <button
                                             key={reason}
                                             onClick={() => handleReasonSelect(reason)}
-                                            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
+                                            className="px-3 py-1.5 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 transition"
                                             style={{
                                                 borderColor: primaryColor,
                                                 color: primaryColor,
@@ -991,11 +1042,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                             <button
                                                 key={idx}
                                                 onClick={() => handleSmartDateSelect(date)}
-                                                className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 min-w-[100px] flex flex-col items-center"
+                                                className="px-2 py-1.5 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 min-w-[70px] flex flex-col items-center"
                                                 style={{ backgroundColor: primaryColor }}
                                             >
-                                                <span className="text-xs font-light uppercase">{formatSmartDate(date).split(' ')[0]}</span>
-                                                <span className="font-bold text-lg">{date.getDate()}</span>
+                                                <span className="text-[10px] font-light uppercase">{formatSmartDate(date).split(' ')[0]}</span>
+                                                <span className="font-bold text-sm">{date.getDate()}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -1032,7 +1083,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                                         <button
                                                             key={`am-${idx}`}
                                                             onClick={() => handleSmartTimeSelect(time)}
-                                                            className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                            className="w-full mb-1 px-2 py-1.5 text-white rounded-md text-xs font-medium hover:opacity-90 transition shadow-sm"
                                                             style={{ backgroundColor: primaryColor }}
                                                         >
                                                             {time}
@@ -1045,7 +1096,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                                         <button
                                                             key={`pm-${idx}`}
                                                             onClick={() => handleSmartTimeSelect(time)}
-                                                            className="w-full mb-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition shadow-md"
+                                                            className="w-full mb-1 px-2 py-1.5 text-white rounded-md text-xs font-medium hover:opacity-90 transition shadow-sm"
                                                             style={{ backgroundColor: primaryColor }}
                                                         >
                                                             {time}
