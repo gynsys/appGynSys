@@ -92,6 +92,21 @@ importers:
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
+      workbox-core:
+        specifier: ^7.4.0
+        version: 7.4.0
+      workbox-precaching:
+        specifier: ^7.4.0
+        version: 7.4.0
+      workbox-routing:
+        specifier: ^7.4.0
+        version: 7.4.0
+      workbox-strategies:
+        specifier: ^7.4.0
+        version: 7.4.0
+      workbox-window:
+        specifier: ^7.4.0
+        version: 7.4.0
       zustand:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)

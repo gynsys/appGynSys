@@ -41,6 +41,7 @@ import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPa
 import PatientsManager from './pages/dashboard/PatientsManager'
 import ChatPage from './pages/dashboard/ChatPage'
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
+import NotificationManagerPage from './pages/dashboard/NotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       // Try to load user if token exists (restore session)
+      const token = localStorage.getItem('access_token');
       if (token && !useAuthStore.getState().user) {
         await useAuthStore.getState().loadUser();
       }
@@ -133,6 +135,7 @@ function App() {
           <Route path="appointments" element={<AppointmentManager />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
+          <Route path="notifications" element={<NotificationManagerPage />} />
         </Route>
 
 

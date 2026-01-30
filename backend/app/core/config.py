@@ -76,6 +76,11 @@ class Settings(BaseSettings):
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "gynsys-media"
+
+    # VAPID (Web Push)
+    VAPID_PRIVATE_KEY: Optional[str] = None
+    VAPID_PUBLIC_KEY: Optional[str] = None
+    VAPID_CLAIM_EMAIL: str = "mailto:admin@gynsys.com"
     
     class Config:
         # Check both local .env and Render's secret path

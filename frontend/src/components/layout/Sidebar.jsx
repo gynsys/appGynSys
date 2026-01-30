@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiMapPin, FiClipboard, FiFolder, FiEdit3,
   FiCalendar, FiSettings, FiClock, FiBriefcase,
-  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare
+  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
 
@@ -15,6 +15,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
   const allMenuItems = [
 
     { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
+    { icon: FiBell, label: 'Notificaciones', path: '/dashboard/notifications' },
     { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
     { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
     { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },

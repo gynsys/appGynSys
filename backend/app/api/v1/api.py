@@ -3,7 +3,7 @@ Main API router that aggregates all v1 endpoints.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, profiles, users, appointments, uploads, testimonials, gallery, faq, admin, consultations, locations, contact, services, preconsultation, cycle_users, templates, patients, recommendations, online_consultation, payment, dashboard, tests
+from app.api.v1.endpoints import auth, profiles, users, appointments, uploads, testimonials, gallery, faq, admin, consultations, locations, contact, services, preconsultation, cycle_users, templates, patients, recommendations, online_consultation, payment, dashboard, tests, notifications
 from app.blog import router as blog_router
 from app.cycle_predictor import router as cycle_router
 
@@ -25,13 +25,14 @@ api_router.include_router(services.router, prefix="/services", tags=["services"]
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"])
 api_router.include_router(blog_router.router, prefix="/blog", tags=["blog"])
 api_router.include_router(cycle_users.router, prefix="/cycle-users", tags=["cycle-users"])
-api_router.include_router(cycle_router.router, prefix="", tags=["cycle-predictor"]) # Prefix is already in the router or added here
+api_router.include_router(cycle_router.router, prefix="", tags=["cycle-predictor"]) 
 api_router.include_router(consultations.router, prefix="/consultations", tags=["consultations"])
 api_router.include_router(preconsultation.router, prefix="/preconsultation", tags=["preconsultation"])
 api_router.include_router(online_consultation.router, prefix="/online-consultation", tags=["online-consultation"])
 api_router.include_router(payment.router, prefix="/payment", tags=["payment"])
 api_router.include_router(admin.router, prefix="", tags=["admin"])
-api_router.include_router(templates.router) # Prefix is defined in the router itself
+api_router.include_router(templates.router) 
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(tests.router, prefix="/tests", tags=["tests"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 

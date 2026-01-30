@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 5YJtfPcTt4j19QcyXeYIYsiKa3ABaTMUtYteHmnMOZHauAETPZ7Z8sJ3P75oQwB
+\restrict TiavaSMjO0kxKbfE4tkhCi6BGZakmJ7joShO0C0YFhhPR4WI5n9hmJKjuU8eLOU
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -437,7 +437,8 @@ CREATE TABLE public.cycle_users (
     cycle_avg_length integer DEFAULT 28 NOT NULL,
     period_avg_length integer DEFAULT 5 NOT NULL,
     reset_password_token character varying,
-    reset_password_expires timestamp with time zone
+    reset_password_expires timestamp with time zone,
+    push_subscription json
 );
 
 
@@ -777,6 +778,88 @@ ALTER SEQUENCE public.modules_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.modules_id_seq OWNED BY public.modules.id;
+
+
+--
+-- Name: notification_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notification_logs (
+    id integer NOT NULL,
+    rule_id integer,
+    cycle_user_id integer NOT NULL,
+    channel character varying(50) NOT NULL,
+    status character varying(50) NOT NULL,
+    error_message text,
+    sent_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.notification_logs OWNER TO postgres;
+
+--
+-- Name: notification_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.notification_logs_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.notification_logs_id_seq OWNER TO postgres;
+
+--
+-- Name: notification_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.notification_logs_id_seq OWNED BY public.notification_logs.id;
+
+
+--
+-- Name: notification_rules; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notification_rules (
+    id integer NOT NULL,
+    tenant_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    rule_type character varying(50) NOT NULL,
+    trigger_label character varying(255) NOT NULL,
+    days_offset integer,
+    message_template text NOT NULL,
+    channel character varying(50) DEFAULT 'push'::character varying NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.notification_rules OWNER TO postgres;
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.notification_rules_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.notification_rules_id_seq OWNER TO postgres;
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.notification_rules_id_seq OWNED BY public.notification_rules.id;
 
 
 --
@@ -1380,6 +1463,20 @@ ALTER TABLE ONLY public.modules ALTER COLUMN id SET DEFAULT nextval('public.modu
 
 
 --
+-- Name: notification_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs ALTER COLUMN id SET DEFAULT nextval('public.notification_logs_id_seq'::regclass);
+
+
+--
+-- Name: notification_rules id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules ALTER COLUMN id SET DEFAULT nextval('public.notification_rules_id_seq'::regclass);
+
+
+--
 -- Name: online_consultation_settings id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1498,6 +1595,9 @@ COPY public.appointments (id, doctor_id, patient_name, patient_email, patient_ph
 50	1	Fdfdfd	dramarielh@gmail.com	041233333333	2026-01-28 09:00:00+00	Consulta Online	\N	scheduled	2026-01-26 10:06:04.643317+00	\N	Control Ginecológico	\N	\N	ffgf	13409534	30
 51	1	Cxcxv	1212pemc@gmail.com	04123339555	2026-01-31 09:00:00+00	Ginecología	\N	scheduled	2026-01-26 10:19:34.257481+00	\N	Control Ginecológico	\N	ffsa	222	13405521	23
 52	1	Xczcx	dramarielh@gmail.com	04123335678	2026-02-02 08:00:00+00	Consulta Online	\N	scheduled	2026-01-26 11:39:41.502539+00	\N	Control Ginecológico	\N	\N	xzsdas	123456789	22
+53	1	Paola Carrillo	dramarielh@gmail.com	04123352232	2026-02-03 20:18:00+00	Consulta Online	\N	scheduled	2026-01-27 23:19:06.442507+00	\N	Planificación Familiar	\N	\N	miami	11405231	32
+54	1	Adis Sojo	dramarielh@gmail.com	041333335555	2026-02-03 08:00:00+00	Consulta Online	\N	scheduled	2026-01-28 01:01:20.796288+00	\N	Control Ginecológico	\N	\N	ddd	15324521	30
+55	1	<C<Cz	dramarielh@gmail.com	04123339857	2026-02-03 08:00:00+00	Consulta Online	\N	scheduled	2026-01-28 12:08:25.435644+00	\N	Control Ginecológico	\N	\N	sdss	12345678	2
 \.
 
 
@@ -1670,9 +1770,9 @@ COPY public.cycle_notification_settings (id, cycle_user_id, contraceptive_enable
 -- Data for Name: cycle_users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, is_active, created_at, updated_at, cycle_avg_length, period_avg_length, reset_password_token, reset_password_expires) FROM stdin;
-9	milanopabloe@gmail.com	$2b$12$83iH9lp/l0H9kn2PsVZUQu0ZRGkX4qiFU4yZLaM.4txw5KMjzAqKK	Isa milano	1	t	2026-01-17 08:56:28.221343+00	\N	28	5	\N	\N
-10	likemeve@gmail.com	$2b$12$y5F8XpLWpAeHwo/YhIB7eukCkXkuhQ0YmarX.RvjtUV5e/23zLMB2	Ada tomasa	1	t	2026-01-19 12:45:50.813746+00	\N	28	5	\N	\N
+COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, is_active, created_at, updated_at, cycle_avg_length, period_avg_length, reset_password_token, reset_password_expires, push_subscription) FROM stdin;
+9	milanopabloe@gmail.com	$2b$12$83iH9lp/l0H9kn2PsVZUQu0ZRGkX4qiFU4yZLaM.4txw5KMjzAqKK	Isa milano	1	t	2026-01-17 08:56:28.221343+00	\N	28	5	\N	\N	\N
+10	likemeve@gmail.com	$2b$12$y5F8XpLWpAeHwo/YhIB7eukCkXkuhQ0YmarX.RvjtUV5e/23zLMB2	Ada tomasa	1	t	2026-01-19 12:45:50.813746+00	\N	28	5	\N	\N	\N
 \.
 
 
@@ -1693,7 +1793,7 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border, whatsapp_url, visitor_count) FROM stdin;
 3	admin@appgynsys.com	$2b$12$V14Yrd3MgtDl9OfLMQOCh.mFTraJLb.kktTxxivgZq4ke5I1mn4/y	Administrador	\N	\N	admin-system	\N	\N	\N	t	\N	approved	\N	\N	admin	2025-12-22 23:27:24.69904+00	\N	\N	\N	\N	\N	\N	\N	\N	t	t	\N	\N	\N	\N	\N	100%	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-27 14:57:00.666683+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	78
+1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-30 10:47:10.473303+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	109
 \.
 
 
@@ -1703,6 +1803,7 @@ COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, bi
 
 COPY public.endometriosis_results (id, doctor_id, patient_identifier, score, total_questions, result_level, created_at) FROM stdin;
 1	1	Anonymous	6	10	MODERADA COINCIDENCIA	2026-01-27 11:25:09.951992+00
+2	1	Anonymous	9	10	ALTA COINCIDENCIA	2026-01-28 12:05:11.128943+00
 \.
 
 
@@ -1755,6 +1856,22 @@ COPY public.modules (id, name, description, code, is_active, created_at, updated
 21	Preguntas Frecuentes	Sección de preguntas y respuestas comunes.	faqs	t	2026-01-22 13:37:57.019273+00	\N
 22	Acreditaciones	Sección para mostrar sus títulos y certificados.	certifications	t	2026-01-22 13:37:57.424315+00	\N
 23	Consultas Online (Video)	Permite agendar y realizar videollamadas con pacientes.	online_consultation	t	2026-01-22 14:26:25.812489+00	\N
+\.
+
+
+--
+-- Data for Name: notification_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notification_logs (id, rule_id, cycle_user_id, channel, status, error_message, sent_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: notification_rules; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notification_rules (id, tenant_id, name, rule_type, trigger_label, days_offset, message_template, channel, is_active, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -1976,7 +2093,7 @@ COPY public.testimonials (id, doctor_id, patient_name, patient_email, photo_url,
 -- Name: appointments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.appointments_id_seq', 52, true);
+SELECT pg_catalog.setval('public.appointments_id_seq', 55, true);
 
 
 --
@@ -2046,7 +2163,7 @@ SELECT pg_catalog.setval('public.doctors_id_seq', 3, true);
 -- Name: endometriosis_results_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.endometriosis_results_id_seq', 1, true);
+SELECT pg_catalog.setval('public.endometriosis_results_id_seq', 2, true);
 
 
 --
@@ -2075,6 +2192,20 @@ SELECT pg_catalog.setval('public.locations_id_seq', 4, true);
 --
 
 SELECT pg_catalog.setval('public.modules_id_seq', 23, true);
+
+
+--
+-- Name: notification_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notification_logs_id_seq', 1, false);
+
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notification_rules_id_seq', 1, false);
 
 
 --
@@ -2315,6 +2446,22 @@ ALTER TABLE ONLY public.modules
 
 
 --
+-- Name: notification_logs notification_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notification_rules notification_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules
+    ADD CONSTRAINT notification_rules_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: online_consultation_settings online_consultation_settings_doctor_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2424,6 +2571,34 @@ ALTER TABLE ONLY public.tenants
 
 ALTER TABLE ONLY public.testimonials
     ADD CONSTRAINT testimonials_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_notification_logs_rule; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_logs_rule ON public.notification_logs USING btree (rule_id);
+
+
+--
+-- Name: idx_notification_logs_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_logs_user ON public.notification_logs USING btree (cycle_user_id);
+
+
+--
+-- Name: idx_notification_rules_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_rules_active ON public.notification_rules USING btree (is_active);
+
+
+--
+-- Name: idx_notification_rules_tenant; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_rules_tenant ON public.notification_rules USING btree (tenant_id);
 
 
 --
@@ -2964,6 +3139,30 @@ ALTER TABLE ONLY public.locations
 
 
 --
+-- Name: notification_logs notification_logs_cycle_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_cycle_user_id_fkey FOREIGN KEY (cycle_user_id) REFERENCES public.cycle_users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: notification_logs notification_logs_rule_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES public.notification_rules(id) ON DELETE SET NULL;
+
+
+--
+-- Name: notification_rules notification_rules_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules
+    ADD CONSTRAINT notification_rules_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.doctors(id) ON DELETE CASCADE;
+
+
+--
 -- Name: online_consultation_settings online_consultation_settings_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3102,5 +3301,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 5YJtfPcTt4j19QcyXeYIYsiKa3ABaTMUtYteHmnMOZHauAETPZ7Z8sJ3P75oQwB
+\unrestrict TiavaSMjO0kxKbfE4tkhCi6BGZakmJ7joShO0C0YFhhPR4WI5n9hmJKjuU8eLOU
 

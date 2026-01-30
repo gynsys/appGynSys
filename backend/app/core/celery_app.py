@@ -19,9 +19,9 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(minute='*/15'), # Check every 15 minutes
     },
     "send-daily-cycle-events": {
-        "task": "app.tasks.email_tasks.send_daily_cycle_events",
+        "task": "app.tasks.notification_tasks.process_dynamic_notifications",
         "schedule": crontab(hour=19, minute=0), # Keep cycle events daily at 7 PM
     },
 }
 # Auto-discover tasks in the tasks module
-celery_app.autodiscover_tasks(['app.tasks.email_tasks'])
+celery_app.autodiscover_tasks(['app.tasks.email_tasks', 'app.tasks.notification_tasks'])

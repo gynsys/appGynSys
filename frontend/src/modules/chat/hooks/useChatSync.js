@@ -15,7 +15,7 @@ const useChatSync = () => {
 
         // Initialize Socket
         // Derive root URL from API base URL (remove /api/v1)
-        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+        const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1';
         const socketUrl = apiBase.replace(/\/api\/v1\/?$/, '');
 
         socketRef.current = io(socketUrl, {

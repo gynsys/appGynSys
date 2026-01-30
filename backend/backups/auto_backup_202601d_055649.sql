@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ec8eBwm2t6FGAYLNfMHk58d51t7rVToXzdrE6hhGqChK3w5brplpWeKZiUq19Jp
+\restrict mlqKuh8vGoCrqjTNc346xhZZrPVAB8c5hKtvoorKNcKH5c3jd0u5sKdq2wi7lnL
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -1500,6 +1500,7 @@ COPY public.appointments (id, doctor_id, patient_name, patient_email, patient_ph
 52	1	Xczcx	dramarielh@gmail.com	04123335678	2026-02-02 08:00:00+00	Consulta Online	\N	scheduled	2026-01-26 11:39:41.502539+00	\N	Control Ginecológico	\N	\N	xzsdas	123456789	22
 53	1	Paola Carrillo	dramarielh@gmail.com	04123352232	2026-02-03 20:18:00+00	Consulta Online	\N	scheduled	2026-01-27 23:19:06.442507+00	\N	Planificación Familiar	\N	\N	miami	11405231	32
 54	1	Adis Sojo	dramarielh@gmail.com	041333335555	2026-02-03 08:00:00+00	Consulta Online	\N	scheduled	2026-01-28 01:01:20.796288+00	\N	Control Ginecológico	\N	\N	ddd	15324521	30
+55	1	<C<Cz	dramarielh@gmail.com	04123339857	2026-02-03 08:00:00+00	Consulta Online	\N	scheduled	2026-01-28 12:08:25.435644+00	\N	Control Ginecológico	\N	\N	sdss	12345678	2
 \.
 
 
@@ -1695,7 +1696,7 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border, whatsapp_url, visitor_count) FROM stdin;
 3	admin@appgynsys.com	$2b$12$V14Yrd3MgtDl9OfLMQOCh.mFTraJLb.kktTxxivgZq4ke5I1mn4/y	Administrador	\N	\N	admin-system	\N	\N	\N	t	\N	approved	\N	\N	admin	2025-12-22 23:27:24.69904+00	\N	\N	\N	\N	\N	\N	\N	\N	t	t	\N	\N	\N	\N	\N	100%	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-28 01:18:58.508158+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	90
+1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-30 01:13:01.343689+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	107
 \.
 
 
@@ -1705,6 +1706,7 @@ COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, bi
 
 COPY public.endometriosis_results (id, doctor_id, patient_identifier, score, total_questions, result_level, created_at) FROM stdin;
 1	1	Anonymous	6	10	MODERADA COINCIDENCIA	2026-01-27 11:25:09.951992+00
+2	1	Anonymous	9	10	ALTA COINCIDENCIA	2026-01-28 12:05:11.128943+00
 \.
 
 
@@ -1978,7 +1980,7 @@ COPY public.testimonials (id, doctor_id, patient_name, patient_email, photo_url,
 -- Name: appointments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.appointments_id_seq', 54, true);
+SELECT pg_catalog.setval('public.appointments_id_seq', 55, true);
 
 
 --
@@ -2048,7 +2050,7 @@ SELECT pg_catalog.setval('public.doctors_id_seq', 3, true);
 -- Name: endometriosis_results_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.endometriosis_results_id_seq', 1, true);
+SELECT pg_catalog.setval('public.endometriosis_results_id_seq', 2, true);
 
 
 --
@@ -3104,5 +3106,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ec8eBwm2t6FGAYLNfMHk58d51t7rVToXzdrE6hhGqChK3w5brplpWeKZiUq19Jp
+\unrestrict mlqKuh8vGoCrqjTNc346xhZZrPVAB8c5hKtvoorKNcKH5c3jd0u5sKdq2wi7lnL
 

@@ -7,7 +7,7 @@ import { FiTrash2, FiFileText, FiUser, FiCalendar, FiHome, FiGrid, FiEdit, FiSea
 
 export default function PatientsManager({ isEmbedded = false }) {
   // Define API Base URL dynamically
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
   const navigate = useNavigate();
   const [consultations, setConsultations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');

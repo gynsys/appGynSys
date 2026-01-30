@@ -3,7 +3,7 @@ CycleUser model for cycle predictor users.
 These are end-users who register to use the cycle predictor tool.
 Each user belongs to a specific doctor/tenant.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -24,6 +24,9 @@ class CycleUser(Base):
     # Password Recovery
     reset_password_token = Column(String, nullable=True)
     reset_password_expires = Column(DateTime(timezone=True), nullable=True)
+    
+    # PWA Push Subscription (JSON: endpoint, keys)
+    push_subscription = Column(JSON, nullable=True)
     
     # Configuration fields
     cycle_avg_length = Column(Integer, default=28, nullable=False)

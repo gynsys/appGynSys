@@ -53,7 +53,7 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
     if (!url) return null
     if (url.startsWith('http')) return url
     // For relative URLs, prepend the backend URL
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
     // Remove /api/v1 suffix if present
     const backendURL = baseURL.replace(/\/api\/v1$/, '')
     return `${backendURL}${url.startsWith('/') ? url : '/' + url}`

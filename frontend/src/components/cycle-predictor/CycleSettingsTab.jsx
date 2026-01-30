@@ -5,6 +5,7 @@ import Button from '../common/Button'
 import { Input } from '../ui/input'
 import { Bell, Baby, Pill, Calendar as CalendarIcon, Clock, ChevronRight, Settings2 } from 'lucide-react'
 import cycleService from '../../services/cycleService'
+import pushService from '../../services/pushService'
 import { toast } from 'sonner'
 
 export default function CycleSettingsTab({ onPregnancyChange }) {
@@ -65,9 +66,43 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
         }
     }
 
+    const handlePushSubscribe = async () => {
+        try {
+            setLoading(true)
+            // Import dynamically or at top? Top is better but I'll add import below
+            await pushService.subscribeUser()
+            toast.success("Notificaciones Activadas", { description: "Ahora recibirás alertas en este dispositivo." })
+        } catch (e) {
+            toast.error("Error", { description: "No se pudieron activar las notificaciones. Verifica los permisos del navegador." })
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     return (
         <div className="max-w-xl mx-auto px-6 py-4 space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
+
+            {/* Push Notifications Section */}
+            <div className="space-y-2 border-b pb-3 dark:border-gray-800">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <div>
+                            <Label className="text-base font-medium dark:text-gray-200">Notificaciones Push</Label>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Recibe alertas incluso con la app cerrada.</p>
+                        </div>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePushSubscribe}
+                        className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                    >
+                        Activar
+                    </Button>
+                </div>
+            </div>
 
             {/* Contraceptives - Only show if NOT pregnant */}
             {!isPregnant && (
