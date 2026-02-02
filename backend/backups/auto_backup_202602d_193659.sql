@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict K8NJLbmOfGUMOP68Dt2iR8M2Xgf7Ok97omVIzGo3cGuw8c4LKKyIm9xvA8UhiLN
+\restrict AwhmbY3L7AVfweHfrzzGzZhffSVaUjNM3ThDZAAqzB84GcgOg3BjjCRBPfDadGW
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -437,7 +437,8 @@ CREATE TABLE public.cycle_users (
     cycle_avg_length integer DEFAULT 28 NOT NULL,
     period_avg_length integer DEFAULT 5 NOT NULL,
     reset_password_token character varying,
-    reset_password_expires timestamp with time zone
+    reset_password_expires timestamp with time zone,
+    push_subscription json
 );
 
 
@@ -777,6 +778,87 @@ ALTER SEQUENCE public.modules_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.modules_id_seq OWNED BY public.modules.id;
+
+
+--
+-- Name: notification_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notification_logs (
+    id integer NOT NULL,
+    notification_rule_id integer,
+    recipient_id integer NOT NULL,
+    sent_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    status character varying DEFAULT 'sent'::character varying,
+    channel_used character varying,
+    error_message text
+);
+
+
+ALTER TABLE public.notification_logs OWNER TO postgres;
+
+--
+-- Name: notification_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.notification_logs_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.notification_logs_id_seq OWNER TO postgres;
+
+--
+-- Name: notification_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.notification_logs_id_seq OWNED BY public.notification_logs.id;
+
+
+--
+-- Name: notification_rules; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notification_rules (
+    id integer NOT NULL,
+    tenant_id integer NOT NULL,
+    name character varying NOT NULL,
+    notification_type character varying NOT NULL,
+    trigger_condition json DEFAULT '{}'::json NOT NULL,
+    channel character varying DEFAULT 'email'::character varying NOT NULL,
+    message_template text NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone
+);
+
+
+ALTER TABLE public.notification_rules OWNER TO postgres;
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.notification_rules_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.notification_rules_id_seq OWNER TO postgres;
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.notification_rules_id_seq OWNED BY public.notification_rules.id;
 
 
 --
@@ -1380,6 +1462,20 @@ ALTER TABLE ONLY public.modules ALTER COLUMN id SET DEFAULT nextval('public.modu
 
 
 --
+-- Name: notification_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs ALTER COLUMN id SET DEFAULT nextval('public.notification_logs_id_seq'::regclass);
+
+
+--
+-- Name: notification_rules id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules ALTER COLUMN id SET DEFAULT nextval('public.notification_rules_id_seq'::regclass);
+
+
+--
 -- Name: online_consultation_settings id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1673,9 +1769,9 @@ COPY public.cycle_notification_settings (id, cycle_user_id, contraceptive_enable
 -- Data for Name: cycle_users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, is_active, created_at, updated_at, cycle_avg_length, period_avg_length, reset_password_token, reset_password_expires) FROM stdin;
-9	milanopabloe@gmail.com	$2b$12$83iH9lp/l0H9kn2PsVZUQu0ZRGkX4qiFU4yZLaM.4txw5KMjzAqKK	Isa milano	1	t	2026-01-17 08:56:28.221343+00	\N	28	5	\N	\N
-10	likemeve@gmail.com	$2b$12$y5F8XpLWpAeHwo/YhIB7eukCkXkuhQ0YmarX.RvjtUV5e/23zLMB2	Ada tomasa	1	t	2026-01-19 12:45:50.813746+00	\N	28	5	\N	\N
+COPY public.cycle_users (id, email, password_hash, nombre_completo, doctor_id, is_active, created_at, updated_at, cycle_avg_length, period_avg_length, reset_password_token, reset_password_expires, push_subscription) FROM stdin;
+9	milanopabloe@gmail.com	$2b$12$83iH9lp/l0H9kn2PsVZUQu0ZRGkX4qiFU4yZLaM.4txw5KMjzAqKK	Isa milano	1	t	2026-01-17 08:56:28.221343+00	\N	28	5	\N	\N	\N
+10	likemeve@gmail.com	$2b$12$y5F8XpLWpAeHwo/YhIB7eukCkXkuhQ0YmarX.RvjtUV5e/23zLMB2	Ada tomasa	1	t	2026-01-19 12:45:50.813746+00	\N	28	5	\N	\N	\N
 \.
 
 
@@ -1696,7 +1792,7 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border, whatsapp_url, visitor_count) FROM stdin;
 3	admin@appgynsys.com	$2b$12$V14Yrd3MgtDl9OfLMQOCh.mFTraJLb.kktTxxivgZq4ke5I1mn4/y	Administrador	\N	\N	admin-system	\N	\N	\N	t	\N	approved	\N	\N	admin	2025-12-22 23:27:24.69904+00	\N	\N	\N	\N	\N	\N	\N	\N	t	t	\N	\N	\N	\N	\N	100%	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-30 01:13:01.343689+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	107
+1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-02-02 11:42:12.117343+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	143
 \.
 
 
@@ -1759,6 +1855,35 @@ COPY public.modules (id, name, description, code, is_active, created_at, updated
 21	Preguntas Frecuentes	Sección de preguntas y respuestas comunes.	faqs	t	2026-01-22 13:37:57.019273+00	\N
 22	Acreditaciones	Sección para mostrar sus títulos y certificados.	certifications	t	2026-01-22 13:37:57.424315+00	\N
 23	Consultas Online (Video)	Permite agendar y realizar videollamadas con pacientes.	online_consultation	t	2026-01-22 14:26:25.812489+00	\N
+\.
+
+
+--
+-- Data for Name: notification_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notification_logs (id, notification_rule_id, recipient_id, sent_at, status, channel_used, error_message) FROM stdin;
+\.
+
+
+--
+-- Data for Name: notification_rules; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notification_rules (id, tenant_id, name, notification_type, trigger_condition, channel, message_template, is_active, created_at, updated_at) FROM stdin;
+18	1	Fase Folicular	cycle_phase	{"cycle_day": 7}	email	<h1>???? Fase Folicular</h1><p>Hola {patient_name}, est??s en la fase folicular de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+20	1	Semana 12 - Primer Trimestre Completo	prenatal_milestone	{"gestation_week": 12}	dual	<h1>???? ??Felicitaciones!</h1><p>Hola {patient_name}, has completado el primer trimestre. ??Es un gran hito!</p>	t	2026-01-30 13:37:46.546031+00	\N
+21	1	Semana 20 - Mitad del Embarazo	prenatal_milestone	{"gestation_week": 20}	dual	<h1>???? ??A mitad de camino!</h1><p>Hola {patient_name}, est??s en la semana 20, ??la mitad del embarazo!</p>	t	2026-01-30 13:37:46.546031+00	\N
+14	1	Día de Ovulación	cycle_phase	{"is_ovulation_day": true}	dual	<h1>???? D??a de Ovulaci??n</h1><p>Hola {patient_name}, hoy es tu d??a de ovulaci??n. Es tu pico m??ximo de fertilidad.</p>	t	2026-01-30 13:37:46.546031+00	\N
+15	1	Inicio Ventana Fértil	cycle_phase	{"is_fertile_start": true}	dual	<h1>???? Ventana F??rtil</h1><p>Hola {patient_name}, hoy comienza tu ventana f??rtil. Tienes alta probabilidad de embarazo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+16	1	Recordatorio de Período (1 día antes)	cycle_phase	{"days_before_period": 1}	dual	<h1>???? Tu per??odo llega pronto</h1><p>Hola {patient_name}, seg??n tus predicciones, tu per??odo deber??a comenzar ma??ana.</p>	t	2026-01-30 13:37:46.546031+00	\N
+17	1	Recordatorio de Período (3 días antes)	cycle_phase	{"days_before_period": 3}	email	<h1>???? Recordatorio</h1><p>Hola {patient_name}, tu per??odo deber??a comenzar en aproximadamente 3 d??as.</p>	t	2026-01-30 13:37:46.546031+00	\N
+19	1	Fase Lútea	cycle_phase	{"days_after_ovulation": 3}	email	<h1>???? Fase L??tea</h1><p>Hola {patient_name}, est??s en la fase l??tea de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+22	1	Semana 28 - Tercer Trimestre	prenatal_milestone	{"gestation_week": 28}	dual	<h1>???? Tercer Trimestre</h1><p>Hola {patient_name}, has entrado en el tercer y ??ltimo trimestre.</p>	t	2026-01-30 13:37:46.546031+00	\N
+24	1	Bienvenida al Sistema	system	{"event": "user_registered"}	email	<h1>???? Bienvenida a GynSys</h1><p>Hola {patient_name}, gracias por registrarte en nuestro sistema de seguimiento ginecol??gico.</p>	t	2026-01-30 13:37:46.546031+00	\N
+25	1	Completar Perfil	system	{"days_after_registration": 3, "profile_incomplete": true}	email	<h1>???? Completa tu Perfil</h1><p>Hola {patient_name}, completa tu perfil para aprovechar al m??ximo el sistema.</p>	t	2026-01-30 13:37:46.546031+00	\N
+26	1	prueba	cycle_phase	{"is_ovulation_day": true}	dual	esta es una  prueba	t	2026-01-31 03:51:31.091532+00	\N
+23	1	Semana 36 - Preparación para el Parto	prenatal_milestone	{"gestation_week": 36}	dual	<h1>???? Muy Pronto</h1><p>Hola {patient_name}, est??s en la semana 36. ??Tu beb?? llegar?? pronto!</p>	t	2026-01-30 13:37:46.546031+00	\N
 \.
 
 
@@ -2082,6 +2207,20 @@ SELECT pg_catalog.setval('public.modules_id_seq', 23, true);
 
 
 --
+-- Name: notification_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notification_logs_id_seq', 1, false);
+
+
+--
+-- Name: notification_rules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notification_rules_id_seq', 27, true);
+
+
+--
 -- Name: online_consultation_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -2319,6 +2458,22 @@ ALTER TABLE ONLY public.modules
 
 
 --
+-- Name: notification_logs notification_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notification_rules notification_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules
+    ADD CONSTRAINT notification_rules_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: online_consultation_settings online_consultation_settings_doctor_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2428,6 +2583,20 @@ ALTER TABLE ONLY public.tenants
 
 ALTER TABLE ONLY public.testimonials
     ADD CONSTRAINT testimonials_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_notification_logs_recipient; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_logs_recipient ON public.notification_logs USING btree (recipient_id);
+
+
+--
+-- Name: idx_notification_rules_tenant; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_notification_rules_tenant ON public.notification_rules USING btree (tenant_id);
 
 
 --
@@ -2968,6 +3137,30 @@ ALTER TABLE ONLY public.locations
 
 
 --
+-- Name: notification_logs notification_logs_notification_rule_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_notification_rule_id_fkey FOREIGN KEY (notification_rule_id) REFERENCES public.notification_rules(id) ON DELETE SET NULL;
+
+
+--
+-- Name: notification_logs notification_logs_recipient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES public.cycle_users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: notification_rules notification_rules_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification_rules
+    ADD CONSTRAINT notification_rules_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.doctors(id) ON DELETE CASCADE;
+
+
+--
 -- Name: online_consultation_settings online_consultation_settings_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3106,5 +3299,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict K8NJLbmOfGUMOP68Dt2iR8M2Xgf7Ok97omVIzGo3cGuw8c4LKKyIm9xvA8UhiLN
+\unrestrict AwhmbY3L7AVfweHfrzzGzZhffSVaUjNM3ThDZAAqzB84GcgOg3BjjCRBPfDadGW
 

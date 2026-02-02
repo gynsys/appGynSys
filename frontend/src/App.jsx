@@ -59,6 +59,11 @@ function App() {
         import('./store/appointmentStore').then(({ useAppointmentStore }) => {
           useAppointmentStore.getState().fetchAppointments()
         })
+
+        // Preload notification rules
+        import('./stores/notificationStore').then(({ default: useNotificationStore }) => {
+          useNotificationStore.getState().fetchRules()
+        })
       }
 
       const applyTheme = () => {

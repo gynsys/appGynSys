@@ -16,7 +16,10 @@ class NotificationType(str, enum.Enum):
     CYCLE_PHASE = "cycle_phase" # e.g. "Follicular Phase Alert"
     SYMPTOM_ALERT = "symptom_alert" # e.g. "Headache Warning"
     PRENATAL_WEEKLY = "prenatal_weekly" # e.g. "Week 12 Update"
+    PRENATAL_MILESTONE = "prenatal_milestone" # e.g. "First Trimester Complete"
+    SYSTEM = "system" # System notifications
     CUSTOM = "custom" # One-off or generic
+
 
 class NotificationRule(Base):
     __tablename__ = "notification_rules"
@@ -25,12 +28,12 @@ class NotificationRule(Base):
     tenant_id = Column(Integer, ForeignKey("doctors.id"), nullable=False, index=True)
     
     name = Column(String, nullable=False) # Internal name for the doctor
-    notification_type = Column(Enum(NotificationType), nullable=False)
+    notification_type = Column(String, nullable=False)  # Use String to match DB lowercase values
     
     # Logic Trigger: {"days_before_period": 2} or {"gestation_week": 12}
     trigger_condition = Column(JSON, nullable=False, default={})
     
-    channel = Column(Enum(NotificationChannel), default=NotificationChannel.EMAIL)
+    channel = Column(String, default="email")  # Use String to match DB lowercase values
     
     # HTML Template or Plain Text. variable placeholders: {patient_name}, {date}
     message_template = Column(Text, nullable=False)

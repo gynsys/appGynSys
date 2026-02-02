@@ -1,51 +1,44 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import Button from '../../components/common/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
-import notificationService from '../../services/notificationService'
 import { toast } from 'sonner'
-import { Switch } from '../../components/ui/switch'
+import useNotificationStore from '../../stores/notificationStore'
+import { useState } from 'react'
+
+const TABS = [
+    { id: 'cycle', label: 'Calculadora Menstrual', types: ['cycle_phase'] },
+    { id: 'prenatal', label: 'Prenatal', types: ['prenatal_weekly', 'prenatal_milestone'] },
+    { id: 'system', label: 'Sistema', types: ['system', 'custom', 'symptom_alert'] }
+]
 
 export default function NotificationManagerPage() {
-    const [rules, setRules] = useState([])
-    const [loading, setLoading] = useState(true)
+    const { rules, loading, fetchRules, createRule, deleteRule } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState('cycle')
 
     // Form State
     const [formData, setFormData] = useState({
         name: '',
         type: 'cycle_phase',
         trigger_days: 0,
-        trigger_event: 'days_before_period', // days_before_period, is_ovulation_day, is_fertile_start
+        trigger_event: 'days_before_period',
         message: 'Hola {patient_name}, ...',
-        channel: 'email'
+        channel: 'dual'
     })
 
+    // Fetch rules on mount (will use cache if available)
     useEffect(() => {
-        loadRules()
-    }, [])
-
-    const loadRules = async () => {
-        try {
-            setLoading(true)
-            const data = await notificationService.getRules()
-            setRules(data)
-        } catch (e) {
-            toast.error("Error al cargar reglas")
-        } finally {
-            setLoading(false)
-        }
-    }
+        fetchRules()
+    }, [fetchRules])
 
     const handleDelete = async (id) => {
         if (!confirm("¿Eliminar esta notificación?")) return
         try {
-            await notificationService.deleteRule(id)
-            setRules(rules.filter(r => r.id !== id))
+            await deleteRule(id)
             toast.success("Notificación eliminada")
         } catch (e) {
             toast.error("Error al eliminar")
@@ -73,78 +66,122 @@ export default function NotificationManagerPage() {
                 is_active: true
             }
 
-            await notificationService.createRule(rulePayload)
+            await createRule(rulePayload)
             toast.success("Notificación creada")
             setIsCreateOpen(false)
-            loadRules()
+            // Reset form
+            setFormData({
+                name: '',
+                type: 'cycle_phase',
+                trigger_days: 0,
+                trigger_event: 'days_before_period',
+                message: 'Hola {patient_name}, ...',
+                channel: 'dual'
+            })
         } catch (e) {
             toast.error("Error al crear notificación")
         }
     }
 
+    // Get filtered rules for active tab
+    const currentTab = TABS.find(t => t.id === activeTab)
+    const filteredRules = rules.filter(rule =>
+        currentTab.types.includes(rule.notification_type)
+    )
+
+    // Count by category
+    const getCategoryCount = (tabId) => {
+        const tab = TABS.find(t => t.id === tabId)
+        return rules.filter(r => tab.types.includes(r.notification_type)).length
+    }
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Notificaciones</h1>
-                    <p className="text-muted-foreground">Gestiona los avisos automáticos para tus pacientes.</p>
-                </div>
-                <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+            <div className="flex items-center justify-between mb-8 px-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notificaciones</h1>
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white flex items-center gap-2"
+                >
                     <Plus className="w-4 h-4" />
                     Nueva Notificación
-                </Button>
+                </button>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Reglas Activas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nombre</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Canal</TableHead>
-                                <TableHead>Disparador</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rules.map(rule => (
-                                <TableRow key={rule.id}>
-                                    <TableCell className="font-medium">{rule.name}</TableCell>
-                                    <TableCell>{rule.notification_type}</TableCell>
-                                    <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${rule.channel === 'push' || rule.channel === 'dual' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100'}`}>
-                                            {rule.channel.toUpperCase()}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-xs font-mono text-gray-500">
-                                        {JSON.stringify(rule.trigger_condition)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(rule.id)} className="text-red-500 hover:text-red-700">
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </TableCell>
+            {/* Tabs */}
+            <div className="bg-gray-50/50 dark:bg-gray-900/50">
+                <div className="max-w-[1000px] mx-auto flex gap-2 justify-center" style={{ backgroundColor: 'rgb(31,41,55)' }}>
+                    {TABS.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`px-4 py-2 font-medium transition-colors relative ${activeTab === tab.id
+                                ? 'text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                        >
+                            {tab.label}
+                            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === tab.id
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                }`}>
+                                {getCategoryCount(tab.id)}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Category Content */}
+            <div className="max-w-[1000px] mx-auto mt-8">
+
+                {loading && rules.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                        Cargando notificaciones...
+                    </div>
+                ) : (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-b-[1px] border-gray-700">
+                                    <TableHead className="text-gray-400">Nombre</TableHead>
+                                    <TableHead className="text-gray-400">Canal</TableHead>
+                                    <TableHead className="text-right text-gray-400">Acciones</TableHead>
                                 </TableRow>
-                            ))}
-                            {rules.length === 0 && !loading && (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                        No hay notificaciones configuradas.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredRules.map(rule => (
+                                    <TableRow key={rule.id} className="border-b-[1px] border-gray-700">
+                                        <TableCell className="font-medium text-gray-200">{rule.name}</TableCell>
+                                        <TableCell>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${rule.channel === 'push' || rule.channel === 'dual' ? 'bg-purple-900/50 text-purple-300' : 'bg-gray-700 text-gray-300'}`}>
+                                                {rule.channel.toUpperCase()}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(rule.id)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {filteredRules.length === 0 && !loading && (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center py-8 text-gray-400">
+                                            No hay notificaciones configuradas en esta categoría.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </div>
+
 
             {/* Create Modal */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>Nueva Notificación Automática</DialogTitle>
                     </DialogHeader>
@@ -155,14 +192,29 @@ export default function NotificationManagerPage() {
                                 placeholder="Ej: Recordatorio de Periodo"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className="bg-gray-700 text-white border-gray-600"
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Categoría</Label>
+                            <select
+                                className="flex h-10 w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={formData.type}
+                                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                            >
+                                <option value="cycle_phase">Calculadora Menstrual</option>
+                                <option value="prenatal_weekly">Prenatal Semanal</option>
+                                <option value="prenatal_milestone">Prenatal Hito</option>
+                                <option value="system">Sistema</option>
+                            </select>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Evento (Trigger)</Label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    className="flex h-10 w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                     value={formData.trigger_event}
                                     onChange={e => setFormData({ ...formData, trigger_event: e.target.value })}
                                 >
@@ -179,6 +231,7 @@ export default function NotificationManagerPage() {
                                         type="number"
                                         value={formData.trigger_days}
                                         onChange={e => setFormData({ ...formData, trigger_days: e.target.value })}
+                                        className="bg-gray-700 text-white border-gray-600"
                                     />
                                 </div>
                             )}
@@ -187,7 +240,7 @@ export default function NotificationManagerPage() {
                         <div className="space-y-2">
                             <Label>Canal de Envío</Label>
                             <select
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                className="flex h-10 w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 value={formData.channel}
                                 onChange={e => setFormData({ ...formData, channel: e.target.value })}
                             >
@@ -200,7 +253,7 @@ export default function NotificationManagerPage() {
                         <div className="space-y-2">
                             <Label>Mensaje (HTML o Texto)</Label>
                             <textarea
-                                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                className="flex min-h-[100px] w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400"
                                 value={formData.message}
                                 onChange={e => setFormData({ ...formData, message: e.target.value })}
                                 placeholder="Hola {patient_name}, ..."

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpieza de Caché - GynSys</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        h1 { color: #60a5fa; margin-top: 0; }
+        h2 { color: #34d399; font-size: 1.2em; }
+        button {
+            background: #60a5fa;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px 8px 8px 0;
+        }
+        button:hover { background: #3b82f6; }
+        .danger { background: #ef4444; }
+        .danger:hover { background: #dc2626; }
+        .success { background: #10b981; }
+        .output {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .status { 
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 4px 0;
+        }
+        .status.ok { background: #065f46; color: #6ee7b7; }
+        .status.error { background: #7f1d1d; color: #fca5a5; }
+        .warning {
+            background: #854d0e;
+            color: #fde047;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 Limpieza de Caché - GynSys</h1>
+
+    <div class="card">
+        <h2>1. Desregistrar Service Workers</h2>
+        <p>Elimina todos los service workers que pueden estar sirviendo código viejo.</p>
+        <button onclick="unregisterSW()">Desregistrar Todos los SW</button>
+        <div id="sw-output" class="output" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+        <h2>2. Limpiar Todo el Almacenamiento</h2>
+        <p>Elimina localStorage, sessionStorage, cookies, cache, e IndexedDB.</p>
+        <button class="danger" onclick="clearAllStorage()">Limpiar Todo el Almacenamiento</button>
+        <div id="storage-output" class="output" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+        <h2>3. Diagnóstico del Sistema</h2>
+        <p>Verifica la configuración actual de API y Service Workers.</p>
+        <button onclick="runDiagnostic()">Ejecutar Diagnóstico</button>
+        <div id="diagnostic-output" class="output" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+        <h2>4. Test de API</h2>
+        <p>Prueba si las requests van al proxy correcto.</p>
+        <button class="success" onclick="testAPI()">Probar API</button>
+        <div id="api-output" class="output" style="display:none;"></div>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Importante:</strong> Después de limpiar todo, recarga la página con <code>Ctrl + Shift + R</code>
+    </div>
+
+    <script>
+        const log = (id, message, isError = false) => {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            el.textContent += message + '\n';
+            if (isError) el.style.color = '#fca5a5';
+        };
+
+        async function unregisterSW() {
+            const output = document.getElementById('sw-output');
+            output.textContent = '';
+            output.style.display = 'block';
+            
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    log('sw-output', '✅ No hay service workers registrados');
+                    return;
+                }
+                
+                log('sw-output', `Encontrados ${registrations.length} service worker(s)`);
+                
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    log('sw-output', `✅ Desregistrado: ${registration.scope}`);
+                }
+                
+                log('sw-output', '\n🎉 Todos los service workers eliminados');
+            } catch (e) {
+                log('sw-output', `❌ Error: ${e.message}`, true);
+            }
+        }
+
+        async function clearAllStorage() {
+            const output = document.getElementById('storage-output');
+            output.textContent = '';
+            output.style.display = 'block';
+            
+            try {
+                // LocalStorage
+                localStorage.clear();
+                log('storage-output', '✅ localStorage limpiado');
+                
+                // SessionStorage
+                sessionStorage.clear();
+                log('storage-output', '✅ sessionStorage limpiado');
+                
+                // Cache Storage
+                const cacheNames = await caches.keys();
+                for (let name of cacheNames) {
+                    await caches.delete(name);
+                    log('storage-output', `✅ Cache eliminado: ${name}`);
+                }
+                
+                // IndexedDB
+                const dbs = await indexedDB.databases();
+                for (let db of dbs) {
+                    indexedDB.deleteDatabase(db.name);
+                    log('storage-output', `✅ IndexedDB eliminado: ${db.name}`);
+                }
+                
+                log('storage-output', '\n🎉 Todo el almacenamiento limpiado');
+                log('storage-output', '\n⚠️ Recarga con Ctrl+Shift+R');
+            } catch (e) {
+                log('storage-output', `❌ Error: ${e.message}`, true);
+            }
+        }
+
+        async function runDiagnostic() {
+            const output = document.getElementById('diagnostic-output');
+            output.textContent = '';
+            output.style.display = 'block';
+            
+            log('diagnostic-output', '🔍 DIAGNÓSTICO DEL SISTEMA\n');
+            log('diagnostic-output', '══════════════════════════\n');
+            
+            // Service Workers
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            log('diagnostic-output', `Service Workers: ${registrations.length}`);
+            registrations.forEach(reg => {
+                log('diagnostic-output', `  - ${reg.scope}`);
+            });
+            
+            // Environment
+            log('diagnostic-output', `\nURL Actual: ${window.location.href}`);
+            log('diagnostic-output', `Origin: ${window.location.origin}`);
+            
+            // LocalStorage
+            log('diagnostic-output', `\nTokens en localStorage:`);
+            log('diagnostic-output', `  - access_token: ${localStorage.getItem('access_token') ? '✅ Presente' : '❌ Ausente'}`);
+            log('diagnostic-output', `  - cycle_access_token: ${localStorage.getItem('cycle_access_token') ? '✅ Presente' : '❌ Ausente'}`);
+            
+            // Cache
+            const cacheNames = await caches.keys();
+            log('diagnostic-output', `\nCache Storage: ${cacheNames.length} cache(s)`);
+            cacheNames.forEach(name => {
+                log('diagnostic-output', `  - ${name}`);
+            });
+        }
+
+        async function testAPI() {
+            const output = document.getElementById('api-output');
+            output.textContent = '';
+            output.style.display = 'block';
+            
+            log('api-output', '🧪 PROBANDO API\n');
+            log('api-output', '══════════════\n');
+            
+            const endpoints = [
+                { path: '/api/v1/users/me', auth: true },
+                { path: '/api/v1/notifications/rules', auth: true },
+                { path: '/api/v1/profiles/mariel-herrera', auth: false }
+            ];
+            
+            for (let endpoint of endpoints) {
+                try {
+                    const headers = {};
+                    if (endpoint.auth) {
+                        const token = localStorage.getItem('access_token');
+                        if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+                    }
+                    
+                    log('api-output', `\nProbando: ${endpoint.path}`);
+                    
+                    const response = await fetch(endpoint.path, { headers });
+                    const url = response.url;
+                    
+                    log('api-output', `  URL Final: ${url}`);
+                    log('api-output', `  Status: ${response.status}`);
+                    
+                    if (url.includes(':8000')) {
+                        log('api-output', `  ❌ PROBLEMA: Request fue directo a :8000`, true);
+                        log('api-output', `  Debería usar proxy en :5173`, true);
+                    } else {
+                        log('api-output', `  ✅ OK: Usando proxy correctamente`);
+                    }
+                } catch (e) {
+                    log('api-output', `  ❌ Error: ${e.message}`, true);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

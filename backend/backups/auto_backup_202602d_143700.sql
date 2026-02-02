@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict TtqaDjWPbKdR6rMnB7hSuiNypIj06JncFsjNHWfkppiBLaKzu0UHajp6lHxGPPD
+\restrict DDb5ItnwXXpTU2d3YMwoZfdJtWs4fTOGjYq54V5TKrMdHw4QS0Wa3eWChcTKomX
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -1792,7 +1792,7 @@ COPY public.doctor_certifications (id, doctor_id, name, title, logo_url, "order"
 
 COPY public.doctors (id, email, password_hash, nombre_completo, especialidad, biografia, slug_url, logo_url, photo_url, theme_primary_color, is_active, is_verified, status, plan_id, payment_reference, role, created_at, updated_at, social_youtube, social_instagram, social_tiktok, social_x, social_facebook, schedule, contact_email, card_shadow, container_shadow, theme_body_bg_color, theme_container_bg_color, pdf_config, universidad, services_section_title, gallery_width, stripe_customer_id, subscription_end_date, show_certifications_carousel, reset_password_token, reset_password_expires, design_template, profile_image_border, whatsapp_url, visitor_count) FROM stdin;
 3	admin@appgynsys.com	$2b$12$V14Yrd3MgtDl9OfLMQOCh.mFTraJLb.kktTxxivgZq4ke5I1mn4/y	Administrador	\N	\N	admin-system	\N	\N	\N	t	\N	approved	\N	\N	admin	2025-12-22 23:27:24.69904+00	\N	\N	\N	\N	\N	\N	\N	\N	t	t	\N	\N	\N	\N	\N	100%	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-01-30 10:47:10.473303+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	109
+1	milanopabloe@gmail.com	$2b$12$DUMvCgV.BvAlK0H0ZBFF7eqafgSCxG35X6DtFWUli3J2xDdq405K6	Dra. Mariel Herrera	Ginecología y Obstetricia	<p><span style="color: rgb(68, 68, 68);">"Ginecóloga-Obstetra especializada en </span><strong style="color: rgb(68, 68, 68);">endometriosis </strong><span style="color: rgb(68, 68, 68);">y salud femenina integral. Egresada de la </span><strong style="color: rgb(68, 68, 68);">Universidad Central de Venezuela</strong><span style="color: rgb(68, 68, 68);">, mi formación avanzada se centra en el</span><strong style="color: rgb(68, 68, 68);"> diagnóstico y tratamiento</strong><span style="color: rgb(68, 68, 68);"> de esta condición que afecta a tantas mujeres. Ofrezco una atención personalizada y actualizada, combinando los últimos avances médicos con un enfoque humano y empático. Mi compromiso es acompañarte en todas las etapas: adolescencia, fertilidad, embarazo y menopausia. En mi consulta encontrarás un espacio de </span><strong style="color: rgb(68, 68, 68);">confianza y profesionalismo</strong><span style="color: rgb(68, 68, 68);"> dedicado a tu bienestar. Sígueme en Instagram </span><a href="https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv" rel="noopener noreferrer" target="_blank" style="color: rgb(68, 68, 68);">@draendog</a><span style="color: rgb(68, 68, 68);"> donde comparto </span><strong style="color: rgb(68, 68, 68);"><em>consejos sobre salud ginecológica y endometriosis</em></strong><span style="color: rgb(68, 68, 68);">."</span></p>	mariel-herrera	/uploads/logos/1_logo_20260119_123501.png	/uploads/photos/4_photo_20251220_143449.png	#ae3767	t	t	approved	3	\N	user	2025-12-22 20:43:44.4041+00	2026-02-02 11:42:12.117343+00		https://www.instagram.com/draendog?igsh=cG1pZjZhYWxldmVv	https://vm.tiktok.com/ZMHTPAMwSVK5B-90m5A/			\N	milanopabloe@gmail.com	f	f	#f5efef	#ffffff	{"doctor_name": "Dra. Mariel Herrera", "specialty": "Ginecolog\\u00eda y Obstetricia", "location": "Caracas-Guarenas Guatire", "phones": "04244281876-04127738918", "mpps_number": "140.795", "cmdm_number": "38.789", "doctor_id": "23.812.988", "report_title": "HISTORIA MEDICA", "footer_city": "Guarenas", "logo_header_1": "/uploads/logos/4_logo_20251220_145425.png", "logo_signature": "/uploads/signatures/1_signature_20251224_215100.png", "include_functional_exam": true}	Universidad Central de Venezuela	Mi Servicios	100%	\N	\N	t	9zgm_lswrPFTEo8tXyfJ4_SAdb-sJPkN7vVZgIg9wws	2026-01-26 00:19:00.722446+00	dark	t	http://wa.me/584244281876	143
 \.
 
 
@@ -1871,6 +1871,20 @@ COPY public.notification_logs (id, notification_rule_id, recipient_id, sent_at, 
 --
 
 COPY public.notification_rules (id, tenant_id, name, notification_type, trigger_condition, channel, message_template, is_active, created_at, updated_at) FROM stdin;
+14	1	D??a de Ovulaci??n	cycle_phase	{"is_ovulation_day": true}	dual	<h1>???? D??a de Ovulaci??n</h1><p>Hola {patient_name}, hoy es tu d??a de ovulaci??n. Es tu pico m??ximo de fertilidad.</p>	t	2026-01-30 13:37:46.546031+00	\N
+15	1	Inicio Ventana F??rtil	cycle_phase	{"is_fertile_start": true}	dual	<h1>???? Ventana F??rtil</h1><p>Hola {patient_name}, hoy comienza tu ventana f??rtil. Tienes alta probabilidad de embarazo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+16	1	Recordatorio de Per??odo (1 d??a antes)	cycle_phase	{"days_before_period": 1}	dual	<h1>???? Tu per??odo llega pronto</h1><p>Hola {patient_name}, seg??n tus predicciones, tu per??odo deber??a comenzar ma??ana.</p>	t	2026-01-30 13:37:46.546031+00	\N
+17	1	Recordatorio de Per??odo (3 d??as antes)	cycle_phase	{"days_before_period": 3}	email	<h1>???? Recordatorio</h1><p>Hola {patient_name}, tu per??odo deber??a comenzar en aproximadamente 3 d??as.</p>	t	2026-01-30 13:37:46.546031+00	\N
+18	1	Fase Folicular	cycle_phase	{"cycle_day": 7}	email	<h1>???? Fase Folicular</h1><p>Hola {patient_name}, est??s en la fase folicular de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+19	1	Fase L??tea	cycle_phase	{"days_after_ovulation": 3}	email	<h1>???? Fase L??tea</h1><p>Hola {patient_name}, est??s en la fase l??tea de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
+20	1	Semana 12 - Primer Trimestre Completo	prenatal_milestone	{"gestation_week": 12}	dual	<h1>???? ??Felicitaciones!</h1><p>Hola {patient_name}, has completado el primer trimestre. ??Es un gran hito!</p>	t	2026-01-30 13:37:46.546031+00	\N
+21	1	Semana 20 - Mitad del Embarazo	prenatal_milestone	{"gestation_week": 20}	dual	<h1>???? ??A mitad de camino!</h1><p>Hola {patient_name}, est??s en la semana 20, ??la mitad del embarazo!</p>	t	2026-01-30 13:37:46.546031+00	\N
+22	1	Semana 28 - Tercer Trimestre	prenatal_milestone	{"gestation_week": 28}	dual	<h1>???? Tercer Trimestre</h1><p>Hola {patient_name}, has entrado en el tercer y ??ltimo trimestre.</p>	t	2026-01-30 13:37:46.546031+00	\N
+23	1	Semana 36 - Preparaci??n para el Parto	prenatal_milestone	{"gestation_week": 36}	dual	<h1>???? Muy Pronto</h1><p>Hola {patient_name}, est??s en la semana 36. ??Tu beb?? llegar?? pronto!</p>	t	2026-01-30 13:37:46.546031+00	\N
+24	1	Bienvenida al Sistema	system	{"event": "user_registered"}	email	<h1>???? Bienvenida a GynSys</h1><p>Hola {patient_name}, gracias por registrarte en nuestro sistema de seguimiento ginecol??gico.</p>	t	2026-01-30 13:37:46.546031+00	\N
+25	1	Completar Perfil	system	{"days_after_registration": 3, "profile_incomplete": true}	email	<h1>???? Completa tu Perfil</h1><p>Hola {patient_name}, completa tu perfil para aprovechar al m??ximo el sistema.</p>	t	2026-01-30 13:37:46.546031+00	\N
+26	1	prueba	cycle_phase	{"is_ovulation_day": true}	dual	esta es una  prueba	t	2026-01-31 03:51:31.091532+00	\N
+27	1	jjj	cycle_phase	{"days_before_period": 1}	dual	Hola {patient_name}, ...	t	2026-02-02 12:22:37.223732+00	\N
 \.
 
 
@@ -2204,7 +2218,7 @@ SELECT pg_catalog.setval('public.notification_logs_id_seq', 1, false);
 -- Name: notification_rules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.notification_rules_id_seq', 1, false);
+SELECT pg_catalog.setval('public.notification_rules_id_seq', 27, true);
 
 
 --
@@ -3286,5 +3300,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict TtqaDjWPbKdR6rMnB7hSuiNypIj06JncFsjNHWfkppiBLaKzu0UHajp6lHxGPPD
+\unrestrict DDb5ItnwXXpTU2d3YMwoZfdJtWs4fTOGjYq54V5TKrMdHw4QS0Wa3eWChcTKomX
 
