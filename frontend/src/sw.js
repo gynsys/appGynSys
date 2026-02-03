@@ -1,15 +1,16 @@
-// Use importScripts for workbox in service worker context
-// This is automatically handled by vite-plugin-pwa during build
-// For dev mode, we'll keep it simple
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
 
-// --- Precaching Logic (handled by vite-plugin-pwa) ---
-if (typeof self.__WB_MANIFEST !== 'undefined') {
-    // In production, workbox will be available
-    if (typeof workbox !== 'undefined') {
-        workbox.precaching.cleanupOutdatedCaches();
-        workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
-    }
-}
+// Automatically handled by vite-plugin-pwa during build
+// This MUST appear exactly ONCE
+precacheAndRoute(self.__WB_MANIFEST);
+
+// Clean up old caches
+cleanupOutdatedCaches();
+
+// Allow the service worker to take control of the page immediately
+self.skipWaiting();
+clientsClaim();
 
 // --- Push Notification Logic ---
 
@@ -41,12 +42,4 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil(
         clients.openWindow(event.notification.data.url)
     );
-});
-
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
 });
