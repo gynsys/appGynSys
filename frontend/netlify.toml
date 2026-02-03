@@ -4,6 +4,7 @@
 
 [build.environment]
   VITE_API_BASE_URL = "https://gynsys.duckdns.org/api/v1"
+  VITE_GOOGLE_CLIENT_ID = "836443681186-o642l26c5f47oml9atblo8m73cc0i0hv.apps.googleusercontent.com"
 
 [[redirects]]
   from = "/*"
