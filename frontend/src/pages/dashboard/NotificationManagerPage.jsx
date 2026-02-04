@@ -96,7 +96,7 @@ export default function NotificationManagerPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[900px] mx-auto">
             {/* Header Blueprint */}
             <div className="flex items-center justify-between mb-8 px-2">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notificaciones</h1>
@@ -168,8 +168,8 @@ export default function NotificationManagerPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${rule.channel === 'push' || rule.channel === 'dual'
-                                                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                                                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                                                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                                                     }`}>
                                                     {rule.channel.toUpperCase()}
                                                 </span>
