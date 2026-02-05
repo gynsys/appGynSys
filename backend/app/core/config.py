@@ -34,7 +34,10 @@ class Settings(BaseSettings):
         "http://localhost:5174", 
         "http://127.0.0.1:5174",
         "https://gynsys.netlify.app",
-        "https://appgynsys.onrender.com"
+        "https://appgynsys.onrender.com",
+        "https://gynsys.net",
+        "https://www.gynsys.net",
+        "https://api.gynsys.net"
     ]
 
     @validator("CORS_ORIGINS", pre=True)
