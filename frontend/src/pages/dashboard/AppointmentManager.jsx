@@ -240,15 +240,7 @@ export default function AppointmentManager() {
                         </button>
                       )}
 
-                      {/* Cancel Button - Only valid in Scheduled tab */}
-                      {filter === 'scheduled' && !['cancelled', 'completed'].includes(appointment.status) && (
-                        <button
-                          onClick={() => handleStatusChange(appointment.id, 'cancelled')}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-xs font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                          Cancelar
-                        </button>
-                      )}
+
 
                       {/* Delete Button - Only valid in Scheduled tab per user request */}
                       {filter === 'scheduled' && (
