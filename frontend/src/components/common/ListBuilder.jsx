@@ -49,7 +49,7 @@ export const ListBuilder = ({ value, onChange, placeholder = "Agregar nuevo íte
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           value={newItem}
@@ -61,7 +61,7 @@ export const ListBuilder = ({ value, onChange, placeholder = "Agregar nuevo íte
         <button
           onClick={handleAddItem}
           disabled={!newItem.trim()}
-          className="bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-transparent dark:border-gray-600"
+          className="bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-transparent dark:border-gray-600 w-full sm:w-auto"
         >
           Agregar
         </button>

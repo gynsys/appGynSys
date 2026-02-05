@@ -807,17 +807,17 @@ export const DoctorConsultationPage = () => {
     return (
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
         <h3 className="text-xl font-medium mb-6 dark:text-white">¿Desea usar la plantilla de examen físico normal?</h3>
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
           <button
             onClick={() => setExamMode('wizard')}
-            className="text-white py-3 px-8 rounded-lg hover:opacity-90 transition-colors font-medium"
+            className="text-white py-3 px-8 rounded-lg hover:opacity-90 transition-colors font-medium w-full sm:w-auto"
             style={{ backgroundColor: primaryColor }}
           >
             Sí, usar plantilla
           </button>
           <button
             onClick={() => setExamMode('manual')}
-            className="bg-white dark:bg-gray-700 text-black dark:text-white border-2 border-black dark:border-gray-500 py-3 px-8 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium"
+            className="bg-white dark:bg-gray-700 text-black dark:text-white border-2 border-black dark:border-gray-500 py-3 px-8 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium w-full sm:w-auto"
           >
             No, ingresar manualmente
           </button>
