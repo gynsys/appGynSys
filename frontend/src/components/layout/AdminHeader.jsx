@@ -45,7 +45,7 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
                   {doctor.nombre_completo?.charAt(0) || 'D'}
                 </div>
               )}
-              <div>
+              <div className="hidden md:block">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                   {doctor.nombre_completo}
                 </h1>
