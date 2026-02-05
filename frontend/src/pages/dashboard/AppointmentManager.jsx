@@ -133,7 +133,7 @@ export default function AppointmentManager() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex space-x-4">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('scheduled')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'scheduled' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
@@ -170,14 +170,14 @@ export default function AppointmentManager() {
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAppointments.map((appointment) => (
                 <li key={appointment.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0 w-full">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-medium text-indigo-600 dark:text-indigo-400 truncate">
                           {appointment.patient_name}
                         </h3>
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
+                      <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center">
                           <FiCalendar className="mr-2 text-indigo-500" />
                           {formatDate(appointment.appointment_date)}
@@ -192,7 +192,7 @@ export default function AppointmentManager() {
                         </span>
                       </div>
                       {/* Patient Extra Details Row */}
-                      <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
+                      <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center" title="Cédula de Identidad">
                           <FiCreditCard className="mr-2 text-gray-400" />
                           {appointment.patient_dni || 'CI: N/A'}
@@ -209,7 +209,7 @@ export default function AppointmentManager() {
                     </div>
 
                     {/* Actions */}
-                    <div className="ml-6 flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 w-full sm:w-auto justify-end mt-4 sm:mt-0">
                       {appointment.status === 'scheduled' && filter === 'scheduled' && (
                         <button
                           onClick={() => handleStatusChange(appointment.id, 'confirmed')}

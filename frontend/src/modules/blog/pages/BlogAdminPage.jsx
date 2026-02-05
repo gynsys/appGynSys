@@ -123,9 +123,9 @@ export default function BlogAdminPage() {
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {Array.isArray(posts) && posts.map((post) => (
               <li key={post.id} className="dark:bg-gray-800">
-                <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
+                <div className="px-4 py-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   {/* Content */}
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
                     <div className="flex-shrink-0 h-16 w-16">
                       {post.cover_image ? (
                         <img
@@ -141,7 +141,7 @@ export default function BlogAdminPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-medium text-indigo-600 dark:text-indigo-400 truncate">{post.title}</h3>
-                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3">
+                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-3">
                         <span className="flex items-center gap-1">
                           {post.is_published ? (
                             <>
@@ -164,7 +164,7 @@ export default function BlogAdminPage() {
                         {/* SEO Score Badge */}
                         {post.seo_config && (
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium gap-1 ${post.seo_config.seo_score >= 70 ? 'bg-green-100 text-green-800' :
-                              post.seo_config.seo_score >= 40 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                            post.seo_config.seo_score >= 40 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                             }`}>
                             SEO: {post.seo_config.seo_score}
                           </span>
@@ -174,7 +174,7 @@ export default function BlogAdminPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 w-full sm:w-auto justify-end">
                     <Button
                       onClick={() => handleEdit(post)}
                       variant="outline"
