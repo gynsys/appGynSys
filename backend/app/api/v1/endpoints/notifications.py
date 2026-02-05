@@ -96,19 +96,17 @@ def subscribe_push(
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Subscribe current user to Push Notifications."""
-    # Store subscription JSON in DB
-    current_user.push_subscription = subscription.model_dump()
-    db.commit()
+    crud.create_or_update_subscription(db, subscription, current_user.id)
     return {"message": "Subscribed successfully"}
 
 @router.post("/unsubscribe")
 def unsubscribe_push(
+    endpoint: str = Body(..., embed=True),
     db: Session = Depends(get_db),
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
-    """Unsubscribe current user from Push Notifications."""
-    current_user.push_subscription = None
-    db.commit()
+    """Unsubscribe specific device from Push Notifications."""
+    crud.delete_subscription_by_endpoint(db, endpoint)
     return {"message": "Unsubscribed successfully"}
 
 # --- Admin/System Endpoints ---

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict biHhogyoQvrAptvpa7TDf0y8GWf19OMgT0JoZJfOSmxYn83ui7v1UytPNFi2d6V
+\restrict MXpvQNCqykvJtFbobKPGInmOq9qFGyKardc1HwDQ3cKmcEKXFtN9yl2u59s4oC0
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -3299,5 +3299,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict biHhogyoQvrAptvpa7TDf0y8GWf19OMgT0JoZJfOSmxYn83ui7v1UytPNFi2d6V
+\unrestrict MXpvQNCqykvJtFbobKPGInmOq9qFGyKardc1HwDQ3cKmcEKXFtN9yl2u59s4oC0
 

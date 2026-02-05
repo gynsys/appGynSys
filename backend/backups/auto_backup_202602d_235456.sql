@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict kQFT5PXNJXYVFjfEnmFsvnuGBd4ppc2kw26rWZk1KsITPWyK6HykrwytRWwn1Rj
+\restrict uINe3VxTj2Hje3gmpu4KV94cNAl2u1BYRCPZGzX7vtHgPsAYEUT2kLnbdVWIoKQ
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -1091,6 +1091,45 @@ ALTER SEQUENCE public.pregnancy_logs_id_seq OWNED BY public.pregnancy_logs.id;
 
 
 --
+-- Name: push_subscriptions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.push_subscriptions (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    endpoint character varying NOT NULL,
+    p256dh character varying NOT NULL,
+    auth character varying NOT NULL,
+    user_agent character varying,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.push_subscriptions OWNER TO postgres;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.push_subscriptions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNER TO postgres;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNED BY public.push_subscriptions.id;
+
+
+--
 -- Name: recommendation_categories; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1508,6 +1547,13 @@ ALTER TABLE ONLY public.preconsultation_templates ALTER COLUMN id SET DEFAULT ne
 --
 
 ALTER TABLE ONLY public.pregnancy_logs ALTER COLUMN id SET DEFAULT nextval('public.pregnancy_logs_id_seq'::regclass);
+
+
+--
+-- Name: push_subscriptions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions ALTER COLUMN id SET DEFAULT nextval('public.push_subscriptions_id_seq'::regclass);
 
 
 --
@@ -2009,6 +2055,14 @@ COPY public.pregnancy_logs (id, cycle_user_id, is_active, last_period_date, due_
 
 
 --
+-- Data for Name: push_subscriptions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.push_subscriptions (id, user_id, endpoint, p256dh, auth, user_agent, created_at) FROM stdin;
+\.
+
+
+--
 -- Data for Name: recommendation_categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2253,6 +2307,13 @@ SELECT pg_catalog.setval('public.preconsultation_templates_id_seq', 3, true);
 --
 
 SELECT pg_catalog.setval('public.pregnancy_logs_id_seq', 18, true);
+
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.push_subscriptions_id_seq', 1, false);
 
 
 --
@@ -2530,6 +2591,22 @@ ALTER TABLE ONLY public.pregnancy_logs
 
 
 --
+-- Name: push_subscriptions push_subscriptions_endpoint_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_endpoint_key UNIQUE (endpoint);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: recommendation_categories recommendation_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2597,6 +2674,13 @@ CREATE INDEX idx_notification_logs_recipient ON public.notification_logs USING b
 --
 
 CREATE INDEX idx_notification_rules_tenant ON public.notification_rules USING btree (tenant_id);
+
+
+--
+-- Name: idx_push_subscriptions_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_push_subscriptions_user_id ON public.push_subscriptions USING btree (user_id);
 
 
 --
@@ -3185,6 +3269,14 @@ ALTER TABLE ONLY public.pregnancy_logs
 
 
 --
+-- Name: push_subscriptions push_subscriptions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.cycle_users(id);
+
+
+--
 -- Name: recommendation_categories recommendation_categories_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3299,5 +3391,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict kQFT5PXNJXYVFjfEnmFsvnuGBd4ppc2kw26rWZk1KsITPWyK6HykrwytRWwn1Rj
+\unrestrict uINe3VxTj2Hje3gmpu4KV94cNAl2u1BYRCPZGzX7vtHgPsAYEUT2kLnbdVWIoKQ
 

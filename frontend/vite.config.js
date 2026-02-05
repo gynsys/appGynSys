@@ -20,8 +20,8 @@ export default defineConfig({
       filename: 'sw.js',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: '',
-        short_name: '',
+        name: 'GynSys - Salud Integral',
+        short_name: 'GynSys',
         description: 'Plataforma de gestión para ginecólogas',
         theme_color: '#ffffff',
         background_color: '#ffffff',

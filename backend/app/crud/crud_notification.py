@@ -38,4 +38,39 @@ def delete_rule(db: Session, rule_id: int) -> bool:
         return False
     db.delete(db_obj)
     db.commit()
+    db.commit()
+    return True
+
+# --- Push Subscriptions ---
+
+from app.db.models.notification import PushSubscription
+from app.schemas.notification import PushSubscriptionSchema
+
+def create_or_update_subscription(db: Session, sub_in: PushSubscriptionSchema, user_id: int) -> PushSubscription:
+    # Check if endpoint already exists
+    db_obj = db.query(PushSubscription).filter(PushSubscription.endpoint == sub_in.endpoint).first()
+    
+    if db_obj:
+        # Update existing
+        db_obj.user_id = user_id
+        db_obj.p256dh = sub_in.keys.p256dh
+        db_obj.auth = sub_in.keys.auth
+        db_obj.user_agent = None # Could capture from request headers if passed
+    else:
+        # Create new
+        db_obj = PushSubscription(
+            user_id=user_id,
+            endpoint=sub_in.endpoint,
+            p256dh=sub_in.keys.p256dh,
+            auth=sub_in.keys.auth
+        )
+        db.add(db_obj)
+    
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj
+
+def delete_subscription_by_endpoint(db: Session, endpoint: str) -> bool:
+    db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
+    db.commit()
     return True
