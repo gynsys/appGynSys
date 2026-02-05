@@ -29,7 +29,7 @@ import { getImageUrl } from '../lib/imageUtils'
 import LoginModal from '../components/features/LoginModal'
 import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
-// import PatientChatFloatingButton from '../modules/chat/components/PatientChatFloatingButton'
+
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
 
@@ -567,15 +567,7 @@ export default function DoctorProfilePage() {
         settings={onlineSettings}
       />
 
-      {/* Persistent Chat Widget for Patients */}
-      {/* Persistent Chat Widget for Patients (REMOVED) */}
-      {/* {isModuleEnabled('chat') && (
-        <PatientChatFloatingButton
-          primaryColor={primaryColor}
-          doctorName={doctor.nombre_completo}
-          doctorId={doctor.id}
-        />
-      )} */}
+
     </div >
   )
 }

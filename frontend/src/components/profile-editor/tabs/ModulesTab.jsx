@@ -90,7 +90,7 @@ const ModulesTab = ({ doctor, formData, handleChange }) => {
             <div>
                 <div className="space-y-4">
                     {availableModules
-                        .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations', 'chat'].includes(m.code))
+                        .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations'].includes(m.code))
                         .map((module) => {
                             const isEnabled = (formData.enabled_modules || []).includes(module.code)
                             const isAvailableForUser = module.is_enabled_for_user !== false

@@ -19,7 +19,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
     { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
     { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
     { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
-    { icon: FiMessageSquare, label: 'Chat Pacientes', path: '/dashboard/chat' }, // Explicit link for Chat
+
     { icon: FiVideo, label: 'Consultas Online (Video)', path: '/dashboard/online-consultations' },
     { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
     { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },

@@ -39,7 +39,7 @@ import RecommendationsManager from './pages/dashboard/RecommendationsManager'
 import PdfConfigurationPage from './pages/dashboard/PdfConfigurationPage'
 import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPage'
 import PatientsManager from './pages/dashboard/PatientsManager'
-import ChatPage from './pages/dashboard/ChatPage'
+
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import NotificationManagerPage from './pages/dashboard/NotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
@@ -126,7 +126,7 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<DashboardOverviewPage />} />
-          <Route path="chat" element={<ChatPage />} />
+
           <Route path="consultation" element={<DoctorConsultationPage />} />
           <Route path="preconsulta-config" element={<PreconsultationConfigPage />} />
           <Route path="pdf-config" element={<PdfConfigurationPage />} />
