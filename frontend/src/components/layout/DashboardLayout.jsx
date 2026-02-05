@@ -64,7 +64,7 @@ export const DashboardLayout = () => {
   return (
     // 'dark' class is already handled on <html> by App.jsx, but we keep it here for local scoping if needed.
     // However, bg-gray-900 should be applied to the main wrapper too to be safe.
-    <div className={`h-screen flex flex-col overflow-hidden transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`h-[100dvh] flex flex-col overflow-hidden transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
       <AdminHeader
         doctor={doctor}
         onMenuClick={toggleSidebar}

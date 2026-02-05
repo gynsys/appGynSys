@@ -20,7 +20,6 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
 }
 
 html.dark body {
@@ -54,6 +53,8 @@ html.dark body {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
