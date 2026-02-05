@@ -10,13 +10,20 @@ import { useAuthStore } from '../../store/authStore';
 
 export const DashboardLayout = () => {
   const { user: authUser } = useAuthStore();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0);
   // Use authUser as the primary source for doctor/user data
   const doctor = authUser;
   const location = useLocation();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Close sidebar on route change in mobile
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const initDashboard = async () => {
