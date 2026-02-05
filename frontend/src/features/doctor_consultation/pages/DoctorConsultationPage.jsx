@@ -599,63 +599,120 @@ export const DoctorConsultationPage = () => {
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Preconsultas en Tránsito</h3>
         </div>
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Cita</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Registro</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Paciente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acción</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+
+        {/* Mobile View - Cards */}
+        <div className="md:hidden">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {appointments.map((app) => (
-              <tr key={app.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                  {new Date(app.appointment_date).toLocaleDateString()} {new Date(app.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {app.created_at ? new Date(app.created_at).toLocaleDateString() : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  {app.patient_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <li key={app.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(app.appointment_date).toLocaleDateString()} {new Date(app.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                   {(() => {
                     const statusConfig = {
-                      'preconsulta_completed': { label: 'Lista para Atender', color: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' },
+                      'preconsulta_completed': { label: 'Lista', color: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' },
                       'scheduled': { label: 'Programada', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
                       'pending': { label: 'Pendiente', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
                       'cancelled': { label: 'Cancelada', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' }
                     };
                     const config = statusConfig[app.status] || { label: app.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
-
                     return (
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color} border border-transparent`}>
+                      <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color} border border-transparent`}>
                         {config.label}
                       </span>
                     );
                   })()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    {app.patient_name}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Registrado: {app.created_at ? new Date(app.created_at).toLocaleDateString() : '-'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => navigate(`/dashboard/consultation?appointment_id=${app.id}`)}
-                    className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-md transition-colors"
+                    className="flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
                   >
                     Ver / Atender
                   </button>
                   <button
                     onClick={() => handleDeleteClick(app)}
-                    className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-md transition-colors"
+                    className="flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   >
                     Eliminar
                   </button>
-                </td>
-              </tr>
+                </div>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </div>
+
+        {/* Desktop View - Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Cita</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Registro</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Paciente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acción</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {appointments.map((app) => (
+                <tr key={app.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    {new Date(app.appointment_date).toLocaleDateString()} {new Date(app.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {app.created_at ? new Date(app.created_at).toLocaleDateString() : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    {app.patient_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {(() => {
+                      const statusConfig = {
+                        'preconsulta_completed': { label: 'Lista para Atender', color: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' },
+                        'scheduled': { label: 'Programada', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
+                        'pending': { label: 'Pendiente', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
+                        'cancelled': { label: 'Cancelada', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' }
+                      };
+                      const config = statusConfig[app.status] || { label: app.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+
+                      return (
+                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color} border border-transparent`}>
+                          {config.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <button
+                      onClick={() => navigate(`/dashboard/consultation?appointment_id=${app.id}`)}
+                      className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-md transition-colors"
+                    >
+                      Ver / Atender
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(app)}
+                      className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-md transition-colors"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };

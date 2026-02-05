@@ -484,9 +484,9 @@ export default function PreconsultationConfigPage() {
       </div>
 
       {/* Functional Exam Card */}
-      <div className="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 p-4 rounded-2xl border border-blue-100 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+      <div className="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 p-4 rounded-2xl border border-blue-100 dark:border-gray-700 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-300 shrink-0">
+          <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-300">
             <FiActivity className="w-5 h-5" />
           </div>
           <div>
@@ -495,7 +495,7 @@ export default function PreconsultationConfigPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+        <div className="flex items-center gap-3">
           <span className={`text-sm font-medium ${settings.include_functional_exam ? 'text-blue-900 dark:text-blue-300' : 'text-gray-400 dark:text-gray-600'}`}>
             {settings.include_functional_exam ? 'Activado' : 'Desactivado'}
           </span>
@@ -513,25 +513,59 @@ export default function PreconsultationConfigPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="space-y-3">
             {visibleQuestions.map((q) => (
-              <div key={q.id} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all group gap-4 sm:gap-0">
-                <div className="flex-1 w-full">
+              <div key={q.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all group">
+                <div className="flex-1">
                   <div className="flex items-start gap-3">
-                    <span className="mt-1 text-gray-400 text-xs font-mono select-none shrink-0">{q.order + 1 < 10 ? `0${q.order + 1}` : q.order + 1}</span>
-                    <div className="w-full">
-                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-[15px] break-words">{q.text}</p>
+                    <span className="mt-1 text-gray-400 text-xs font-mono select-none">{q.order + 1 < 10 ? `0${q.order + 1}` : q.order + 1}</span>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-[15px]">{q.text}</p>
+                      {/* Metadata tags hidden by user request
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium border ${q.category === 'functional_exam' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                          q.category === 'gyn_history' ? 'bg-pink-50 text-pink-700 border-pink-100' :
+                            'bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                          }`}>
+                          {q.category === 'functional_exam' ? 'Examen Fx' : q.category}
+                        </span>
+                        <span className="text-[10px] bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-100 dark:border-slate-600 font-medium uppercase tracking-wide">
+                          {q.type}
+                        </span>
+                        {q.required && (
+                          <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-100 font-medium">
+                            Requerido
+                          </span>
+                        )}
+                      </div>
+                      */}
+
+                      {/* Options Preview */}
+                      {/* Options Preview hidden by user request
+                      {q.options && q.options.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5 pl-1 opacity-80">
+                          {q.options.slice(0, 5).map((opt, idx) => (
+                            <span key={idx} className="text-xs bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 px-2 py-1 rounded border border-gray-100 dark:border-gray-700">
+                              {opt}
+                            </span>
+                          ))}
+                          {q.options.length > 5 && (
+                            <span className="text-xs text-gray-400 px-1 py-1">+ {q.options.length - 5} más</span>
+                          )}
+                        </div>
+                      )}
+                      */}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity w-full sm:w-auto justify-end sm:pl-4 border-t sm:border-t-0 border-gray-100 dark:border-gray-700 pt-3 sm:pt-0 mt-2 sm:mt-0">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pl-4">
                   <button
                     onClick={() => handleOpenModal(q)}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center gap-2 sm:gap-0"
+                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="Editar"
                   >
-                    <span className="text-xs sm:hidden">Editar</span>
                     <FiEdit2 className="w-4 h-4" />
                   </button>
+                  {/* Delete button removed for MVP stability */}
                 </div>
               </div>
             ))}
