@@ -81,7 +81,7 @@ export const DashboardLayout = () => {
           primaryColor={doctor?.theme_primary_color}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 transition-all duration-500 ease-in-out dark:text-gray-200">
+        <main className="no-scrollbar flex-1 overflow-y-auto p-4 transition-all duration-500 ease-in-out dark:text-gray-200">
           <Outlet context={{ isSidebarOpen, setIsSidebarOpen, doctor, isDarkTheme }} />
         </main>
       </div>

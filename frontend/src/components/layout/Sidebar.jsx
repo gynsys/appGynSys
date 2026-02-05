@@ -76,7 +76,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
           </div>
 
           {/* Menu Items */}
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="no-scrollbar flex-1 overflow-y-auto py-4">
             <nav className="px-2 space-y-1">
               {menuItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
