@@ -2,14 +2,13 @@ version: '3.8'
 
 services:
   # Database
+  # Database
   db:
     image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=gyn13409534
-      - POSTGRES_DB=gynsys
+    env_file:
+      - ./backend/.env
     ports:
       - "5433:5432"
     healthcheck:
@@ -35,14 +34,6 @@ services:
       - ./backend/uploads:/app/uploads
     env_file:
       - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql://postgres:gyn13409534@db:5432/gynsys
-      - PGPASSWORD=gyn13409534
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - UPLOAD_DIR=/app/uploads
-      - CORS_ORIGINS=["http://localhost:5173","http://127.0.0.1:5173","http://localhost:3000","http://localhost:5174","http://127.0.0.1:5174"]
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db:
@@ -72,13 +63,6 @@ services:
       - ./backend/uploads:/app/uploads
     env_file:
       - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql://postgres:gyn13409534@db:5432/gynsys
-      - PGPASSWORD=gyn13409534
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - UPLOAD_DIR=/app/uploads
     depends_on:
       - backend
       - redis
@@ -91,11 +75,6 @@ services:
       - ./backend:/app
     env_file:
       - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql://postgres:gyn13409534@db:5432/gynsys
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - backend
       - redis
