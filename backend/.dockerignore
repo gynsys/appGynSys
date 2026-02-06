@@ -8,3 +8,6 @@ venv
 uploads/
 gynsys.db
 alembic/versions/__pycache__/
+backups/
+*.sql
+*.bak
