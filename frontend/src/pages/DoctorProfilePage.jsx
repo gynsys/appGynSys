@@ -100,7 +100,16 @@ export default function DoctorProfilePage() {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        setLoading(true)
+        // Optimistic UI: If we are logged in and looking at our own profile, load immediately
+        const isSelfProfile = isAuthenticated && user && (user.slug_url === slug || user.id === slug)
+
+        if (isSelfProfile) {
+          setDoctor(user)
+          setLoading(false)
+        } else {
+          setLoading(true)
+        }
+
         const data = await doctorService.getDoctorProfileBySlug(slug)
 
         // Security check: Admins do not have public profiles
@@ -135,7 +144,10 @@ export default function DoctorProfilePage() {
         }
 
       } catch (err) {
-        setError(err.response?.data?.detail || 'Perfil no encontrado')
+        // Only set error if we don't have a doctor displayed (failed optimistic load)
+        if (!doctor) {
+          setError(err.response?.data?.detail || 'Perfil no encontrado')
+        }
       } finally {
         setLoading(false)
       }
