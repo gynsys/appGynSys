@@ -58,6 +58,8 @@ services:
   celery_worker:
     build: ./backend
     command: celery -A app.core.celery_app worker --loglevel=info
+    deploy:
+      replicas: 2
     volumes:
       - ./backend:/app
       - ./backend/uploads:/app/uploads
