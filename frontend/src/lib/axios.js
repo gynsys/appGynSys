@@ -18,7 +18,11 @@ api.interceptors.request.use(
       config.url?.includes('/auth/token') ||
       config.url?.includes('/auth/login/google') ||
       config.url?.includes('/preconsultation/by-appointment') ||
-      config.url?.includes('/preconsultation/config') // Allow config to be public
+      config.url?.includes('/preconsultation/by-appointment') ||
+      config.url?.includes('/preconsultation/config') || // Allow config to be public
+      config.url?.includes('/cycle-users/register') ||
+      config.url?.includes('/cycle-users/login') ||
+      config.url?.includes('/cycle-users/password-recovery')
 
     if (!isPublicEndpoint) {
       // Check if it's a cycle-related request
