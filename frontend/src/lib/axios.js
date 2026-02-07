@@ -26,7 +26,11 @@ api.interceptors.request.use(
 
     if (!isPublicEndpoint) {
       // Check if it's a cycle-related request
-      const isCycleRequest = config.url?.includes('/cycle-users') || config.url?.includes('/cycle-predictor')
+      const isCycleRequest = config.url?.includes('/cycle-users') ||
+        config.url?.includes('/cycle-predictor') ||
+        config.url?.includes('/notifications/vapid-public-key') ||
+        config.url?.includes('/notifications/subscribe') ||
+        config.url?.includes('/notifications/unsubscribe')
 
       if (isCycleRequest) {
         // For cycle requests, ONLY use the cycle token
