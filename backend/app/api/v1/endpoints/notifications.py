@@ -96,6 +96,7 @@ def subscribe_push(
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Subscribe current user to Push Notifications."""
+    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription}")
     crud.create_or_update_subscription(db, subscription, current_user.id)
     return {"message": "Subscribed successfully"}
 
