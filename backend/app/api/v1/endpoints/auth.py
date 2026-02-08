@@ -295,7 +295,43 @@ async def login_google(
         doctor = get_user_by_email(db, email)
         
         if not doctor:
-            print("User not found, registering new...")
+            print("User not found, checking whitelist...")
+            
+            # Validate email is in whitelist
+            allowed_emails = settings.oauth_allowed_emails
+            allowed_domains = settings.oauth_allowed_domains
+            
+            email_allowed = False
+            
+            # Check if email is explicitly whitelisted
+            if email in allowed_emails:
+                email_allowed = True
+                print(f"Email {email} found in whitelist")
+            
+            # Check if email domain is whitelisted
+            if not email_allowed and allowed_domains:
+                for domain in allowed_domains:
+                    if email.endswith(domain):
+                        email_allowed = True
+                        print(f"Email {email} matches whitelisted domain {domain}")
+                        break
+            
+            # If no whitelist is configured, deny by default (secure by default)
+            if not allowed_emails and not allowed_domains:
+                print("WARNING: No OAuth whitelist configured - denying access")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Google OAuth registration is not available. Please contact support or use email/password registration."
+                )
+            
+            if not email_allowed:
+                print(f"Email {email} not in whitelist - access denied")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="This email is not authorized for Google OAuth login. Please contact support."
+                )
+            
+            print("User not found but whitelisted, registering new...")
             # Create new doctor account (Auto-Registration)
             slug = generate_slug_from_name(name)
             # Ensure slug is unique

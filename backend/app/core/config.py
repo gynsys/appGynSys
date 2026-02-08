@@ -25,6 +25,24 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     GOOGLE_REDIRECT_URI: Optional[str] = None
+    
+    # OAuth Security - Email Whitelist
+    ALLOWED_OAUTH_EMAILS: str = ""  # Comma-separated list of allowed emails
+    ALLOWED_OAUTH_DOMAINS: str = ""  # Comma-separated list of allowed domains (e.g., "@gynsys.com")
+    
+    @property
+    def oauth_allowed_emails(self) -> List[str]:
+        """Parse comma-separated emails into list."""
+        if not self.ALLOWED_OAUTH_EMAILS:
+            return []
+        return [email.strip() for email in self.ALLOWED_OAUTH_EMAILS.split(",") if email.strip()]
+    
+    @property
+    def oauth_allowed_domains(self) -> List[str]:
+        """Parse comma-separated domains into list."""
+        if not self.ALLOWED_OAUTH_DOMAINS:
+            return []
+        return [domain.strip() for domain in self.ALLOWED_OAUTH_DOMAINS.split(",") if domain.strip()]
 
     # CORS
     CORS_ORIGINS: Union[str, List[str]] = [
