@@ -1,5 +1,5 @@
 from typing import List, Any
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.api.v1.endpoints.auth import get_current_user
@@ -92,12 +92,14 @@ def get_vapid_public_key(
 @router.post("/subscribe")
 def subscribe_push(
     subscription: PushSubscriptionSchema,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Subscribe current user to Push Notifications."""
-    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription}")
-    crud.create_or_update_subscription(db, subscription, current_user.id)
+    user_agent = request.headers.get("user-agent")
+    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription} (UA: {user_agent})")
+    crud.create_or_update_subscription(db, subscription, current_user.id, user_agent)
     return {"message": "Subscribed successfully"}
 
 @router.post("/unsubscribe")
