@@ -4,7 +4,7 @@ OAuth Whitelist Model - Manages allowed emails/domains for Google OAuth registra
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base_class import Base
+from app.db.base import Base
 
 
 class OAuthWhitelist(Base):
