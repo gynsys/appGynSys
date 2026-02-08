@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import ToggleSwitch from '../common/ToggleSwitch'
-import { PushToggle } from '../common/PushToggle'
+import { PushToggle } from '@/components/common/PushToggle'
 import { Label } from '../ui/label'
 import Button from '../common/Button'
 import { Input } from '../ui/input'
