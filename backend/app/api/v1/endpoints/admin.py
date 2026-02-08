@@ -112,15 +112,33 @@ def update_tenant_status_endpoint(
 ):
     """
     Update tenant status (active, paused, suspended).
+    
+    When a tenant is activated, their email is automatically added to OAuth whitelist.
     """
     # Validate status
-    valid_statuses = ["active", "paused", "suspended"]
+    valid_statuses = ["active", "paused", "suspended", "pending", "approved"]
     if status_update.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
 
     db_tenant = update_tenant_status(db, tenant_id=tenant_id, status_update=status_update)
     if db_tenant is None:
         raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    # Auto-whitelist OAuth when tenant is activated or approved
+    if status_update.status in ["active", "approved"] and db_tenant.email:
+        from app.core.oauth_utils import add_email_to_whitelist
+        try:
+            add_email_to_whitelist(
+                email=db_tenant.email,
+                db=db,
+                added_by_id=current_admin.id,
+                notes=f"Auto-whitelisted when tenant status changed to '{status_update.status}'"
+            )
+            print(f"✅ Auto-whitelisted {db_tenant.email} for OAuth")
+        except Exception as e:
+            print(f"⚠️  Failed to auto-whitelist {db_tenant.email}: {e}")
+            # Don't fail the request, just log the error
+    
     return db_tenant
 
 

@@ -297,34 +297,10 @@ async def login_google(
         if not doctor:
             print("User not found, checking whitelist...")
             
-            # Validate email is in whitelist
-            allowed_emails = settings.oauth_allowed_emails
-            allowed_domains = settings.oauth_allowed_domains
+            # Use database-backed whitelist validation
+            from app.core.oauth_utils import is_email_whitelisted
             
-            email_allowed = False
-            
-            # Check if email is explicitly whitelisted
-            if email in allowed_emails:
-                email_allowed = True
-                print(f"Email {email} found in whitelist")
-            
-            # Check if email domain is whitelisted
-            if not email_allowed and allowed_domains:
-                for domain in allowed_domains:
-                    if email.endswith(domain):
-                        email_allowed = True
-                        print(f"Email {email} matches whitelisted domain {domain}")
-                        break
-            
-            # If no whitelist is configured, deny by default (secure by default)
-            if not allowed_emails and not allowed_domains:
-                print("WARNING: No OAuth whitelist configured - denying access")
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Google OAuth registration is not available. Please contact support or use email/password registration."
-                )
-            
-            if not email_allowed:
+            if not is_email_whitelisted(email, db):
                 print(f"Email {email} not in whitelist - access denied")
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
