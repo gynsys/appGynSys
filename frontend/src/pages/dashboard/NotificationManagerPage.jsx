@@ -7,7 +7,6 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { toast } from 'sonner'
 import useNotificationStore from '../../stores/notificationStore'
-import { useState } from 'react'
 
 const TABS = [
     { id: 'cycle', label: 'Calculadora Menstrual', types: ['cycle_phase', 'contraceptive_reminder'] },
