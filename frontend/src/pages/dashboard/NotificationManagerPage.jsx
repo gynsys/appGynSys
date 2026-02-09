@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Send } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -45,6 +45,12 @@ export default function NotificationManagerPage() {
         } catch (e) {
             toast.error("Error al eliminar")
         }
+    }
+
+    const handleSendTest = async (rule) => {
+        // This will be implemented when we have the push test endpoint ready
+        toast.info("Función de envío de prueba - requiere configuración de token admin")
+        console.log("Would send test for rule:", rule)
     }
 
     const handleCreate = async () => {
@@ -165,6 +171,28 @@ export default function NotificationManagerPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {/* Info banner for contraceptive notifications */}
+                                    {activeTab === 'cycle' && (
+                                        <TableRow className="bg-blue-50 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800">
+                                            <TableCell colSpan={3} className="pl-6 py-3">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                                                        <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                                            💊 Notificaciones de Anticonceptivos
+                                                        </p>
+                                                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                                                            Las notificaciones de anticonceptivos se configuran individualmente en la pestaña "Configuración" de cada usuaria, no como reglas globales.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                     {filteredRules.map(rule => (
                                         <TableRow key={rule.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                                             <TableCell className="font-medium text-gray-900 dark:text-gray-200 pl-6 py-4">
@@ -182,14 +210,26 @@ export default function NotificationManagerPage() {
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-right pr-6">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDelete(rule.id)}
-                                                    className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleSendTest(rule)}
+                                                        className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                                        title="Enviar notificación de prueba"
+                                                    >
+                                                        <Send className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDelete(rule.id)}
+                                                        className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                        title="Eliminar notificación"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
