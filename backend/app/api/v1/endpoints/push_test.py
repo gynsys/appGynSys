@@ -25,6 +25,34 @@ class PushTestRequest(BaseModel):
     data: Optional[dict] = None
 
 
+@router.get("/users-with-push")
+async def get_users_with_push(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin)
+):
+    """
+    Get list of users who have push notifications enabled
+    
+    **Admin only** - Returns list of users for testing purposes
+    """
+    users = db.query(User).filter(
+        User.push_subscription.isnot(None)
+    ).all()
+    
+    return {
+        "success": True,
+        "count": len(users),
+        "users": [
+            {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name or user.email.split('@')[0]
+            }
+            for user in users
+        ]
+    }
+
+
 @router.post("/test-push")
 async def test_push_notification(
     request: PushTestRequest,

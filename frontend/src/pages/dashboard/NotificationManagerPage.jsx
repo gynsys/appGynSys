@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Trash2, Send } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
@@ -22,6 +22,8 @@ export default function NotificationManagerPage() {
     const [testEmail, setTestEmail] = useState('')
     const [selectedRule, setSelectedRule] = useState(null)
     const [isTestModalOpen, setIsTestModalOpen] = useState(false)
+    const [availableUsers, setAvailableUsers] = useState([])
+    const [loadingUsers, setLoadingUsers] = useState(false)
     const [isSendingTest, setIsSendingTest] = useState(false)
 
 
@@ -54,6 +56,31 @@ export default function NotificationManagerPage() {
     const handleSendTest = async (rule) => {
         setSelectedRule(rule)
         setIsTestModalOpen(true)
+
+        // Load users with push enabled
+        await fetchUsersWithPush()
+    }
+
+    const fetchUsersWithPush = async () => {
+        try {
+            setLoadingUsers(true)
+            const token = localStorage.getItem('access_token')
+            if (!token) return
+
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/users-with-push`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                setAvailableUsers(data.users || [])
+            }
+        } catch (error) {
+            console.error('Failed to load users:', error)
+            toast.error('Error al cargar usuarios')
+        } finally {
+            setLoadingUsers(false)
+        }
     }
 
     const handleConfirmSendTest = async () => {
@@ -407,19 +434,34 @@ export default function NotificationManagerPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="test-email" className="text-sm font-medium">
-                                Email del Usuario
+                            <Label htmlFor="test-user" className="text-sm font-medium">
+                                Usuario con Push Activado
                             </Label>
-                            <Input
-                                id="test-email"
-                                type="email"
-                                placeholder="ejemplo@usuario.com"
-                                value={testEmail}
-                                onChange={(e) => setTestEmail(e.target.value)}
-                                className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
-                            />
+                            {loadingUsers ? (
+                                <div className="text-sm text-gray-500 dark:text-gray-400 py-2">
+                                    Cargando usuarios...
+                                </div>
+                            ) : availableUsers.length === 0 ? (
+                                <div className="text-sm text-orange-600 dark:text-orange-400 py-2">
+                                    ⚠️ No hay usuarios con push activado
+                                </div>
+                            ) : (
+                                <select
+                                    id="test-user"
+                                    value={testEmail}
+                                    onChange={(e) => setTestEmail(e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                    <option value="">Selecciona un usuario...</option>
+                                    {availableUsers.map(user => (
+                                        <option key={user.id} value={user.email}>
+                                            {user.name} ({user.email})
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                El usuario debe tener las notificaciones push activadas
+                                {availableUsers.length} usuario(s) con notificaciones activas
                             </p>
                         </div>
                     </div>
