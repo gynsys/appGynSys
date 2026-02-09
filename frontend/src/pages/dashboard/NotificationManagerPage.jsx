@@ -19,6 +19,10 @@ export default function NotificationManagerPage() {
     const { rules, loading, fetchRules, createRule, deleteRule } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [activeTab, setActiveTab] = useState('cycle')
+    const [testEmail, setTestEmail] = useState('')
+    const [selectedRule, setSelectedRule] = useState(null)
+    const [isTestModalOpen, setIsTestModalOpen] = useState(false)
+    const [isSendingTest, setIsSendingTest] = useState(false)
 
 
 
@@ -48,9 +52,57 @@ export default function NotificationManagerPage() {
     }
 
     const handleSendTest = async (rule) => {
-        // This will be implemented when we have the push test endpoint ready
-        toast.info("Función de envío de prueba - requiere configuración de token admin")
-        console.log("Would send test for rule:", rule)
+        setSelectedRule(rule)
+        setIsTestModalOpen(true)
+    }
+
+    const handleConfirmSendTest = async () => {
+        if (!testEmail || !selectedRule) return
+
+        try {
+            setIsSendingTest(true)
+
+            // Get admin token from localStorage
+            const token = localStorage.getItem('access_token')
+            if (!token) {
+                toast.error('No estás autenticado como admin')
+                return
+            }
+
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/test-push`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_email: testEmail,
+                    title: `🔔 Prueba: ${selectedRule.name}`,
+                    body: selectedRule.message_template || 'Notificación de prueba',
+                    data: {
+                        type: selectedRule.notification_type,
+                        test: true,
+                        rule_id: selectedRule.id
+                    }
+                })
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.detail || 'Error al enviar notificación')
+            }
+
+            const result = await response.json()
+            toast.success(`✅ Notificación enviada a ${testEmail}`)
+            setIsTestModalOpen(false)
+            setTestEmail('')
+            setSelectedRule(null)
+        } catch (error) {
+            console.error('Test send error:', error)
+            toast.error(error.message || 'Error al enviar notificación de prueba')
+        } finally {
+            setIsSendingTest(false)
+        }
     }
 
     const handleCreate = async () => {
@@ -333,8 +385,65 @@ export default function NotificationManagerPage() {
                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
                         <Button onClick={handleCreate}>Crear Regla</Button>
                     </DialogFooter>
+            </Dialog>
+
+            {/* Test Send Modal */}
+            <Dialog open={isTestModalOpen} onOpenChange={setIsTestModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>📨 Enviar Notificación de Prueba</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Notificación</Label>
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {selectedRule?.name}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {selectedRule?.notification_type?.replace('_', ' ').toUpperCase()}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="test-email" className="text-sm font-medium">
+                                Email del Usuario
+                            </Label>
+                            <Input
+                                id="test-email"
+                                type="email"
+                                placeholder="ejemplo@usuario.com"
+                                value={testEmail}
+                                onChange={(e) => setTestEmail(e.target.value)}
+                                className="w-full"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                El usuario debe tener las notificaciones push activadas
+                            </p>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setIsTestModalOpen(false)
+                                setTestEmail('')
+                                setSelectedRule(null)
+                            }}
+                            disabled={isSendingTest}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleConfirmSendTest}
+                            disabled={!testEmail || isSendingTest}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            {isSendingTest ? 'Enviando...' : 'Enviar Prueba'}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     )
 }
