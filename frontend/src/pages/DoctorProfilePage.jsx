@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { FiClipboard, FiCalendar, FiActivity, FiArrowUp } from 'react-icons/fi'
+import { Phone, Mail, MapPin, Calendar, Award, Building2, Clock, ExternalLink, Star, MessageCircle, Heart, Share2, ChevronDown, Loader2 } from 'lucide-react'
 import ScrollReveal from '../components/common/ScrollReveal'
 import { doctorService } from '../services/doctorService'
 import { blogService } from '../modules/blog/services/blogService'
@@ -182,8 +183,8 @@ export default function DoctorProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando perfil...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+          <p className="mt-4 text-gray-600">Cargando...</p>
         </div>
       </div>
     )
