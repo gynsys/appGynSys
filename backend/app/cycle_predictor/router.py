@@ -351,6 +351,25 @@ def get_settings(
         db.commit()
         db.refresh(settings)
         
+    # Fetch custom rules from the user's doctor
+    # We need to know the doctor_id. CycleUser has doctor_id.
+    user = db.query(CycleUser).filter(CycleUser.id == cycle_user_id).first()
+    if user and user.doctor_id:
+        from app.db.models.notification import NotificationRule, NotificationType
+        custom_rules = db.query(NotificationRule).filter(
+            NotificationRule.tenant_id == user.doctor_id,
+            NotificationRule.notification_type == 'custom', # Match enum value 'custom'
+            NotificationRule.is_active == True
+        ).all()
+        
+        # Populate logical available rules list
+        settings.available_rules = [
+            {"id": r.id, "name": r.name, "message_template": r.message_template}
+            for r in custom_rules
+        ]
+    else:
+        settings.available_rules = []
+
     return settings
 
 from fastapi import BackgroundTasks

@@ -74,13 +74,23 @@ class NotificationSettingsBase(BaseModel):
     # Phase 1 Enhancements
     rhythm_abstinence_alerts: bool = False
     period_confirmation_reminder: bool = True
+    
+    # Custom preferences
+    custom_preferences: Optional[dict] = {}
 
 class NotificationSettingsUpdate(NotificationSettingsBase):
     pass
 
+class CustomRuleInfo(BaseModel):
+    id: int
+    name: str
+    message_template: str
+
 class NotificationSettings(NotificationSettingsBase):
     id: int
     cycle_user_id: int
+    available_rules: List[CustomRuleInfo] = [] 
+    
     model_config = ConfigDict(from_attributes=True)
 
 class PregnancyLogBase(BaseModel):

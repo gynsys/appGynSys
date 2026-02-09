@@ -54,6 +54,9 @@ class CycleNotificationSettings(Base):
     rhythm_abstinence_alerts = Column(Boolean, default=False)  # Alerts 5 days before/after period
     period_confirmation_reminder = Column(Boolean, default=True)  # Remind to register period
     last_period_reminder_sent = Column(Date, nullable=True)  # Track reminders to avoid duplicates
+    
+    # Custom Rules Preferences (Map of rule_id -> boolean)
+    custom_preferences = Column(JSON, default={}, nullable=True)
 
     cycle_user = relationship("CycleUser", backref="notification_settings")
 

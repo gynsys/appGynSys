@@ -235,6 +235,38 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                 )
             }
 
+            {/* Custom Doctor Notifications - Show if available and NOT pregnant (or maybe show always? user context: cycle tracking usually) */}
+            {!isPregnant && settings.available_rules && settings.available_rules.length > 0 && (
+                <div className="space-y-2 border-b pb-3 dark:border-gray-800">
+                    <div className="mb-3">
+                        <Label className="font-medium text-base dark:text-gray-200">Notificaciones Personalizadas</Label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Alertas creadas por tu especialista</p>
+                    </div>
+
+                    {settings.available_rules.map(rule => (
+                        <div key={rule.id} className="flex items-center justify-between py-2">
+                            <div className="flex items-center gap-2">
+                                <Bell className="w-4 h-4 text-purple-500" />
+                                <Label className="font-normal dark:text-gray-300">{rule.name}</Label>
+                            </div>
+                            <ToggleSwitch
+                                // Default to true if not explicitly set to false
+                                checked={settings.custom_preferences?.[rule.id] !== false}
+                                onChange={(v) => {
+                                    setSettings(prev => ({
+                                        ...prev,
+                                        custom_preferences: {
+                                            ...(prev.custom_preferences || {}),
+                                            [rule.id]: v
+                                        }
+                                    }))
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Pregnancy Notifications - Only show if pregnant */}
             {
                 isPregnant && (
