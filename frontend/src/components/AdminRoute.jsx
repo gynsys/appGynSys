@@ -24,8 +24,8 @@ export default function AdminRoute({ children }) {
     return <Navigate to="/login" replace />
   }
 
-  // Check if user has admin role
-  if (!user || user.role !== 'admin') {
+  // Check if user has admin role AND is the superadmin
+  if (!user || user.role !== 'admin' || user.email !== 'admin@appgynsys.com') {
     return <Navigate to="/dashboard" replace />
   }
 

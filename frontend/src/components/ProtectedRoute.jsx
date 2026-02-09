@@ -18,7 +18,8 @@ export default function ProtectedRoute({ children }) {
   }
 
   // Redirect admin users to admin panel, they shouldn't access tenant dashboard
-  if (user?.role === 'admin') {
+  // ONLY if they are the SaaS Superadmin
+  if (user?.role === 'admin' && user?.email === 'admin@appgynsys.com') {
     return <Navigate to="/admin" replace />
   }
 
