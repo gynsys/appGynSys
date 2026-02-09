@@ -72,10 +72,14 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
     const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading: pushLoading, error: pushError, permission } = usePushNotifications();
 
     const handlePushToggle = async (checked) => {
-        if (checked) {
-            await subscribeToPush();
-        } else {
-            await unsubscribeFromPush();
+        try {
+            if (checked) {
+                await subscribeToPush();
+            } else {
+                await unsubscribeFromPush();
+            }
+        } catch (error) {
+            console.error('Error toggling push notifications:', error);
         }
     };
 
