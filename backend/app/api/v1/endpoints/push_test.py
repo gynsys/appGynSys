@@ -10,7 +10,7 @@ from typing import Optional
 from app.db.base import get_db
 from app.db.models.cycle_user import CycleUser
 from app.db.models.doctor import Doctor
-from app.api.deps import get_current_admin
+from app.api.v1.endpoints.auth import get_current_admin_user
 from app.services.push_service import send_push_notification
 
 router = APIRouter()
@@ -28,7 +28,7 @@ class PushTestRequest(BaseModel):
 @router.get("/users-with-push")
 async def get_users_with_push(
     db: Session = Depends(get_db),
-    current_admin: Doctor = Depends(get_current_admin)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
     Get list of users who have push notifications enabled
@@ -57,7 +57,7 @@ async def get_users_with_push(
 async def test_push_notification(
     request: PushTestRequest,
     db: Session = Depends(get_db),
-    current_admin: Doctor = Depends(get_current_admin)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
     Send a test push notification to a specific user
@@ -117,7 +117,7 @@ async def test_push_notification(
 async def test_all_notification_types(
     user_email: str,
     db: Session = Depends(get_db),
-    current_admin: Doctor = Depends(get_current_admin)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
     Send test notifications for all supported types to verify the system
