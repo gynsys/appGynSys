@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import ToggleSwitch from '../common/ToggleSwitch'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Label } from '../ui/label'
 import Button from '../common/Button'
 import { Input } from '../ui/input'
-import { Baby, Pill, Calendar as CalendarIcon, Clock, ChevronRight, Settings2 } from 'lucide-react'
+import { Bell, Baby, Pill, Calendar as CalendarIcon, Clock, ChevronRight, Settings2, BellOff, Loader2 } from 'lucide-react'
 import cycleService from '../../services/cycleService'
 import { toast } from 'sonner'
+import { Switch } from '../ui/switch'
 
 export default function CycleSettingsTab({ onPregnancyChange }) {
     // Notification Settings
@@ -65,10 +67,49 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
         }
     }
 
+    // Push notifications hook
+    const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading: pushLoading, error: pushError, permission } = usePushNotifications();
+
+    const handlePushToggle = async (checked) => {
+        try {
+            if (checked) {
+                await subscribeToPush();
+            } else {
+                await unsubscribeFromPush();
+            }
+        } catch (error) {
+            console.error('Error toggling push notifications:', error);
+        }
+    };
 
 
     return (
         <div className="max-w-xl mx-auto px-6 py-4 space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
+
+            {/* Push Notifications Section */}
+            <div className="space-y-2 border-b pb-3 dark:border-gray-800">
+                <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${isSubscribed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                            {pushLoading ? <Loader2 className="w-5 h-5 animate-spin" /> :
+                                isSubscribed ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+                        </div>
+                        <div>
+                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Notificaciones Push</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {permission === 'denied' ? 'Bloqueadas por el navegador' :
+                                    isSubscribed ? 'Activadas en este dispositivo' : 'Recibe alertas en tu dispositivo'}
+                            </p>
+                            {pushError && <p className="text-xs text-red-500 mt-1">{pushError}</p>}
+                        </div>
+                    </div>
+                    <Switch
+                        checked={isSubscribed}
+                        onCheckedChange={handlePushToggle}
+                        disabled={pushLoading || permission === 'denied'}
+                    />
+                </div>
+            </div>
 
 
 

@@ -10,7 +10,7 @@ import useNotificationStore from '../../stores/notificationStore'
 import { useState } from 'react'
 
 const TABS = [
-    { id: 'cycle', label: 'Calculadora Menstrual', types: ['cycle_phase'] },
+    { id: 'cycle', label: 'Calculadora Menstrual', types: ['cycle_phase', 'contraceptive_reminder'] },
     { id: 'prenatal', label: 'Prenatal', types: ['prenatal_weekly', 'prenatal_milestone'] },
     { id: 'system', label: 'Sistema', types: ['system', 'custom', 'symptom_alert'] }
 ]
