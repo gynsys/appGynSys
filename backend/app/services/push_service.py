@@ -33,7 +33,8 @@ def send_push_notification(
     Returns:
         Dict with status of the operation
     """
-    if not user.push_subscription:
+    # Check if user has any subscriptions
+    if not user.push_subscriptions:
         return {"success": False, "error": "User has no push subscription"}
         
     # Prepare payload
@@ -48,43 +49,54 @@ def send_push_notification(
     if image:
         payload["image"] = image
         
-    # Get subscription info from user model
-    subscription_info = user.push_subscription
-    
-    # Ensure keys are present in subscription info if stored as JSON
-    if isinstance(subscription_info, str):
-        try:
-            subscription_info = json.loads(subscription_info)
-        except json.JSONDecodeError:
-            return {"success": False, "error": "Invalid subscription JSON"}
-            
-    try:
-        # Send notification
-        response = webpush(
-            subscription_info=subscription_info,
-            data=json.dumps(payload),
-            vapid_private_key=settings.VAPID_PRIVATE_KEY,
-            vapid_claims={
-                "sub": f"mailto:{settings.EMAILS_FROM_EMAIL}"
+    success_count = 0
+    errors = []
+
+    # Send to all registered devices
+    for sub in user.push_subscriptions:
+        subscription_info = {
+            "endpoint": sub.endpoint,
+            "keys": {
+                "p256dh": sub.p256dh,
+                "auth": sub.auth
             }
-        )
-        
+        }
+            
+        try:
+            # Send notification
+            response = webpush(
+                subscription_info=subscription_info,
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims={
+                    "sub": f"mailto:{settings.EMAILS_FROM_EMAIL}"
+                }
+            )
+            success_count += 1
+            
+        except WebPushException as ex:
+            logger.error(f"WebPush error for user {user.id} device {sub.id}: {str(ex)}")
+            
+            # Check if subscription is expired/invalid
+            if ex.response and ex.response.status_code in [404, 410]:
+                # Automatically remove invalid subscription
+                # Note: We need a db session here to delete, but for now we skip
+                pass
+                
+            errors.append(str(ex))
+            
+        except Exception as e:
+            logger.error(f"Unexpected error sending push to user {user.id}: {str(e)}")
+            errors.append(str(e))
+            
+    if success_count > 0:
         return {
             "success": True, 
-            "status_code": response.status_code,
-            "message": "Notification sent successfully"
+            "message": f"Sent to {success_count} devices",
+            "device_count": len(user.push_subscriptions)
         }
-        
-    except WebPushException as ex:
-        logger.error(f"WebPush error for user {user.id}: {str(ex)}")
-        
-        # Check if subscription is expired/invalid
-        if ex.response and ex.response.status_code in [404, 410]:
-            # TODO: Consider removing invalid subscription from DB
-            return {"success": False, "error": "Subscription expired or invalid"}
-            
-        return {"success": False, "error": str(ex)}
-        
-    except Exception as e:
-        logger.error(f"Unexpected error sending push to user {user.id}: {str(e)}")
-        return {"success": False, "error": str(e)}
+    else:
+        return {
+            "success": False, 
+            "error": f"Failed to send to any device. Last error: {errors[-1] if errors else 'Unknown'}"
+        }

@@ -12,6 +12,8 @@ from app.db.models.cycle_user import CycleUser
 from app.db.models.doctor import Doctor
 from app.api.v1.endpoints.auth import get_current_admin_user
 from app.services.push_service import send_push_notification
+from app.db.models.notification import PushSubscription
+from app.db.models.notification import PushSubscription
 
 router = APIRouter()
 
