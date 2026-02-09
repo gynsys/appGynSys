@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
-import { Plus, Trash2, Bell, BellOff, Loader2 } from 'lucide-react'
-import { usePushNotifications } from '../../hooks/usePushNotifications'
-import { Switch } from '../../components/ui/switch'
+import { Plus, Trash2 } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -22,20 +20,7 @@ export default function NotificationManagerPage() {
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [activeTab, setActiveTab] = useState('cycle')
 
-    // Push notifications
-    const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading: pushLoading, error: pushError, permission } = usePushNotifications()
 
-    const handlePushToggle = async (checked) => {
-        try {
-            if (checked) {
-                await subscribeToPush()
-            } else {
-                await unsubscribeFromPush()
-            }
-        } catch (error) {
-            console.error('Error toggling push notifications:', error)
-        }
-    }
 
     // Form State
     const [formData, setFormData] = useState({
@@ -122,30 +107,7 @@ export default function NotificationManagerPage() {
                 </div>
             </div>
 
-            {/* Push Notifications - INLINE to avoid bundle error */}
-            <div className="mb-6">
-                <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${isSubscribed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-                            {pushLoading ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                                isSubscribed ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-                        </div>
-                        <div>
-                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Notificaciones Push</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {permission === 'denied' ? 'Bloqueadas por el navegador' :
-                                    isSubscribed ? 'Activadas en este dispositivo' : 'Recibe alertas en tu dispositivo'}
-                            </p>
-                            {pushError && <p className="text-xs text-red-500 mt-1">{pushError}</p>}
-                        </div>
-                    </div>
-                    <Switch
-                        checked={isSubscribed}
-                        onCheckedChange={handlePushToggle}
-                        disabled={pushLoading || permission === 'denied'}
-                    />
-                </div>
-            </div>
+
             <button
                 onClick={() => setIsCreateOpen(true)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white flex items-center gap-2"
