@@ -34,23 +34,21 @@ async def get_users_with_push(
 ):
     """
     Get list of users who have push notifications enabled
-    
-    **Admin only** - Returns list of users for testing purposes
     """
-    users = db.query(CycleUser).filter(
-        CycleUser.push_subscription.isnot(None)
-    ).all()
+    # Query distinct users who have at least one push subscription
+    # We select specific columns to avoid 'distinct' error on JSON fields
+    users_data = db.query(CycleUser.id, CycleUser.email, CycleUser.nombre_completo).join(PushSubscription).distinct().all()
     
     return {
         "success": True,
-        "count": len(users),
+        "count": len(users_data),
         "users": [
             {
-                "id": user.id,
-                "email": user.email,
-                "name": user.nombre_completo or user.email.split('@')[0]
+                "id": u.id,
+                "email": u.email,
+                "name": u.nombre_completo or u.email.split('@')[0]
             }
-            for user in users
+            for u in users_data
         ]
     }
 
