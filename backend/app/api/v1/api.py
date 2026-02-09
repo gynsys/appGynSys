@@ -3,7 +3,7 @@ Main API router that aggregates all v1 endpoints.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, profiles, users, appointments, uploads, testimonials, gallery, faq, admin, consultations, locations, contact, services, preconsultation, cycle_users, templates, patients, recommendations, online_consultation, payment, dashboard, tests, notifications
+from app.api.v1.endpoints import auth, profiles, users, appointments, uploads, testimonials, gallery, faq, admin, consultations, locations, contact, services, preconsultation, cycle_users, templates, patients, recommendations, online_consultation, payment, dashboard, tests, notifications, push_test
 from app.blog import router as blog_router
 from app.cycle_predictor import router as cycle_router
 
@@ -35,4 +35,5 @@ api_router.include_router(templates.router)
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(tests.router, prefix="/tests", tags=["tests"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+api_router.include_router(push_test.router, prefix="/push-test", tags=["push-testing"])
 
