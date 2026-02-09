@@ -72,9 +72,16 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
     return (
         <div className="max-w-xl mx-auto px-6 py-4 space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
 
+
             {/* Push Notifications Section */}
             <div className="space-y-2 border-b pb-3 dark:border-gray-800">
-                <PushToggle />
+                {typeof PushToggle !== 'undefined' ? (
+                    <PushToggle />
+                ) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Cargando configuración de notificaciones...
+                    </div>
+                )}
             </div>
 
             {/* Contraceptives - Only show if NOT pregnant */}
