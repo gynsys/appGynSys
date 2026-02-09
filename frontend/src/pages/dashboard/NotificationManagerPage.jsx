@@ -385,6 +385,7 @@ export default function NotificationManagerPage() {
                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
                         <Button onClick={handleCreate}>Crear Regla</Button>
                     </DialogFooter>
+                </DialogContent>
             </Dialog>
 
             {/* Test Send Modal */}
