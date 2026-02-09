@@ -114,9 +114,9 @@ export default function DoctorProfilePage() {
         const data = await doctorService.getDoctorProfileBySlug(slug)
 
         // Security check: Admins do not have public profiles
-        if (data.role === 'admin') {
-          throw { response: { data: { detail: 'Perfil no encontrado' } } }
-        }
+        // if (data.role === 'admin') {
+        //   throw { response: { data: { detail: 'Perfil no encontrado' } } }
+        // }
 
         setDoctor(data)
 
