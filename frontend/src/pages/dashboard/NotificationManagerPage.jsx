@@ -416,7 +416,7 @@ export default function NotificationManagerPage() {
                                 placeholder="ejemplo@usuario.com"
                                 value={testEmail}
                                 onChange={(e) => setTestEmail(e.target.value)}
-                                className="w-full"
+                                className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                             />
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 El usuario debe tener las notificaciones push activadas
