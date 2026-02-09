@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from app.db.base import get_db
-from app.db.models.user import User
+from app.db.models.cycle_user import CycleUser
 from app.db.models.doctor import Doctor
 from app.api.deps import get_current_admin
 from app.services.push_service import send_push_notification
@@ -35,8 +35,8 @@ async def get_users_with_push(
     
     **Admin only** - Returns list of users for testing purposes
     """
-    users = db.query(User).filter(
-        User.push_subscription.isnot(None)
+    users = db.query(CycleUser).filter(
+        CycleUser.push_subscription.isnot(None)
     ).all()
     
     return {
@@ -46,7 +46,7 @@ async def get_users_with_push(
             {
                 "id": user.id,
                 "email": user.email,
-                "name": user.name or user.email.split('@')[0]
+                "name": user.nombre_completo or user.email.split('@')[0]
             }
             for user in users
         ]
@@ -75,7 +75,7 @@ async def test_push_notification(
     ```
     """
     # Find user by email
-    user = db.query(User).filter(User.email == request.user_email).first()
+    user = db.query(CycleUser).filter(CycleUser.email == request.user_email).first()
     
     if not user:
         raise HTTPException(status_code=404, detail=f"User not found: {request.user_email}")
@@ -132,7 +132,7 @@ async def test_all_notification_types(
     5. General Alert
     """
     # Find user
-    user = db.query(User).filter(User.email == user_email).first()
+    user = db.query(CycleUser).filter(CycleUser.email == user_email).first()
     
     if not user:
         raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
