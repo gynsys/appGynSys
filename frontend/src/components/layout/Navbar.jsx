@@ -298,7 +298,15 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             )
           }
         </div >
-        <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onSuccess={() => {
+            setIsLoginModalOpen(false);
+            navigate('/cycle/dashboard');
+          }}
+        />
         <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
         {showEndoTest && (
           <EndometriosisTestModal

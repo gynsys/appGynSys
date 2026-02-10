@@ -12,13 +12,14 @@ import { Home, Calendar, Newspaper, MessageCircle } from 'lucide-react';
 export const BottomNav = ({ items, theme = '#C75B7A' }) => {
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 z-50 
-                       bg-white dark:bg-gray-900 
+            className="fixed bottom-0 left-0 right-0 z-40 
+                       bg-white/90 dark:bg-gray-900/90 backdrop-blur-md
                        border-t border-gray-200 dark:border-gray-800
-                       md:hidden"
+                       md:hidden transition-all duration-300"
             style={{
-                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-                boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+                paddingBottom: 'env(safe-area-inset-bottom)',
+                height: 'calc(4rem + env(safe-area-inset-bottom))',
+                boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
             }}
         >
             <div className="flex justify-around items-center h-16 px-2">

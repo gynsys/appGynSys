@@ -55,7 +55,10 @@ export default function CycleLayout() {
     ];
 
     return (
-        <div className="min-h-screen pb-16 md:pb-0 bg-gray-50 dark:bg-gray-950">
+        <div
+            className="min-h-screen bg-gray-50 dark:bg-gray-950 md:pb-0"
+            style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+        >
             {/* Mobile Header */}
             <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 md:hidden">
                 <div className="flex items-center justify-between px-4 h-14">
