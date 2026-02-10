@@ -191,7 +191,8 @@ export default function BlogLayout({ children }) {
               if (isAuthenticated) {
                 navigate('/cycle/dashboard');
               } else {
-                setIsCycleModalOpen(true);
+                localStorage.setItem('redirect_after_login', '/cycle/dashboard');
+                navigate('/login');
               }
             },
             isActive: false

@@ -278,7 +278,9 @@ export default function DoctorProfilePage() {
         if (isAuthenticated) {
           navigate('/cycle/dashboard');
         } else {
-          setIsCycleModalOpen(true);
+          // Guardar redirección para después del login
+          localStorage.setItem('redirect_after_login', '/cycle/dashboard');
+          setIsLoginModalOpen(true);
         }
       },
       isActive: false
