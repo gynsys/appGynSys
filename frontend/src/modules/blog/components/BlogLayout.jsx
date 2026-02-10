@@ -211,7 +211,7 @@ export default function BlogLayout({ children }) {
           {
             icon: <NavIcons.Blog />,
             label: 'Blog',
-            action: () => navigate(`/dr/${doctor.slug_url}/blog`),
+            action: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
             isActive: true
           }
         ]}

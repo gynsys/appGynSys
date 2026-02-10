@@ -48,8 +48,11 @@ import PatientsManager from './pages/dashboard/PatientsManager'
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import NotificationManagerPage from './pages/dashboard/NotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
+import { useState } from 'react'
 
 function App() {
+  const [isInitializing, setIsInitializing] = useState(true)
+
   // Global theme effect & Auth Init
   useEffect(() => {
     const initApp = async () => {
@@ -98,8 +101,20 @@ function App() {
       };
     };
 
-    initApp();
+    initApp().then(() => setIsInitializing(false));
   }, []);
+
+  // Show loading screen during initialization
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>

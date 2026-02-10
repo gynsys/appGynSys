@@ -4,7 +4,11 @@ import App from './App.jsx'
 import './index.css'
 import { registerSW } from 'virtual:pwa-register'
 
-registerSW({ immediate: true })
+registerSW({
+  immediate: false,
+  onNeedRefresh() { },
+  onOfflineReady() { },
+})
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
