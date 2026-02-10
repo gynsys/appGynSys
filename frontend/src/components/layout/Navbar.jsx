@@ -65,11 +65,11 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     setIsCycleModalOpen(true)
                   }
                 }}
-                className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                className="flex items-center space-x-1.5 px-2.5 py-1.5 md:px-3 rounded-lg border-2 transition-colors"
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
                 <FiActivity className="w-4 h-4" />
-                <span className="text-sm font-medium">Tu ciclo</span>
+                <span className="text-xs md:text-sm font-medium">Tu ciclo</span>
               </button>
             </div>
 
@@ -259,8 +259,8 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           }
         </div >
         <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+        <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
       </nav >
     </>
   )
 }
-
