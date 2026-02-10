@@ -6,11 +6,13 @@ import MegaMenu from './MegaMenu'
 import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
 import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
+import EndometriosisTestModal from '../features/EndometriosisTestModal'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const { isAuthenticated, user, logout } = useAuthStore()
   const navigate = useNavigate()
 
@@ -298,6 +300,12 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
         </div >
         <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
         <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
+        {showEndoTest && (
+          <EndometriosisTestModal
+            isOpen={isTestModalOpen}
+            onClose={() => setIsTestModalOpen(false)}
+          />
+        )}
       </nav >
     </>
   )
