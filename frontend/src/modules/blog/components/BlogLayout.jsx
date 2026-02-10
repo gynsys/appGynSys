@@ -185,8 +185,8 @@ export default function BlogLayout({ children }) {
           {
             icon: <NavIcons.Activity />,
             label: 'Predictor',
-            action: () => setIsCycleModalOpen(true),
-            isActive: isCycleModalOpen
+            action: () => navigate('/cycle/dashboard'),
+            isActive: false
           },
           {
             icon: <NavIcons.WhatsApp />,

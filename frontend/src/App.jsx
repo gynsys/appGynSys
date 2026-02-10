@@ -32,6 +32,11 @@ import { DoctorConsultationPage } from './features/doctor_consultation/pages/Doc
 
 
 import CycleReportPage from './pages/CycleReportPage'
+import CycleLayout from './layouts/CycleLayout'
+import CycleDashboard from './pages/cycle-predictor/CycleDashboard'
+import CycleLogsPage from './pages/cycle-predictor/CycleLogsPage'
+import NotificationsPage from './pages/cycle-predictor/NotificationsPage'
+import ProfilePage from './pages/cycle-predictor/ProfilePage'
 
 import LocationsManager from './pages/dashboard/LocationsManager'
 import ServicesManager from './pages/dashboard/ServicesManager'
@@ -104,6 +109,15 @@ function App() {
         <Route path="/preconsulta" element={<PreconsultaPage />} />
         <Route path="/dr/:slug/preconsulta" element={<DoctorProfilePage />} />
         <Route path="/cycle-report" element={<CycleReportPage />} />
+
+        {/* Cycle Predictor Routes */}
+        <Route path="/cycle" element={<CycleLayout />}>
+          <Route index element={<Navigate to="/cycle/dashboard" replace />} />
+          <Route path="dashboard" element={<CycleDashboard />} />
+          <Route path="logs" element={<CycleLogsPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
 
         <Route path="/" element={<Navigate to="/dr/mariel-herrera" replace />} />
         <Route path="/pricing" element={<PricingPage />} />
