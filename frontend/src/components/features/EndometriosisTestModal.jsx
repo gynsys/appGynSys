@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { getImageUrl } from '../../lib/imageUtils'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -36,6 +37,12 @@ export default function EndometriosisTestModal({
   const [showResult, setShowResult] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false) // New state for calculation delay
   const [direction, setDirection] = useState(1) // +1 for next, -1 for prev (if we added back button)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   // Reset state when modal opens
   useEffect(() => {
@@ -44,7 +51,12 @@ export default function EndometriosisTestModal({
       setCurrentQuestion(0)
       setAnswers([])
       setShowResult(false)
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
     }
+    return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
   const handleAnswer = (isYes) => {
@@ -68,14 +80,6 @@ export default function EndometriosisTestModal({
           let nivel = "BAJA COINCIDENCIA"
           if (percentage >= 70) nivel = "ALTA COINCIDENCIA"
           else if (percentage >= 40) nivel = "MODERADA COINCIDENCIA"
-
-          // We need doctor_id. If not passed directly (it isn't), we might need to rely on identifying the doctor from context.
-          // Actually, the modal receives `doctorName` but not `doctorId`.
-          // Wait, this modal is used on public profile. We need to know WHICH doctor owns this test.
-          // The modal is usually rendered in `DoctorProfilePage`, inside `EndometriosisTestModal`.
-          // User needs to pass `doctorId` prop to `EndometriosisTestModal`.
-          // I will assume `doctorId` prop is added. If not, I need to add it to usage in DoctorProfilePage too.
-          // For now, I'll add `doctorId` to props and usage here.
 
           if (doctorId) {
             await testService.saveEndometriosisResult({
@@ -155,40 +159,43 @@ export default function EndometriosisTestModal({
   const subTextClass = isDarkMode ? "text-gray-300" : "text-gray-600"
   const borderClass = isDarkMode ? "border-gray-700" : "border-gray-200"
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 z-[9999] overflow-hidden sm:overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex flex-col sm:flex-row items-center justify-center min-h-screen text-center sm:block sm:p-0">
 
             {/* Background overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.1 }}
-              className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm"
+              transition={{ duration: 0.5 }}
+              className="fixed inset-0 bg-gray-900 bg-opacity-90 transition-opacity backdrop-blur-sm"
               aria-hidden="true"
+              onClick={handleClose}
             />
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            {/* Modal Panel - Clicking outside (on the wrapper div above) doesn't close automatically unless we add overlay click handler, but usually better UX to have explicit close.
-                If we want click-outside-to-close, we'd add onClick={handleClose} to the overlay motion.div above.
-             */}
+            {/* Modal Panel */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 100 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.75, y: 40 }}
-              transition={{ duration: 1.1, ease: "easeInOut" }}
-              className={`inline-block align-bottom ${bgClass} rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full ring-1 ring-white/10`}
+              exit={{ opacity: 0, scale: 0.9, y: 100 }}
+              transition={{ duration: 0.4, ease: [0.19, 1.0, 0.22, 1.0] }} // specific spring ease
+              className={`inline-block align-bottom ${bgClass} sm:rounded-2xl text-left overflow-y-auto shadow-2xl transform transition-all 
+                w-full h-[100dvh] sm:h-auto sm:my-8 sm:align-middle sm:max-w-lg 
+                flex flex-col sm:block absolute inset-0 sm:relative sm:inset-auto`}
             >
-              <div className={`px-4 pt-5 pb-4 sm:p-6 sm:pb-4 relative ${bgClass}`}>
+              <div className={`flex-1 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 relative ${bgClass} flex flex-col justify-center sm:block`}>
                 <button
                   onClick={handleClose}
-                  className={`absolute top-4 right-4 ${isDarkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'} rounded-full p-1 transition-colors z-10`}
+                  className={`absolute top-4 right-4 ${isDarkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'} rounded-full p-2 transition-colors z-10`}
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-7 w-7" />
                 </button>
 
                 <AnimatePresence mode="wait">
@@ -199,49 +206,49 @@ export default function EndometriosisTestModal({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -50 }}
                       transition={{ duration: 0.3 }}
-                      className="text-center py-6"
+                      className="text-center py-6 flex flex-col items-center justify-center h-full sm:h-auto"
                     >
                       <div className="mb-6 inline-block relative">
                         {doctorPhoto ? (
                           <img
                             src={getImageUrl(doctorPhoto)}
                             alt={doctorName}
-                            className={`w-28 h-28 rounded-full object-cover shadow-xl border-4 ${isDarkMode ? 'border-gray-700' : 'border-indigo-50'}`}
+                            className={`w-32 h-32 rounded-full object-cover shadow-xl border-4 ${isDarkMode ? 'border-gray-700' : 'border-indigo-50'}`}
                           />
                         ) : (
-                          <div className={`p-5 rounded-full ${isDarkMode ? 'bg-gray-700 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-14 h-14">
+                          <div className={`p-6 rounded-full ${isDarkMode ? 'bg-gray-700 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                             </svg>
                           </div>
                         )}
                       </div>
 
-                      <h3 className={`text-2xl font-bold ${textClass} mb-2`}>
+                      <h3 className={`text-2xl md:text-3xl font-bold ${textClass} mb-3`}>
                         ¡Hola! Soy {doctorName}
                       </h3>
-                      <p className={`text-lg ${subTextClass} mb-6`}>
+                      <p className={`text-xl ${subTextClass} mb-8`}>
                         Bienvenida 👋
                       </p>
 
-                      <p className={`${subTextClass} mb-8 max-w-sm mx-auto leading-relaxed`}>
+                      <p className={`${subTextClass} mb-12 max-w-sm mx-auto leading-relaxed text-base md:text-lg`}>
                         Te invito a realizar este breve <strong>Test de Endometriosis</strong>.
-                        Responder estas preguntas te ayudará a identificar posibles síntomas y te dará una recomendación personalizada.
+                        Identifica posibles síntomas y obtén una recomendación personalizada.
                       </p>
 
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-                        <button
-                          onClick={handleClose}
-                          className={`px-6 py-3 border ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-xl font-medium transition-colors w-full sm:w-auto`}
-                        >
-                          Cancelar
-                        </button>
+                      <div className="flex flex-col w-full max-w-xs gap-3">
                         <button
                           onClick={() => setShowWelcome(false)}
-                          className="px-8 py-3 text-white rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 w-full sm:w-auto hover:brightness-110"
+                          className="px-8 py-4 text-white rounded-2xl font-bold shadow-lg text-lg w-full hover:brightness-110 active:scale-95 transition-all"
                           style={{ backgroundColor: primaryColor }}
                         >
                           Iniciar Test
+                        </button>
+                        <button
+                          onClick={handleClose}
+                          className={`px-8 py-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} font-medium text-sm hover:underline`}
+                        >
+                          No, gracias
                         </button>
                       </div>
                     </motion.div>
@@ -250,15 +257,15 @@ export default function EndometriosisTestModal({
                       key="test"
                       initial={{ opacity: 0, x: 50 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="w-full"
+                      className="w-full h-full flex flex-col justify-center sm:justify-start"
                     >
-                      <h3 className={`text-xl leading-6 font-bold ${textClass} mb-6 pr-8`} id="modal-title">
+                      <h3 className={`text-xl md:text-2xl leading-6 font-bold ${textClass} mb-8 text-center sm:text-left pt-8 sm:pt-0`} id="modal-title">
                         Test de Endometriosis
                       </h3>
 
                       {/* Dynamic Progress Bar (Segmented & Colored) */}
                       {!showResult && (
-                        <div className="mb-8">
+                        <div className="mb-8 w-full max-w-md mx-auto sm:mx-0">
                           <div className={`flex justify-between text-xs font-semibold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-2`}>
                             <span>Progreso</span>
                             <span>{Math.round(progressPercentage)}%</span>
@@ -292,7 +299,7 @@ export default function EndometriosisTestModal({
                       )}
 
                       {/* Content Area */}
-                      <div className="mt-2 min-h-[200px] flex flex-col justify-center">
+                      <div className="mt-2 flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
                         <AnimatePresence mode="wait" custom={direction}>
                           {!showResult && !isAnalyzing ? (
                             <motion.div
@@ -302,31 +309,31 @@ export default function EndometriosisTestModal({
                               initial="enter"
                               animate="center"
                               exit="exit"
-                              className="w-full"
+                              className="w-full flex flex-col items-center"
                             >
-                              <p className={`text-xl ${textClass} font-medium mb-10 text-center leading-relaxed`}>
+                              <p className={`text-2xl md:text-3xl ${textClass} font-semibold mb-12 text-center leading-relaxed`}>
                                 {QUESTIONS[currentQuestion]}
                               </p>
 
                               <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1.5, duration: 0.5 }}
-                                className="flex gap-4 justify-center"
+                                transition={{ delay: 0.2, duration: 0.5 }}
+                                className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-xs sm:max-w-none"
                               >
                                 <motion.button
-                                  whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(34, 197, 94, 0.3)" }}
+                                  whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleAnswer(false)}
-                                  className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all font-semibold shadow-md w-36"
+                                  className="px-8 py-4 bg-emerald-500 text-white rounded-2xl transition-all font-bold shadow-md w-full sm:w-36 text-lg"
                                 >
                                   No
                                 </motion.button>
                                 <motion.button
-                                  whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(244, 63, 94, 0.3)" }}
+                                  whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleAnswer(true)}
-                                  className="px-8 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:from-rose-600 hover:to-pink-700 transition-all font-semibold shadow-md w-36"
+                                  className="px-8 py-4 bg-rose-500 text-white rounded-2xl transition-all font-bold shadow-md w-full sm:w-36 text-lg"
                                 >
                                   Sí
                                 </motion.button>
@@ -340,43 +347,43 @@ export default function EndometriosisTestModal({
                               exit={{ opacity: 0 }}
                               className="text-center py-10"
                             >
-                              <div className="flex justify-center mb-4">
-                                <svg className={`animate-spin h-12 w-12 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <div className="flex justify-center mb-6">
+                                <svg className={`animate-spin h-16 w-16 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                               </div>
-                              <p className={`text-lg font-medium ${textClass} animate-pulse`}>
+                              <p className={`text-xl font-medium ${textClass} animate-pulse`}>
                                 Analizando tus respuestas...
                               </p>
                             </motion.div>
                           ) : (
                             <motion.div
                               key="result"
-                              initial={{ opacity: 0, scale: 0.8 }}
+                              initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ duration: 0.5, type: "spring" }}
-                              className="text-center py-4"
+                              className="text-center w-full"
                             >
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.2, type: "spring" }}
-                                className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white shadow-lg"
+                                className="w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white shadow-xl ring-4 ring-white/20"
                                 style={{ backgroundColor: result.colorHex }}
                               >
                                 {Math.round(result.percentage)}%
                               </motion.div>
 
-                              <h4 className={`text-2xl font-black mb-3 ${result.colorClass}`}>
+                              <h4 className={`text-3xl font-black mb-4 ${result.colorClass}`}>
                                 {result.nivel}
                               </h4>
 
-                              <p className={`${subTextClass} mb-8 text-lg leading-relaxed px-4`}>
+                              <p className={`${subTextClass} mb-12 text-lg leading-relaxed px-2`}>
                                 {result.recomendacion}
                               </p>
 
-                              <div className="space-y-3 px-4 sm:px-8">
+                              <div className="space-y-4 w-full max-w-sm mx-auto">
                                 {/* Primary Action: Schedule Appointment */}
                                 {onSchedule && (
                                   <motion.button
@@ -386,10 +393,10 @@ export default function EndometriosisTestModal({
                                       handleClose()
                                       onSchedule()
                                     }}
-                                    className="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-lg px-6 py-4 text-white text-lg font-bold focus:outline-none transition-all hover:brightness-110"
+                                    className="w-full inline-flex justify-center items-center rounded-2xl shadow-lg px-6 py-4 text-white text-lg font-bold focus:outline-none transition-all hover:brightness-110"
                                     style={{ backgroundColor: primaryColor }}
                                   >
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     Agendar cita ahora
                                   </motion.button>
                                 )}
@@ -403,10 +410,10 @@ export default function EndometriosisTestModal({
                                       handleClose()
                                       onCycle()
                                     }}
-                                    className={`w-full inline-flex justify-center items-center rounded-xl border-2 px-5 py-2.5 font-bold focus:outline-none transition-all ${isDarkMode ? 'border-gray-600 hover:border-gray-500 text-white' : 'border-gray-200 hover:border-gray-300 text-gray-700'}`}
+                                    className={`w-full inline-flex justify-center items-center rounded-2xl border-2 px-5 py-4 font-bold focus:outline-none transition-all ${isDarkMode ? 'border-gray-600 hover:border-gray-500 text-white' : 'border-gray-200 hover:border-gray-300 text-gray-700'}`}
                                     style={!isDarkMode ? { color: primaryColor, borderColor: primaryColor } : {}}
                                   >
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+                                    <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                                     Ver Calculadora Menstrual
                                   </motion.button>
                                 )}
@@ -416,7 +423,7 @@ export default function EndometriosisTestModal({
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.98 }}
                                   onClick={handleClose}
-                                  className={`w-full inline-flex justify-center rounded-xl px-4 py-2 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} text-sm font-medium focus:outline-none transition-colors mt-2`}
+                                  className={`w-full inline-flex justify-center rounded-xl px-4 py-2 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} text-sm font-medium focus:outline-none transition-colors mt-4`}
                                 >
                                   Entendido, ya lo tengo claro
                                 </motion.button>
@@ -434,6 +441,7 @@ export default function EndometriosisTestModal({
         </div >
       )
       }
-    </AnimatePresence >
+    </AnimatePresence >,
+    document.body
   )
 }
