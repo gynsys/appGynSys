@@ -5,6 +5,7 @@ import Spinner from '../../../components/common/Spinner'
 import AppointmentModal from '../../../components/features/AppointmentModal'
 import EndometriosisTestModal from '../../../components/features/EndometriosisTestModal'
 import { getImageUrl } from '../../../lib/imageUtils'
+import { BottomNav, NavIcons } from '../../../components/common/BottomNav'
 
 export default function BlogLayout({ children }) {
   const { slug } = useParams()
@@ -63,7 +64,7 @@ export default function BlogLayout({ children }) {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-950 text-white' : (!doctor.theme_body_bg_color ? 'bg-gray-50' : '')}`}
+      className={`min-h-screen pb-16 md:pb-0 transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-950 text-white' : (!doctor.theme_body_bg_color ? 'bg-gray-50' : '')}`}
       style={bodyBgStyle}
     >
       {/* Modals */}
@@ -114,8 +115,8 @@ export default function BlogLayout({ children }) {
               )}
             </Link>
 
-            {/* Actions */}
-            <div className="flex items-center space-x-4">
+            {/* Actions - Hidden on Mobile (using Bottom Nav instead) */}
+            <div className="hidden md:flex items-center space-x-4">
 
 
               <Link
@@ -166,6 +167,37 @@ export default function BlogLayout({ children }) {
           </p>
         </div>
       </footer>
+
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNav
+        items={[
+          {
+            icon: <NavIcons.Home />,
+            label: 'Inicio',
+            action: () => navigate(`/dr/${doctor.slug_url}`),
+            isActive: false
+          },
+          {
+            icon: <NavIcons.WhatsApp />,
+            label: 'WhatsApp',
+            action: () => doctor.whatsapp_url && window.open(doctor.whatsapp_url, '_blank', 'noopener,noreferrer'),
+            isActive: false
+          },
+          {
+            icon: <NavIcons.Calendar />,
+            label: 'Agendar',
+            action: () => setIsAppointmentModalOpen(true),
+            isActive: isAppointmentModalOpen
+          },
+          {
+            icon: <NavIcons.Blog />,
+            label: 'Blog',
+            action: () => navigate(`/dr/${doctor.slug_url}/blog`),
+            isActive: true
+          }
+        ]}
+        theme={primaryColor}
+      />
     </div>
   )
 }

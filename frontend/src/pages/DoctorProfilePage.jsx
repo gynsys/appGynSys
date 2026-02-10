@@ -489,8 +489,8 @@ export default function DoctorProfilePage() {
         )}
       </main>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-40 items-center">
+      {/* Floating Action Buttons - Hidden on Mobile (using Bottom Nav instead) */}
+      <div className="hidden md:flex fixed bottom-6 right-6 flex-col space-y-3 z-40 items-center">
 
         {/* Back to Top Button */}
         <button
@@ -554,7 +554,7 @@ export default function DoctorProfilePage() {
             href={doctor.whatsapp_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-transform transform hover:scale-110 active:scale-95 flex items-center justify-center bg-transparent p-0 z-50"
+            className="hidden md:flex transition-transform transform hover:scale-110 active:scale-95 items-center justify-center bg-transparent p-0 z-50"
             title="Chatear por WhatsApp"
           >
             <img
