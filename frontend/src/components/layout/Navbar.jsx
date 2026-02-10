@@ -50,12 +50,13 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 />
               )}
               {doctor?.nombre_completo && (
-                <h1
-                  className="text-base md:text-xl font-semibold text-gray-900 dark:text-white leading-tight"
-                >
-                  <span className="block md:hidden">Dra. Herrera</span>
-                  <span className="hidden md:block">{doctor.nombre_completo}</span>
-                </h1>
+                { doctor?.nombre_completo && (
+                  <h1
+                    className="text-sm md:text-xl font-semibold text-gray-900 dark:text-white leading-tight truncate max-w-[150px] md:max-w-none"
+                  >
+                    {doctor.nombre_completo}
+                  </h1>
+                )}
               )}
               {/* Cycle Predictor Button */}
               <button
