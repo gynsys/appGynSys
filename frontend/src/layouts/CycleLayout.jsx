@@ -16,8 +16,9 @@ export default function CycleLayout() {
     // Authentication Guard
     useEffect(() => {
         if (!isAuthenticated) {
-            // Redirect to home with cycle predictor modal open
-            navigate('/', { state: { openCyclePredictor: true } });
+            // Guardar ruta actual y redirigir a login
+            localStorage.setItem('redirect_after_login', location.pathname);
+            navigate('/login');
         }
     }, [isAuthenticated, navigate]);
 
