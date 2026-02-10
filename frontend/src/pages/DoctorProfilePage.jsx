@@ -24,6 +24,7 @@ import FAQSection from '../components/features/FAQSection'
 import CertificationsSection from '../components/features/CertificationsSection'
 import SectionCard from '../components/common/SectionCard'
 import SocialLinks from '../components/common/SocialLinks'
+import { BottomNav, NavIcons } from '../components/common/BottomNav'
 
 import { getImageUrl } from '../lib/imageUtils'
 
@@ -240,9 +241,59 @@ export default function DoctorProfilePage() {
 
   const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
 
+  // Bottom Navigation Handlers
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const scrollToBlog = () => {
+    const blogSection = document.getElementById('blog')
+    if (blogSection) {
+      blogSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const openWhatsApp = () => {
+    if (doctor?.whatsapp_url) {
+      window.open(doctor.whatsapp_url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const navigateToBooking = () => {
+    setIsAppointmentModalOpen(true)
+  }
+
+  // Bottom nav configuration
+  const navItems = [
+    {
+      icon: <NavIcons.Home />,
+      label: 'Inicio',
+      action: scrollToTop,
+      isActive: window.scrollY < 100
+    },
+    {
+      icon: <NavIcons.WhatsApp />,
+      label: 'WhatsApp',
+      action: openWhatsApp,
+      isActive: false
+    },
+    {
+      icon: <NavIcons.Calendar />,
+      label: 'Agendar',
+      action: navigateToBooking,
+      isActive: isAppointmentModalOpen
+    },
+    {
+      icon: <NavIcons.Blog />,
+      label: 'Blog',
+      action: scrollToBlog,
+      isActive: false
+    }
+  ]
+
   return (
     <div
-      className={`min-h-screen ${globalBgClass} ${isDarkTheme ? 'dark' : ''}`}
+      className={`min-h-screen pb-16 md:pb-0 ${globalBgClass} ${isDarkTheme ? 'dark' : ''}`}
       style={bodyBgStyle}
     >
       {/* Modern Navbar */}
@@ -580,6 +631,9 @@ export default function DoctorProfilePage() {
         settings={onlineSettings}
       />
 
+
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNav items={navItems} theme={primaryColor} />
 
     </div >
   )
