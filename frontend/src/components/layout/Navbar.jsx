@@ -304,6 +304,12 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           <EndometriosisTestModal
             isOpen={isTestModalOpen}
             onClose={() => setIsTestModalOpen(false)}
+            onSchedule={onAppointmentClick}
+            onCycle={() => setIsCycleModalOpen(true)}
+            doctorName={doctor?.nombre_completo}
+            doctorPhoto={doctor?.foto_perfil}
+            primaryColor={primaryColor}
+            doctorId={doctor?.id}
           />
         )}
       </nav >
