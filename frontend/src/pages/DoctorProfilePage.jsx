@@ -274,7 +274,13 @@ export default function DoctorProfilePage() {
     {
       icon: <NavIcons.Activity />,
       label: 'Predictor',
-      action: () => navigate('/cycle/dashboard'),
+      action: () => {
+        if (isAuthenticated) {
+          navigate('/cycle/dashboard');
+        } else {
+          setIsCycleModalOpen(true);
+        }
+      },
       isActive: false
     },
     {

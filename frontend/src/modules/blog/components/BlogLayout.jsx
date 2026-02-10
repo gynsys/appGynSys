@@ -7,6 +7,7 @@ import EndometriosisTestModal from '../../../components/features/EndometriosisTe
 import CyclePredictorModal from '../../../components/cycle-predictor/CyclePredictorModal'
 import { getImageUrl } from '../../../lib/imageUtils'
 import { BottomNav, NavIcons } from '../../../components/common/BottomNav'
+import { useAuthStore } from '../../../store/authStore'
 
 export default function BlogLayout({ children }) {
   const { slug } = useParams()
@@ -16,6 +17,7 @@ export default function BlogLayout({ children }) {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
+  const { isAuthenticated } = useAuthStore()
 
   useEffect(() => {
     if (slug) {
@@ -185,7 +187,13 @@ export default function BlogLayout({ children }) {
           {
             icon: <NavIcons.Activity />,
             label: 'Predictor',
-            action: () => navigate('/cycle/dashboard'),
+            action: () => {
+              if (isAuthenticated) {
+                navigate('/cycle/dashboard');
+              } else {
+                setIsCycleModalOpen(true);
+              }
+            },
             isActive: false
           },
           {
