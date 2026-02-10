@@ -35,15 +35,15 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           ...(effectiveBgColor ? { backgroundColor: effectiveBgColor } : {})
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 md:h-16">
             {/* Logo and Doctor Name */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3">
               {doctor?.logo_url && (
                 <img
                   src={getImageUrl(doctor.logo_url)}
                   alt={`${doctor.nombre_completo} logo`}
-                  className="h-10 w-auto object-contain"
+                  className="h-8 md:h-10 w-auto object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none'
                   }}
@@ -51,9 +51,10 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               )}
               {doctor?.nombre_completo && (
                 <h1
-                  className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white"
+                  className="text-base md:text-xl font-semibold text-gray-900 dark:text-white leading-tight"
                 >
-                  {doctor.nombre_completo}
+                  <span className="block md:hidden">Dra. Herrera</span>
+                  <span className="hidden md:block">{doctor.nombre_completo}</span>
                 </h1>
               )}
               {/* Cycle Predictor Button */}
@@ -65,11 +66,14 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     setIsCycleModalOpen(true)
                   }
                 }}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 md:px-3 rounded-lg border-2 transition-colors"
+                className="flex items-center space-x-1 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border-2 transition-colors ml-1"
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
-                <FiActivity className="w-4 h-4" />
-                <span className="text-xs md:text-sm font-medium">Tu ciclo</span>
+                <FiActivity className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <div className="flex flex-col leading-none">
+                  <span className="text-[10px] md:text-sm font-medium">Tu</span>
+                  <span className="text-[10px] md:text-sm font-medium">ciclo</span>
+                </div>
               </button>
             </div>
 
