@@ -81,7 +81,7 @@ async def test_push_notification(
         raise HTTPException(status_code=404, detail=f"User not found: {request.user_email}")
     
     # Check if user has push subscription
-    if not user.push_subscription:
+    if not user.push_subscriptions:
         raise HTTPException(
             status_code=400, 
             detail=f"User {request.user_email} has not enabled push notifications"
@@ -102,7 +102,8 @@ async def test_push_notification(
             "success": True,
             "message": f"Test notification sent to {request.user_email}",
             "user_id": user.id,
-            "subscription_endpoint": user.push_subscription[:50] + "..." if user.push_subscription else None,
+            "subscription_count": len(user.push_subscriptions),
+            "subscription_endpoint": user.push_subscriptions[0].endpoint[:50] + "..." if user.push_subscriptions else None,
             "result": result
         }
     
@@ -137,7 +138,7 @@ async def test_all_notification_types(
     if not user:
         raise HTTPException(status_code=404, detail=f"User not found: {user_email}")
     
-    if not user.push_subscription:
+    if not user.push_subscriptions:
         raise HTTPException(
             status_code=400,
             detail=f"User {user_email} has not enabled push notifications"
