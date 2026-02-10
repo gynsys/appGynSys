@@ -4,6 +4,7 @@ import { doctorService } from '../../../services/doctorService'
 import Spinner from '../../../components/common/Spinner'
 import AppointmentModal from '../../../components/features/AppointmentModal'
 import EndometriosisTestModal from '../../../components/features/EndometriosisTestModal'
+import CyclePredictorModal from '../../../components/cycle-predictor/CyclePredictorModal'
 import { getImageUrl } from '../../../lib/imageUtils'
 import { BottomNav, NavIcons } from '../../../components/common/BottomNav'
 
@@ -14,6 +15,7 @@ export default function BlogLayout({ children }) {
   const [loading, setLoading] = useState(true)
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
+  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
 
   useEffect(() => {
     if (slug) {
@@ -168,7 +170,10 @@ export default function BlogLayout({ children }) {
         </div>
       </footer>
 
-      {/* Bottom Navigation - Mobile Only */}
+      {/* Cycle Predictor Modal */}
+      <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
+
+      {/* Bottom Navigation - Mobile Only */}}
       <BottomNav
         items={[
           {
@@ -176,6 +181,12 @@ export default function BlogLayout({ children }) {
             label: 'Inicio',
             action: () => navigate(`/dr/${doctor.slug_url}`),
             isActive: false
+          },
+          {
+            icon: <NavIcons.Activity />,
+            label: 'Predictor',
+            action: () => setIsCycleModalOpen(true),
+            isActive: isCycleModalOpen
           },
           {
             icon: <NavIcons.WhatsApp />,

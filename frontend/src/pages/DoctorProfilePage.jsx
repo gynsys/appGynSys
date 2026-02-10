@@ -272,6 +272,12 @@ export default function DoctorProfilePage() {
       isActive: window.scrollY < 100
     },
     {
+      icon: <NavIcons.Activity />,
+      label: 'Predictor',
+      action: () => setIsCycleModalOpen(true),
+      isActive: isCycleModalOpen
+    },
+    {
       icon: <NavIcons.WhatsApp />,
       label: 'WhatsApp',
       action: openWhatsApp,
