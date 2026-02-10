@@ -36,26 +36,47 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
         }}
       >
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 md:h-16">
-            {/* Logo and Doctor Name */}
-            <div className="flex items-center space-x-2 md:space-x-3">
-              {doctor?.logo_url && (
-                <img
-                  src={getImageUrl(doctor.logo_url)}
-                  alt={`${doctor.nombre_completo} logo`}
-                  className="h-8 md:h-10 w-auto object-contain"
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                  }}
-                />
-              )}
-              {doctor?.nombre_completo && (
-                <h1
-                  className="text-sm md:text-xl font-semibold text-gray-900 dark:text-white leading-tight truncate max-w-[150px] md:max-w-none"
+          <div className="flex flex-col md:flex-row justify-between items-center py-2 md:py-0 md:h-16 space-y-2 md:space-y-0">
+
+            {/* Top Row: Logo, Name, Mobile Menu Button */}
+            <div className="flex w-full md:w-auto justify-between items-center">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                {doctor?.logo_url && (
+                  <img
+                    src={getImageUrl(doctor.logo_url)}
+                    alt={`${doctor.nombre_completo} logo`}
+                    className="h-8 md:h-10 w-auto object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                    }}
+                  />
+                )}
+                {doctor?.nombre_completo && (
+                  <h1
+                    className="text-sm md:text-xl font-semibold text-gray-900 dark:text-white leading-tight truncate max-w-[200px] md:max-w-none"
+                  >
+                    {doctor.nombre_completo}
+                  </h1>
+                )}
+              </div>
+
+              {/* Mobile Menu Button - Moved to Top Row */}
+              <div className="md:hidden flex items-center">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="text-gray-700 hover:text-gray-900 focus:outline-none dark:text-gray-300 dark:hover:text-white p-1"
                 >
-                  {doctor.nombre_completo}
-                </h1>
-              )}
+                  {isMenuOpen ? (
+                    <FiX className="h-6 w-6" />
+                  ) : (
+                    <FiMenu className="h-6 w-6" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Second Row (Mobile Only): Action Buttons */}
+            <div className="flex md:hidden w-full items-center justify-between space-x-2 pb-1">
               {/* Cycle Predictor Button */}
               <button
                 onClick={() => {
@@ -65,14 +86,40 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     setIsCycleModalOpen(true)
                   }
                 }}
-                className="flex items-center space-x-1 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border-2 transition-colors ml-1"
+                className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
-                <FiActivity className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <div className="flex flex-col leading-none">
-                  <span className="text-[10px] md:text-sm font-medium">Tu</span>
-                  <span className="text-[10px] md:text-sm font-medium">ciclo</span>
-                </div>
+                <FiActivity className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">Tu ciclo</span>
+              </button>
+
+              {/* Endometriosis Test Button (if enabled) */}
+              {showEndoTest && (
+                <button
+                  onClick={() => setIsTestModalOpen(true)}
+                  className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors bg-pink-50 dark:bg-pink-900/20"
+                  style={{ borderColor: 'rgb(236 72 153 / 0.3)', color: 'rgb(236 72 153)' }}
+                >
+                  <span className="text-xs font-medium">Test Endometriosis</span>
+                </button>
+              )}
+            </div>
+
+            {/* Desktop Only Cycle Button (hidden on mobile, shown in flex row on desktop) */}
+            <div className="hidden md:flex items-center">
+              <button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate('/cycle/dashboard')
+                  } else {
+                    setIsCycleModalOpen(true)
+                  }
+                }}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
+              >
+                <FiActivity className="w-4 h-4" />
+                <span className="text-sm font-medium">Tu ciclo</span>
               </button>
             </div>
 
@@ -144,19 +191,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               )}
             </div >
 
-            {/* Mobile Menu Button */}
-            < div className="md:hidden flex items-center space-x-4" >
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-700 hover:text-gray-900 focus:outline-none dark:text-gray-300 dark:hover:text-white"
-              >
-                {isMenuOpen ? (
-                  <FiX className="h-6 w-6" />
-                ) : (
-                  <FiMenu className="h-6 w-6" />
-                )}
-              </button>
-            </div >
+            {/* Desktop Mobile Menu Button Placeholer (Removed from here, moved up) */}
           </div >
 
           {/* Mobile Menu */}
