@@ -173,7 +173,7 @@ export default function BlogLayout({ children }) {
       {/* Cycle Predictor Modal */}
       <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
 
-      {/* Bottom Navigation - Mobile Only */}}
+      {/* Bottom Navigation - Mobile Only */}
       <BottomNav
         items={[
           {
