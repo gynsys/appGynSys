@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { getImageUrl } from '../../lib/imageUtils'
-import { Link } from 'react-router-dom'
-import { FiMenu, FiX, FiLogIn, FiBarChart2 } from 'react-icons/fi'
+import { Link, useNavigate } from 'react-router-dom'
+import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
+import CyclePredictorModal from '../features/CyclePredictorModal'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const { isAuthenticated, user, logout } = useAuthStore()
+  const navigate = useNavigate()
 
   // Usage: if containerBgColor is explicitly passed (even null), use it. Only fallback to doctor.theme... if undefined.
   // In Dark Mode, parent passes 'null', so effectiveBgColor becomes 'null', preventing the legacy color override.
@@ -35,12 +38,12 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Doctor Name */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {doctor?.logo_url && (
                 <img
                   src={getImageUrl(doctor.logo_url)}
                   alt={`${doctor.nombre_completo} logo`}
-                  className="h-12 w-auto object-contain"
+                  className="h-10 w-auto object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none'
                   }}
@@ -53,6 +56,21 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   {doctor.nombre_completo}
                 </h1>
               )}
+              {/* Cycle Predictor Button */}
+              <button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate('/cycle/dashboard')
+                  } else {
+                    setIsCycleModalOpen(true)
+                  }
+                }}
+                className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
+              >
+                <FiActivity className="w-4 h-4" />
+                <span className="text-sm font-medium">Tu ciclo</span>
+              </button>
             </div>
 
             {/* Desktop Menu */}
@@ -214,15 +232,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     Iniciar Sesión
                   </button>
                 )}
-                {showBlog && (
-                  <Link
-                    to={`/dr/${doctor?.slug_url}/blog`}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Blog
-                  </Link>
-                )}
+                {/* Blog removed - now in bottom nav */}
                 {showEndoTest && (
                   <button
                     onClick={() => {
