@@ -5,7 +5,7 @@ import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
-import CyclePredictorModal from '../features/CyclePredictorModal'
+import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
