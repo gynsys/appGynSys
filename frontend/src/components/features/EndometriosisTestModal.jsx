@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { getImageUrl } from '../../lib/imageUtils'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
-import useDarkMode from '../../hooks/useDarkMode'
+import { useDarkMode } from '../../hooks/useDarkMode'
 
 const QUESTIONS = [
   "¿Experimentas dolor pélvico intenso durante la menstruación que interfiere con tus actividades diarias?",
