@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { getImageUrl } from '../../lib/imageUtils'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
+import useDarkMode from '../../hooks/useDarkMode'
 
 const QUESTIONS = [
   "¿Experimentas dolor pélvico intenso durante la menstruación que interfiere con tus actividades diarias?",
@@ -27,10 +28,11 @@ export default function EndometriosisTestModal({
   doctorName = 'tu doctora',
   doctorPhoto = null,
 
-  isDarkMode = false,
+  // isDarkMode prop removed, using hook instead
   onSchedule = null,
   onCycle = null
 }) {
+  const [isDarkMode] = useDarkMode()
   const [showWelcome, setShowWelcome] = useState(true)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState([]) // Array of booleans (true=Yes, false=No)
