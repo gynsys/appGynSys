@@ -5,13 +5,13 @@ import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
-import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
+
 import EndometriosisTestModal from '../features/EndometriosisTestModal'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
+
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const { isAuthenticated, user, logout } = useAuthStore()
   const navigate = useNavigate()
@@ -81,13 +81,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             <div className="flex md:hidden w-full items-center justify-between space-x-2 pb-1">
               {/* Cycle Predictor Button */}
               <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    navigate('/cycle/dashboard')
-                  } else {
-                    setIsCycleModalOpen(true)
-                  }
-                }}
+                onClick={() => navigate('/cycle/dashboard')}
                 className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
@@ -110,13 +104,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             {/* Desktop Only Cycle Button (hidden on mobile, shown in flex row on desktop) */}
             <div className="hidden md:flex items-center">
               <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    navigate('/cycle/dashboard')
-                  } else {
-                    setIsCycleModalOpen(true)
-                  }
-                }}
+                onClick={() => navigate('/cycle/dashboard')}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
@@ -307,7 +295,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             navigate('/cycle/dashboard');
           }}
         />
-        <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
+
         {showEndoTest && (
           <EndometriosisTestModal
             isOpen={isTestModalOpen}
