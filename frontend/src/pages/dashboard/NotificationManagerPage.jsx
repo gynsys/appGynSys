@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Send } from 'lucide-react'
+import { Plus, Trash2, Send, Pencil, AlertTriangle } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -15,8 +15,11 @@ const TABS = [
 ]
 
 export default function NotificationManagerPage() {
-    const { rules, loading, fetchRules, createRule, deleteRule } = useNotificationStore()
+    const { rules, loading, fetchRules, createRule, updateRule, deleteRule } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
+    const [editingId, setEditingId] = useState(null)
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+    const [ruleToDelete, setRuleToDelete] = useState(null)
     const [activeTab, setActiveTab] = useState('cycle')
     const [testEmail, setTestEmail] = useState('')
     const [selectedRule, setSelectedRule] = useState(null)
@@ -42,11 +45,18 @@ export default function NotificationManagerPage() {
         fetchRules()
     }, [fetchRules])
 
-    const handleDelete = async (id) => {
-        if (!confirm("¿Eliminar esta notificación?")) return
+    const handleDeleteClick = (rule) => {
+        setRuleToDelete(rule)
+        setIsDeleteOpen(true)
+    }
+
+    const handleConfirmDelete = async () => {
+        if (!ruleToDelete) return
         try {
-            await deleteRule(id)
+            await deleteRule(ruleToDelete.id)
             toast.success("Notificación eliminada")
+            setIsDeleteOpen(false)
+            setRuleToDelete(null)
         } catch (e) {
             toast.error("Error al eliminar")
         }
@@ -131,12 +141,43 @@ export default function NotificationManagerPage() {
         }
     }
 
-    const handleCreate = async () => {
+    const handleEdit = (rule) => {
+        let triggerEvent = 'days_before_period'
+        let triggerDays = 0
+
+        const t = rule.trigger_condition
+        if (t.cycle_day) {
+            triggerEvent = 'cycle_day'
+            triggerDays = t.cycle_day
+        } else if (t.days_before_period) {
+            triggerEvent = 'days_before_period'
+            triggerDays = t.days_before_period
+        } else if (t.is_ovulation_day) {
+            triggerEvent = 'is_ovulation_day'
+        } else if (t.is_fertile_start) {
+            triggerEvent = 'is_fertile_start'
+        }
+
+        setFormData({
+            name: rule.name,
+            type: rule.notification_type,
+            trigger_days: triggerDays,
+            trigger_event: triggerEvent,
+            message: rule.message_template,
+            channel: rule.channel
+        })
+        setEditingId(rule.id)
+        setIsCreateOpen(true)
+    }
+
+    const handleSave = async () => {
         try {
             // Build trigger JSON based on simplified UI
             let trigger = {}
             if (formData.trigger_event === 'days_before_period') {
                 trigger = { days_before_period: parseInt(formData.trigger_days) }
+            } else if (formData.trigger_event === 'cycle_day') {
+                trigger = { cycle_day: parseInt(formData.trigger_days) }
             } else if (formData.trigger_event === 'is_ovulation_day') {
                 trigger = { is_ovulation_day: true }
             } else if (formData.trigger_event === 'is_fertile_start') {
@@ -152,9 +193,16 @@ export default function NotificationManagerPage() {
                 is_active: true
             }
 
-            await createRule(rulePayload)
-            toast.success("Notificación creada")
+            if (editingId) {
+                await updateRule(editingId, rulePayload)
+                toast.success("Notificación actualizada")
+            } else {
+                await createRule(rulePayload)
+                toast.success("Notificación creada")
+            }
+
             setIsCreateOpen(false)
+            setEditingId(null)
             // Reset form
             setFormData({
                 name: '',
@@ -193,7 +241,18 @@ export default function NotificationManagerPage() {
 
 
             <button
-                onClick={() => setIsCreateOpen(true)}
+                onClick={() => {
+                    setEditingId(null)
+                    setFormData({
+                        name: '',
+                        type: 'cycle_phase',
+                        trigger_days: 0,
+                        trigger_event: 'days_before_period',
+                        message: 'Hola {patient_name}, ...',
+                        channel: 'dual'
+                    })
+                    setIsCreateOpen(true)
+                }}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white flex items-center gap-2"
             >
                 <Plus className="w-5 h-5" />
@@ -301,7 +360,16 @@ export default function NotificationManagerPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        onClick={() => handleDelete(rule.id)}
+                                                        onClick={() => handleEdit(rule)}
+                                                        className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                                        title="Editar notificación"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDeleteClick(rule)}
                                                         className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                         title="Eliminar notificación"
                                                     >
@@ -329,7 +397,7 @@ export default function NotificationManagerPage() {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Nueva Notificación Automática</DialogTitle>
+                        <DialogTitle>{editingId ? 'Editar Notificación' : 'Nueva Notificación Automática'}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
@@ -365,14 +433,17 @@ export default function NotificationManagerPage() {
                                     onChange={e => setFormData({ ...formData, trigger_event: e.target.value })}
                                 >
                                     <option value="days_before_period">Días antes del periodo</option>
+                                    <option value="cycle_day">Día del Ciclo (1-28)</option>
                                     <option value="is_ovulation_day">Día de Ovulación</option>
                                     <option value="is_fertile_start">Inicio Ventana Fértil</option>
                                 </select>
                             </div>
 
-                            {formData.trigger_event === 'days_before_period' && (
+                            {(formData.trigger_event === 'days_before_period' || formData.trigger_event === 'cycle_day') && (
                                 <div className="space-y-2">
-                                    <Label>Días de anticipación</Label>
+                                    <Label>
+                                        {formData.trigger_event === 'cycle_day' ? 'Día del ciclo (1-28)' : 'Días de anticipación'}
+                                    </Label>
                                     <Input
                                         type="number"
                                         value={formData.trigger_days}
@@ -409,7 +480,7 @@ export default function NotificationManagerPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleCreate}>Crear Regla</Button>
+                        <Button onClick={handleSave}>{editingId ? 'Guardar Cambios' : 'Crear Regla'}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -486,6 +557,36 @@ export default function NotificationManagerPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                            <AlertTriangle className="h-5 w-5" />
+                            Confirmar Eliminación
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-2">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            ¿Estás seguro de que deseas eliminar la notificación <strong>"{ruleToDelete?.name}"</strong>?
+                            Esta acción no se puede deshacer.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleConfirmDelete}
+                            className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600"
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div >
     )
 }
