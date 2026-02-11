@@ -133,6 +133,8 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     }, [])
 
     const loadSymptomsHistory = async () => {
+        if (!isAuthenticated) return
+
         try {
             setLoadingHistory(true)
             const data = await cycleService.getSymptoms()
@@ -153,6 +155,16 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     }
 
     const handleSave = async () => {
+        if (!isAuthenticated) {
+            toast.error('Inicia sesión para guardar tus síntomas', {
+                action: {
+                    label: 'Ingresar',
+                    onClick: () => window.location.href = '/login'
+                }
+            })
+            return
+        }
+
         if (!mood && !flowIntensity && selectedSymptoms.length === 0 && painLevel === 0 && !notes) {
             toast.error('Por favor selecciona al menos un sintoma o estado')
             return

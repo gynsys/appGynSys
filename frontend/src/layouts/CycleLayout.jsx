@@ -14,18 +14,21 @@ export default function CycleLayout() {
     const location = useLocation();
 
     // Authentication Guard
+    // Authentication Guard REMOVED to allow guest access
+    /*
     useEffect(() => {
         if (!isAuthenticated) {
-            // Guardar ruta actual y redirigir a login
             localStorage.setItem('redirect_after_login', location.pathname);
             navigate('/login');
         }
     }, [isAuthenticated, navigate]);
+    */
 
     // Don't render until auth check completes
-    if (!isAuthenticated) {
-        return null;
-    }
+    // Don't render until auth check completes - REMOVED for guest access
+    // if (!isAuthenticated) {
+    //     return null;
+    // }
 
     // Bottom navigation items
     const navItems = [
@@ -80,10 +83,18 @@ export default function CycleLayout() {
                     </h1>
 
                     {/* User Avatar */}
-                    <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center">
-                        <span className="text-sm font-medium text-pink-600 dark:text-pink-300">
-                            {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
+                    {/* User Avatar or Login Action */}
+                    <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
+                        onClick={() => !isAuthenticated && navigate('/login')}
+                    >
+                        {isAuthenticated ? (
+                            <span className="text-sm font-medium text-pink-600 dark:text-pink-300">
+                                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                            </span>
+                        ) : (
+                            <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        )}
                     </div>
                 </div>
             </header>

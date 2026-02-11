@@ -198,6 +198,16 @@ export default function CycleCalendarTab({ onPregnancyChange }) {
         if (!isValidDate(dateToUse)) return
 
         try {
+            if (!isAuthenticated) {
+                toast.error('Inicia sesión para guardar tu ciclo', {
+                    action: {
+                        label: 'Ingresar',
+                        onClick: () => window.location.href = '/login'
+                    }
+                })
+                return
+            }
+
             // 1. Save config if user is logged in (only if not a quick action from double click)
             if (isAuthenticated && user && !dateOverride) {
                 await updateCycleUser(cycleConfig).catch(console.error)
@@ -309,6 +319,16 @@ export default function CycleCalendarTab({ onPregnancyChange }) {
         }
 
         try {
+            if (!isAuthenticated) {
+                toast.error('Inicia sesión para gestionar tus ciclos', {
+                    action: {
+                        label: 'Ingresar',
+                        onClick: () => window.location.href = '/login'
+                    }
+                })
+                return
+            }
+
             // Assume end date is today for simplicity, usually called "Finish Period". 
             // Or we could use selectedDate if logic dictates. 
             // For "Finish Period" button, implies "Today is the last day" or "Yesterday was".
