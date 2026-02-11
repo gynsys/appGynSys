@@ -270,6 +270,7 @@ export default function DoctorProfilePage() {
       label: 'Inicio',
       action: scrollToTop,
       isActive: window.scrollY < 100
+    },
     {
       icon: <NavIcons.WhatsApp />,
       label: 'WhatsApp',
