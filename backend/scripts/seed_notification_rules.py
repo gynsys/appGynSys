@@ -43,71 +43,127 @@ def seed_default_rules():
 
             # --- Follicular / Safe Days (Days 6-9) ---
             {
+                "name": "Día 6 - Energía Rising",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 6},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>⚡ Energía Subiendo</h1><p>Estás en fase folicular. Tu energía aumenta. ¡Es un buen momento para hacer ejercicio!</p>"
+            },
+            {
                 "name": "Día 7 - Fase Folicular (Seguro)",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"cycle_day": 7},
                 "channel": NotificationChannel.PUSH,
-                "template": "<h1>🛡️ Día Seguro</h1><p>Estás en tu fase folicular. Riesgo de embarazo bajo. Tu energía empieza a subir. ⚡</p>"
+                "template": "<h1>🛡️ Día Seguro</h1><p>Estás en tu fase folicular. Riesgo de embarazo bajo. Continúa con tus planes.</p>"
+            },
+            {
+                "name": "Día 8 - Día Infértil",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 8},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>🛡️ Día Infértil</h1><p>Sigues en una ventana segura. Disfruta tu día.</p>"
             },
             {
                 "name": "Día 9 - Alerta Pre-Fértil",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"cycle_day": 9},
                 "channel": NotificationChannel.DUAL,
-                "template": "<h1>⚠️ Atención</h1><p>Mañana inicia tu ventana fértil. Si no buscas embarazo, empieza a tomar precauciones extra.</p>"
+                "template": "<h1>⚠️ Atención: Ventana Fértil</h1><p>Mañana inicia tu ventana fértil. Si no buscas embarazo, empieza a tomar precauciones extra.</p>"
             },
 
             # --- Fertile Window (Days 10-15) ---
             {
                 "name": "Día 10 - Inicio Ventana Fértil",
                 "type": NotificationType.CYCLE_PHASE,
-                "trigger": {"is_fertile_start": True}, # Or cycle_day 10 fallback
+                "trigger": {"is_fertile_start": True}, 
                 "channel": NotificationChannel.DUAL,
-                "template": "<h1>🚨 Ventana Fértil Activa</h1><p>Desde hoy tus probabilidades de embarazo son altas. Usa protección.</p>"
+                "template": "<h1>🚨 VENTANA FÉRTIL ACTIVA</h1><p>Desde hoy tus probabilidades de embarazo son altas. Usa protección si es necesario.</p>"
+            },
+            {
+                "name": "Día 11 - Alta Probabilidad",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 11},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>🔥 Alta Probabilidad</h1><p>Recuerda: Estás en tus días más fértiles del mes.</p>"
+            },
+            {
+                "name": "Día 13 - Ovulación Cerca",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 13},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>🥚 Tu ovulación se acerca</h1><p>Prepárate, el día pico está por llegar.</p>"
             },
             {
                 "name": "Día 14 - Ovulación (Pico)",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"is_ovulation_day": True},
                 "channel": NotificationChannel.DUAL,
-                "template": "<h1>🥚 DÍA PICO DE FERTILIDAD</h1><p>Hoy es tu día de ovulación estimado. Máximo riesgo (o máxima oportunidad). 🎯</p>"
+                "template": "<h1>🎯 DÍA MÁXIMO DE FERTILIDAD</h1><p>Hoy es tu día de ovulación estimado. Máximo riesgo (o máxima oportunidad).</p>"
             },
             {
                 "name": "Día 15 - Fin Ventana Fértil",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"days_after_ovulation": 1},
                 "channel": NotificationChannel.PUSH,
-                "template": "<h1>📉 Fin Ventana Fértil</h1><p>Tu ventana de riesgo termina hoy. Entrando en fase lútea.</p>"
+                "template": "<h1>📉 La ventana fértil termina hoy</h1><p>El riesgo baja, entrando en fase lútea.</p>"
             },
 
             # --- Luteal Phase / Engagement (Days 16-28) ---
             {
-                "name": "Día 17 - Fase Lútea (Tip SaaS)",
+                "name": "Día 16 - Inicio Fase Lútea",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 16},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>🛡️ Fase Lútea (Días Seguros)</h1><p>Has entrado en la fase segura de tu ciclo. El riesgo de embarazo disminuye.</p>"
+            },
+            {
+                "name": "Día 17 - Tip Reporte Médico",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"cycle_day": 17},
                 "channel": NotificationChannel.PUSH,
-                "template": "<h1>🛡️ Fase Lútea</h1><p>Días seguros. Recuerda que puedes <strong>imprimir tu reporte de ciclo</strong> para tu próxima cita médica. 🖨️</p>"
+                "template": "<h1>🖨️ Tip para tu Cita</h1><p>Recuerda que puedes imprimir un reporte detallado de tu ciclo para llevárselo a tu Doctor.</p>"
             },
             {
-                "name": "Día 20 - Engagement Viral",
+                "name": "Día 20 - Recomienda la App",
                 "type": NotificationType.SYSTEM,
                 "trigger": {"cycle_day": 20},
                 "channel": NotificationChannel.PUSH,
-                "template": "<h1>💌 ¿Te gusta Mi Ciclo?</h1><p>Ayuda a tus amigas a cuidar su salud. ¡Recomiéndales la app!</p>"
+                "template": "<h1>💌 ¿Te sirve Mi Ciclo?</h1><p>¡Recomiéndala a tus amigas! Ayúdalas a cuidar su salud también. (Toca para compartir)</p>"
             },
             {
                 "name": "Día 23 - Chequeo SPM",
                 "type": NotificationType.SYMPTOM_ALERT,
                 "trigger": {"cycle_day": 23},
                 "channel": NotificationChannel.PUSH,
-                "template": "<h1>🌪️ ¿Síntomas de SPM?</h1><p>¿Te sientes hinchada o irritable? Regístralo hoy para que entendamos mejor tu ciclo.</p>"
+                "template": "<h1>🌪️ ¿Síntomas de SPM?</h1><p>¿Te sientes hinchada o triste? Regístralo hoy para entender mejor tu cuerpo.</p>"
             },
             {
-                "name": "Día 27 - Pre-Aviso Periodo",
+                "name": "Día 25 - Chequeo Dolor",
+                "type": NotificationType.SYMPTOM_ALERT,
+                "trigger": {"cycle_day": 25},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>🩹 ¿Dolor de cabeza o senos?</h1><p>Es común en esta fase. Registra cualquier molestia para tu historial.</p>"
+            },
+            {
+                "name": "Día 26 - Pre-Aviso 2 Días",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"cycle_day": 26},
+                "channel": NotificationChannel.PUSH,
+                "template": "<h1>📅 Tu periodo llega en 2 días</h1><p>Prepárate. ¿Algún síntoma nuevo?</p>"
+            },
+            {
+                "name": "Día 27 - Pre-Aviso Mañana",
                 "type": NotificationType.CYCLE_PHASE,
                 "trigger": {"days_before_period": 1},
                 "channel": NotificationChannel.DUAL,
-                "template": "<h1>📅 Mañana llega tu periodo</h1><p>Prepara tus productos de higiene. ¿Novedades o dolores previos? Regístralos.</p>"
+                "template": "<h1>📅 Tu periodo llega MAÑANA</h1><p>Prepara tus productos de higiene. Registra cómo te sientes hoy.</p>"
+            },
+            {
+                "name": "Día 28 - Fin de Ciclo / Llegada",
+                "type": NotificationType.CYCLE_PHASE,
+                "trigger": {"days_before_period": 0}, # Or cycle day 28
+                "channel": NotificationChannel.DUAL,
+                "template": "<h1>🩸 Tu periodo debería llegar HOY</h1><p>¿Llegó? Entra y confírmalo para iniciar tu nuevo ciclo.</p>"
             }
         ]
 
