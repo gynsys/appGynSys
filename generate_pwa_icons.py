@@ -31,6 +31,7 @@ def generate_icons(source_path, output_dir):
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    source_image = r"C:/Users/pablo/.gemini/antigravity/brain/e9a1dbde-7fc4-426e-a511-b1a33b258607/uploaded_image_1766598195009.png"
-    output_directory = r"c:/Users/pablo/Documents/appgynsys/frontend/public"
+    base_dir = r"c:\Users\pablo\Documents\appgynsys\frontend\public"
+    source_image = os.path.join(base_dir, "pwa-512x512.png")
+    output_directory = base_dir
     generate_icons(source_image, output_directory)
