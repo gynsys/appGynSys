@@ -1,5 +1,7 @@
 import json
 import logging
+import re
+from html import unescape
 from typing import Dict, Any, Optional
 
 from pywebpush import webpush, WebPushException
@@ -7,6 +9,15 @@ from app.core.config import settings
 from app.db.models.cycle_user import CycleUser
 
 logger = logging.getLogger(__name__)
+
+
+def strip_html_tags(text: str) -> str:
+    """Remove HTML tags and decode entities."""
+    if not text:
+        return ""
+    text = unescape(text)
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
 
 
 def send_push_notification(
@@ -40,7 +51,7 @@ def send_push_notification(
     # Prepare payload
     payload = {
         "title": title,
-        "body": body,
+        "body": strip_html_tags(body),
         "icon": icon,
         "badge": badge,
         "data": data or {}
