@@ -27,31 +27,33 @@ export default function ProfilePage() {
                 </p>
             </div>
 
-            {/* User Info Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center">
-                        <UserIcon className="w-8 h-8 text-pink-600 dark:text-pink-300" />
+            {/* User Info Card - Only for Authenticated Users */}
+            {user && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center">
+                            <UserIcon className="w-8 h-8 text-pink-600 dark:text-pink-300" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {user.name || 'Usuario'}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {user.email}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {user?.name || 'Usuario'}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {user?.email}
-                        </p>
-                    </div>
-                </div>
 
-                {/* Logout Button */}
-                <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition font-medium"
-                >
-                    <LogOut className="w-4 h-4" />
-                    Cerrar Sesión
-                </button>
-            </div>
+                    {/* Logout Button */}
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition font-medium"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Cerrar Sesión
+                    </button>
+                </div>
+            )}
 
             {/* Cycle Configuration */}
             <div className="mb-6">
