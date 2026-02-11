@@ -116,7 +116,7 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
             {/* Contraceptives - Only show if NOT pregnant */}
             {!isPregnant && (
                 <div className="space-y-2 border-b pb-3 dark:border-gray-800">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-full text-pink-600 dark:text-pink-400">
                                 <Pill className="w-4 h-4" />
@@ -126,7 +126,7 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
 
                         {/* Time Selector - Only visible when enabled */}
                         {settings.contraceptive_enabled ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 self-start sm:self-auto">
                                 <div className="relative w-16">
                                     <select
                                         className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
@@ -164,10 +164,12 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                                 />
                             </div>
                         ) : (
-                            <ToggleSwitch
-                                checked={settings.contraceptive_enabled}
-                                onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
-                            />
+                            <div className="self-end sm:self-auto">
+                                <ToggleSwitch
+                                    checked={settings.contraceptive_enabled}
+                                    onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
