@@ -116,20 +116,20 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
             {/* Contraceptives - Only show if NOT pregnant */}
             {!isPregnant && (
                 <div className="space-y-2 border-b pb-3 dark:border-gray-800">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-full text-pink-600 dark:text-pink-400">
                                 <Pill className="w-4 h-4" />
                             </div>
-                            <Label className="text-base font-medium dark:text-gray-200">Anticonceptivos</Label>
+                            <Label className="text-base font-medium dark:text-gray-200">Píldoras</Label>
                         </div>
 
                         {/* Time Selector - Only visible when enabled */}
                         {settings.contraceptive_enabled ? (
-                            <div className="flex items-center gap-2 self-start sm:self-auto">
-                                <div className="relative w-16">
+                            <div className="flex items-center gap-1">
+                                <div className="relative w-14">
                                     <select
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
+                                        className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
                                         value={(settings.contraceptive_time || "20:00").split(':')[0]}
                                         onChange={(e) => {
                                             const [_, m] = (settings.contraceptive_time || "20:00").split(':')
@@ -143,9 +143,9 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                                     </select>
                                 </div>
                                 <span className="text-gray-500 font-semibold text-sm">:</span>
-                                <div className="relative w-16">
+                                <div className="relative w-14">
                                     <select
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
+                                        className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
                                         value={(settings.contraceptive_time || "20:00").split(':')[1]}
                                         onChange={(e) => {
                                             const [h, _] = (settings.contraceptive_time || "20:00").split(':')
@@ -164,12 +164,10 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                                 />
                             </div>
                         ) : (
-                            <div className="self-end sm:self-auto">
-                                <ToggleSwitch
-                                    checked={settings.contraceptive_enabled}
-                                    onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
-                                />
-                            </div>
+                            <ToggleSwitch
+                                checked={settings.contraceptive_enabled}
+                                onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
+                            />
                         )}
                     </div>
                 </div>
