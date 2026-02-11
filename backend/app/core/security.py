@@ -41,6 +41,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         True if password matches, False otherwise
     """
     # Bcrypt has a 72 byte limit, truncate if necessary
+    if not hashed_password:
+        return False
     if isinstance(plain_password, str):
         plain_password = plain_password.encode('utf-8')
     if len(plain_password) > 72:
