@@ -246,6 +246,14 @@ export default function EndometriosisTestModal({
                         >
                           Iniciar Test
                         </button>
+
+                        <button
+                          onClick={() => setShowStats(true)}
+                          className={`px-8 py-3 font-medium text-sm rounded-xl border transition-all hover:bg-opacity-50 ${isDarkMode ? 'border-gray-600 text-indigo-400 hover:bg-gray-800' : 'border-indigo-100 text-indigo-600 hover:bg-indigo-50'}`}
+                        >
+                          Ver Estadísticas
+                        </button>
+
                         <button
                           onClick={handleClose}
                           className={`px-8 py-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} font-medium text-sm hover:underline`}
