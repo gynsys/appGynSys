@@ -66,9 +66,9 @@ export default function CycleConfigTab() {
                                 <Settings className="w-4 h-4" />
                             </div>
                             <div className="flex-1 space-y-2">
-                                <Label htmlFor="cycle_avg_length" className="text-base">Duración de tu Ciclo (Total)</Label>
+                                <Label htmlFor="cycle_avg_length" className="text-base">Frecuencia del Ciclo (Regularidad)</Label>
                                 <p className="text-xs text-gray-500">
-                                    Días totales desde que inicia un periodo hasta el siguiente (Ej: 28 días).
+                                    ¿Cada cuántos días inicia tu menstruación? (Ej: cada 28 días).
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <Input
@@ -91,9 +91,9 @@ export default function CycleConfigTab() {
                                 <Settings className="w-4 h-4" />
                             </div>
                             <div className="flex-1 space-y-2">
-                                <Label htmlFor="period_avg_length" className="text-base">Duración del Sangrado (Regla)</Label>
+                                <Label htmlFor="period_avg_length" className="text-base">Días de Sangrado (Menstruación)</Label>
                                 <p className="text-xs text-gray-500">
-                                    Días que dura tu menstruación normalmente (Ej: 5 días).
+                                    ¿Cuántos días te dura el sangrado habitualmente? (Ej: 5 días).
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <Input
