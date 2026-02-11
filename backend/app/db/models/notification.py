@@ -17,6 +17,8 @@ class NotificationType(str, enum.Enum):
     SYMPTOM_ALERT = "symptom_alert" # e.g. "Headache Warning"
     PRENATAL_WEEKLY = "prenatal_weekly" # e.g. "Week 12 Update"
     PRENATAL_MILESTONE = "prenatal_milestone" # e.g. "First Trimester Complete"
+    PRENATAL_DAILY = "prenatal_daily" # e.g. "Daily Tip"
+    PRENATAL_ALERT = "prenatal_alert" # e.g. "Warning Sign"
     SYSTEM = "system" # System notifications
     CUSTOM = "custom" # One-off or generic
 
