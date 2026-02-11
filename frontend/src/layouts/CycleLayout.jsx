@@ -112,7 +112,10 @@ export default function CycleLayout() {
             <CycleAuthDialog
                 open={isLoginModalOpen}
                 onOpenChange={setIsLoginModalOpen}
+                initialView="login"
             />
         </div>
     );
 }
+
+
