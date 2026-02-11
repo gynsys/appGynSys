@@ -32,6 +32,6 @@ def generate_icons(source_path, output_dir):
 
 if __name__ == "__main__":
     base_dir = r"c:\Users\pablo\Documents\appgynsys\frontend\public"
-    source_image = os.path.join(base_dir, "pwa-512x512.png")
+    source_image = os.path.join(base_dir, "GynSys.png")
     output_directory = base_dir
     generate_icons(source_image, output_directory)
