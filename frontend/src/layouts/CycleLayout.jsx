@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Bell, User } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { BottomNav } from '../components/common/BottomNav';
-import LoginModal from '../components/features/LoginModal';
+import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog';
 
 /**
  * CycleLayout - Auth-protected layout for Cycle Predictor PWA
@@ -109,10 +109,9 @@ export default function CycleLayout() {
             {/* Bottom Navigation - Mobile Only */}
             <BottomNav items={navItems} theme="#ec4899" />
 
-            <LoginModal
-                isOpen={isLoginModalOpen}
-                onClose={() => setIsLoginModalOpen(false)}
-                onSuccess={() => setIsLoginModalOpen(false)}
+            <CycleAuthDialog
+                open={isLoginModalOpen}
+                onOpenChange={setIsLoginModalOpen}
             />
         </div>
     );
