@@ -39,8 +39,14 @@ api.interceptors.request.use(
           config.headers.Authorization = `Bearer ${cycleToken}`
           // console.log('[Axios] Attaching CYCLE token to:', config.url);
         } else {
-          // If no cycle token, send without auth (anonymous) - DO NOT use admin token
-          // console.warn('[Axios] No cycle token found for cycle request:', config.url);
+          // Fallback: Try standard access_token (e.g. Google Login or Main App Login)
+          // This allows unified auth users to access cycle endpoints
+          const standardToken = localStorage.getItem('access_token')
+          if (standardToken) {
+            config.headers.Authorization = `Bearer ${standardToken}`
+          } else {
+            // console.warn('[Axios] No token found for cycle request:', config.url);
+          }
         }
       } else {
         // For standard requests (admin/doctor), use standard token
