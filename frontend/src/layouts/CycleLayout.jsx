@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Bell, User } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { BottomNav } from '../components/common/BottomNav';
+import LoginModal from '../components/features/LoginModal';
 
 /**
  * CycleLayout - Auth-protected layout for Cycle Predictor PWA
@@ -10,6 +11,7 @@ import { BottomNav } from '../components/common/BottomNav';
  */
 export default function CycleLayout() {
     const { isAuthenticated, user } = useAuthStore();
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -86,7 +88,7 @@ export default function CycleLayout() {
                     {/* User Avatar or Login Action */}
                     <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
-                        onClick={() => !isAuthenticated && navigate('/login')}
+                        onClick={() => !isAuthenticated && setIsLoginModalOpen(true)}
                     >
                         {isAuthenticated ? (
                             <span className="text-sm font-medium text-pink-600 dark:text-pink-300">
@@ -106,6 +108,12 @@ export default function CycleLayout() {
 
             {/* Bottom Navigation - Mobile Only */}
             <BottomNav items={navItems} theme="#ec4899" />
+
+            <LoginModal
+                isOpen={isLoginModalOpen}
+                onClose={() => setIsLoginModalOpen(false)}
+                onSuccess={() => setIsLoginModalOpen(false)}
+            />
         </div>
     );
 }
