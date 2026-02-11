@@ -183,8 +183,6 @@ export default function BlogLayout({ children }) {
             label: 'Inicio',
             action: () => navigate(`/dr/${doctor.slug_url}`),
             isActive: false
-          },
-
           {
             icon: <NavIcons.WhatsApp />,
             label: 'WhatsApp',

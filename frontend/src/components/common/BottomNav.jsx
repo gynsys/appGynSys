@@ -12,7 +12,7 @@ import { Home, Calendar, Newspaper, MessageCircle } from 'lucide-react';
 export const BottomNav = ({ items, theme = '#C75B7A' }) => {
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 z-40 
+            className="fixed bottom-0 left-0 right-0 z-50 
                        bg-white/90 dark:bg-gray-900/90 backdrop-blur-md
                        border-t border-gray-200 dark:border-gray-800
                        md:hidden transition-all duration-300"
