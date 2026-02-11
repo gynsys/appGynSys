@@ -122,53 +122,49 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                                 <Pill className="w-4 h-4" />
                             </div>
                             <Label className="text-base font-medium dark:text-gray-200">Píldoras</Label>
+
+                            {/* Time Selector - Moved to left, next to label */}
+                            {settings.contraceptive_enabled && (
+                                <div className="flex items-center gap-1 ml-2">
+                                    <div className="relative w-14">
+                                        <select
+                                            className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
+                                            value={(settings.contraceptive_time || "20:00").split(':')[0]}
+                                            onChange={(e) => {
+                                                const [_, m] = (settings.contraceptive_time || "20:00").split(':')
+                                                setSettings({ ...settings, contraceptive_time: `${e.target.value}:${m}` })
+                                            }}
+                                        >
+                                            {Array.from({ length: 24 }).map((_, i) => {
+                                                const h = i.toString().padStart(2, '0')
+                                                return <option key={h} value={h}>{h}</option>
+                                            })}
+                                        </select>
+                                    </div>
+                                    <span className="text-gray-500 font-semibold text-sm">:</span>
+                                    <div className="relative w-14">
+                                        <select
+                                            className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
+                                            value={(settings.contraceptive_time || "20:00").split(':')[1]}
+                                            onChange={(e) => {
+                                                const [h, _] = (settings.contraceptive_time || "20:00").split(':')
+                                                setSettings({ ...settings, contraceptive_time: `${h}:${e.target.value}` })
+                                            }}
+                                        >
+                                            <option value="00">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Time Selector - Only visible when enabled */}
-                        {settings.contraceptive_enabled ? (
-                            <div className="flex items-center gap-1">
-                                <div className="relative w-14">
-                                    <select
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
-                                        value={(settings.contraceptive_time || "20:00").split(':')[0]}
-                                        onChange={(e) => {
-                                            const [_, m] = (settings.contraceptive_time || "20:00").split(':')
-                                            setSettings({ ...settings, contraceptive_time: `${e.target.value}:${m}` })
-                                        }}
-                                    >
-                                        {Array.from({ length: 24 }).map((_, i) => {
-                                            const h = i.toString().padStart(2, '0')
-                                            return <option key={h} value={h}>{h}</option>
-                                        })}
-                                    </select>
-                                </div>
-                                <span className="text-gray-500 font-semibold text-sm">:</span>
-                                <div className="relative w-14">
-                                    <select
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-1 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 appearance-none text-center"
-                                        value={(settings.contraceptive_time || "20:00").split(':')[1]}
-                                        onChange={(e) => {
-                                            const [h, _] = (settings.contraceptive_time || "20:00").split(':')
-                                            setSettings({ ...settings, contraceptive_time: `${h}:${e.target.value}` })
-                                        }}
-                                    >
-                                        <option value="00">00</option>
-                                        <option value="15">15</option>
-                                        <option value="30">30</option>
-                                        <option value="45">45</option>
-                                    </select>
-                                </div>
-                                <ToggleSwitch
-                                    checked={settings.contraceptive_enabled}
-                                    onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
-                                />
-                            </div>
-                        ) : (
-                            <ToggleSwitch
-                                checked={settings.contraceptive_enabled}
-                                onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
-                            />
-                        )}
+                        <ToggleSwitch
+                            checked={settings.contraceptive_enabled}
+                            onChange={(v) => setSettings({ ...settings, contraceptive_enabled: v })}
+                        />
                     </div>
                 </div>
             )}
