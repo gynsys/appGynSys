@@ -154,6 +154,56 @@ def seed_default_rules():
             }
         ]
         
+        # 4. Prenatal Rules (Restored)
+        prenatal_rules = [
+            {
+                "name": "Semana 12 - Primer Trimestre Completo",
+                "type": NotificationType.PRENATAL_MILESTONE,
+                "trigger": {"gestation_week": 12},
+                "channel": NotificationChannel.DUAL,
+                "template": "<h1>🎉 ¡Felicitaciones!</h1><p>Hola {patient_name}, has completado el primer trimestre. ¡Es un gran hito!</p>"
+            },
+            {
+                "name": "Semana 20 - Mitad del Embarazo",
+                "type": NotificationType.PRENATAL_MILESTONE,
+                "trigger": {"gestation_week": 20},
+                "channel": NotificationChannel.DUAL,
+                "template": "<h1>🎊 ¡A mitad de camino!</h1><p>Hola {patient_name}, estás en la semana 20, ¡la mitad del embarazo!</p>"
+            },
+            {
+                "name": "Semana 28 - Tercer Trimestre",
+                "type": NotificationType.PRENATAL_MILESTONE,
+                "trigger": {"gestation_week": 28},
+                "channel": NotificationChannel.DUAL,
+                "template": "<h1>🌟 Tercer Trimestre</h1><p>Hola {patient_name}, has entrado en el tercer y último trimestre.</p>"
+            },
+            {
+                "name": "Semana 36 - Preparación para el Parto",
+                "type": NotificationType.PRENATAL_MILESTONE,
+                "trigger": {"gestation_week": 36},
+                "channel": NotificationChannel.DUAL,
+                "template": "<h1>👶 Muy Pronto</h1><p>Hola {patient_name}, estás en la semana 36. ¡Tu bebé llegará pronto!</p>"
+            },
+        ]
+        
+        # 5. System Rules (Restored)
+        system_rules = [
+            {
+                "name": "Bienvenida al Sistema",
+                "type": NotificationType.SYSTEM,
+                "trigger": {"event": "user_registered"},
+                "channel": NotificationChannel.EMAIL,
+                "template": "<h1>👋 Bienvenida a GynSys</h1><p>Hola {patient_name}, gracias por registrarte en nuestro sistema de seguimiento ginecológico.</p>"
+            },
+            {
+                "name": "Completar Perfil",
+                "type": NotificationType.SYSTEM,
+                "trigger": {"days_after_registration": 3, "profile_incomplete": True},
+                "channel": NotificationChannel.EMAIL,
+                "template": "<h1>📝 Completa tu Perfil</h1><p>Hola {patient_name}, completa tu perfil para aprovechar al máximo el sistema.</p>"
+            },
+        ]
+        
         all_rules = cycle_rules + pill_rules + confirmation_rules + prenatal_rules + system_rules
         
         count = 0
