@@ -3,15 +3,9 @@ from app.db.base import SessionLocal
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
 from app.db.models.notification import NotificationRule, NotificationLog, NotificationType, NotificationChannel
-from app.db.models.cycle_predictor import CycleLog, PregnancyLog
-from app.core.push import send_web_push
-from app.tasks.email_tasks import _send_smtp_email
-from app.cycle_predictor.logic import calculate_predictions
-from datetime import date, datetime, timedelta
-import json
-import traceback
+from app.db.models.cycle_predictor import CycleLog, PregnancyLog, SymptomLog
 
-def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: PregnancyLog) -> dict:
+def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: PregnancyLog, db_session=None) -> dict:
     """
     Build a comprehensive context object describing the user's current status
     to be checked against rules.
@@ -22,8 +16,34 @@ def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: Pregn
     # 1. Pregnancy Context
     if pregnancy:
         ctx["is_pregnant"] = True
-        ctx["gestation_days"] = (today - pregnancy.last_period_date).days
-        ctx["gestation_week"] = ctx["gestation_days"] // 7
+        gestation_days = (today - pregnancy.last_period_date).days
+        ctx["gestation_days"] = gestation_days
+        ctx["gestation_week"] = gestation_days // 7
+        
+        # Prenatal Details (Trimester & Daily)
+        ctx["gestation_day_of_week"] = (gestation_days % 7) + 1 # 1-7
+        
+        if ctx["gestation_week"] < 14:
+            ctx["trimester"] = 1
+        elif ctx["gestation_week"] < 28:
+            ctx["trimester"] = 2
+        else:
+            ctx["trimester"] = 3
+            
+    # Universal Symptom Check (Pregnant or Not)
+    if db_session:
+        symptom_log = db_session.query(SymptomLog).filter(
+            SymptomLog.cycle_user_id == user.id,
+            SymptomLog.date == today
+        ).first()
+        if symptom_log and symptom_log.symptoms:
+             # Ensure it determines if JSON is list or dict? Usually list of strings.
+             if isinstance(symptom_log.symptoms, list):
+                 ctx["reported_symptoms"] = symptom_log.symptoms
+             elif isinstance(symptom_log.symptoms, str):
+                 ctx["reported_symptoms"] = [symptom_log.symptoms]
+
+    if pregnancy:
         return ctx
     
     ctx["is_pregnant"] = False
@@ -81,10 +101,40 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings) -> bool:
     if not trigger: return False
     
     # --- PRENATAL ---
-    if rule.notification_type == NotificationType.PRENATAL_MILESTONE:
-        if not context.get("is_pregnant"): return False
-        if "gestation_week" in trigger:
-            return trigger["gestation_week"] == context.get("gestation_week")
+    if context.get("is_pregnant"):
+        # Milestone (Weekly)
+        if rule.notification_type == NotificationType.PRENATAL_MILESTONE or rule.notification_type == "prenatal_milestone":
+             if "gestation_week" in trigger:
+                return trigger["gestation_week"] == context.get("gestation_week")
+             # Handle Range (Start/End)
+             if "semana_inicio" in trigger and "semana_fin" in trigger:
+                 gw = context.get("gestation_week")
+                 # Trigger only on the START week to avoid spam? Or every week in range?
+                 # Usually ranges are "Window to check". Let's trigger on START week.
+                 return gw == trigger["semana_inicio"]
+        
+        # Daily Tip (Trimester + Day)
+        if rule.notification_type == NotificationType.PRENATAL_DAILY or rule.notification_type == "prenatal_daily":
+             # Trigger formatting: {"trimestre": 1, "dia": 5}
+             t_trim = trigger.get("trimestre")
+             t_day = trigger.get("dia")
+             if t_trim and t_day:
+                 return (context.get("trimester") == t_trim) and (context.get("gestation_day_of_week") == t_day)
+                 
+        # Alerts (Symptoms)
+        # We need reported symptoms in context. For now, we assume user just logged them if this is event-driven?
+        # IMPORTANT: Alerts are usually EVENT DRIVEN (Real-time), not Daily Task.
+        # But if we check daily summary...
+        if rule.notification_type == NotificationType.PRENATAL_ALERT or rule.notification_type == "prenatal_alert":
+             trigger_symptom = trigger.get("sintoma_disparador")
+             reported_symptoms = context.get("reported_symptoms", [])
+             if trigger_symptom and reported_symptoms:
+                 # Check partial match or exact?
+                 # Simple substring match for robustness
+                 for s in reported_symptoms:
+                     if trigger_symptom.lower() in s.lower() or s.lower() in trigger_symptom.lower():
+                         return True
+        
         return False
 
     # Skip cycle rules if pregnant
@@ -241,7 +291,7 @@ def process_dynamic_notifications():
                          if last_cycle:
                              predictions = calculate_predictions(last_cycle.start_date, user.cycle_avg_length, user.period_avg_length)
                     
-                    smart_ctx = calculate_smart_context(user, predictions, pregnancy)
+                    smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
                     
                     # Enrich ctx for template rendering
                     render_vars = {
