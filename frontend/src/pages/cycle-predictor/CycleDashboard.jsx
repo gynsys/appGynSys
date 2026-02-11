@@ -11,16 +11,21 @@ import PregnancyDashboard from '../../components/cycle-predictor/PregnancyDashbo
  * Shows pregnancy dashboard if active, otherwise shows cycle dashboard
  */
 export default function CycleDashboard() {
-    const { user } = useAuthStore();
+    const { user, isAuthenticated } = useAuthStore();
     const navigate = useNavigate();
     const [activePregnancy, setActivePregnancy] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        checkPregnancyStatus();
-    }, []);
+        if (isAuthenticated) {
+            checkPregnancyStatus();
+        } else {
+            setLoading(false);
+        }
+    }, [isAuthenticated]);
 
     const checkPregnancyStatus = async () => {
+        if (!isAuthenticated) return;
         try {
             const preg = await cycleService.getActivePregnancy();
             setActivePregnancy(preg);
