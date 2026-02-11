@@ -1,0 +1,366 @@
+[
+    {
+        "id": 1,
+        "titulo": "Ecografía Genética (11-14 sem)",
+        "mensaje": "Translucencia nucal y tamizaje de cromosomopatías. ¡No te la pierdas!",
+        "categoria": "estudio",
+        "semana_inicio": 11,
+        "semana_fin": 14,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 2,
+        "titulo": "Perfil Prenatal I",
+        "mensaje": "Examen de sangre: biometría, grupo sanguíneo, VIH, VDRL, rubeola, hepatitis B.",
+        "categoria": "estudio",
+        "semana_inicio": 1,
+        "semana_fin": 12,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 3,
+        "titulo": "Ecografía Morfológica (18-24 sem)",
+        "mensaje": "Estudio detallado de la anatomía fetal. Verás cada órgano y el sexo si quieres.",
+        "categoria": "estudio",
+        "semana_inicio": 18,
+        "semana_fin": 24,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 4,
+        "titulo": "Test de Tolerancia a la Glucosa",
+        "mensaje": "Cribado de diabetes gestacional. Debes ir en ayunas.",
+        "categoria": "estudio",
+        "semana_inicio": 24,
+        "semana_fin": 28,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 5,
+        "titulo": "Vacunación Tdap",
+        "mensaje": "Vacuna contra la tos convulsa. Protege a tu bebé desde el nacimiento.",
+        "categoria": "estudio",
+        "semana_inicio": 28,
+        "semana_fin": 32,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 6,
+        "titulo": "Ecografía Crecimiento",
+        "mensaje": "Control del peso, líquido amniótico y flujo umbilical.",
+        "categoria": "estudio",
+        "semana_inicio": 32,
+        "semana_fin": 34,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 7,
+        "titulo": "Cultivo Estreptococo B",
+        "mensaje": "Hisopado vaginal y rectal. Previene infección neonatal grave.",
+        "categoria": "estudio",
+        "semana_inicio": 35,
+        "semana_fin": 37,
+        "etiqueta": "DUAL",
+        "unica": true
+    },
+    {
+        "id": 8,
+        "titulo": "💊 Ácido fólico",
+        "mensaje": "¿Tomaste tu ácido fólico hoy? Previene defectos del tubo neural.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 1
+    },
+    {
+        "id": 9,
+        "titulo": "💧 Hidratación",
+        "mensaje": "El agua combate las náuseas. Lleva tu botella siempre.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 2
+    },
+    {
+        "id": 10,
+        "titulo": "😴 Cansancio",
+        "mensaje": "Es normal dormir más. Tu cuerpo está trabajando 24/7.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 3
+    },
+    {
+        "id": 11,
+        "titulo": "🥑 Come fraccionado",
+        "mensaje": "Cada 3 horas evita acidez y bajones de energía.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 4
+    },
+    {
+        "id": 12,
+        "titulo": "🚭 Sin humo",
+        "mensaje": "No hay cantidad segura de tabaco. Tu bebé respira por ti.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 5
+    },
+    {
+        "id": 13,
+        "titulo": "🦷 Encías",
+        "mensaje": "Cepilla suave, las encías sangran más en el embarazo.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 6
+    },
+    {
+        "id": 14,
+        "titulo": "📝 Diario",
+        "mensaje": "Escribe cómo te sientes hoy. Tus emociones importan.",
+        "categoria": "consejo_diario",
+        "trimestre": 1,
+        "dia": 7
+    },
+    {
+        "id": 15,
+        "titulo": "🦵 Calambres",
+        "mensaje": "Estira la pierna y flexiona el pie hacia ti.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 1
+    },
+    {
+        "id": 16,
+        "titulo": "🧘 Estiramientos",
+        "mensaje": "Tu útero crece, moviliza tu pelvis suavemente.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 2
+    },
+    {
+        "id": 17,
+        "titulo": "🧴 Estrías",
+        "mensaje": "Hidrata vientre, pechos y caderas a diario.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 3
+    },
+    {
+        "id": 18,
+        "titulo": "👖 Ropa cómoda",
+        "mensaje": "No esperes más: usa ropa premamá y siéntete libre.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 4
+    },
+    {
+        "id": 19,
+        "titulo": "🎵 Háblale",
+        "mensaje": "Tu bebé ya escucha. Ponle música o cuéntale tu día.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 5
+    },
+    {
+        "id": 20,
+        "titulo": "📚 Cursos",
+        "mensaje": "Investiga cursos de preparación para el parto.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 6
+    },
+    {
+        "id": 21,
+        "titulo": "💪 Kegel",
+        "mensaje": "Fortalece tu suelo pélvico, evita incontinencia.",
+        "categoria": "consejo_diario",
+        "trimestre": 2,
+        "dia": 7
+    },
+    {
+        "id": 22,
+        "titulo": "🧳 Maleta lista",
+        "mensaje": "¿Tienes documentos, ropa para ti y el bebé?",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 1
+    },
+    {
+        "id": 23,
+        "titulo": "🛌 Dormir de lado",
+        "mensaje": "Boca arriba comprime la vena cava. Duerme sobre tu izquierda.",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 2
+    },
+    {
+        "id": 24,
+        "titulo": "🚗 Viajes cortos",
+        "mensaje": "Si viajas, para cada 2 horas a caminar.",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 3
+    },
+    {
+        "id": 25,
+        "titulo": "💧 Pérdida de tapón",
+        "mensaje": "Puede salir días antes del parto. Es normal si no hay contracciones.",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 4
+    },
+    {
+        "id": 26,
+        "titulo": "⏱️ Contracciones",
+        "mensaje": "Si son rítmicas y cada vez más seguidas, llama a tu matrona.",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 5
+    },
+    {
+        "id": 27,
+        "titulo": "🤱 Calostro",
+        "mensaje": "Tus pechos ya producen el primer alimento.",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 6
+    },
+    {
+        "id": 28,
+        "titulo": "📜 Plan de parto",
+        "mensaje": "¿Ya lo conversaste con tu médico?",
+        "categoria": "consejo_diario",
+        "trimestre": 3,
+        "dia": 7
+    },
+    {
+        "id": 29,
+        "titulo": "✨ Semana 4 - Confirmación del Embarazo",
+        "mensaje": "Esta semana se implanta el embrión.",
+        "categoria": "hito",
+        "semana": 4
+    },
+    {
+        "id": 30,
+        "titulo": "💓 Semana 8 - Latido visible",
+        "mensaje": "El corazón de tu bebé late 150 veces por minuto.",
+        "categoria": "hito",
+        "semana": 8
+    },
+    {
+        "id": 31,
+        "titulo": "🎉 Semana 12 - Fin 1er trimestre",
+        "mensaje": "¡Superaste el primer trimestre!",
+        "categoria": "hito",
+        "semana": 12
+    },
+    {
+        "id": 32,
+        "titulo": "🦋 Semana 16 - Segundo trimestre",
+        "mensaje": "¿Sientes mariposas? Pueden ser movimientos.",
+        "categoria": "hito",
+        "semana": 16
+    },
+    {
+        "id": 33,
+        "titulo": "🎈 Semana 20 - Mitad del embarazo",
+        "mensaje": "¡Llegaste a la mitad!",
+        "categoria": "hito",
+        "semana": 20
+    },
+    {
+        "id": 34,
+        "titulo": "🌱 Semana 24 - Viabilidad fetal",
+        "mensaje": "Tu bebé ya tiene chances fuera del útero.",
+        "categoria": "hito",
+        "semana": 24
+    },
+    {
+        "id": 35,
+        "titulo": "🍂 Semana 28 - Tercer trimestre",
+        "mensaje": "Comienza la recta final.",
+        "categoria": "hito",
+        "semana": 28
+    },
+    {
+        "id": 36,
+        "titulo": "📦 Semana 32 - Preparando llegada",
+        "mensaje": "¿Ya tienes la maleta?",
+        "categoria": "hito",
+        "semana": 32
+    },
+    {
+        "id": 37,
+        "titulo": "👶 Semana 36 - A término",
+        "mensaje": "Tu bebé puede nacer cuando quiera.",
+        "categoria": "hito",
+        "semana": 36
+    },
+    {
+        "id": 38,
+        "titulo": "🕊️ Semana 40 - Fecha probable",
+        "mensaje": "Hoy es tu FPP.",
+        "categoria": "hito",
+        "semana": 40
+    },
+    {
+        "id": 39,
+        "titulo": "⏳ Semana 41 - Postérmino",
+        "mensaje": "Consulta con tu médico.",
+        "categoria": "hito",
+        "semana": 41
+    },
+    {
+        "id": 40,
+        "titulo": "🚨 Sangrado activo",
+        "mensaje": "Rojo brillante o coágulos: consulta urgente.",
+        "categoria": "alerta",
+        "sintoma_disparador": "sangrado"
+    },
+    {
+        "id": 41,
+        "titulo": "🚨 ¿Preeclampsia?",
+        "mensaje": "Dolor cabeza + visión borrosa. Mídete la presión ahora.",
+        "categoria": "alerta",
+        "sintoma_disparador": "dolor cabeza + visión borrosa"
+    },
+    {
+        "id": 42,
+        "titulo": "🚨 Amenaza parto prematuro",
+        "mensaje": "Más de 5 contracciones por hora antes de la semana 37: llama a tu médico.",
+        "categoria": "alerta",
+        "sintoma_disparador": "contracciones <37 semanas"
+    },
+    {
+        "id": 43,
+        "titulo": "🚨 Disminución de movimientos",
+        "mensaje": " ¿12 horas sin sentir al bebé? Acuéstate a contar.",
+        "categoria": "alerta",
+        "sintoma_disparador": "sin movimientos"
+    },
+    {
+        "id": 44,
+        "titulo": "🚨 ¿Rompiste bolsa?",
+        "mensaje": "Líquido claro continuo: acude a urgencias.",
+        "categoria": "alerta",
+        "sintoma_disparador": "pérdida líquido"
+    },
+    {
+        "id": 45,
+        "titulo": "🚨 Dolor abdominal intenso",
+        "mensaje": "No es normal. Consulta de inmediato.",
+        "categoria": "alerta",
+        "sintoma_disparador": "dolor abdominal intenso"
+    },
+    {
+        "id": 46,
+        "titulo": "🚨 Fiebre",
+        "mensaje": "Temperatura >38°C. Puede ser infección. Contacta a tu médico.",
+        "categoria": "alerta",
+        "sintoma_disparador": "fiebre >38°C"
+    }
+]
