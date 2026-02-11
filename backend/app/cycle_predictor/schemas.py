@@ -75,6 +75,19 @@ class NotificationSettingsBase(BaseModel):
     rhythm_abstinence_alerts: bool = False
     period_confirmation_reminder: bool = True
     
+    # Encapsulated Preferences (Usability 2.0)
+    # Prenatal
+    prenatal_ultrasounds: bool = True
+    prenatal_lab_results: bool = True
+    prenatal_milestones: bool = True
+    prenatal_daily_tips: bool = True
+    prenatal_symptom_alerts: bool = True
+    
+    # Cycle
+    cycle_period_predictions: bool = True
+    cycle_fertile_window: bool = True
+    cycle_pms_symptoms: bool = True
+    
     # Custom preferences
     custom_preferences: Optional[dict] = {}
 

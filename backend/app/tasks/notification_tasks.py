@@ -100,6 +100,54 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings) -> bool:
     trigger = rule.trigger_condition
     if not trigger: return False
     
+    # --- MASTER SWITCH FILTERING (Usability 2.0) ---
+    if user_settings:
+        if context.get("is_pregnant"):
+            # Prenatal Logic
+            is_daily = (rule.notification_type == NotificationType.PRENATAL_DAILY or rule.notification_type == "prenatal_daily")
+            is_alert = (rule.notification_type == NotificationType.PRENATAL_ALERT or rule.notification_type == "prenatal_alert")
+            is_milestone_or_study = (rule.notification_type == NotificationType.PRENATAL_MILESTONE or rule.notification_type == "prenatal_milestone")
+
+            if is_daily and not user_settings.prenatal_daily_tips: return False
+            if is_alert and not user_settings.prenatal_symptom_alerts: return False
+            
+            if is_milestone_or_study:
+                name_lower = rule.name.lower()
+                if "ecografía" in name_lower or "ecografia" in name_lower:
+                    if not user_settings.prenatal_ultrasounds: return False
+                elif "semana" in name_lower and ("-" in name_lower or "semana" in name_lower): # Heuristic for "Semana X"
+                     if not user_settings.prenatal_milestones: return False
+                else:
+                     if not user_settings.prenatal_lab_results: return False
+
+        else:
+            # Cycle Logic
+            # 1. Contraceptives (Handled by specific block below generally, but good to double check here or trust below)
+            if trigger.get("type") == "contraceptive":
+                 if not user_settings.contraceptive_enabled: return False
+
+            # 2. Fertile Window / Ovulation
+            if "is_fertile_start" in trigger or "is_ovulation_day" in trigger or "days_after_ovulation" in trigger:
+                 if not user_settings.cycle_fertile_window: return False
+                 
+            # 3. Period Predictions (days_before_period)
+            if "days_before_period" in trigger:
+                 # Distinguish Rhythm/PMS? 
+                 # If rule implies "Abstinencia" -> Rhythm
+                 if "abstinencia" in rule.name.lower() or "ritmo" in rule.name.lower():
+                      if not user_settings.cycle_rhythm_method: return False
+                 elif "síntoma" in rule.name.lower() or "pms" in rule.name.lower() or "premenstrual" in rule.name.lower():
+                      if not user_settings.cycle_pms_symptoms: return False
+                 else:
+                      # Default Prediction
+                      if not user_settings.cycle_period_predictions: return False
+
+            # 4. Period Confirmation
+            if trigger.get("event") == "period_confirmation":
+                 if not user_settings.period_confirmation_reminder: return False # Keep existing or map to period_predictions? Keeping existing for now.
+
+    # --- END MASTER SWITCHES ---
+
     # --- PRENATAL ---
     if context.get("is_pregnant"):
         # Milestone (Weekly)
@@ -143,7 +191,7 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings) -> bool:
     # --- PILL LOGIC ---
     # Check if rule looks like a contraceptive rule
     if trigger.get("type") == "contraceptive":
-        # Check User Settings First
+        # (Master check done above, but safe to keep)
         if not user_settings or not user_settings.contraceptive_enabled:
             return False
             

@@ -44,7 +44,7 @@ class CycleNotificationSettings(Base):
     contraceptive_frequency = Column(String, default="daily") 
     last_contraceptive_sent_date = Column(Date, nullable=True)  # Track last send to prevent duplicates
     
-    # Other Alerts
+    # Other Alerts (Legacy/Detailed - can be mapped or kept)
     rhythm_method_enabled = Column(Boolean, default=False)
     fertile_window_alerts = Column(Boolean, default=False)
     ovulation_alert = Column(Boolean, default=False)
@@ -54,6 +54,19 @@ class CycleNotificationSettings(Base):
     rhythm_abstinence_alerts = Column(Boolean, default=False)  # Alerts 5 days before/after period
     period_confirmation_reminder = Column(Boolean, default=True)  # Remind to register period
     last_period_reminder_sent = Column(Date, nullable=True)  # Track reminders to avoid duplicates
+
+    # Encapsulated Preferences (Usability 2.0 - Master Switches)
+    # Prenatal
+    prenatal_ultrasounds = Column(Boolean, default=True)
+    prenatal_lab_results = Column(Boolean, default=True)
+    prenatal_milestones = Column(Boolean, default=True)
+    prenatal_daily_tips = Column(Boolean, default=True)
+    prenatal_symptom_alerts = Column(Boolean, default=True)
+    
+    # Cycle
+    cycle_period_predictions = Column(Boolean, default=True)
+    cycle_fertile_window = Column(Boolean, default=True) # Unified fertile + ovulation
+    cycle_pms_symptoms = Column(Boolean, default=True)
     
     # Custom Rules Preferences (Map of rule_id -> boolean)
     custom_preferences = Column(JSON, default={}, nullable=True)
