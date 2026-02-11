@@ -125,29 +125,24 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
     return (
         <div className="max-w-xl mx-auto px-6 py-4 space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
 
-            {/* Push Notifications Master Switch */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${isSubscribed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-                            {pushLoading ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                                isSubscribed ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-                        </div>
-                        <div>
-                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Notificaciones Push</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {permission === 'denied' ? 'Bloqueadas por el navegador' :
-                                    isSubscribed ? 'Activadas en este dispositivo' : 'Permite alertas en tu celular'}
-                            </p>
-                        </div>
-                    </div>
-                    <Switch
+            <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Preferencias del Dispositivo 📱</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-xl divide-y dark:divide-gray-700 shadow-sm border border-gray-100 dark:border-gray-700 px-4">
+                    <SettingRow
+                        icon={isSubscribed ? Bell : BellOff}
+                        colorClass={isSubscribed ? "bg-green-500 text-green-600" : "bg-gray-400 text-gray-600"}
+                        title="Notificaciones Push"
+                        subtitle={
+                            pushLoading ? 'Cargando...' :
+                                permission === 'denied' ? 'Bloqueadas por el navegador' :
+                                    isSubscribed ? 'Activadas en este dispositivo' : 'Permite alertas en tu celular'
+                        }
                         checked={isSubscribed}
-                        onCheckedChange={handlePushToggle}
-                        disabled={pushLoading || permission === 'denied'}
-                    />
+                        onChange={handlePushToggle}
+                    >
+                        {pushError && <p className="text-xs text-red-500 mt-1">{pushError}</p>}
+                    </SettingRow>
                 </div>
-                {pushError && <p className="text-xs text-red-500 mt-2 ml-12">{pushError}</p>}
             </div>
 
             {/* PRENATAL SECTION */}
