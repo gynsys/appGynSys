@@ -207,29 +207,52 @@ def seed_default_rules():
         all_rules = cycle_rules + pill_rules + confirmation_rules + prenatal_rules + system_rules
         
         count = 0
+        count = 0
+        rules_updated = 0
+        rules_created = 0
+        
         for doctor in doctors:
-            # Check if doctor already has rules
-            existing = db.query(NotificationRule).filter(
+            print(f"  Processing rules for {doctor.slug_url}...")
+            
+            # Get existing rules map for this doctor: Name -> Rule Object
+            existing_rules = db.query(NotificationRule).filter(
                 NotificationRule.tenant_id == doctor.id
-            ).first()
+            ).all()
+            existing_map = {r.name: r for r in existing_rules}
             
-            if existing:
-                print(f"  Doctor {doctor.slug_url} already has rules. Skipping.")
-                continue
-            
-            print(f"  Seeding {len(all_rules)} rules for {doctor.slug_url}...")
             for rule_def in all_rules:
-                rule = NotificationRule(
-                    tenant_id=doctor.id,
-                    name=rule_def["name"],
-                    notification_type=rule_def["type"],
-                    trigger_condition=rule_def["trigger"],
-                    channel=rule_def["channel"],
-                    message_template=rule_def["template"],
-                    is_active=True
-                )
-                db.add(rule)
+                rule_name = rule_def["name"]
+                
+                if rule_name in existing_map:
+                    # Update existing rule
+                    existing_rule = existing_map[rule_name]
+                    existing_rule.notification_type = rule_def["type"]
+                    existing_rule.trigger_condition = rule_def["trigger"]
+                    existing_rule.channel = rule_def["channel"]
+                    existing_rule.message_template = rule_def["template"]
+                    # Keep is_active as is, unless forced? Let's keep user preference if they disabled it.
+                    # existing_rule.is_active = True 
+                    rules_updated += 1
+                else:
+                    # Create new rule
+                    rule = NotificationRule(
+                        tenant_id=doctor.id,
+                        name=rule_name,
+                        notification_type=rule_def["type"],
+                        trigger_condition=rule_def["trigger"],
+                        channel=rule_def["channel"],
+                        message_template=rule_def["template"],
+                        is_active=True
+                    )
+                    db.add(rule)
+                    rules_created += 1
+            
             count += 1
+            
+        db.commit()
+        print(f"\n✅ Processed notification rules for {count} doctors.")
+        print(f"Total rules created: {rules_created}")
+        print(f"Total rules updated: {rules_updated}")
             
         db.commit()
         print(f"\n✅ Seeded notification rules for {count} new doctors.")
