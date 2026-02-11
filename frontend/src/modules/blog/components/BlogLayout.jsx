@@ -184,19 +184,7 @@ export default function BlogLayout({ children }) {
             action: () => navigate(`/dr/${doctor.slug_url}`),
             isActive: false
           },
-          {
-            icon: <NavIcons.Activity />,
-            label: 'Predictor',
-            action: () => {
-              if (isAuthenticated) {
-                navigate('/cycle/dashboard');
-              } else {
-                localStorage.setItem('redirect_after_login', '/cycle/dashboard');
-                navigate('/login');
-              }
-            },
-            isActive: false
-          },
+
           {
             icon: <NavIcons.WhatsApp />,
             label: 'WhatsApp',

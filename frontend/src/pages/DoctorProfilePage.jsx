@@ -271,20 +271,7 @@ export default function DoctorProfilePage() {
       action: scrollToTop,
       isActive: window.scrollY < 100
     },
-    {
-      icon: <NavIcons.Activity />,
-      label: 'Predictor',
-      action: () => {
-        if (isAuthenticated) {
-          navigate('/cycle/dashboard');
-        } else {
-          // Guardar redirección para después del login
-          localStorage.setItem('redirect_after_login', '/cycle/dashboard');
-          setIsLoginModalOpen(true);
-        }
-      },
-      isActive: false
-    },
+
     {
       icon: <NavIcons.WhatsApp />,
       label: 'WhatsApp',

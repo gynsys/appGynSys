@@ -92,7 +92,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
                 <FiActivity className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">Tu ciclo</span>
+                <span className="text-xs font-medium">Mi ciclo</span>
               </button>
 
               {/* Endometriosis Test Button (if enabled) */}
@@ -121,7 +121,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
               >
                 <FiActivity className="w-4 h-4" />
-                <span className="text-sm font-medium">Tu ciclo</span>
+                <span className="text-sm font-medium">Mi ciclo</span>
               </button>
             </div>
 
