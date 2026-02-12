@@ -58,7 +58,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[10000] overflow-hidden sm:overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div className="fixed inset-0 z-[10000] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
                     <div className="flex items-center justify-center min-h-screen text-center p-4 sm:p-0">
 
                         {/* Overlay */}
@@ -76,7 +76,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className={`relative inline-block align-bottom ${bgClass} rounded-2xl text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-2xl sm:my-8 sm:align-middle`}
+                            className={`relative inline-block align-bottom ${bgClass} rounded-2xl text-left shadow-xl transform transition-all w-full sm:max-w-2xl sm:my-8 sm:align-middle overflow-hidden`}
                         >
                             <div className="absolute top-4 right-4 z-10">
                                 <button
@@ -147,7 +147,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                                                 borderRadius: '0.5rem'
                                                             }}
                                                         />
-                                                        <Legend layout="vertical" verticalAlign="middle" align="right" />
+                                                        <Legend />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </div>
