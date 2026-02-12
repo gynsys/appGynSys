@@ -107,32 +107,32 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                         {error}
                                     </div>
                                 ) : stats ? (
-                                    <div className="space-y-10">
+                                    <div className="space-y-6">
 
                                         {/* Total Count */}
-                                        <div className={`text-center p-4 rounded-xl ${isDarkMode ? 'bg-gray-700' : 'bg-indigo-50'}`}>
-                                            <span className={`block text-sm font-medium ${subTextClass} uppercase tracking-wider mb-1`}>
+                                        <div className={`text-center py-3 rounded-xl ${isDarkMode ? 'bg-gray-700' : 'bg-indigo-50'}`}>
+                                            <span className={`block text-xs font-medium ${subTextClass} uppercase tracking-wider mb-0.5`}>
                                                 Total de Tests Realizados
                                             </span>
-                                            <span className={`text-4xl font-black ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                                            <span className={`text-3xl font-black ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
                                                 {stats.total}
                                             </span>
                                         </div>
 
                                         {/* Chart 1: Pie Chart (Levels) */}
                                         <div>
-                                            <h4 className={`text-lg font-semibold ${textClass} mb-4 text-center`}>
+                                            <h4 className={`text-lg font-semibold ${textClass} mb-2 text-center`}>
                                                 Distribución de Resultados
                                             </h4>
-                                            <div className="h-64 mb-4">
+                                            <div className="h-64 mb-0">
                                                 <ResponsiveContainer width="100%" height="100%">
-                                                    <PieChart>
+                                                    <PieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                                                         <Pie
                                                             data={stats.level_distribution}
                                                             cx="50%"
                                                             cy="50%"
-                                                            innerRadius={60}
-                                                            outerRadius={80}
+                                                            innerRadius={50}
+                                                            outerRadius={70}
                                                             paddingAngle={5}
                                                             dataKey="value"
                                                             label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
@@ -149,7 +149,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                                                 borderRadius: '0.5rem'
                                                             }}
                                                         />
-                                                        <Legend />
+                                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </div>
