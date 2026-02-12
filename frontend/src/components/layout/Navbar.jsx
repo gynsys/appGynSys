@@ -27,6 +27,10 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
   // Check if Blog module is enabled
   const showBlog = doctor?.enabled_modules?.includes('blog')
 
+  // Calculate Dark Mode based on doctor's template
+  // This allows passing the explicit theme to modals instead of relying on system preference
+  const isDarkTheme = doctor?.design_template === 'dark'
+
   return (
     <>
       <nav
@@ -304,7 +308,11 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           }}
         />
 
-        <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
+        <CyclePredictorModal
+          open={isCycleModalOpen}
+          onOpenChange={setIsCycleModalOpen}
+          isDarkMode={isDarkTheme}
+        />
 
         {showEndoTest && (
           <EndometriosisTestModal
@@ -316,6 +324,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             doctorPhoto={doctor?.foto_perfil}
             primaryColor={primaryColor}
             doctorId={doctor?.id}
+            isDarkMode={isDarkTheme}
           />
         )}
       </nav >

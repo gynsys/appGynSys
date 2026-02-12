@@ -13,8 +13,10 @@ import PregnancyDashboard from './PregnancyDashboard'
 import Button from '../common/Button'
 import { useAuthStore } from '../../store/authStore'
 import cycleService from '../../services/cycleService'
+import { useDarkMode } from '../../hooks/useDarkMode'
+import { cn } from '../../lib/utils'
 
-export default function CyclePredictorModal({ open, onOpenChange }) {
+export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: propIsDarkMode }) {
     const [activeTab, setActiveTab] = useState('dashboard')
     const { user, logout, isAuthenticated } = useAuthStore()
     const [showLoginDialog, setShowLoginDialog] = useState(false)
@@ -24,6 +26,10 @@ export default function CyclePredictorModal({ open, onOpenChange }) {
     const [loading, setLoading] = useState(true)
 
     const [authInitialView, setAuthInitialView] = useState('register')
+
+    const [hookIsDarkMode] = useDarkMode()
+    // Prioritize prop if strictly boolean (defined), otherwise use hook
+    const isDarkMode = typeof propIsDarkMode === 'boolean' ? propIsDarkMode : hookIsDarkMode
 
     useEffect(() => {
         if (open && isAuthenticated) {
@@ -49,7 +55,7 @@ export default function CyclePredictorModal({ open, onOpenChange }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-gray-900 dark:border-gray-700 [&>button]:top-2">
+            <DialogContent className={cn("max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-gray-900 dark:border-gray-700 [&>button]:top-2", isDarkMode && "dark")}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col">
                     <DialogHeader className="flex flex-row items-center justify-between pb-4 border-b dark:border-gray-700 shrink-0 relative px-6 md:px-0">
                         <DialogTitle className="sr-only">Predictor de Ciclo y Embarazo</DialogTitle>

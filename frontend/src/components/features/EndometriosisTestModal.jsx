@@ -198,7 +198,7 @@ export default function EndometriosisTestModal({
                   transition={{ duration: 0.4, ease: [0.19, 1.0, 0.22, 1.0] }} // specific spring ease
                   className={`inline-block align-bottom ${bgClass} sm:rounded-2xl text-left overflow-y-auto shadow-2xl transform transition-all 
                 w-full h-[100dvh] sm:h-auto sm:my-8 sm:align-middle sm:max-w-lg 
-                flex flex-col sm:block absolute inset-0 sm:relative sm:inset-auto`}
+                flex flex-col sm:block absolute inset-0 sm:relative sm:inset-auto ${isDarkMode ? 'dark' : ''}`}
                 >
                   <div className={`flex-1 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 relative ${bgClass} flex flex-col justify-center sm:block`}>
                     <button
