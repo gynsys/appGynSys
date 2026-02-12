@@ -29,11 +29,15 @@ export default function EndometriosisTestModal({
   doctorName = 'tu doctora',
   doctorPhoto = null,
 
-  // isDarkMode prop removed, using hook instead
+  // isDarkMode prop now handled explicitly to respect parent theme
+  isDarkMode: propIsDarkMode, // Renamed to avoid conflict with hook or local var
   onSchedule = null,
   onCycle = null
 }) {
-  const [isDarkMode] = useDarkMode()
+  const [hookIsDarkMode] = useDarkMode()
+  // Prioritize prop if strictly boolean (defined), otherwise use hook
+  const isDarkMode = typeof propIsDarkMode === 'boolean' ? propIsDarkMode : hookIsDarkMode
+
   const [showWelcome, setShowWelcome] = useState(true)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState([]) // Array of booleans (true=Yes, false=No)
@@ -458,7 +462,7 @@ export default function EndometriosisTestModal({
         </AnimatePresence >,
         document.body
       )}
-      {showStats && <EndometriosisStatsModal isOpen={showStats} onClose={() => setShowStats(false)} />}
+      {showStats && <EndometriosisStatsModal isOpen={showStats} onClose={() => setShowStats(false)} isDarkMode={isDarkMode} />}
     </>
   )
 }

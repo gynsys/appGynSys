@@ -6,8 +6,12 @@ import { useDarkMode } from '../../hooks/useDarkMode'
 import { testService } from '../../services/testService'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 
-export default function EndometriosisStatsModal({ isOpen, onClose }) {
-    const [isDarkMode] = useDarkMode()
+export default function EndometriosisStatsModal({ isOpen, onClose, isDarkMode: propIsDarkMode }) {
+    const [hookIsDarkMode] = useDarkMode();
+    // Prioritize prop if strictly boolean (defined), otherwise use hook
+    const isDarkMode = typeof propIsDarkMode === 'boolean' ? propIsDarkMode : hookIsDarkMode;
+
+    // Hooks should be called unconditionally
     const [stats, setStats] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
