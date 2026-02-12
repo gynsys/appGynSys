@@ -40,6 +40,7 @@ export default function EndometriosisTestModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false) // New state for calculation delay
   const [direction, setDirection] = useState(1) // +1 for next, -1 for prev (if we added back button)
   const [mounted, setMounted] = useState(false)
+  const [showStats, setShowStats] = useState(false) // Added missing state
 
   useEffect(() => {
     setMounted(true)
