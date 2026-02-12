@@ -168,41 +168,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                             </div>
                                         </div>
 
-                                        {/* Chart 2: Bar Chart (Score Frequency) */}
-                                        <div>
-                                            <h4 className={`text-lg font-semibold ${textClass} mb-4 text-center`}>
-                                                Frecuencia de Síntomas Reportados
-                                            </h4>
-                                            <p className={`text-xs text-center mb-4 ${subTextClass}`}>
-                                                (Número de síntomas positivos por persona)
-                                            </p>
-                                            <div className="h-64">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={stats.score_distribution}>
-                                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                                                        <XAxis
-                                                            dataKey="score"
-                                                            label={{ value: 'Síntomas (0-10)', position: 'insideBottom', offset: -5, fill: isDarkMode ? '#9CA3AF' : '#4B5563', fontSize: 12 }}
-                                                            tick={{ fill: isDarkMode ? '#9CA3AF' : '#4B5563' }}
-                                                        />
-                                                        <YAxis
-                                                            tick={{ fill: isDarkMode ? '#9CA3AF' : '#4B5563' }}
-                                                            allowDecimals={false}
-                                                        />
-                                                        <Tooltip
-                                                            cursor={{ fill: isDarkMode ? '#374151' : '#F3F4F6', opacity: 0.4 }}
-                                                            contentStyle={{
-                                                                backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
-                                                                borderColor: isDarkMode ? '#374151' : '#E5E7EB',
-                                                                color: isDarkMode ? '#F3F4F6' : '#111827',
-                                                                borderRadius: '0.5rem'
-                                                            }}
-                                                        />
-                                                        <Bar dataKey="count" name="Personas" fill="#6366F1" radius={[4, 4, 0, 0]} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        </div>
+
 
                                     </div>
                                 ) : (
