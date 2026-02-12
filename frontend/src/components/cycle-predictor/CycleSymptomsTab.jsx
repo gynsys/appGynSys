@@ -82,8 +82,8 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     const [savedSymptoms, setSavedSymptoms] = useState([])
     const [loadingHistory, setLoadingHistory] = useState(true)
 
-    // Fallback color if theme is missing
-    const themeColor = user?.theme_primary_color
+    // Fallback color if theme is missing (Guest Mode support)
+    const themeColor = user?.theme_primary_color || localStorage.getItem('tenant_theme_primary')
 
     const moods = [
         { id: 'happy', label: 'Feliz', icon: '😄' },
@@ -192,10 +192,13 @@ export default function CycleSymptomsTab({ activePregnancy }) {
 
         } catch (error) {
             console.error('Error saving symptoms:', error)
+            if (error.response) {
+                console.error('Server Error Data:', error.response.data)
+            }
             if (error.response?.status === 401) {
                 toast.error('Debes iniciar sesion para guardar sintomas')
             } else {
-                toast.error('Error al guardar sintomas')
+                toast.error('Error al guardar sintomas: ' + (error.response?.data?.detail || error.message))
             }
         } finally {
             setLoading(false)

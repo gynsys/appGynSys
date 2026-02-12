@@ -51,7 +51,12 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
             const data = await cycleService.getSettings()
             if (data) {
                 // Ensure defaults for new keys if backend returns null
-                setSettings(prev => ({ ...prev, ...data }))
+                // Fix: Map backend's 'rhythm_method_enabled' to frontend's 'cycle_rhythm_method' if needed
+                const mappedData = {
+                    ...data,
+                    cycle_rhythm_method: data.cycle_rhythm_method ?? data.rhythm_method_enabled
+                }
+                setSettings(prev => ({ ...prev, ...mappedData }))
             }
         } catch (error) {
             console.error("Error loading settings", error)
@@ -75,7 +80,7 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
             // Sync legacy keys with new master switches for backward compat
             const payload = {
                 ...settings,
-                rhythm_method_enabled: settings.cycle_rhythm_method,
+                rhythm_method_enabled: settings.cycle_rhythm_method, // Ensure backend receives this
                 fertile_window_alerts: settings.cycle_fertile_window,
                 ovulation_alert: settings.cycle_fertile_window // Sync both
             }

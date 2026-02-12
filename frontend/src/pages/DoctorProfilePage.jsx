@@ -166,6 +166,8 @@ export default function DoctorProfilePage() {
         '--primary-color',
         doctor.theme_primary_color
       )
+      // Persist for Cycle App (Guest Mode)
+      localStorage.setItem('tenant_theme_primary', doctor.theme_primary_color)
     }
     // document.title removed as per user request to avoid PWA title issues
 
