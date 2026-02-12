@@ -76,7 +76,8 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className={`relative inline-block align-bottom ${bgClass} rounded-2xl text-left shadow-xl transform transition-all w-full sm:max-w-2xl sm:my-8 sm:align-middle overflow-hidden`}
+                            className={`relative inline-block align-bottom ${bgClass} rounded-2xl text-left shadow-xl transform transition-all w-full sm:max-w-2xl sm:my-8 sm:align-middle`}
+
                         >
                             <div className="absolute top-4 right-4 z-10">
                                 <button
