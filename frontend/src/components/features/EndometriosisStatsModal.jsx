@@ -135,6 +135,7 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                                             outerRadius={80}
                                                             paddingAngle={5}
                                                             dataKey="value"
+                                                            label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
                                                         >
                                                             {stats.level_distribution.map((entry, index) => (
                                                                 <Cell key={`cell-${index}`} fill={COLORS[entry.name] || "#8884d8"} />
@@ -151,20 +152,6 @@ export default function EndometriosisStatsModal({ isOpen, onClose }) {
                                                         <Legend />
                                                     </PieChart>
                                                 </ResponsiveContainer>
-                                            </div>
-
-                                            {/* Custom Legend/Summary */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-sm">
-                                                {stats.level_distribution.map((item) => {
-                                                    const percentage = stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(1) : 0;
-                                                    return (
-                                                        <div key={item.name} className={`p-2 rounded-lg border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                                            <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: COLORS[item.name] }}></div>
-                                                            <div className={`font-bold ${textClass}`}>{percentage}%</div>
-                                                            <div className={`text-xs ${subTextClass}`}>{item.name.replace(" COINCIDENCIA", "")}</div>
-                                                        </div>
-                                                    )
-                                                })}
                                             </div>
                                         </div>
 
