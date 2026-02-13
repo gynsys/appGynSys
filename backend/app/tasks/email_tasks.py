@@ -6,6 +6,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
 from app.core.celery_app import celery_app
+import json
+from pywebpush import webpush, WebPushException
+from app.db.models.notification import PushSubscription
 
 
 
@@ -45,6 +48,55 @@ def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments
     except Exception as e:
         print(f"Error sending email: {e}")
         pass
+
+
+def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashboard", db=None):
+    """
+    Helper to send Web Push Notification to all user devices.
+    """
+    if not settings.VAPID_PRIVATE_KEY or not settings.VAPID_CLAIM_EMAIL:
+        print("VAPID keys not configured. Skipping Push.")
+        return
+
+    try:
+        # Fetch subscriptions
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id == user_id).all()
+        if not subs:
+            return
+
+        payload = json.dumps({
+            "title": title,
+            "body": body,
+            "url": url,
+            "icon": "/pwa-192x192.png" 
+        })
+
+        for sub in subs:
+            try:
+                webpush(
+                    subscription_info={
+                        "endpoint": sub.endpoint,
+                        "keys": {
+                            "p256dh": sub.p256dh,
+                            "auth": sub.auth
+                        }
+                    },
+                    data=payload,
+                    vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                    vapid_claims={"sub": f"mailto:{settings.VAPID_CLAIM_EMAIL}"}
+                )
+            except WebPushException as ex:
+                if ex.response and ex.response.status_code == 410:
+                    # Subscription expired/gone
+                    db.delete(sub)
+                    db.commit()
+                print(f"Push Error: {ex}")
+            except Exception as e:
+                print(f"Push Generic Error: {e}")
+
+    except Exception as e:
+        print(f"Error sending push: {e}")
+
 
 
 @celery_app.task
@@ -1008,6 +1060,15 @@ def send_daily_contraceptive_alert():
                             <p>Hola {user.nombre_completo},</p>
                             <p>Es hora de tomar tu anticonceptivo ({settings.contraceptive_time}).</p>
                             '''
+                        )
+                        
+                        # SEND PUSH
+                        _send_web_push(
+                            user.id, 
+                            "💊 Recordatorio Anticonceptivo", 
+                            f"Es hora de tomar tu {settings.contraceptive_frequency} ({settings.contraceptive_time})", 
+                            "/cycle/dashboard", 
+                            db
                         )
                         
                         # Update immediately and commit

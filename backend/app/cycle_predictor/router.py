@@ -180,6 +180,41 @@ def create_cycle(
     db: Session = Depends(get_db),
     current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
 ):
+    # Smart Logic: Check for existing cycle within +/- 5 days to prevent duplicates/overlaps
+    # If found, assume user is correcting the start date
+    cycle_date = cycle_in.start_date
+    check_start = cycle_date - timedelta(days=5)
+    check_end = cycle_date + timedelta(days=5)
+    
+    existing_cycle = None
+    if isinstance(current_actor, Doctor):
+       existing_cycle = db.query(CycleLog).filter(
+           CycleLog.doctor_id == current_actor.id,
+           CycleLog.start_date >= check_start,
+           CycleLog.start_date <= check_end
+       ).first()
+    else:
+       existing_cycle = db.query(CycleLog).filter(
+           CycleLog.cycle_user_id == current_actor.id,
+           CycleLog.start_date >= check_start,
+           CycleLog.start_date <= check_end
+       ).first()
+
+    if existing_cycle:
+        # Update existing cycle
+        print(f"DEBUG: Found existing cycle near {cycle_date}. Updating {existing_cycle.start_date} -> {cycle_date}")
+        existing_cycle.start_date = cycle_date
+        if cycle_in.end_date:
+            existing_cycle.end_date = cycle_in.end_date
+            existing_cycle.cycle_length = (cycle_in.end_date - cycle_date).days + 1
+        if cycle_in.notes:
+            existing_cycle.notes = cycle_in.notes
+            
+        db.commit()
+        db.refresh(existing_cycle)
+        return existing_cycle
+
+    # Create new if no overlap
     cycle_length = None
     if cycle_in.end_date:
         cycle_length = (cycle_in.end_date - cycle_in.start_date).days + 1
