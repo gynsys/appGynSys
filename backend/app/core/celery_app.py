@@ -16,7 +16,7 @@ from celery.schedules import crontab
 celery_app.conf.beat_schedule = {
     "send-daily-contraceptive-alert": {
         "task": "app.tasks.email_tasks.send_daily_contraceptive_alert",
-        "schedule": crontab(minute='*/15'), # Check every 15 minutes
+        "schedule": crontab(minute='*/5'), # Check every 5 minutes for better precision
     },
     "send-daily-cycle-events": {
         "task": "app.tasks.notification_tasks.process_dynamic_notifications",
