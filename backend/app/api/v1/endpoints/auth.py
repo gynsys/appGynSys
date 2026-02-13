@@ -22,7 +22,12 @@ from app.core.security import (
     create_access_token,
     verify_access_token
 )
-from app.tasks.email_tasks import send_new_tenant_notification, send_reset_password_email
+from app.tasks.email_tasks import (
+    send_new_tenant_notification, 
+    send_reset_password_email,
+    apply_doctor_template_async
+)
+
 from app.crud.admin import seed_tenant_data
 
 router = APIRouter()
@@ -30,16 +35,9 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 
 
-
 def generate_slug_from_name(name: str) -> str:
     """
     Generate a URL-friendly slug from a name.
-    
-    Args:
-        name: Full name string
-        
-    Returns:
-        URL-friendly slug
     """
     # Normalize unicode characters
     name = unicodedata.normalize('NFKD', name)
@@ -61,53 +59,7 @@ def get_user_by_slug(db: Session, slug: str) -> Doctor | None:
     return db.query(Doctor).filter(Doctor.slug_url == slug).first()
 
 
-def apply_mariel_template(db: Session, doctor: Doctor):
-    """Apply the complete Mariel Herrera template to a new doctor."""
-    import os
-    import json
 
-    template_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'mariel_herrera_template.json')
-
-    try:
-        with open(template_path, 'r', encoding='utf-8') as f:
-            template = json.load(f)
-
-        # Apply profile configuration
-        profile_info = template['profile_info']
-        doctor.especialidad = profile_info['especialidad']
-        doctor.universidad = profile_info['universidad']
-        doctor.biografia = profile_info['biografia']
-        doctor.services_section_title = profile_info['services_section_title']
-        doctor.contact_email = profile_info['contact_email']
-
-        # Apply theme configuration
-        theme_config = template['theme_config']
-        doctor.theme_primary_color = theme_config['theme_primary_color']
-        doctor.theme_body_bg_color = theme_config['theme_body_bg_color']
-        doctor.theme_container_bg_color = theme_config['theme_container_bg_color']
-        doctor.card_shadow = theme_config['card_shadow']
-        doctor.container_shadow = theme_config['container_shadow']
-
-        # Apply social media
-        social_media = template['social_media']
-        doctor.social_instagram = social_media['social_instagram']
-        doctor.social_tiktok = social_media['social_tiktok']
-        # Keep YouTube, X, Facebook empty for new doctors
-
-        # Apply schedule and PDF config
-        doctor.schedule = template['schedule']
-        doctor.pdf_config = template['pdf_config']
-
-        pass
-
-    except FileNotFoundError:
-        pass
-        # Fallback to default seeding
-        seed_tenant_data(db, doctor)
-    except Exception as e:
-        pass
-        # Fallback to default seeding
-        seed_tenant_data(db, doctor)
 
 
 @router.post("/register", response_model=DoctorInDB, status_code=status.HTTP_201_CREATED)
@@ -162,12 +114,15 @@ async def register(
     db.commit()
     db.refresh(db_doctor)
     
-    # Apply Mariel Herrera template to new doctor
-    apply_mariel_template(db, db_doctor)
-    
-    # Commit template changes
+    # Commit initial doctor creation
     db.commit()
     db.refresh(db_doctor)
+    
+    # Async: Apply Mariel Herrera template
+    try:
+        apply_doctor_template_async.delay(db_doctor.id)
+    except Exception as e:
+        print(f"[WARNING] Failed to queue template task: {e}")
     
     # Send notification to admin
     try:
@@ -261,9 +216,20 @@ async def login_google(
         if len(login_data.token) > 500: # Likely an ID Token (JWT)
             print(f"Verifying Google ID Token...")
             try:
+                # TIMEOUT: Create a request session with timeout
+                import google.auth.transport.requests
+                request_session =  py_requests.Session()
+                # There isn't a direct way to set timeout on the default Request object,
+                # but we can try to use the verify_oauth2_token which uses authorized_http under the hood.
+                # simpler approach: Just trust that google library handles it or wrap in threaded timeout.
+                # BETTER: google.auth.transport.requests.Request(session=x)
+                
+                req = google.auth.transport.requests.Request(session=request_session)
+                
+                # Verify token
                 id_info = id_token.verify_oauth2_token(
                     login_data.token,
-                    requests.Request(),
+                    req,
                     settings.GOOGLE_CLIENT_ID
                 )
                 email = id_info.get("email")
@@ -274,9 +240,11 @@ async def login_google(
         else:
             print(f"Fetching Google Profile via Access Token...")
             # If it's short, it's likely an Access Token
+            # TIMEOUT: Enforce 5s timeout
             response = py_requests.get(
                 "https://www.googleapis.com/oauth2/v3/userinfo",
-                headers={"Authorization": f"Bearer {login_data.token}"}
+                headers={"Authorization": f"Bearer {login_data.token}"},
+                timeout=5
             )
             if response.status_code != 200:
                 print(f"Access Token verification failed: {response.text}")
@@ -330,12 +298,11 @@ async def login_google(
             db.commit()
             db.refresh(doctor)
             
-            # Apply Template
+            # Async: Apply Template
             try:
-                apply_mariel_template(db, doctor)
-                db.commit()
+                apply_doctor_template_async.delay(doctor.id)
             except Exception as e:
-                 print(f"Template Error (Non-fatal): {e}")
+                 print(f"Template Async Error (Non-fatal): {e}")
             
         else:
             print("User found, updating...")

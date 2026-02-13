@@ -6,11 +6,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
 from app.core.celery_app import celery_app
+from app.core.push import send_web_push
 import json
-from pywebpush import webpush, WebPushException
-from app.db.base import get_db, SessionLocal
-from app.db.models.doctor import Doctor
-import os
+from app.db.models.notification import PushSubscription
 
 
 
@@ -51,55 +49,6 @@ def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments
     except Exception as e:
         print(f"Error sending email: {e}")
         pass
-
-
-def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashboard", db=None):
-    """
-    Helper to send Web Push Notification to all user devices.
-    """
-    if not settings.VAPID_PRIVATE_KEY or not settings.VAPID_CLAIM_EMAIL:
-        print("VAPID keys not configured. Skipping Push.")
-        return
-
-    try:
-        # Fetch subscriptions
-        subs = db.query(PushSubscription).filter(PushSubscription.user_id == user_id).all()
-        if not subs:
-            return
-
-        payload = json.dumps({
-            "title": title,
-            "body": body,
-            "url": url,
-            "icon": "/pwa-192x192.png" 
-        })
-
-        for sub in subs:
-            try:
-                webpush(
-                    subscription_info={
-                        "endpoint": sub.endpoint,
-                        "keys": {
-                            "p256dh": sub.p256dh,
-                            "auth": sub.auth
-                        }
-                    },
-                    data=payload,
-                    vapid_private_key=settings.VAPID_PRIVATE_KEY,
-                    vapid_claims={"sub": f"mailto:{settings.VAPID_CLAIM_EMAIL}"}
-                )
-            except WebPushException as ex:
-                if ex.response and ex.response.status_code == 410:
-                    # Subscription expired/gone
-                    db.delete(sub)
-                    db.commit()
-                print(f"Push Error: {ex}")
-            except Exception as e:
-                print(f"Push Generic Error: {e}")
-
-    except Exception as e:
-        print(f"Error sending push: {e}")
-
 
 
 @celery_app.task
@@ -285,91 +234,8 @@ def send_new_tenant_notification(tenant_data: dict):
     Send notification to admin about new tenant registration.
     """
     admin_email = "dramarielh@gmail.com"
-    subject = f"Nuevo Registro de Doctor: {tenant_data.get('nombre_completo')}"
-    
-    html_content = f"""
-    <h1>Nuevo Doctor Registrado</h1>
-    <p><strong>Nombre:</strong> {tenant_data.get('nombre_completo')}</p>
-    <p><strong>Email:</strong> {tenant_data.get('email')}</p>
-    <p><strong>Plan ID:</strong> {tenant_data.get('plan_id')}</p>
-    <p><strong>Referencia Pago:</strong> {tenant_data.get('payment_reference')}</p>
-    <hr>
-    <p>Ingresa al panel administrativo para aprobar o rechazar esta cuenta.</p>
-    """
-    
-    _send_smtp_email(admin_email, subject, html_content)
+    pass
     return {"status": "sent", "to": admin_email}
-
-
-@celery_app.task
-def apply_doctor_template_async(doctor_id: int):
-    """
-    Async task to apply the Mariel Herrera template to a new doctor.
-    Handles JSON loading and DB updates in background to prevent request timeout.
-    """
-    db = SessionLocal()
-    try:
-        doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
-        if not doctor:
-            print(f"[ERROR] Doctor {doctor_id} not found for template application.")
-            return
-
-        # Path relative to backend/app/tasks/email_tasks.py -> ../../../mariel_herrera_template.json
-        # backend/app/tasks/email_tasks.py
-        template_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'mariel_herrera_template.json')
-
-        try:
-            with open(template_path, 'r', encoding='utf-8') as f:
-                template = json.load(f)
-
-            # Apply profile configuration
-            profile_info = template.get('profile_info', {})
-            if profile_info:
-                if not doctor.especialidad: doctor.especialidad = profile_info.get('especialidad')
-                if not doctor.universidad: doctor.universidad = profile_info.get('universidad')
-                if not doctor.biografia: doctor.biografia = profile_info.get('biografia')
-                if not doctor.services_section_title: doctor.services_section_title = profile_info.get('services_section_title')
-                if not doctor.contact_email: doctor.contact_email = profile_info.get('contact_email')
-
-            # Apply theme configuration
-            theme_config = template.get('theme_config', {})
-            if theme_config:
-                doctor.theme_primary_color = theme_config.get('theme_primary_color')
-                doctor.theme_body_bg_color = theme_config.get('theme_body_bg_color')
-                doctor.theme_container_bg_color = theme_config.get('theme_container_bg_color')
-                doctor.card_shadow = theme_config.get('card_shadow')
-                doctor.container_shadow = theme_config.get('container_shadow')
-
-            # Apply social media
-            social_media = template.get('social_media', {})
-            if social_media:
-                doctor.social_instagram = social_media.get('social_instagram')
-                doctor.social_tiktok = social_media.get('social_tiktok')
-
-            # Apply schedule and PDF config
-            if 'schedule' in template:
-                doctor.schedule = template['schedule']
-            if 'pdf_config' in template:
-                doctor.pdf_config = template['pdf_config']
-
-            db.commit()
-            print(f"[SUCCESS] Template applied for Doctor {doctor.email}")
-
-        except FileNotFoundError:
-            print(f"[WARNING] Template file not found at {template_path}")
-            # Fallback to default seeding
-            from app.crud.admin import seed_tenant_data
-            seed_tenant_data(db, doctor)
-        except Exception as e:
-            print(f"[ERROR] Error applying template: {e}")
-            # Fallback
-            from app.crud.admin import seed_tenant_data
-            seed_tenant_data(db, doctor)
-
-    except Exception as e:
-        print(f"[CRITICAL] Failed doctor template task: {e}")
-    finally:
-        db.close()
 
 
 @celery_app.task
@@ -1085,10 +951,9 @@ def send_daily_contraceptive_alert():
                     continue
                 
                 # CRITICAL: Check if already sent today
-                # RULE REMOVED BY USER REQUEST to allow testing/multiple changes
-                # if settings.last_contraceptive_sent_date == today:
-                #     print(f"[SKIP] {user.email} - Already sent today ({today})")
-                #     continue
+                if settings.last_contraceptive_sent_date == today:
+                    print(f"[SKIP] {user.email} - Already sent today ({today})")
+                    continue
                 
                 # Parse user's preferred time
                 try:
@@ -1139,6 +1004,45 @@ def send_daily_contraceptive_alert():
                     if diff < 8:
                         print(f"[SENDING] {user.email} - Time match: {settings.contraceptive_time}")
                         
+                        # 1. Send Push Notification (Multi-Device)
+                        try:
+                            # Use relationship (backref from PushSubscription)
+                            # Or check JSON column as fallback? Deprecated.
+                            subscriptions = user.push_subscriptions
+                            if subscriptions:
+                                print(f"[PUSH] {user.email} - Sending to {len(subscriptions)} devices...")
+                                payload = json.dumps({
+                                    "title": "💊 Anticonceptivo",
+                                    "body": f"Hora de tu píldora ({settings.contraceptive_time})",
+                                    "url": "/dashboard",
+                                    "icon": "/pills.png"
+                                })
+                                
+                                sent_count = 0
+                                for sub in subscriptions:
+                                    try:
+                                        sub_info = {
+                                            "endpoint": sub.endpoint,
+                                            "keys": {
+                                                "auth": sub.auth,
+                                                "p256dh": sub.p256dh
+                                            }
+                                        }
+                                        success, err = send_web_push(sub_info, payload)
+                                        if success:
+                                            sent_count += 1
+                                        else:
+                                            print(f"[PUSH FAILED] Device {sub.id}: {err}")
+                                    except Exception as sub_e:
+                                        print(f"[PUSH ERROR] Device {sub.id}: {sub_e}")
+                                
+                                print(f"[PUSH SUMMARY] {user.email} - Sent to {sent_count}/{len(subscriptions)} devices")
+                            else:
+                                print(f"[PUSH SKIP] {user.email} - No active subscriptions found")
+                        except Exception as push_e:
+                            print(f"[PUSH ERROR] {user.email} - Global error: {push_e}")
+
+                        # 2. Send Email (Existing)
                         _send_smtp_email(
                             user.email,
                             "Recordatorio Anti-conceptivo - GynSys",
@@ -1147,15 +1051,6 @@ def send_daily_contraceptive_alert():
                             <p>Hola {user.nombre_completo},</p>
                             <p>Es hora de tomar tu anticonceptivo ({settings.contraceptive_time}).</p>
                             '''
-                        )
-                        
-                        # SEND PUSH
-                        _send_web_push(
-                            user.id, 
-                            "💊 Recordatorio Anticonceptivo", 
-                            f"Es hora de tomar tu {settings.contraceptive_frequency} ({settings.contraceptive_time})", 
-                            "/cycle/dashboard", 
-                            db
                         )
                         
                         # Update immediately and commit

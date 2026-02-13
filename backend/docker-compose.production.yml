@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: gynsys-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: gynsys-redis
+    command: redis-server --maxmemory 40mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    image: appgynsys-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gynsys-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+    env_file:
+      - ./backend/.env.production
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  celery_worker:
+    image: appgynsys-backend
+    container_name: gynsys-celery-worker
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=1
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+    env_file:
+      - ./backend/.env.production
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      - backend
+      - redis
+      - db
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 250M
+
+  celery_beat:
+    image: appgynsys-backend
+    container_name: gynsys-celery-beat
+    command: celery -A app.core.celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env.production
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      - backend
+      - redis
+      - db
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+
+volumes:
+  postgres_data:
