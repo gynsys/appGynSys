@@ -999,9 +999,10 @@ def send_daily_contraceptive_alert():
                     continue
                 
                 # CRITICAL: Check if already sent today
-                if settings.last_contraceptive_sent_date == today:
-                    print(f"[SKIP] {user.email} - Already sent today ({today})")
-                    continue
+                # RULE REMOVED BY USER REQUEST to allow testing/multiple changes
+                # if settings.last_contraceptive_sent_date == today:
+                #     print(f"[SKIP] {user.email} - Already sent today ({today})")
+                #     continue
                 
                 # Parse user's preferred time
                 try:
