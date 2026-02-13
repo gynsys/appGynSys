@@ -181,8 +181,12 @@ async def register_cycle_user(
     )
     
     # Send welcome email
-    from app.core.email import send_welcome_email
-    background_tasks.add_task(send_welcome_email, db_user.email, db_user.nombre_completo)
+    try:
+        from app.core.email import send_welcome_email
+        background_tasks.add_task(send_welcome_email, db_user.email, db_user.nombre_completo)
+    except Exception as e:
+        print(f"Error scheduling welcome email: {e}")
+        # Build continue, user is already created
     
     return {"access_token": access_token, "token_type": "bearer"}
 
