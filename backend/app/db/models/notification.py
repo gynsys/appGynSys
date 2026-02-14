@@ -65,22 +65,4 @@ class NotificationLog(Base):
     recipient = relationship("CycleUser")
 
 
-class PushSubscription(Base):
-    __tablename__ = "push_subscriptions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
-    
-    # Browser endpoint URL (unique per device/browser profile)
-    endpoint = Column(String, unique=True, nullable=False)
-    
-    # Encryption keys
-    p256dh = Column(String, nullable=False)
-    auth = Column(String, nullable=False)
-    
-    # Metadata
-    user_agent = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    # Relationships
-    user = relationship("CycleUser", backref="push_subscriptions")
