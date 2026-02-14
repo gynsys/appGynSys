@@ -2,17 +2,48 @@
 Celery tasks for sending emails.
 """
 import smtplib
+import json
+import os
+import re
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from datetime import datetime, timedelta, date
+from typing import Optional, List, Dict, Any
+
+import requests
+import pytz
+from pywebpush import webpush, WebPushException
+from sqlalchemy.orm import joinedload
+
 from app.core.config import settings
 from app.core.celery_app import celery_app
-import json
-from pywebpush import webpush, WebPushException
 from app.db.base import get_db, SessionLocal
 from app.db.models.doctor import Doctor
-import os
+from app.db.models.cycle_user import CycleUser
+from app.db.models.push_subscription import PushSubscription
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 
+def calculate_predictions(last_period_date: date, avg_cycle: int, avg_period: int) -> dict:
+    """
+    Calculate cycle predictions based on last period.
+    Returns dict with next_period_start, ovulation_date, fertile_window_start, fertile_window_end.
+    """
+    next_period = last_period_date + timedelta(days=avg_cycle)
+    ovulation = next_period - timedelta(days=14)
+    fertile_start = ovulation - timedelta(days=5)
+    fertile_end = ovulation + timedelta(days=1)
+    
+    return {
+        'next_period_start': next_period,
+        'ovulation_date': ovulation,
+        'fertile_window_start': fertile_start,
+        'fertile_window_end': fertile_end
+    }
 
 
 def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments: list = None):
@@ -32,7 +63,6 @@ def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments
         msg.attach(MIMEText(html_content, "html"))
 
         if attachments:
-            from email.mime.application import MIMEApplication
             for attachment in attachments:
                 if attachment.get('content'):
                     part = MIMEApplication(
@@ -47,10 +77,8 @@ def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments
         server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.send_message(msg)
         server.quit()
-        pass
     except Exception as e:
-        print(f"Error sending email: {e}")
-        pass
+        logger.error(f"Error sending email: {e}")
 
 
 def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashboard", db=None):
@@ -58,22 +86,32 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
     Helper to send Web Push Notification to all user devices.
     """
     if not settings.VAPID_PRIVATE_KEY or not settings.VAPID_CLAIM_EMAIL:
-        print("VAPID keys not configured. Skipping Push.")
+        logger.warning("VAPID keys not configured. Skipping Push.")
         return
-
+    
+    if db is None:
+        logger.error("DB session required for web push")
+        return
+    
     try:
-        # Fetch subscriptions
-        subs = db.query(PushSubscription).filter(PushSubscription.user_id == user_id).all()
+        subs = db.query(PushSubscription).filter(
+            PushSubscription.user_id == user_id
+        ).all()
+        
         if not subs:
             return
-
+        
         payload = json.dumps({
             "title": title,
             "body": body,
             "url": url,
-            "icon": "/pwa-192x192.png" 
+            "icon": "/pwa-192x192.png",
+            "badge": "/pwa-192x192.png",
+            "tag": f"gynsys-{datetime.now().strftime('%Y%m%d')}",  # Evitar duplicados
+            "requireInteraction": True
         })
-
+        
+        failed_subs = []
         for sub in subs:
             try:
                 webpush(
@@ -86,19 +124,29 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
                     },
                     data=payload,
                     vapid_private_key=settings.VAPID_PRIVATE_KEY,
-                    vapid_claims={"sub": f"mailto:{settings.VAPID_CLAIM_EMAIL}"}
+                    vapid_claims={
+                        "sub": f"mailto:{settings.VAPID_CLAIM_EMAIL}",
+                        "exp": int((datetime.now() + timedelta(hours=12)).timestamp())
+                    },
+                    timeout=10
                 )
             except WebPushException as ex:
-                if ex.response and ex.response.status_code == 410:
+                if ex.response and ex.response.status_code in [404, 410]:
                     # Subscription expired/gone
-                    db.delete(sub)
-                    db.commit()
-                print(f"Push Error: {ex}")
+                    failed_subs.append(sub)
+                else:
+                    logger.error(f"Push error for user {user_id}: {ex}")
             except Exception as e:
-                print(f"Push Generic Error: {e}")
-
+                logger.error(f"Unexpected push error: {e}")
+        
+        # Batch delete expired subscriptions
+        if failed_subs:
+            for sub in failed_subs:
+                db.delete(sub)
+            db.commit()
+            
     except Exception as e:
-        print(f"Error sending push: {e}")
+        logger.error(f"Error in _send_web_push: {e}")
 
 
 
@@ -173,16 +221,7 @@ def send_consultation_report_email(email: str, patient_name: str, report_url: st
     return {"status": "sent", "recipient": email}
 
 
-@celery_app.task
-def send_tenant_approval_email(email: str, doctor_name: str, slug: str):
-    """
-    Send approval email to a tenant with their landing page link.
-    """
-    landing_url = f"http://localhost:5174/{slug}"
-    
-    pass
-    
-    return {"status": "sent", "email": email, "link": landing_url}
+
 
 
 @celery_app.task
@@ -372,14 +411,30 @@ def apply_doctor_template_async(doctor_id: int):
         db.close()
 
 
-@celery_app.task
-def send_tenant_approval_email(email: str, name: str, slug_url: str):
+@celery_app.task(bind=True, max_retries=3)
+def send_tenant_approval_email(self, email: str, doctor_name: str, slug: str):
     """
-    Send approval email to tenant with their public link.
+    Send approval email to a tenant with their landing page link.
     """
-    public_link = f"http://localhost:5173/dr/{slug_url}"
-    pass
-    return {"status": "sent", "to": email}
+    try:
+        landing_url = f"{settings.FRONTEND_URL}/dr/{slug}"
+        
+        subject = "¡Bienvenido a GynSys! Tu cuenta ha sido aprobada"
+        content = f"""
+        <h1>¡Felicidades Dr/a. {doctor_name}!</h1>
+        <p>Tu cuenta ha sido aprobada y ya puedes comenzar a usar GynSys.</p>
+        <p>Tu página personal está lista en:</p>
+        <p><a href="{landing_url}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">{landing_url}</a></p>
+        <p>Desde allí tus pacientes podrán agendar citas y completar preconsultas.</p>
+        """
+        
+        _send_smtp_email(email, subject, content)
+        return {"status": "sent", "email": email, "link": landing_url}
+        
+    except Exception as exc:
+        logger.error(f"Error sending tenant approval email: {exc}")
+        # Reintentar en 5 minutos
+        raise self.retry(exc=exc, countdown=300)
 
 
 # --- Helper Functions (Ported from Frontend) ---
@@ -806,381 +861,311 @@ def send_cycle_user_reset_password_email(email: str, token: str):
 def send_daily_cycle_events():
     """
     Runs DAILY at 7 PM local time (America/Caracas UTC-4).
+    Optimized to avoid N+1 queries.
     """
-    from app.db.base import SessionLocal
-    from app.db.models.cycle_user import CycleUser
-    from app.db.models.cycle_predictor import CycleNotificationSettings, CycleLog, PregnancyLog
-    from datetime import date, timedelta
-    import pytz
-    from datetime import datetime
-    
     db = SessionLocal()
     try:
-        users = db.query(CycleUser).filter(CycleUser.is_active == True).all()
-        
-        # Use America/Caracas timezone for consistent date calculation
         tz = pytz.timezone('America/Caracas')
         today = datetime.now(tz).date()
         
+        # Eager loading de relaciones necesarias
+        users = db.query(CycleUser).filter(
+            CycleUser.is_active == True
+        ).options(
+            joinedload(CycleUser.notification_settings),
+            joinedload(CycleUser.cycle_logs),
+            joinedload(CycleUser.pregnancy_logs)
+        ).all()
+        
         for user in users:
-            # 0. Check for Active Pregnancy (Priority)
-            active_pregnancy = db.query(PregnancyLog).filter(
-                PregnancyLog.cycle_user_id == user.id, 
-                PregnancyLog.is_active == True
-            ).first()
-            
-            if active_pregnancy and active_pregnancy.notifications_enabled:
-                # Calculate Gestational Age
-                # LMP = active_pregnancy.last_period_date
-                # Weeks = (Today - LMP).days / 7
-                delta_days = (today - active_pregnancy.last_period_date).days
+            try:
+                # Ahora accedemos a relaciones precargadas, no hacemos nuevas queries
+                active_pregnancy = next(
+                    (p for p in user.pregnancy_logs if p.is_active), 
+                    None
+                )
                 
-                # Send weekly update (every 7 days)
-                if delta_days > 0 and delta_days % 7 == 0:
-                    weeks = delta_days // 7
-                    _send_smtp_email(
-                        user.email,
-                        f"Semana {weeks} de Embarazo - GynSys",
-                        f'''
-                        <h1>¡Felicidades! Estás en la semana {weeks}</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Tu bebé sigue creciendo. Esperamos que te sientas muy bien.</p>
-                        <p>No olvides tomar tus vitaminas prenatales y asistir a tus controles.</p>
-                        '''
-                    )
-                # If pregnant, we SKIP normal cycle alerts
-                continue
+                if active_pregnancy and active_pregnancy.notifications_enabled:
+                    # Calculate Gestational Age
+                    delta_days = (today - active_pregnancy.last_period_date).days
+                    
+                    # Send weekly update (every 7 days)
+                    if delta_days > 0 and delta_days % 7 == 0:
+                        weeks = delta_days // 7
+                        _send_smtp_email(
+                            user.email,
+                            f"Semana {weeks} de Embarazo - GynSys",
+                            f'''
+                            <h1>¡Felicidades! Estás en la semana {weeks}</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Tu bebé sigue creciendo. Esperamos que te sientas muy bien.</p>
+                            <p>No olvides tomar tus vitaminas prenatales y asistir a tus controles.</p>
+                            '''
+                        )
+                    continue
+                
+                # Usar relación precargada
+                settings = user.notification_settings
+                if not settings:
+                    continue
+                
+                # Último ciclo ya está precargado, solo ordenamos en memoria
+                last_cycle = max(
+                    user.cycle_logs, 
+                    key=lambda x: x.start_date,
+                    default=None
+                )
+                
+                if not last_cycle:
+                    continue
+                
+                # 3. Calculate Predictions
+                avg_cycle = user.cycle_avg_length or 28
+                avg_period = user.period_avg_length or 5
+                
+                preds = calculate_predictions(last_cycle.start_date, avg_cycle, avg_period)
+                
+                # 4. Check & Send Alerts
+                is_ovulation_today = False
 
-            # 1. Get Settings
-            settings = db.query(CycleNotificationSettings).filter(CycleNotificationSettings.cycle_user_id == user.id).first()
-            if not settings: continue
-                
-            # 2. Get Last Cycle
-            last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == user.id).order_by(CycleLog.start_date.desc()).first()
-            if not last_cycle: continue
-                
-            # 3. Calculate Predictions
-            avg_cycle = user.cycle_avg_length or 28
-            avg_period = user.period_avg_length or 5
-            
-            preds = calculate_predictions(last_cycle.start_date, avg_cycle, avg_period)
-            
-            # 4. Check & Send Alerts
-            
-            # Priority Flag
-            is_ovulation_today = False
+                # C) Ovulation Alert (Peak day)
+                if settings.ovulation_alert:
+                    if preds['ovulation_date'] == today:
+                        is_ovulation_today = True
+                        _send_smtp_email(
+                            user.email, 
+                            "Día de Ovulación - GynSys",
+                            f'''
+                            <h1>Día de Ovulación</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Hoy es tu día estimado de ovulación. Es el momento de máxima fertilidad en tu ciclo.</p>
+                            '''
+                        )
 
-            # C) Ovulation Alert (Peak day) -- PROCESSED FIRST for Priority
-            if settings.ovulation_alert:
-                if preds['ovulation_date'] == today:
-                    is_ovulation_today = True
-                    _send_smtp_email(
-                        user.email, 
-                        "Día de Ovulación - GynSys",
-                        f'''
-                        <h1>Día de Ovulación</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Hoy es tu día estimado de ovulación. Es el momento de máxima fertilidad en tu ciclo.</p>
-                        '''
-                    )
-
-            # B) Fertile Window Alert (Start day) -- SKIPPED if Ovulation is today (though mathematically rare to overlap start w/ peak, safe to guard)
-            if settings.fertile_window_alerts and not is_ovulation_today:
-                if preds['fertile_window_start'] == today:
-                    _send_smtp_email(
-                        user.email, 
-                        "Tu ventana fértil ha comenzado - GynSys",
-                        f'''
-                        <h1>Ventana Fértil</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Tu ventana fértil comienza <strong>hoy</strong>. Tienes mayores probabilidades de embarazo durante los próximos días.</p>
-                        '''
-                    )
-            
-            # A) Period Alert (1 day before)
-            if settings.rhythm_method_enabled:
-                days_until_period = (preds['next_period_start'] - today).days
-                if days_until_period == 1:
-                    _send_smtp_email(
-                        user.email, 
-                        "Tu periodo comienza pronto - GynSys",
-                        f'''
-                        <h1>¡Prepárate!</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Según tus registros, tu periodo debería comenzar <strong>mañana</strong> ({preds['next_period_start'].strftime('%d/%m/%Y')}).</p>
-                        <p>Recuerda registrar el inicio en tu calendario.</p>
-                        '''
-                    )
-            
-            # E) Annual Gyn Checkup
-            if settings.gyn_checkup_alert:
-                # Check if today is the anniversary of registration (simple proxy for annual checkup)
-                if user.created_at and user.created_at.month == today.month and user.created_at.day == today.day:
-                     _send_smtp_email(
-                        user.email,
-                        "Recordatorio de Chequeo Anual - GynSys",
-                        f'''
-                        <h1>Chequeo Anual</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Ha pasado un año desde tu registro. Es un buen momento para agendar tu control ginecológico anual.</p>
-                        <p>Contacta a tu especialista para una cita.</p>
-                        '''
-                    )
-            
-            # PHASE 1: Rhythm Method Abstinence Alerts
-            if settings.rhythm_abstinence_alerts:
-                fertile_start = preds['fertile_window_start']
-                fertile_end = preds['fertile_window_end']
+                # B) Fertile Window Alert (Start day)
+                if settings.fertile_window_alerts and not is_ovulation_today:
+                    if preds['fertile_window_start'] == today:
+                        _send_smtp_email(
+                            user.email, 
+                            "Tu ventana fértil ha comenzado - GynSys",
+                            f'''
+                            <h1>Ventana Fértil</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Tu ventana fértil comienza <strong>hoy</strong>. Tienes mayores probabilidades de embarazo durante los próximos días.</p>
+                            '''
+                        )
                 
-                # Alert 1: START of fertile window (start abstinence)
-                # This is when the woman BECOMES fertile and should abstain
-                if fertile_start == today:
-                    _send_smtp_email(
-                        user.email,
-                        "🔴 Inicio Periodo de Abstinencia - Método del Ritmo",
-                        f'''
-                        <h1>Método del Ritmo: Periodo de Abstinencia</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Según el método del ritmo, <strong>hoy comienza tu ventana fértil</strong>.</p>
-                        <p>Si deseas evitar un embarazo de forma natural, este es el periodo de abstinencia.</p>
-                        <p>Tu ventana fértil durará hasta el <strong>{fertile_end.strftime('%d/%m/%Y')}</strong>.</p>
-                        <p>Los días seguros (no fértiles) volverán después de esta fecha.</p>
-                        '''
-                    )
+                # A) Period Alert (1 day before)
+                if settings.rhythm_method_enabled:
+                    days_until_period = (preds['next_period_start'] - today).days
+                    if days_until_period == 1:
+                        _send_smtp_email(
+                            user.email, 
+                            "Tu periodo comienza pronto - GynSys",
+                            f'''
+                            <h1>¡Prepárate!</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Según tus registros, tu periodo debería comenzar <strong>mañana</strong> ({preds['next_period_start'].strftime('%d/%m/%Y')}).</p>
+                            '''
+                        )
                 
-                # Alert 2: END of fertile window (end abstinence = safe days return)
-                # This is when the woman is NO LONGER fertile and can resume relations
-                if fertile_end == today:
+                # E) Annual Gyn Checkup
+                if settings.gyn_checkup_alert:
+                    if user.created_at and user.created_at.month == today.month and user.created_at.day == today.day:
+                         _send_smtp_email(
+                            user.email,
+                            "Recordatorio de Chequeo Anual - GynSys",
+                            f'''
+                            <h1>Chequeo Anual</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Ha pasado un año desde tu registro. Es un buen momento para agendar tu control ginecológico anual.</p>
+                            '''
+                        )
+                
+                # PHASE 1: Rhythm Method Abstinence Alerts
+                if settings.rhythm_abstinence_alerts:
+                    fertile_start = preds['fertile_window_start']
+                    fertile_end = preds['fertile_window_end']
+                    
+                    if fertile_start == today:
+                        _send_smtp_email(
+                            user.email,
+                            "🔴 Inicio Periodo de Abstinencia - Método del Ritmo",
+                            f'''
+                            <h1>Método del Ritmo: Periodo de Abstinencia</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Según el método del ritmo, <strong>hoy comienza tu ventana fértil</strong>.</p>
+                            <p>Tu ventana fértil durará hasta el <strong>{fertile_end.strftime('%d/%m/%Y')}</strong>.</p>
+                            '''
+                        )
+                    
+                    if fertile_end == today:
+                        next_period = preds['next_period_start']
+                        _send_smtp_email(
+                            user.email,
+                            "✅ Fin Periodo de Abstinencia - Método del Ritmo",
+                            f'''
+                            <h1>Método del Ritmo: Vuelta a Días Seguros</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Tu ventana fértil ha terminado.</p>
+                            <p>Según el método del ritmo, <strong>vuelves a tus días no fértiles (seguros)</strong>.</p>
+                            '''
+                        )
+                
+                # PHASE 1: Period Confirmation Reminders
+                if settings.period_confirmation_reminder:
                     next_period = preds['next_period_start']
-                    _send_smtp_email(
-                        user.email,
-                        "✅ Fin Periodo de Abstinencia - Método del Ritmo",
-                        f'''
-                        <h1>Método del Ritmo: Vuelta a Días Seguros</h1>
-                        <p>Hola {user.nombre_completo},</p>
-                        <p>Tu ventana fértil ha terminado.</p>
-                        <p>Según el método del ritmo, <strong>vuelves a tus días no fértiles (seguros)</strong>.</p>
-                        <p>Tu próximo periodo está estimado para el {next_period.strftime('%d/%m/%Y')}.</p>
-                        '''
+                    
+                    # Check if user has registered a new cycle since prediction
+                    has_new_cycle = next(
+                        (c for c in user.cycle_logs if c.start_date >= next_period),
+                        None
                     )
-            
-            # PHASE 1: Period Confirmation Reminders
-            if settings.period_confirmation_reminder:
-                next_period = preds['next_period_start']
+                    
+                    if not has_new_cycle:
+                        days_since_predicted = (today - next_period).days
+                        
+                        if days_since_predicted in [0, 1, 2] and (settings.last_period_reminder_sent != today):
+                            _send_smtp_email(
+                                user.email,
+                                "📅 ¿Llegó tu Periodo? - GynSys",
+                                f'''
+                                <h1>Confirmación de Periodo</h1>
+                                <p>Hola {user.nombre_completo},</p>
+                                <p>Por favor confirma si tu periodo ha llegado para mantener tus predicciones actualizadas.</p>
+                                '''
+                            )
+                            settings.last_period_reminder_sent = today
+                            db.commit()
+                            
+            except Exception as user_error:
+                logger.error(f"Error processing user {user.id}: {user_error}")
+                continue
                 
-                # Check if user has registered a new cycle since prediction
-                has_new_cycle = db.query(CycleLog).filter(
-                    CycleLog.cycle_user_id == user.id,
-                    CycleLog.start_date >= next_period
-                ).first()
-                
-                if not has_new_cycle:
-                    days_since_predicted = (today - next_period).days
-                    
-                    # Day 0: Predicted day
-                    if days_since_predicted == 0 and (settings.last_period_reminder_sent != today):
-                        _send_smtp_email(
-                            user.email,
-                            "📅 ¿Llegó tu Periodo? - GynSys",
-                            f'''
-                            <h1>Confirmación de Periodo</h1>
-                            <p>Hola {user.nombre_completo},</p>
-                            <p>Hoy está predicho el inicio de tu periodo.</p>
-                            <p><strong>¿Ya llegó?</strong> No olvides registrarlo en tu calendario para mantener predicciones precisas.</p>
-                            <p>Ingresa a tu calculadora menstrual para actualizar tu registro.</p>
-                            '''
-                        )
-                        settings.last_period_reminder_sent = today
-                        db.commit()
-                    
-                    # Day +1: One day late
-                    elif days_since_predicted == 1 and (settings.last_period_reminder_sent != today):
-                        _send_smtp_email(
-                            user.email,
-                            "📅 Recordatorio: Registro de Periodo",
-                            f'''
-                            <h1>¿Necesitas actualizar tu registro?</h1>
-                            <p>Hola {user.nombre_completo},</p>
-                            <p>Tu periodo estaba predicho para ayer. Si ya llegó, por favor regístralo.</p>
-                            <p>Si aún no ha llegado, esto es normal. Los ciclos pueden variar.</p>
-                            <p>Mantén tu calendario actualizado para mejores predicciones.</p>
-                            '''
-                        )
-                        settings.last_period_reminder_sent = today
-                        db.commit()
-                    
-                    # Day +2: Two days late
-                    elif days_since_predicted == 2 and (settings.last_period_reminder_sent != today):
-                        _send_smtp_email(
-                            user.email,
-                            "⏰ Último Recordatorio: Actualiza tu Ciclo",
-                            f'''
-                            <h1>Mantén tu Calendario Actualizado</h1>
-                            <p>Hola {user.nombre_completo},</p>
-                            <p>Han pasado 2 días desde tu periodo predicho.</p>
-                            <p>Si ya llegó, regístralo para mejorar futuras predicciones.</p>
-                            <p>Si no ha llegado y esto es inusual para ti, considera consultar a tu médico.</p>
-                            '''
-                        )
-                        settings.last_period_reminder_sent = today
-                        db.commit()
-                    
     except Exception as e:
-        print(f"Error in send_daily_cycle_events: {e}")
+        logger.critical(f"Critical error in send_daily_cycle_events: {e}")
     finally:
         db.close()
     
     return {"status": "completed"}
 
 
-@celery_app.task
-def send_daily_contraceptive_alert():
+@celery_app.task(bind=True, max_retries=3)
+def send_daily_contraceptive_alert(self):
     """
-    Runs every 15 minutes. Checks if any user scheduled a reminder for this time block.
-    Only sends ONCE per day per user.
-    Uses America/Caracas timezone (UTC-4).
+    Runs every 15 minutes. Sends contraceptive reminders.
+    Respects user's pill regimen configuration.
     """
-    from app.db.base import SessionLocal
-    from app.db.models.cycle_user import CycleUser
-    from app.db.models.cycle_predictor import CycleNotificationSettings, PregnancyLog
-    from datetime import datetime, timedelta, date
-    import pytz
-    
     db = SessionLocal()
     try:
-        # Use America/Caracas timezone (UTC-4)
+        from app.db.models.cycle_predictor import CycleNotificationSettings, PregnancyLog
         tz = pytz.timezone('America/Caracas')
         now = datetime.now(tz)
         today = now.date()
-        current_hour = now.hour
-        current_minute = now.minute
         
-        print(f"[CONTRACEPTIVE CHECK] Time block: {current_hour}:{current_minute:02d} (America/Caracas UTC-4)")
-
-        users = db.query(CycleUser).filter(CycleUser.is_active == True).all()
-        print(f"[DEBUG] Found {len(users)} active users")
+        # Ventana de tiempo: ±7 minutos
+        time_window = timedelta(minutes=7)
         
-        for user in users:
+        # Query optimizada con join
+        query = db.query(CycleUser, CycleNotificationSettings).join(
+            CycleNotificationSettings,
+            CycleUser.id == CycleNotificationSettings.cycle_user_id
+        ).filter(
+            CycleUser.is_active == True,
+            CycleNotificationSettings.contraceptive_enabled == True,
+            CycleNotificationSettings.contraceptive_time.isnot(None)
+        )
+        
+        for user, settings in query.yield_per(100):  # Procesar en batches
             try:
-                print(f"[DEBUG] Processing user: {user.email}")
+                # Verificar si ya se envió hoy
+                if settings.last_contraceptive_sent_date == today:
+                    continue
                 
-                # Skip if pregnant
+                # Checks pregnancy (active only)
                 is_pregnant = db.query(PregnancyLog).filter(
                     PregnancyLog.cycle_user_id == user.id, 
                     PregnancyLog.is_active == True
                 ).first()
-                if is_pregnant: 
-                    print(f"[SKIP] {user.email} - Pregnant")
+                if is_pregnant:
                     continue
 
-                # Lock the row to prevent race conditions
-                settings = db.query(CycleNotificationSettings).filter(
-                    CycleNotificationSettings.cycle_user_id == user.id
-                ).with_for_update().first()
-            
-                print(f"[DEBUG] {user.email} - Settings found: {settings is not None}")
-                
-                if not settings or not settings.contraceptive_enabled or not settings.contraceptive_time:
-                    print(f"[SKIP] {user.email} - No settings or not enabled (settings={settings}, enabled={settings.contraceptive_enabled if settings else None}, time={settings.contraceptive_time if settings else None})")
-                    continue
-                
-                # CRITICAL: Check if already sent today
-                # RULE REMOVED BY USER REQUEST to allow testing/multiple changes
-                # if settings.last_contraceptive_sent_date == today:
-                #     print(f"[SKIP] {user.email} - Already sent today ({today})")
-                #     continue
-                
-                # Parse user's preferred time
+                # Parse y comparar horas
                 try:
                     u_h, u_m = map(int, settings.contraceptive_time.split(':'))
-                    print(f"[DEBUG] {user.email} - Parsed time: {u_h}:{u_m:02d}, Current: {current_hour}:{current_minute:02d}")
+                    user_time = now.replace(hour=u_h, minute=u_m, second=0, microsecond=0)
+                    diff = abs((now - user_time).total_seconds())
                 except ValueError:
-                    print(f"[ERROR] {user.email} - Invalid time format: {settings.contraceptive_time}")
+                    logger.error(f"Invalid time format for user {user.id}: {settings.contraceptive_time}")
                     continue
                 
-                # INTELLIGENT REST WEEK DETECTION
-                # Most contraceptive pills: 21 active days + 7 rest days = 28-day cycle
-                # We need to find day 1 of the pill cycle to calculate which day we're on
+                if diff > time_window.total_seconds():
+                    continue
                 
-                # Use first contraceptive sent date as Day 1 reference
-                # If not available, use cycle start date
-                pill_cycle_day_1 = None
-                
-                # Try to find a reference date (first time contraceptive was enabled)
-                # In the absence of a specific "pill_start_date", we'll use last period as proxy
-                from app.db.models.cycle_predictor import CycleLog
-                last_cycle = db.query(CycleLog).filter(
-                    CycleLog.cycle_user_id == user.id
-                ).order_by(CycleLog.start_date.desc()).first()
-                
-                if last_cycle:
-                    # Use period start as reference for pill cycle
-                    pill_cycle_day_1 = last_cycle.start_date
-                    days_since_cycle_start = (today - pill_cycle_day_1).days
-                    
-                    # Calculate which day of the 28-day pill cycle we're on (1-28)
-                    pill_day = (days_since_cycle_start % 28) + 1
-                    
-                    print(f"[DEBUG] {user.email} - Pill cycle day: {pill_day} (started {pill_cycle_day_1})")
-                    
-                    # Days 22-28 are the rest week (no active pills)
-                    if 22 <= pill_day <= 28:
-                        print(f"[SKIP] {user.email} - Rest week (day {pill_day}/28)")
+                # Lógica de rest week configurable
+                if settings.contraceptive_regimen == "21/7":
+                    if _is_in_rest_week(user, today, db):
+                        logger.info(f"User {user.id} in rest week, skipping")
                         continue
-                    else:
-                        print(f"[OK] {user.email} - Active pill day ({pill_day}/28)")
-                else:
-                    print(f"[WARNING] {user.email} - No cycle reference found, sending reminder anyway")
                 
-                # Match Hour and Minute Window
-                if u_h == current_hour:
-                    diff = abs(u_m - current_minute)
-                    print(f"[DEBUG] {user.email} - Hour matches! Minute diff: {diff}")
-                    if diff < 8:
-                        print(f"[SENDING] {user.email} - Time match: {settings.contraceptive_time}")
-                        
-                        _send_smtp_email(
-                            user.email,
-                            "Recordatorio Anti-conceptivo - GynSys",
-                            f'''
-                            <h1>Recordatorio</h1>
-                            <p>Hola {user.nombre_completo},</p>
-                            <p>Es hora de tomar tu anticonceptivo ({settings.contraceptive_time}).</p>
-                            '''
-                        )
-                        
-                        # SEND PUSH
-                        _send_web_push(
-                            user.id, 
-                            "💊 Recordatorio Anticonceptivo", 
-                            f"Es hora de tomar tu {settings.contraceptive_frequency} ({settings.contraceptive_time})", 
-                            "/cycle/dashboard", 
-                            db
-                        )
-                        
-                        # Update immediately and commit
-                        settings.last_contraceptive_sent_date = today
-                        db.flush()  # Force immediate write
-                        db.commit()
-                        
-                        print(f"[SUCCESS] {user.email} - Marked as sent for {today}")
-                    else:
-                        print(f"[NO MATCH] {user.email} - Time diff too large: {diff} minutes")
-                else:
-                    print(f"[NO MATCH] {user.email} - Hour doesn't match: {u_h} != {current_hour}")
+                # Enviar notificación
+                _send_contraceptive_reminder(user, settings, db)
+                
+                # Marcar como enviado
+                settings.last_contraceptive_sent_date = today
+                db.commit()
                 
             except Exception as user_error:
-                print(f"[ERROR] Processing user {user.email}: {user_error}")
+                logger.error(f"Error processing user {user.id}: {user_error}")
                 db.rollback()
                 continue
-
+                
     except Exception as e:
-        print(f"[CRITICAL ERROR] send_daily_contraceptive_alert: {e}")
-        db.rollback()
+        logger.critical(f"Critical error: {e}")
+        # Reintentar tarea completa
+        raise self.retry(exc=e, countdown=60)
     finally:
         db.close()
     
     return {"status": "completed"}
+
+
+def _is_in_rest_week(user, today, db):
+    """Check if user is in rest week based on their cycle."""
+    from app.db.models.cycle_predictor import CycleLog
+    
+    last_cycle = db.query(CycleLog).filter(
+        CycleLog.cycle_user_id == user.id
+    ).order_by(CycleLog.start_date.desc()).first()
+    
+    if not last_cycle:
+        return False
+    
+    days_since = (today - last_cycle.start_date).days
+    pill_day = (days_since % 28) + 1
+    return 22 <= pill_day <= 28
+
+
+def _send_contraceptive_reminder(user, settings, db):
+    """Send email and push notification."""
+    _send_smtp_email(
+        user.email,
+        "💊 Recordatorio Anticonceptivo - GynSys",
+        f'''
+        <h1>Hora de tu anticonceptivo</h1>
+        <p>Hola {user.nombre_completo},</p>
+        <p>Es hora de tomar tu dosis ({settings.contraceptive_time}).</p>
+        <p>No olvides mantener la regularidad para máxima efectividad.</p>
+        '''
+    )
+    
+    _send_web_push(
+        user.id,
+        "💊 Recordatorio Anticonceptivo",
+        f"Es hora de tu dosis ({settings.contraceptive_time})",
+        "/cycle/dashboard",
+        db
+    )
 
 
 @celery_app.task
