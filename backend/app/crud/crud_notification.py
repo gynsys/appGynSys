@@ -43,7 +43,7 @@ def delete_rule(db: Session, rule_id: int) -> bool:
 
 # --- Push Subscriptions ---
 
-from app.db.models.notification import PushSubscription
+from app.db.models.push_subscription import PushSubscription
 from app.schemas.notification import PushSubscriptionSchema
 
 def create_or_update_subscription(db: Session, sub_in: PushSubscriptionSchema, user_id: int, user_agent: Optional[str] = None) -> PushSubscription:
