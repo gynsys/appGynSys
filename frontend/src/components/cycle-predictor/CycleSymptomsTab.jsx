@@ -70,7 +70,7 @@ const ThemeBadge = ({ item, isSelected, onClick, themeColor }) => {
 }
 
 export default function CycleSymptomsTab({ activePregnancy }) {
-    const { user } = useAuthStore()
+    const { user, isAuthenticated } = useAuthStore()
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [mood, setMood] = useState(null)
     const [flowIntensity, setFlowIntensity] = useState(null)
