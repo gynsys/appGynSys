@@ -8,40 +8,51 @@ import { useAuthStore } from '../../store/authStore'
 import { toast } from 'sonner'
 import { useGoogleLogin } from '@react-oauth/google'
 
-export default function CycleAuthDialog({ open, onOpenChange, initialView = 'register' }) {
-    const [authMode, setAuthMode] = useState(initialView) // 'register', 'login', 'forgot-password'
+export default function CycleAuthDialog({ open, onOpenChange, initialView = 'register', slug = 'mariel-herrera' }) {
+    const [authMode, setAuthMode] = useState(initialView)
+
+    // Estados separados para cada formulario
     const [registerData, setRegisterData] = useState({
         nombre_completo: '',
         email: '',
         password: ''
     })
-    const [isLoadingRegister, setIsLoadingRegister] = useState(false)
+
+    const [loginData, setLoginData] = useState({
+        email: '',
+        password: ''
+    })
+
     const [forgotEmail, setForgotEmail] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [isLoading, setIsLoading] = useState(false) // Nombre genérico para cualquier operación
 
-    // Reset mode when dialog opens
+    const { registerCycleUser, loginCycleUser, requestCyclePasswordReset, loginWithGoogle } = useAuthStore()
+
+    // Resetear todo cuando se abre/cierra el diálogo
     useEffect(() => {
         if (open) {
             setAuthMode(initialView)
             setShowPassword(false)
+        } else {
+            // Limpiar al cerrar
+            setRegisterData({ nombre_completo: '', email: '', password: '' })
+            setLoginData({ email: '', password: '' })
+            setForgotEmail('')
         }
     }, [open, initialView])
 
-    // We assume default slug 'mariel-herrera' for now as in the original code, 
-    // or we could pass it as prop if it varies.
-    const slug = 'mariel-herrera'
-    const { registerCycleUser, loginCycleUser, requestCyclePasswordReset, loginWithGoogle } = useAuthStore()
-
     const handleGoogleSuccess = async (tokenResponse) => {
-        setIsLoadingRegister(true)
+        setIsLoading(true)
         try {
             await loginWithGoogle(tokenResponse.access_token)
             handleAuthSuccess()
         } catch (err) {
             console.error("Google Login error:", err)
-            toast.error("Error al autenticar con Google")
+            const errorMsg = err.response?.data?.detail || "Error al autenticar con Google"
+            toast.error(errorMsg)
         } finally {
-            setIsLoadingRegister(false)
+            setIsLoading(false)
         }
     }
 
@@ -50,94 +61,106 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
         onError: () => toast.error('Error al iniciar sesión con Google'),
     })
 
+    // Validación básica de email
+    const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
     const handleRegisterSubmit = async (e) => {
         e.preventDefault()
+
+        if (!isValidEmail(registerData.email)) {
+            toast.error("Por favor ingresa un correo válido")
+            return
+        }
 
         if (!slug) {
             toast.error("Error crítico: No hay doctor asociado.")
             return
         }
 
-        setIsLoadingRegister(true)
+        setIsLoading(true)
         try {
             await registerCycleUser({
                 ...registerData,
                 doctor_slug: slug
             })
-            // console.log("Registration successful.")
             handleAuthSuccess()
         } catch (error) {
             console.error("Registration error:", error)
             const errorMsg = error.response?.data?.detail || "Error al registrarse. Intenta nuevamente."
             toast.error(errorMsg)
         } finally {
-            setIsLoadingRegister(false)
+            setIsLoading(false)
         }
     }
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault()
-        setIsLoadingRegister(true)
+
+        if (!isValidEmail(loginData.email)) {
+            toast.error("Por favor ingresa un correo válido")
+            return
+        }
+
+        setIsLoading(true)
         try {
-            await loginCycleUser(registerData.email, registerData.password)
+            await loginCycleUser(loginData.email, loginData.password)
             handleAuthSuccess()
         } catch (error) {
             console.error("Login error:", error)
-            toast.error("Error al iniciar sesión. Verifica tus credenciales.")
+            const errorMsg = error.response?.data?.detail || "Error al iniciar sesión. Verifica tus credenciales."
+            toast.error(errorMsg)
         } finally {
-            setIsLoadingRegister(false)
+            setIsLoading(false)
         }
     }
 
     const handleForgotPasswordSubmit = async (e) => {
         e.preventDefault()
-        setIsLoadingRegister(true)
+
+        if (!isValidEmail(forgotEmail)) {
+            toast.error("Por favor ingresa un correo válido")
+            return
+        }
+
+        setIsLoading(true)
         try {
             await requestCyclePasswordReset(forgotEmail)
             toast.success("Si el correo está registrado, recibirás un enlace de recuperación.")
             setAuthMode('login')
+            setForgotEmail('') // Limpiar después de éxito
         } catch (error) {
             console.error("Recovery error:", error)
             toast.error("Error al solicitar recuperación.")
         } finally {
-            setIsLoadingRegister(false)
+            setIsLoading(false)
         }
     }
 
     const handleAuthSuccess = () => {
         toast.success("¡Bienvenida!")
-        setRegisterData({
-            nombre_completo: '',
-            email: '',
-            password: ''
-        })
         onOpenChange(false)
     }
 
-    // Common input classes for dark mode visibility
     const inputClass = "bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md w-full max-w-[95vw] rounded-xl dark:bg-gray-900 dark:border-gray-700 duration-[1100ms]">
+            <DialogContent className="sm:max-w-md w-full max-w-[95vw] rounded-xl dark:bg-gray-900 dark:border-gray-700">
                 <DialogHeader>
                     <DialogTitle className="dark:text-gray-100">
-                        {authMode === 'login'
-                            ? 'Iniciar Sesión'
-                            : authMode === 'forgot-password'
-                                ? 'Recuperar Contraseña'
-                                : 'Crear Cuenta'}
+                        {authMode === 'login' && 'Iniciar Sesión'}
+                        {authMode === 'forgot-password' && 'Recuperar Contraseña'}
+                        {authMode === 'register' && 'Crear Cuenta'}
                     </DialogTitle>
                     <DialogDescription className="dark:text-gray-400">
-                        {authMode === 'login'
-                            ? 'Accede a tu cuenta para ver tu historial.'
-                            : authMode === 'forgot-password'
-                                ? 'Te ayudaremos a recuperar el acceso a tu cuenta.'
-                                : 'Crea una cuenta para recibir alertas sobre tu ciclo y guardar tu historial.'}
+                        {authMode === 'login' && 'Accede a tu cuenta para ver tu historial.'}
+                        {authMode === 'forgot-password' && 'Te ayudaremos a recuperar el acceso a tu cuenta.'}
+                        {authMode === 'register' && 'Crea una cuenta para recibir alertas sobre tu ciclo y guardar tu historial.'}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="py-2">
+                    {/* REGISTRO */}
                     {authMode === 'register' && (
                         <form onSubmit={handleRegisterSubmit} className="space-y-4">
                             <div className="space-y-2">
@@ -173,6 +196,7 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                                         value={registerData.password}
                                         onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
                                         required
+                                        minLength={6}
                                         className={`${inputClass} pr-10`}
                                     />
                                     <button
@@ -187,13 +211,13 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                             <Button
                                 type="submit"
                                 className="w-full rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white border-0 hover:opacity-90"
-                                disabled={isLoadingRegister}
+                                disabled={isLoading}
                             >
-                                {isLoadingRegister ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                 Registrarse
                             </Button>
 
-                            {/* Google Login Section */}
+                            {/* Google Login */}
                             <div className="mt-4">
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
@@ -206,8 +230,10 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                                 <button
                                     type="button"
                                     onClick={() => googleLogin()}
-                                    className="mt-4 w-full flex items-center justify-center gap-3 px-4 py-2 border rounded-full transition-all duration-200 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5"
+                                    disabled={isLoading}
+                                    className="mt-4 w-full flex items-center justify-center gap-3 px-4 py-2 border rounded-full transition-all duration-200 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5 disabled:opacity-50"
                                 >
+                                    {/* SVG de Google */}
                                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -220,13 +246,21 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
 
                             <div className="text-center text-sm text-muted-foreground mt-2">
                                 ¿Ya tienes cuenta?{' '}
-                                <button type="button" onClick={() => setAuthMode('login')} className="text-pink-600 hover:underline font-medium">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAuthMode('login')
+                                        setShowPassword(false)
+                                    }}
+                                    className="text-pink-600 hover:underline font-medium"
+                                >
                                     Inicia sesión
                                 </button>
                             </div>
                         </form>
                     )}
 
+                    {/* LOGIN */}
                     {authMode === 'login' && (
                         <form onSubmit={handleLoginSubmit} className="space-y-4">
                             <div className="space-y-2">
@@ -235,8 +269,8 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                                     id="login-email"
                                     type="email"
                                     placeholder="tu@email.com"
-                                    value={registerData.email}
-                                    onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
+                                    value={loginData.email}
+                                    onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                                     required
                                     className={inputClass}
                                 />
@@ -257,8 +291,8 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                                         id="login-password"
                                         type={showPassword ? "text" : "password"}
                                         placeholder="Ingresa tu contraseña"
-                                        value={registerData.password}
-                                        onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
+                                        value={loginData.password}
+                                        onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                                         required
                                         className={`${inputClass} pr-10`}
                                     />
@@ -274,13 +308,13 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                             <Button
                                 type="submit"
                                 className="w-full rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white border-0 hover:opacity-90"
-                                disabled={isLoadingRegister}
+                                disabled={isLoading}
                             >
-                                {isLoadingRegister ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                 Iniciar Sesión
                             </Button>
 
-                            {/* Google Login Section */}
+                            {/* Google Login */}
                             <div className="mt-4">
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
@@ -293,7 +327,8 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                                 <button
                                     type="button"
                                     onClick={() => googleLogin()}
-                                    className="mt-4 w-full flex items-center justify-center gap-3 px-4 py-2 border rounded-full transition-all duration-200 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5"
+                                    disabled={isLoading}
+                                    className="mt-4 w-full flex items-center justify-center gap-3 px-4 py-2 border rounded-full transition-all duration-200 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5 disabled:opacity-50"
                                 >
                                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -307,13 +342,21 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
 
                             <div className="text-center text-sm text-muted-foreground mt-2">
                                 ¿No tienes cuenta?{' '}
-                                <button type="button" onClick={() => setAuthMode('register')} className="text-pink-600 hover:underline font-medium dark:text-pink-400">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAuthMode('register')
+                                        setShowPassword(false)
+                                    }}
+                                    className="text-pink-600 hover:underline font-medium dark:text-pink-400"
+                                >
                                     Regístrate
                                 </button>
                             </div>
                         </form>
                     )}
 
+                    {/* FORGOT PASSWORD */}
                     {authMode === 'forgot-password' && (
                         <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                             <div className="text-center mb-4">
@@ -336,13 +379,17 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                             <Button
                                 type="submit"
                                 className="w-full rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white border-0 hover:opacity-90"
-                                disabled={isLoadingRegister}
+                                disabled={isLoading}
                             >
-                                {isLoadingRegister ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                 Enviar Enlace
                             </Button>
                             <div className="text-center text-sm text-muted-foreground mt-2">
-                                <button type="button" onClick={() => setAuthMode('login')} className="text-pink-600 hover:underline font-medium dark:text-pink-400">
+                                <button
+                                    type="button"
+                                    onClick={() => setAuthMode('login')}
+                                    className="text-pink-600 hover:underline font-medium dark:text-pink-400"
+                                >
                                     Volver al inicio de sesión
                                 </button>
                             </div>
