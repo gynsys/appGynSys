@@ -92,14 +92,12 @@ def get_vapid_public_key(
 @router.post("/subscribe")
 def subscribe_push(
     subscription: PushSubscriptionSchema,
-    request: Request,
     db: Session = Depends(get_db),
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Subscribe current user to Push Notifications."""
-    user_agent = request.headers.get("user-agent")
-    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription} (UA: {user_agent})")
-    crud.create_or_update_subscription(db, subscription, current_user.id, user_agent)
+    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription}")
+    crud.create_or_update_subscription(db, subscription, current_user.id)
     return {"message": "Subscribed successfully"}
 
 @router.post("/unsubscribe")
