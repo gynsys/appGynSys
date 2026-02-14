@@ -276,10 +276,10 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
                                                         setSettings({ ...settings, contraceptive_time: `${h}:${e.target.value}` })
                                                     }}
                                                 >
-                                                    <option value="00">00</option>
-                                                    <option value="15">15</option>
-                                                    <option value="30">30</option>
-                                                    <option value="45">45</option>
+                                                    {Array.from({ length: 12 }).map((_, i) => {
+                                                        const m = (i * 5).toString().padStart(2, '0')
+                                                        return <option key={m} value={m}>{m}</option>
+                                                    })}
                                                 </select>
                                             </div>
                                         </div>
