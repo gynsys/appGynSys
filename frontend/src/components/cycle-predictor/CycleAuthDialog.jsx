@@ -64,11 +64,21 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
     // Validación básica de email
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
+    // Validación de fortaleza de contraseña (sincronizada con backend)
+    const isValidPassword = (pass) => {
+        return pass.length >= 8 && /[A-Za-z]/.test(pass) && /\d/.test(pass)
+    }
+
     const handleRegisterSubmit = async (e) => {
         e.preventDefault()
 
         if (!isValidEmail(registerData.email)) {
             toast.error("Por favor ingresa un correo válido")
+            return
+        }
+
+        if (!isValidPassword(registerData.password)) {
+            toast.error("La contraseña debe tener al menos 8 caracteres, incluyendo letras y números")
             return
         }
 
@@ -86,8 +96,19 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
             handleAuthSuccess()
         } catch (error) {
             console.error("Registration error:", error)
-            const errorMsg = error.response?.data?.detail || "Error al registrarse. Intenta nuevamente."
-            toast.error(errorMsg)
+
+            // Manejo detallado de errores de validación (422) del backend
+            if (error.response?.status === 422) {
+                const details = error.response.data?.detail
+                if (Array.isArray(details)) {
+                    toast.error(details[0]?.msg || "Error de validación")
+                } else {
+                    toast.error(details || "Datos inválidos")
+                }
+            } else {
+                const errorMsg = error.response?.data?.detail || "Error al registrarse. Intenta nuevamente."
+                toast.error(errorMsg)
+            }
         } finally {
             setIsLoading(false)
         }
