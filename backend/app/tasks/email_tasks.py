@@ -114,6 +114,7 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
         failed_subs = []
         for sub in subs:
             try:
+                logger.info(f"Sending push to user {user_id}, sub_id {sub.id}")
                 webpush(
                     subscription_info={
                         "endpoint": sub.endpoint,
@@ -130,6 +131,7 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
                     },
                     timeout=10
                 )
+                logger.info(f"Push delivered successfully to sub_id {sub.id}")
             except WebPushException as ex:
                 if ex.response and ex.response.status_code in [404, 410]:
                     # Subscription expired/gone
@@ -1091,8 +1093,8 @@ def send_daily_contraceptive_alert(self):
         now = datetime.now(tz)
         today = now.date()
         
-        # Ventana de tiempo: ±7 minutos
-        time_window = timedelta(minutes=7)
+        # Ventana de tiempo: ±3 minutos (reducido para mayor precisión)
+        time_window = timedelta(minutes=3)
         
         # Query optimizada con join
         query = db.query(CycleUser, CycleNotificationSettings).join(
