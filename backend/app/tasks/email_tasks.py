@@ -1104,7 +1104,7 @@ def send_daily_contraceptive_alert(self):
             CycleNotificationSettings.contraceptive_time.isnot(None)
         )
         
-        for user, settings in query.yield_per(100):  # Procesar en batches
+        for user, settings in query.all():  # Procesar todos
             try:
                 # Verificar si ya se envió hoy
                 if settings.last_contraceptive_sent_date == today:
@@ -1131,7 +1131,7 @@ def send_daily_contraceptive_alert(self):
                     continue
                 
                 # Lógica de rest week configurable
-                if settings.contraceptive_regimen == "21/7":
+                if settings.contraceptive_frequency == "active_pills_only":
                     if _is_in_rest_week(user, today, db):
                         logger.info(f"User {user.id} in rest week, skipping")
                         continue
