@@ -439,6 +439,34 @@ def send_tenant_approval_email(self, email: str, doctor_name: str, slug: str):
 
 # --- Helper Functions (Ported from Frontend) ---
 
+def calculate_predictions(last_period_date: date, cycle_length: int = 28, period_length: int = 5) -> dict:
+    """
+    Calculate cycle predictions based on last period date.
+    Returns:
+    - next_period_start
+    - next_period_end
+    - ovulation_date
+    - fertile_window_start
+    - fertile_window_end
+    """
+    next_period_start = last_period_date + timedelta(days=cycle_length)
+    next_period_end = next_period_start + timedelta(days=period_length - 1)
+    
+    # Luteal phase is typically 14 days before next period
+    ovulation_date = next_period_start - timedelta(days=14)
+    
+    # Fertile window: 5 days before ovulation + ovulation day
+    fertile_window_start = ovulation_date - timedelta(days=5)
+    fertile_window_end = ovulation_date 
+    
+    return {
+        "next_period_start": next_period_start,
+        "next_period_end": next_period_end,
+        "ovulation_date": ovulation_date,
+        "fertile_window_start": fertile_window_start,
+        "fertile_window_end": fertile_window_end
+    }
+
 def to_roman(num):
     if not isinstance(num, int) or num < 1: return ""
     val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
