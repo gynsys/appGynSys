@@ -23,5 +23,12 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=8, minute=0), # Change evaluation to 8:00 AM as requested
     },
 }
-# Auto-discover tasks in the tasks module
-celery_app.autodiscover_tasks(['app.tasks.email_tasks', 'app.tasks.notification_tasks'])
+# Auto-discover tasks and ensure modules are loaded
+celery_app.autodiscover_tasks(['app'])
+
+# Explicitly import task modules to ensure they register their tasks with the app instance
+try:
+    import app.tasks.email_tasks
+    import app.tasks.notification_tasks
+except ImportError:
+    pass
