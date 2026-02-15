@@ -1,82 +1,178 @@
 """
-Notification models for the Dynamic Notification System.
+Notification models - Simplified: 19 fixed types, editable content only.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Enum, JSON
+from datetime import datetime
+from typing import Optional, Dict, Any, List
+
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime, 
+    ForeignKey, Text, JSON, Index
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base import Base
 import enum
+
+from app.db.base import Base
+
 
 class NotificationChannel(str, enum.Enum):
     EMAIL = "email"
     PUSH = "push"
-    DUAL = "dual" # Tries Push first, then Email
+    DUAL = "dual"
 
-class NotificationType(str, enum.Enum):
-    CYCLE_PHASE = "cycle_phase" # e.g. "Follicular Phase Alert"
-    SYMPTOM_ALERT = "symptom_alert" # e.g. "Headache Warning"
-    PRENATAL_WEEKLY = "prenatal_weekly" # e.g. "Week 12 Update"
-    PRENATAL_MILESTONE = "prenatal_milestone" # e.g. "First Trimester Complete"
-    PRENATAL_DAILY = "prenatal_daily" # e.g. "Daily Tip"
-    PRENATAL_ALERT = "prenatal_alert" # e.g. "Warning Sign"
-    SYSTEM = "system" # System notifications
-    CUSTOM = "custom" # One-off or generic
+
+# Los 19 tipos de notificación hardcodeados
+VALID_NOTIFICATION_TYPES = {
+    # Contraceptive (4)
+    "contraceptive_daily",
+    "contraceptive_rest_start", 
+    "contraceptive_rest_end",
+    "contraceptive_missed",
+    
+    # Cycle (6)
+    "period_prediction",
+    "period_start",
+    "period_confirmation_0",
+    "period_confirmation_1",
+    "period_confirmation_2",
+    "period_irregular",
+    
+    # Fertility (4)
+    "fertile_window_start",
+    "fertility_peak",
+    "ovulation_day",
+    "fertile_window_end",
+    
+    # Pregnancy (4)
+    "prenatal_weekly",
+    "prenatal_milestone",
+    "prenatal_daily_tip",
+    "prenatal_alert",
+    
+    # Health (1)
+    "annual_checkup"
+}
 
 
 class NotificationRule(Base):
+    """
+    Notification rule - FIXED type, EDITABLE content only.
+    Cannot create new types, only modify existing 19.
+    """
     __tablename__ = "notification_rules"
 
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(Integer, ForeignKey("doctors.id"), nullable=False, index=True)
     
-    name = Column(String, nullable=False) # Internal name for the doctor
-    notification_type = Column(String, nullable=False)  # Use String to match DB lowercase values
+    # IDENTIFICADOR FIJO - Inmutable after creation
+    notification_type = Column(String(50), nullable=False, index=True)
+    # Must be one of VALID_NOTIFICATION_TYPES
     
-    # Logic Trigger: {"days_before_period": 2} or {"gestation_week": 12}
+    # LÓGICA DE DISPARO - Fija, no editable
     trigger_condition = Column(JSON, nullable=False, default={})
+    priority = Column(Integer, default=50)  # Fijo por tipo
     
-    channel = Column(String, default="email")  # Use String to match DB lowercase values
-    
-    # HTML Template or Plain Text. variable placeholders: {patient_name}, {date}
+    # CONTENIDO EDITABLE
+    title_template = Column(String(255), nullable=False)
     message_template = Column(Text, nullable=False)
+    message_text_template = Column(Text, nullable=True)
     
+    # CONFIGURACIÓN EDITABLE
+    channel = Column(String(20), default="dual")
+    send_time = Column(String(10), default="08:00")  # HH:MM format
+    
+    # ESTADO
     is_active = Column(Boolean, default=True)
+    is_edited = Column(Boolean, default=False)  # Track if modified from default
+    
+    # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
     doctor = relationship("Doctor", backref="notification_rules")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_rule_tenant_type', 'tenant_id', 'notification_type', unique=True),
+    )
+    
+    def validate_type(self) -> bool:
+        """Check if notification_type is valid."""
+        return self.notification_type in VALID_NOTIFICATION_TYPES
+    
+    def render_content(self, context: dict) -> dict:
+        """Render templates with context variables."""
+        try:
+            return {
+                "title": self.title_template.format(**context),
+                "message_html": self.message_template.format(**context),
+                "message_text": self.message_text_template.format(**context) if self.message_text_template else None
+            }
+        except KeyError as e:
+            # Fallback if variable missing
+            return {
+                "title": self.title_template,
+                "message_html": self.message_template,
+                "message_text": self.message_text_template,
+                "render_error": f"Missing variable: {e}"
+            }
+    
+    def reset_to_default(self, defaults: dict):
+        """Restore default content."""
+        self.title_template = defaults.get("title_template", "")
+        self.message_template = defaults.get("message_template", "")
+        self.message_text_template = defaults.get("message_text_template")
+        self.channel = defaults.get("channel", "dual")
+        self.send_time = defaults.get("send_time", "08:00")
+        self.is_edited = False
 
 
 class NotificationLog(Base):
+    """History of sent notifications."""
     __tablename__ = "notification_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=True) # element deleted? keep log
+    notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=True)
     recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
     
+    # What was sent
+    notification_type = Column(String(50), nullable=False)
+    title_sent = Column(String(255), nullable=False)
+    channel_used = Column(String(20), nullable=False)
+    
+    # Result
     sent_at = Column(DateTime(timezone=True), server_default=func.now())
-    status = Column(String, default="sent") # sent, failed, skipped
-    channel_used = Column(String) # email, push
+    status = Column(String(20), default="sent")  # sent, failed, skipped
     error_message = Column(Text, nullable=True)
+    
+    # Context snapshot for debugging
+    context_snapshot = Column(JSON, default=dict)
+
+    # Relationships
+    rule = relationship("NotificationRule")
+    recipient = relationship("CycleUser", backref="notification_logs")
+
 
 class PendingNotification(Base):
+    """Queue for notifications to be sent at a specific time."""
     __tablename__ = "pending_notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=False)
+    notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=True)
     recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
     
-    # Rendered content
-    subject = Column(String, nullable=False)
-    body = Column(Text, nullable=False)
+    # Content to send
+    subject = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False) # HTML content
+    message_text = Column(Text, nullable=True) # Plain text for Push
     
-    # Metadata for delivery
+    # Scheduling
     scheduled_for = Column(DateTime(timezone=True), nullable=False, index=True)
-    channel = Column(String, nullable=False, default="dual") # email, push, dual
+    channel = Column(String(20), default="dual") # push, email, dual
     
-    # Status tracking
-    status = Column(String, default="pending", index=True) # pending, sent, failed, retrying
+    # Status
+    status = Column(String(20), default="pending") # pending, sent, failed, retrying
     retry_count = Column(Integer, default=0)
     last_error = Column(Text, nullable=True)
     
@@ -86,6 +182,3 @@ class PendingNotification(Base):
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser")
-
-
-

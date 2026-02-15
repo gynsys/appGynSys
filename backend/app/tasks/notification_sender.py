@@ -42,6 +42,8 @@ def process_notification_queue():
                     log = NotificationLog(
                         notification_rule_id=item.notification_rule_id,
                         recipient_id=item.recipient_id,
+                        notification_type=item.rule.notification_type if item.rule else "unknown",
+                        title_sent=item.subject,
                         status="sent",
                         channel_used=channel_used
                     )
@@ -84,8 +86,10 @@ def send_dual_notification_logic(db, item: PendingNotification):
     
     if try_push:
         try:
+            # Use message_text for push if available
+            push_body = item.message_text or item.subject
             # _send_web_push internally queries subscriptions and sends to all
-            _send_web_push(user.id, item.subject, item.body, "/cycle/dashboard", db)
+            _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
             push_success = True 
         except Exception as e:
             error_msg = f"Push error: {str(e)}"

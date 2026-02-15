@@ -10,7 +10,7 @@ from app.core.celery_app import celery_app
 from app.db.base import SessionLocal
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
-from app.db.models.notification import NotificationRule, NotificationLog, NotificationType, PendingNotification
+from app.db.models.notification import NotificationRule, NotificationLog, PendingNotification
 from app.db.models.cycle_predictor import CycleLog, PregnancyLog, SymptomLog, CycleNotificationSettings
 from app.cycle_predictor.logic import calculate_predictions
 
@@ -106,9 +106,9 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings: CycleNot
 
     # Master switches filtering
     if context.get("is_pregnant"):
-        is_daily = (rule.notification_type == NotificationType.PRENATAL_DAILY)
-        is_alert = (rule.notification_type == NotificationType.PRENATAL_ALERT)
-        is_milestone = (rule.notification_type == NotificationType.PRENATAL_MILESTONE)
+        is_daily = (rule.notification_type == "prenatal_daily_tip")
+        is_alert = (rule.notification_type == "prenatal_alert")
+        is_milestone = (rule.notification_type == "prenatal_milestone")
 
         if is_daily and not user_settings.prenatal_daily_tips: return False
         if is_alert and not user_settings.prenatal_symptom_alerts: return False
@@ -142,16 +142,16 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings: CycleNot
 
     # Logic matching
     if context.get("is_pregnant"):
-        if rule.notification_type == NotificationType.PRENATAL_MILESTONE:
+        if rule.notification_type == "prenatal_milestone":
              if "gestation_week" in trigger:
                 return trigger["gestation_week"] == context.get("gestation_week")
              if "semana_inicio" in trigger and "semana_fin" in trigger:
                   return context.get("gestation_week") == trigger["semana_inicio"]
         
-        if rule.notification_type == NotificationType.PRENATAL_DAILY:
+        if rule.notification_type == "prenatal_daily_tip":
              return (context.get("trimester") == trigger.get("trimestre")) and (context.get("gestation_day_of_week") == trigger.get("dia"))
                  
-        if rule.notification_type == NotificationType.PRENATAL_ALERT:
+        if rule.notification_type == "prenatal_alert":
              trigger_symptom = trigger.get("sintoma_disparador")
              reported_symptoms = context.get("reported_symptoms", [])
              if trigger_symptom and reported_symptoms:
@@ -245,34 +245,28 @@ def process_dynamic_notifications():
                         if already_pending: continue
 
                         if evaluate_rule(rule, smart_ctx, user_settings):
-                            # Stagger logic: Tips/Daily go at 10 AM, Alerts at 18:30
-                            is_tip = (rule.notification_type in [NotificationType.PRENATAL_DAILY, NotificationType.CUSTOM])
-                            if not is_tip:
-                                name_lower = rule.name.lower()
-                                is_tip = "consejo" in name_lower or "tip" in name_lower
-                            
-                            target_time = now.replace(hour=10 if is_tip else 18, minute=0 if is_tip else 30, second=0, microsecond=0)
+                            # Use rule.send_time (HH:MM)
+                            try:
+                                hour, minute = map(int, rule.send_time.split(':'))
+                                target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                            except:
+                                target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
+                                
                             if target_time < now:
-                                target_time = now + timedelta(minutes=5) # In case we are running late
+                                target_time = now + timedelta(minutes=5) # Run soon if time passed
 
-                            # Render Body
-                            body = rule.message_template
+                            # Render Content
                             render_vars = { "patient_name": user.nombre_completo }
                             render_vars.update(smart_ctx)
                             
-                            for key, val in render_vars.items():
-                                if val is not None:
-                                    body = body.replace(f"{{{key}}}", str(val))
-                            
-                            # Specific fix for pill_number
-                            if "{pill_number}" in body and "pill_number" not in render_vars:
-                                 body = body.replace("{pill_number}", "#")
+                            rendered = rule.render_content(render_vars)
 
                             pending = PendingNotification(
                                 notification_rule_id=rule.id,
                                 recipient_id=user.id,
-                                subject=rule.name,
-                                body=body,
+                                subject=rendered["title"],
+                                body=rendered["message_html"],
+                                message_text=rendered["message_text"],
                                 scheduled_for=target_time,
                                 channel=rule.channel,
                                 status="pending"
