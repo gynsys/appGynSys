@@ -50,21 +50,29 @@ export default function CycleReportPage() {
                 ])
 
                 console.log("CycleReportPage: Data received. Processing...");
-                const uniqueCycles = cyclesData && Array.isArray(cyclesData)
-                    ? Object.values(cyclesData.reduce((acc, current) => {
-                        if (!current.start_date) return acc;
-                        const dateKey = current.start_date.split('T')[0];
+
+                // Process cycles with extreme caution
+                let uniqueCycles = [];
+                if (Array.isArray(cyclesData)) {
+                    uniqueCycles = Object.values(cyclesData.reduce((acc, current) => {
+                        if (!current || !current.start_date) return acc;
+                        // Use first 10 chars for date key (YYYY-MM-DD)
+                        const dateKey = String(current.start_date).substring(0, 10);
                         if (!acc[dateKey] || (!acc[dateKey].end_date && current.end_date)) {
                             acc[dateKey] = current;
                         }
                         return acc;
-                    }, {})).sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                    : [];
+                    }, {})).sort((a, b) => {
+                        const dateA = new Date(a.start_date);
+                        const dateB = new Date(b.start_date);
+                        return isNaN(dateB) || isNaN(dateA) ? 0 : dateB - dateA;
+                    });
+                }
 
                 setHistory(uniqueCycles)
                 setStats(statsData)
-                setSymptoms(symptomsData || [])
-                console.log("CycleReportPage: Data processed successfully.");
+                setSymptoms(Array.isArray(symptomsData) ? symptomsData : [])
+                console.log("CycleReportPage: Data processed successfully. Cycles:", uniqueCycles.length);
             } catch (e) {
                 console.error("Critical error in CycleReportPage loadData:", e)
             } finally {
