@@ -1012,8 +1012,44 @@ def send_daily_cycle_events():
                             '''
                         )
                 
-                # PHASE 1: Rhythm Method Abstinence Alerts
+                # PHASE 1: Rhythm Method Alerts (10 Total: 5 before, 5 after)
                 if settings.rhythm_abstinence_alerts:
+                    next_start = preds['next_period_start']
+                    cycle_day = preds['cycle_day']
+                    period_len = user.period_avg_length or 5
+                    
+                    # 5 Days after period culmination (Safe Days)
+                    # culminacion = day period_len. 5 days after = day period_len + 1 to period_len + 5
+                    is_post_period = (period_len < cycle_day <= period_len + 5)
+                    
+                    # 5 Days before period start
+                    # days_to_start = (next_start - today).days. If 1 to 5.
+                    days_to_start = (next_start - today).days
+                    is_pre_period = (1 <= days_to_start <= 5)
+                    
+                    if is_post_period or is_pre_period:
+                        day_num = (cycle_day - period_len) if is_post_period else (6 - days_to_start)
+                        phase_name = "Post-periodo" if is_post_period else "Pre-periodo"
+                        
+                        _send_smtp_email(
+                            user.email,
+                            f"✅ Método del Ritmo: Día Seguro ({day_num}/5 {phase_name})",
+                            f'''
+                            <h1>Método del Ritmo: Días Seguros</h1>
+                            <p>Hola {user.nombre_completo},</p>
+                            <p>Te encuentras en tus <strong>días no fértiles (seguros)</strong> según el método del ritmo.</p>
+                            <p>Este es el día {day_num} de 5 en tu fase {phase_name.lower()}.</p>
+                            '''
+                        )
+                        _send_web_push(
+                            user.id,
+                            f"✅ Método del Ritmo: Día Seguro",
+                            f"Día {day_num}/5 de tu fase {phase_name.lower()}. Vuelves a tus días no fértiles.",
+                            "/cycle/dashboard",
+                            db
+                        )
+
+                    # Original fertile window edge alerts (Keep them as high-priority alerts)
                     fertile_start = preds['fertile_window_start']
                     fertile_end = preds['fertile_window_end']
                     
@@ -1037,7 +1073,6 @@ def send_daily_cycle_events():
                         )
                     
                     if fertile_end == today:
-                        next_period = preds['next_period_start']
                         _send_smtp_email(
                             user.email,
                             "✅ Fin Periodo de Abstinencia - Método del Ritmo",
@@ -1107,8 +1142,8 @@ def send_daily_contraceptive_alert(self):
         now = datetime.now(tz)
         today = now.date()
         
-        # Ventana de tiempo: ±3 minutos (reducido para mayor precisión)
-        time_window = timedelta(minutes=3)
+        # Ventana de tiempo: ±16 minutos (para cubrir el intervalo de 15m de Celery)
+        time_window = timedelta(minutes=16)
         
         # Query optimizada con join
         query = db.query(CycleUser, CycleNotificationSettings).join(
@@ -1122,9 +1157,9 @@ def send_daily_contraceptive_alert(self):
         
         for user, settings in query.all():  # Procesar todos
             try:
-                # Comentado para fase de pulido: permite varias alertas si cambia la hora
-                # if settings.last_contraceptive_sent_date == today:
-                #     continue
+                # Evitar duplicados en el mismo día
+                if settings.last_contraceptive_sent_date == today:
+                    continue
                 
                 # Checks pregnancy (active only)
                 is_pregnant = db.query(PregnancyLog).filter(

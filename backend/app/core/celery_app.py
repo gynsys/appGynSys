@@ -20,7 +20,7 @@ celery_app.conf.beat_schedule = {
     },
     "send-daily-cycle-events": {
         "task": "app.tasks.notification_tasks.process_dynamic_notifications",
-        "schedule": crontab(hour=19, minute=0), # Keep cycle events daily at 7 PM
+        "schedule": crontab(hour=8, minute=0), # Change evaluation to 8:00 AM as requested
     },
 }
 # Auto-discover tasks in the tasks module

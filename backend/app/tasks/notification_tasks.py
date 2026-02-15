@@ -1,9 +1,13 @@
+from datetime import date, datetime, timedelta
+import json
+import traceback
 from app.core.celery_app import celery_app
 from app.db.base import SessionLocal
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
 from app.db.models.notification import NotificationRule, NotificationLog, NotificationType, NotificationChannel
 from app.db.models.cycle_predictor import CycleLog, PregnancyLog, SymptomLog
+from app.cycle_predictor.logic import calculate_predictions
 
 def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: PregnancyLog, db_session=None) -> dict:
     """
@@ -296,13 +300,30 @@ def send_dual_notification(db, user, rule, context_vars):
 
 
 @celery_app.task
+def send_scheduled_notification_task(user_id: int, rule_id: int, context_vars: dict):
+    """
+    Background task to actually send the notification safely at the requested ETA.
+    """
+    db = SessionLocal()
+    try:
+        user = db.query(CycleUser).filter(CycleUser.id == user_id).first()
+        rule = db.query(NotificationRule).filter(NotificationRule.id == rule_id).first()
+        if not user or not rule:
+            return
+            
+        send_dual_notification(db, user, rule, context_vars)
+    finally:
+        db.close()
+
+@celery_app.task
 def process_dynamic_notifications():
     """
-    Daily Task: Evaluate Smart Rules -> Users.
+    Daily Task (runs at 8:00 AM): Evaluate Smart Rules -> Schedule Sends.
     """
     db = SessionLocal()
     try:
         doctors = db.query(Doctor).filter(Doctor.is_active == True).all()
+        today = date.today()
         
         for doctor in doctors:
             rules = db.query(NotificationRule).filter(
@@ -317,22 +338,28 @@ def process_dynamic_notifications():
                 CycleUser.is_active == True
             ).all()
             
-            from app.db.models.cycle_predictor import CycleNotificationSettings
-            
             for user in users:
                 try:
-                    # Load Settings
+                    # Logic to identify if it's a "Tip" vs "Alert"
+                    # User requested Tips at 10 AM, others at 6-8 PM (18:30)
+                    base_time = datetime.now()
+                    tip_eta = base_time.replace(hour=10, minute=0, second=0, microsecond=0)
+                    alert_eta = base_time.replace(hour=18, minute=30, second=0, microsecond=0)
+                    
+                    # Ensure ETA is in the future (if evaluation runs late)
+                    if tip_eta < base_time: tip_eta = base_time + timedelta(minutes=1)
+                    if alert_eta < base_time: alert_eta = base_time + timedelta(minutes=1)
+
+                    from app.db.models.cycle_predictor import CycleNotificationSettings
                     user_settings = db.query(CycleNotificationSettings).filter(
                         CycleNotificationSettings.cycle_user_id == user.id
                     ).first()
 
-                    # Load Pregnancy
                     pregnancy = db.query(PregnancyLog).filter(
                          PregnancyLog.cycle_user_id == user.id, 
                          PregnancyLog.is_active == True
                     ).first()
                     
-                    # Calculate Context
                     predictions = None
                     if not pregnancy:
                          last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == user.id).order_by(CycleLog.start_date.desc()).first()
@@ -341,16 +368,14 @@ def process_dynamic_notifications():
                     
                     smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
                     
-                    # Enrich ctx for template rendering
                     render_vars = {
                         "patient_name": user.nombre_completo,
-                        "today": date.today()
+                        "today": today
                     }
                     render_vars.update(smart_ctx)
                     
-                    # Evaluate Rules
                     for rule in rules:
-                        # Check Frequency Cap: Max 1 per rule per day
+                        # Frequency Cap
                         today_start = datetime.now().replace(hour=0, minute=0, second=0)
                         already_sent = db.query(NotificationLog).filter(
                             NotificationLog.notification_rule_id == rule.id,
@@ -361,7 +386,24 @@ def process_dynamic_notifications():
                         if already_sent: continue
 
                         if evaluate_rule(rule, smart_ctx, user_settings):
-                            send_dual_notification(db, user, rule, render_vars)
+                            # Stagger logic: Tips/Daily go at 10 AM, Alerts at 18:30
+                            is_tip = (rule.notification_type in [NotificationType.PRENATAL_DAILY, NotificationType.CUSTOM])
+                            # heuristic: if "consejo" or "tip" in name
+                            if not is_tip:
+                                name_lower = rule.name.lower()
+                                is_tip = "consejo" in name_lower or "tip" in name_lower
+                            
+                            target_eta = tip_eta if is_tip else alert_eta
+                            
+                            # Schedule the send
+                            send_scheduled_notification_task.apply_async(
+                                kwargs={
+                                    "user_id": user.id,
+                                    "rule_id": rule.id,
+                                    "context_vars": render_vars
+                                },
+                                eta=target_eta
+                            )
                             
                 except Exception as e:
                     print(f"Error processing user {user.id}: {traceback.format_exc()}")
