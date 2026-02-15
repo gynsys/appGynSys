@@ -58,7 +58,9 @@ function App() {
     const initApp = async () => {
       // Try to load user if token exists (restore session)
       const token = localStorage.getItem('access_token');
-      if (token && !useAuthStore.getState().user) {
+      const cycleToken = localStorage.getItem('cycle_access_token');
+
+      if ((token || cycleToken) && !useAuthStore.getState().user) {
         await useAuthStore.getState().loadUser();
       }
 

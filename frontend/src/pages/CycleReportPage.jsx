@@ -24,6 +24,11 @@ export default function CycleReportPage() {
             console.log("CycleReportPage: Starting data load. isAuthenticated:", isAuthenticated);
 
             if (isAuthenticated === false) {
+                const hasTokens = localStorage.getItem('access_token') || localStorage.getItem('cycle_access_token');
+                if (hasTokens) {
+                    console.log("CycleReportPage: Tokens found but store says not authenticated. Waiting...");
+                    return; // Wait for App initialization
+                }
                 console.warn("CycleReportPage: Not authenticated, stopping load.");
                 setLoading(false);
                 return;
