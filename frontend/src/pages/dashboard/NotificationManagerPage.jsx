@@ -239,26 +239,6 @@ export default function NotificationManagerPage() {
                 </div>
             </div>
 
-
-            <button
-                onClick={() => {
-                    setEditingId(null)
-                    setFormData({
-                        name: '',
-                        type: 'cycle_phase',
-                        trigger_days: 0,
-                        trigger_event: 'days_before_period',
-                        message: 'Hola {patient_name}, ...',
-                        channel: 'dual'
-                    })
-                    setIsCreateOpen(true)
-                }}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white flex items-center gap-2"
-            >
-                <Plus className="w-5 h-5" />
-                Nueva Notificación
-            </button>
-
             {/* Card Blueprint */}
             <div className="bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200 overflow-hidden">
 
