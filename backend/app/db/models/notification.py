@@ -60,6 +60,29 @@ class NotificationLog(Base):
     channel_used = Column(String) # email, push
     error_message = Column(Text, nullable=True)
 
+class PendingNotification(Base):
+    __tablename__ = "pending_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=False)
+    recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
+    
+    # Rendered content
+    subject = Column(String, nullable=False)
+    body = Column(Text, nullable=False)
+    
+    # Metadata for delivery
+    scheduled_for = Column(DateTime(timezone=True), nullable=False, index=True)
+    channel = Column(String, nullable=False, default="dual") # email, push, dual
+    
+    # Status tracking
+    status = Column(String, default="pending", index=True) # pending, sent, failed, retrying
+    retry_count = Column(Integer, default=0)
+    last_error = Column(Text, nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser")
