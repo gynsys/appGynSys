@@ -1028,6 +1028,13 @@ def send_daily_cycle_events():
                             <p>Tu ventana fértil durará hasta el <strong>{fertile_end.strftime('%d/%m/%Y')}</strong>.</p>
                             '''
                         )
+                        _send_web_push(
+                            user.id,
+                            "🔴 Método del Ritmo: Inicio Abstinencia",
+                            f"Hoy comienza tu ventana fértil hasta el {fertile_end.strftime('%d/%m/%Y')}",
+                            "/cycle/dashboard",
+                            db
+                        )
                     
                     if fertile_end == today:
                         next_period = preds['next_period_start']
@@ -1040,6 +1047,13 @@ def send_daily_cycle_events():
                             <p>Tu ventana fértil ha terminado.</p>
                             <p>Según el método del ritmo, <strong>vuelves a tus días no fértiles (seguros)</strong>.</p>
                             '''
+                        )
+                        _send_web_push(
+                            user.id,
+                            "✅ Método del Ritmo: Días Seguros",
+                            "Tu ventana fértil ha terminado. Vuelves a tus días no fértiles.",
+                            "/cycle/dashboard",
+                            db
                         )
                 
                 # PHASE 1: Period Confirmation Reminders
@@ -1108,9 +1122,9 @@ def send_daily_contraceptive_alert(self):
         
         for user, settings in query.all():  # Procesar todos
             try:
-                # Verificar si ya se envió hoy
-                if settings.last_contraceptive_sent_date == today:
-                    continue
+                # Comentado para fase de pulido: permite varias alertas si cambia la hora
+                # if settings.last_contraceptive_sent_date == today:
+                #     continue
                 
                 # Checks pregnancy (active only)
                 is_pregnant = db.query(PregnancyLog).filter(
