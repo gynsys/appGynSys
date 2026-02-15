@@ -12,10 +12,28 @@ export default function CycleReportPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        // Safety timeout to prevent permanent loading if something hangs
+        const timeoutId = setTimeout(() => {
+            if (loading) {
+                console.warn("CycleReportPage: Loading reached 10s timeout, forcing stop.");
+                setLoading(false);
+            }
+        }, 10000);
+
         const loadData = async () => {
-            if (!isAuthenticated) return
+            console.log("CycleReportPage: Starting data load. isAuthenticated:", isAuthenticated);
+
+            if (isAuthenticated === false) {
+                console.warn("CycleReportPage: Not authenticated, stopping load.");
+                setLoading(false);
+                return;
+            }
+
+            if (isAuthenticated === null) return; // Wait for auth store to initialize
+
             try {
                 // Fetch with individual error handling to prevent one failure from blocking others
+                console.log("CycleReportPage: Fetching cycles, stats, and symptoms...");
                 const [cyclesData, statsData, symptomsData] = await Promise.all([
                     cycleService.getCycles().catch(err => {
                         console.error("Cycles fetch error:", err);
@@ -31,6 +49,7 @@ export default function CycleReportPage() {
                     })
                 ])
 
+                console.log("CycleReportPage: Data received. Processing...");
                 const uniqueCycles = cyclesData && Array.isArray(cyclesData)
                     ? Object.values(cyclesData.reduce((acc, current) => {
                         if (!current.start_date) return acc;
@@ -45,6 +64,7 @@ export default function CycleReportPage() {
                 setHistory(uniqueCycles)
                 setStats(statsData)
                 setSymptoms(symptomsData || [])
+                console.log("CycleReportPage: Data processed successfully.");
             } catch (e) {
                 console.error("Critical error in CycleReportPage loadData:", e)
             } finally {
@@ -53,12 +73,15 @@ export default function CycleReportPage() {
             }
         }
         loadData()
+
+        return () => clearTimeout(timeoutId);
     }, [isAuthenticated])
 
     if (loading) return (
         <div className="p-12 text-center flex flex-col items-center gap-4">
             <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-gray-600 font-medium">Generando reporte ginecológico...</p>
+            <p className="text-xs text-gray-400">Si esto tarda demasiado, verifica tu conexión.</p>
         </div>
     )
 
