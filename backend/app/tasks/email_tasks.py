@@ -873,5 +873,35 @@ def send_cycle_user_reset_password_email(email: str, token: str):
     return {"status": "sent", "recipient": email}
 
 
+@celery_app.task
+def send_settings_updated_email(cycle_user_id: int):
+    """
+    Notify user that their notification settings have been updated.
+    """
+    db = SessionLocal()
+    try:
+        user = db.query(CycleUser).filter(CycleUser.id == cycle_user_id).first()
+        if not user or not user.email:
+            return
+            
+        subject = "Configuración Actualizada - Predictor de Ciclos"
+        html_content = f"""
+        <div style="font-family: sans-serif; color: #374151;">
+            <h1 style="color: #ec4899;">Configuración Actualizada</h1>
+            <p>Hola <strong>{user.nombre_completo}</strong>,</p>
+            <p>Te informamos que tus preferencias de notificación en el Predictor de Ciclos han sido actualizadas exitosamente.</p>
+            <p>Si no realizaste este cambio, por favor contacta a soporte o al consultorio de tu médico.</p>
+            <div style="margin-top: 24px;">
+                <a href="{settings.FRONTEND_URL}/cycle/settings" style="background-color: #ec4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver mis Ajustes</a>
+            </div>
+            <p style="margin-top: 32px; font-size: 12px; color: #9ca3af;">GynSys &copy; 2026</p>
+        </div>
+        """
+        _send_smtp_email(user.email, subject, html_content)
+        return {"status": "sent", "recipient": user.email}
+    finally:
+        db.close()
+
+
 
 
