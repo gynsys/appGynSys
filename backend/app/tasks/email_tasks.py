@@ -1,3 +1,4 @@
+#email_tasks.py
 """
 Celery tasks for sending emails.
 """
