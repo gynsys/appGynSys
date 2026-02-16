@@ -1,6 +1,6 @@
 // Force rebuild: 2026-02-15T21:12 - Notification system refactor
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Send, Pencil, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2, Send, Pencil, AlertTriangle, Megaphone } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -49,11 +49,10 @@ export default function NotificationManagerPage() {
     // Form State
     const [formData, setFormData] = useState({
         name: '',
-        type: 'cycle_phase',
-        trigger_days: 0,
-        trigger_event: 'days_before_period',
-        message: 'Hola {patient_name}, ...',
-        channel: 'dual'
+        title: '',
+        message: '',
+        channel: 'push',
+        trigger_info: ''
     })
 
     // Fetch rules on mount (will use cache if available)
@@ -159,78 +158,50 @@ export default function NotificationManagerPage() {
     }
 
     const handleEdit = (rule) => {
-        let triggerEvent = 'days_before_period'
-        let triggerDays = 0
-
-        const t = rule.trigger_condition
-        if (t.cycle_day) {
-            triggerEvent = 'cycle_day'
-            triggerDays = t.cycle_day
-        } else if (t.days_before_period) {
-            triggerEvent = 'days_before_period'
-            triggerDays = t.days_before_period
-        } else if (t.is_ovulation_day) {
-            triggerEvent = 'is_ovulation_day'
-        } else if (t.is_fertile_start) {
-            triggerEvent = 'is_fertile_start'
-        }
-
         setFormData({
-            name: rule.name,
-            type: rule.notification_type,
-            trigger_days: triggerDays,
-            trigger_event: triggerEvent,
+            name: rule.name, // Display only
+            type: rule.notification_type, // Display only
+            title: rule.title_template || '',
             message: rule.message_template,
-            channel: rule.channel
+            channel: rule.channel,
+            trigger_info: getTriggerDescription(rule.trigger_condition, rule.notification_type)
         })
-        setEditingType(rule.id)
+        setEditingType(rule.notification_type) // We use type as ID now
         setIsCreateOpen(true)
+    }
+
+    const getTriggerDescription = (trigger, type) => {
+        if (trigger.cycle_day) return `Se envía en el día ${trigger.cycle_day} del ciclo.`
+        if (trigger.days_before_period) return `Se envía ${trigger.days_before_period} días antes del periodo.`
+        if (trigger.is_ovulation_day) return `Se envía el día estimado de ovulación.`
+        if (trigger.is_fertile_start) return `Se envía al iniciar la ventana fértil.`
+
+        // Match by type prefix if trigger is complex or empty
+        if (type.startsWith('prenatal_week_')) {
+            const week = type.split('_').pop()
+            return `Se envía al iniciar la semana ${week} de embarazo.`
+        }
+        if (type.startsWith('system_')) return "Se envía por eventos del sistema."
+
+        return "Se envía automáticamente según la programación del sistema."
     }
 
     const handleSave = async () => {
         try {
-            // Build trigger JSON based on simplified UI
-            let trigger = {}
-            if (formData.trigger_event === 'days_before_period') {
-                trigger = { days_before_period: parseInt(formData.trigger_days) }
-            } else if (formData.trigger_event === 'cycle_day') {
-                trigger = { cycle_day: parseInt(formData.trigger_days) }
-            } else if (formData.trigger_event === 'is_ovulation_day') {
-                trigger = { is_ovulation_day: true }
-            } else if (formData.trigger_event === 'is_fertile_start') {
-                trigger = { is_fertile_start: true }
-            }
-
             const rulePayload = {
-                name: formData.name,
-                notification_type: formData.type,
-                trigger_condition: trigger,
-                channel: formData.channel,
+                title_template: formData.title,
                 message_template: formData.message,
-                is_active: true
+                channel: formData.channel
+                // is_active is no longer edited here as requested
             }
 
-            if (editingType) {
-                await updateRule(editingType, rulePayload)
-                toast.success("Notificación actualizada")
-            } else {
-                // Create is no longer supported - rules are predefined
-                toast.error("No se pueden crear nuevas notificaciones")
-            }
-
+            await updateRule(editingType, rulePayload)
+            toast.success("Notificación actualizada con éxito")
             setIsCreateOpen(false)
-            setEditingId(null)
-            // Reset form
-            setFormData({
-                name: '',
-                type: 'cycle_phase',
-                trigger_days: 0,
-                trigger_event: 'days_before_period',
-                message: 'Hola {patient_name}, ...',
-                channel: 'dual'
-            })
+            setEditingType(null)
         } catch (e) {
-            toast.error("Error al crear notificación")
+            console.error('Error saving rule:', e)
+            toast.error("Error al actualizar la notificación")
         }
     }
 
@@ -388,94 +359,83 @@ export default function NotificationManagerPage() {
                 </div>
             </div>
 
-            {/* Create Modal (Unchanged) */}
+            {/* Simple Edit Modal */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[550px]">
                     <DialogHeader>
-                        <DialogTitle>{editingType ? 'Editar Notificación' : 'Nueva Notificación Automática'}</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <Megaphone className="h-4 w-4 text-blue-600" />
+                            </div>
+                            Editar Notificación
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+
+                    <div className="space-y-5 py-4">
+                        {/* Info Read Only Section */}
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800 space-y-3">
+                            <div>
+                                <Label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Notificación</Label>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formData.name || formData.type}</p>
+                            </div>
+                            <div>
+                                <Label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Programación (Automática)</Label>
+                                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">{formData.trigger_info}</p>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
-                            <Label>Nombre Interno</Label>
+                            <Label className="text-sm font-medium">Título de la Notificación (Asunto)</Label>
                             <Input
-                                placeholder="Ej: Recordatorio de Periodo"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="Ej: ¡Recordatorio de Salud!"
+                                value={formData.title}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Categoría</Label>
+                            <Label className="text-sm font-medium">Canal de Envío</Label>
                             <select
-                                className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                value={formData.type}
-                                onChange={e => setFormData({ ...formData, type: e.target.value })}
-                            >
-                                <option value="cycle_phase">Calculadora Menstrual</option>
-                                <option value="prenatal_weekly">Prenatal Semanal</option>
-                                <option value="prenatal_milestone">Prenatal Hito</option>
-                                <option value="system">Sistema</option>
-                            </select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Evento (Trigger)</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    value={formData.trigger_event}
-                                    onChange={e => setFormData({ ...formData, trigger_event: e.target.value })}
-                                >
-                                    <option value="days_before_period">Días antes del periodo</option>
-                                    <option value="cycle_day">Día del Ciclo (1-28)</option>
-                                    <option value="is_ovulation_day">Día de Ovulación</option>
-                                    <option value="is_fertile_start">Inicio Ventana Fértil</option>
-                                </select>
-                            </div>
-
-                            {(formData.trigger_event === 'days_before_period' || formData.trigger_event === 'cycle_day') && (
-                                <div className="space-y-2">
-                                    <Label>
-                                        {formData.trigger_event === 'cycle_day' ? 'Día del ciclo (1-28)' : 'Días de anticipación'}
-                                    </Label>
-                                    <Input
-                                        type="number"
-                                        value={formData.trigger_days}
-                                        onChange={e => setFormData({ ...formData, trigger_days: e.target.value })}
-                                        className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Canal de Envío</Label>
-                            <select
-                                className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                                 value={formData.channel}
                                 onChange={e => setFormData({ ...formData, channel: e.target.value })}
                             >
-                                <option value="email">Solo Email</option>
-                                <option value="push">Solo Push (PWA)</option>
-                                <option value="dual">Dual (Push + Email)</option>
+                                <option value="push">📱 Solo Push (Notificación Celular)</option>
+                                <option value="email">📧 Solo Email (Correo Electrónico)</option>
+                                <option value="dual">🔄 Dual (Push + Email)</option>
                             </select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Mensaje (HTML o Texto)</Label>
+                            <div className="flex justify-between items-center">
+                                <Label className="text-sm font-medium">Cuerpo del Mensaje</Label>
+                                <span className="text-[10px] font-medium text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">
+                                    Variable: &#123;patient_name&#125;
+                                </span>
+                            </div>
                             <textarea
-                                className="flex min-h-[100px] w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400"
+                                className="flex min-h-[120px] w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400 leading-relaxed"
                                 value={formData.message}
                                 onChange={e => setFormData({ ...formData, message: e.target.value })}
-                                placeholder="Hola {patient_name}, ..."
+                                placeholder="Escribe el mensaje que recibirá la paciente..."
                             />
-                            <p className="text-xs text-muted-foreground">Variables disponibles: &#123;patient_name&#125;</p>
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave}>{editingType ? 'Guardar Cambios' : 'Crear Regla'}</Button>
+
+                    <DialogFooter className="gap-2">
+                        <Button variant="ghost" onClick={() => {
+                            setIsCreateOpen(false)
+                            setEditingType(null)
+                        }}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            className="bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 px-6"
+                        >
+                            Guardar Cambios
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
