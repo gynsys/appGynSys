@@ -125,17 +125,16 @@ export default function NotificationManagerPage() {
                 return
             }
 
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/send-test`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/test-push`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    email: testEmail,
-                    notification_type: selectedRule.notification_type,
-                    subject: selectedRule.title_template || 'Test Notification',
-                    message: selectedRule.message_template || 'Test message'
+                    user_email: testEmail,
+                    title: selectedRule.title_template || 'Notificación de Prueba',
+                    body: selectedRule.message_text_template || selectedRule.message_template || 'Mensaje de prueba'
                 })
             })
 
@@ -227,11 +226,15 @@ export default function NotificationManagerPage() {
             'fertility_peak': 'Pico de Fertilidad',
             'ovulation_day': 'Día de Ovulación',
             'fertile_window_end': 'Fin Ventana Fértil',
-            'prenatal_weekly': 'Semana de Embarazo',
-            'prenatal_milestone': 'Hito Prenatal',
-            'prenatal_daily_tip': 'Tip Diario Prenatal',
-            'prenatal_alert': 'Alerta Prenatal',
-            'annual_checkup': 'Chequeo Anual'
+            'prenatal_weekly': 'Seguimiento Semanal',
+            'prenatal_milestone': 'Hito Gestacional',
+            'prenatal_daily_tip': 'Recomendación Diaria',
+            'prenatal_alert': 'Alerta de Riesgo',
+            'annual_checkup': 'Chequeo Anual',
+            'system_welcome': 'Bienvenida',
+            'system_update': 'Actualización del Sistema',
+            'symptom_alert': 'Alerta de Síntoma',
+            'custom': 'Notificación Especial'
         }
 
         if (translations[type]) return translations[type]
@@ -239,6 +242,8 @@ export default function NotificationManagerPage() {
         // Dynamic mapping for day_X and week_X
         if (type.startsWith('day_')) return `Día ${type.split('_')[1]} del Ciclo`
         if (type.startsWith('prenatal_week_')) return `Semana ${type.split('_')[2]} de Gestación`
+        if (type.startsWith('prenatal_')) return `Prenatal: ${type.split('_').slice(1).join(' ').toUpperCase()}`
+        if (type.startsWith('system_')) return `Sistema: ${type.split('_').slice(1).join(' ').toUpperCase()}`
 
         return type.replace(/_/g, ' ').toUpperCase()
     }
