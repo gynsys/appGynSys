@@ -17,7 +17,7 @@ const TABS = [
 export default function NotificationManagerPage() {
     const { rules, loading, fetchRules, updateRule } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
-    const [editingId, setEditingId] = useState(null)
+    const [editingType, setEditingType] = useState(null)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [ruleToDelete, setRuleToDelete] = useState(null)
     const [activeTab, setActiveTab] = useState('cycle')
@@ -51,15 +51,10 @@ export default function NotificationManagerPage() {
     }
 
     const handleConfirmDelete = async () => {
-        if (!ruleToDelete) return
-        try {
-            await deleteRule(ruleToDelete.id)
-            toast.success("Notificación eliminada")
-            setIsDeleteOpen(false)
-            setRuleToDelete(null)
-        } catch (e) {
-            toast.error("Error al eliminar")
-        }
+        // Delete is no longer supported - rules are read-only
+        toast.error("No se pueden eliminar notificaciones predefinidas")
+        setIsDeleteOpen(false)
+        setRuleToDelete(null)
     }
 
     const handleSendTest = async (rule) => {
@@ -193,12 +188,12 @@ export default function NotificationManagerPage() {
                 is_active: true
             }
 
-            if (editingId) {
-                await updateRule(editingId, rulePayload)
+            if (editingType) {
+                await updateRule(editingType, rulePayload)
                 toast.success("Notificación actualizada")
             } else {
-                await createRule(rulePayload)
-                toast.success("Notificación creada")
+                // Create is no longer supported - rules are predefined
+                toast.error("No se pueden crear nuevas notificaciones")
             }
 
             setIsCreateOpen(false)
@@ -377,7 +372,7 @@ export default function NotificationManagerPage() {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>{editingId ? 'Editar Notificación' : 'Nueva Notificación Automática'}</DialogTitle>
+                        <DialogTitle>{editingType ? 'Editar Notificación' : 'Nueva Notificación Automática'}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
@@ -460,7 +455,7 @@ export default function NotificationManagerPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave}>{editingId ? 'Guardar Cambios' : 'Crear Regla'}</Button>
+                        <Button onClick={handleSave}>{editingType ? 'Guardar Cambios' : 'Crear Regla'}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
