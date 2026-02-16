@@ -70,16 +70,17 @@ def process_notification_queue():
 
 def send_dual_notification_logic(db, item: PendingNotification):
     """
-    Core delivery logic: Push -> Email failover.
+    Core delivery logic: ALWAYS Push -> Email failover (Dual).
+    Ignores item.channel and enforces dual behavior for simplification.
     Returns (success, channel_used, error_message)
     """
     user = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
     if not user:
         return False, None, "User not found"
     
-    channel = item.channel
-    try_push = (channel in ["push", "dual"])
-    try_email = (channel in ["email", "dual"])
+    # Enforce dual behavior: Always try push, then email if push fails
+    try_push = True
+    try_email = True
     
     push_success = False
     error_msg = None

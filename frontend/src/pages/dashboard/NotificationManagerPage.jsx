@@ -190,9 +190,8 @@ export default function NotificationManagerPage() {
         try {
             const rulePayload = {
                 title_template: formData.title,
-                message_template: formData.message,
-                channel: formData.channel
-                // is_active is no longer edited here as requested
+                message_template: formData.message
+                // is_active and channel are no longer edited here
             }
 
             await updateRule(editingType, rulePayload)
@@ -213,6 +212,35 @@ export default function NotificationManagerPage() {
     const getCategoryCount = (tabId) => {
         const tab = TABS.find(t => t.id === tabId)
         return rules.filter(r => tab.filter(r)).length
+    }
+
+    const translateType = (type) => {
+        const translations = {
+            'cycle_phase': 'Fase de Ciclo',
+            'contraceptive_daily': 'Anticonceptivo Diario',
+            'contraceptive_rest_start': 'Inicio de Descanso',
+            'contraceptive_rest_end': 'Fin de Descanso',
+            'contraceptive_missed': 'Olvido de Pastilla',
+            'period_prediction': 'Predicción de Periodo',
+            'period_start': 'Inicio de Periodo',
+            'fertile_window_start': 'Ventana Fértil',
+            'fertility_peak': 'Pico de Fertilidad',
+            'ovulation_day': 'Día de Ovulación',
+            'fertile_window_end': 'Fin Ventana Fértil',
+            'prenatal_weekly': 'Semana de Embarazo',
+            'prenatal_milestone': 'Hito Prenatal',
+            'prenatal_daily_tip': 'Tip Diario Prenatal',
+            'prenatal_alert': 'Alerta Prenatal',
+            'annual_checkup': 'Chequeo Anual'
+        }
+
+        if (translations[type]) return translations[type]
+
+        // Dynamic mapping for day_X and week_X
+        if (type.startsWith('day_')) return `Día ${type.split('_')[1]} del Ciclo`
+        if (type.startsWith('prenatal_week_')) return `Semana ${type.split('_')[2]} de Gestación`
+
+        return type.replace(/_/g, ' ').toUpperCase()
     }
 
     return (
@@ -268,8 +296,7 @@ export default function NotificationManagerPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
-                                        <TableHead className="text-gray-500 dark:text-gray-400 pl-6 h-12">Nombre / Disparador</TableHead>
-                                        <TableHead className="text-gray-500 dark:text-gray-400 h-12">Canal</TableHead>
+                                        <TableHead className="text-gray-500 dark:text-gray-400 pl-6 h-12">Nombre / Propósito</TableHead>
                                         <TableHead className="text-right text-gray-500 dark:text-gray-400 pr-6 h-12">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -277,7 +304,7 @@ export default function NotificationManagerPage() {
                                     {/* Info banner for contraceptive notifications */}
                                     {activeTab === 'cycle' && (
                                         <TableRow className="bg-blue-50 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800">
-                                            <TableCell colSpan={3} className="pl-6 py-3">
+                                            <TableCell colSpan={2} className="pl-6 py-3">
                                                 <div className="flex items-start gap-3">
                                                     <div className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
                                                         <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -289,7 +316,7 @@ export default function NotificationManagerPage() {
                                                             💊 Notificaciones de Anticonceptivos
                                                         </p>
                                                         <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                                                            Las notificaciones de anticonceptivos se configuran individualmente en la pestaña "Configuración" de cada usuaria, no como reglas globales.
+                                                            Las notificaciones de anticonceptivos se configuran individualmente en la pestaña "Configuración" de cada usuaria.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -301,16 +328,8 @@ export default function NotificationManagerPage() {
                                             <TableCell className="font-medium text-gray-900 dark:text-gray-200 pl-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span>{rule.name}</span>
-                                                    <span className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{rule.notification_type.replace('_', ' ')}</span>
+                                                    <span className="text-xs text-blue-500 dark:text-blue-400 mt-1 font-medium">{translateType(rule.notification_type)}</span>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${rule.channel === 'push' || rule.channel === 'dual'
-                                                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                                                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                                                    }`}>
-                                                    {rule.channel.toUpperCase()}
-                                                </span>
                                             </TableCell>
                                             <TableCell className="text-right pr-6">
                                                 <div className="flex items-center justify-end gap-1">
@@ -392,19 +411,6 @@ export default function NotificationManagerPage() {
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                             />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Canal de Envío</Label>
-                            <select
-                                className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                                value={formData.channel}
-                                onChange={e => setFormData({ ...formData, channel: e.target.value })}
-                            >
-                                <option value="push">📱 Solo Push (Notificación Celular)</option>
-                                <option value="email">📧 Solo Email (Correo Electrónico)</option>
-                                <option value="dual">🔄 Dual (Push + Email)</option>
-                            </select>
                         </div>
 
                         <div className="space-y-2">

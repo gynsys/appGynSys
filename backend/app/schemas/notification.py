@@ -64,15 +64,7 @@ class NotificationRuleUpdate(BaseModel):
     title_template: Optional[str] = Field(None, max_length=255)
     message_template: Optional[str] = None
     message_text_template: Optional[str] = None
-    channel: Optional[str] = Field(None, pattern="^(email|push|dual)$")
     send_time: Optional[str] = Field(None, pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
-    is_active: Optional[bool] = None
-    
-    @validator('channel')
-    def validate_channel(cls, v):
-        if v and v not in ["email", "push", "dual"]:
-            raise ValueError('Channel must be email, push, or dual')
-        return v
 
 
 # ==================== NO LONGER SUPPORTED ====================
