@@ -1,3 +1,4 @@
+// Force rebuild: 2026-02-15T21:12 - Notification system refactor
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, Send, Pencil, AlertTriangle } from 'lucide-react'
 import Button from '../../components/common/Button'
