@@ -54,6 +54,15 @@ export default function NotificationManagerPage() {
             loading,
             firstRule: rules[0]?.notification_type || 'N/A'
         });
+
+        // TEMP DEBUG: See what types we have
+        if (rules.length > 0) {
+            const types = {};
+            rules.forEach(r => {
+                types[r.notification_type] = (types[r.notification_type] || 0) + 1;
+            });
+            console.log('[NotificationManagerPage] 🔍 Types distribution:', types);
+        }
     }, [rules, loading])
 
     const handleDeleteClick = (rule) => {
