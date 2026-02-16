@@ -10,9 +10,24 @@ import { toast } from 'sonner'
 import useNotificationStore from '../../stores/notificationStore'
 
 const TABS = [
-    { id: 'cycle', label: 'Calculadora Menstrual', types: ['cycle_phase', 'contraceptive_reminder'] },
-    { id: 'prenatal', label: 'Prenatal', types: ['prenatal_weekly', 'prenatal_milestone', 'prenatal_daily', 'prenatal_alert'] },
-    { id: 'system', label: 'Sistema', types: ['system', 'custom', 'symptom_alert'] }
+    {
+        id: 'cycle',
+        label: 'Calculadora Menstrual',
+        filter: (rule) => rule.notification_type.startsWith('cycle_') ||
+            rule.notification_type.startsWith('contraceptive_') ||
+            rule.notification_type.startsWith('day_') ||
+            rule.notification_type.startsWith('period_')
+    },
+    {
+        id: 'prenatal',
+        label: 'Prenatal',
+        filter: (rule) => rule.notification_type.startsWith('prenatal_')
+    },
+    {
+        id: 'system',
+        label: 'Sistema',
+        filter: (rule) => rule.notification_type.startsWith('system_') || rule.notification_type.startsWith('symptom_')
+    }
 ]
 
 export default function NotificationManagerPage() {
