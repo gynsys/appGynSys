@@ -6,18 +6,13 @@ const notificationService = {
         return response.data;
     },
 
-    createRule: async (ruleData) => {
-        const response = await api.post('/notifications/rules', ruleData);
+    getRule: async (notificationType) => {
+        const response = await api.get(`/notifications/rules/${notificationType}`);
         return response.data;
     },
 
-    updateRule: async (id, ruleData) => {
-        const response = await api.put(`/notifications/rules/${id}`, ruleData);
-        return response.data;
-    },
-
-    deleteRule: async (id) => {
-        const response = await api.delete(`/notifications/rules/${id}`);
+    updateRule: async (notificationType, ruleData) => {
+        const response = await api.put(`/notifications/rules/${notificationType}`, ruleData);
         return response.data;
     }
 };

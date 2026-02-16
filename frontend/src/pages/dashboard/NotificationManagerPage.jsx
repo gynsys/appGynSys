@@ -15,7 +15,7 @@ const TABS = [
 ]
 
 export default function NotificationManagerPage() {
-    const { rules, loading, fetchRules, createRule, updateRule, deleteRule } = useNotificationStore()
+    const { rules, loading, fetchRules, updateRule } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [editingId, setEditingId] = useState(null)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)

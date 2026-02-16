@@ -33,45 +33,18 @@ const useNotificationStore = create((set, get) => ({
         }
     },
 
-    // Create a new rule
-    createRule: async (ruleData) => {
+    // Update a rule by notification_type
+    updateRule: async (notificationType, ruleData) => {
         try {
-            const newRule = await notificationService.createRule(ruleData);
-            set(state => ({
-                rules: [...state.rules, newRule]
-            }));
-            return newRule;
-        } catch (error) {
-            console.error('Error creating rule:', error);
-            throw error;
-        }
-    },
-
-    // Update a rule
-    updateRule: async (id, ruleData) => {
-        try {
-            const updatedRule = await notificationService.updateRule(id, ruleData);
+            const updatedRule = await notificationService.updateRule(notificationType, ruleData);
             set(state => ({
                 rules: state.rules.map(rule =>
-                    rule.id === id ? updatedRule : rule
+                    rule.notification_type === notificationType ? updatedRule : rule
                 )
             }));
             return updatedRule;
         } catch (error) {
             console.error('Error updating rule:', error);
-            throw error;
-        }
-    },
-
-    // Delete a rule
-    deleteRule: async (id) => {
-        try {
-            await notificationService.deleteRule(id);
-            set(state => ({
-                rules: state.rules.filter(rule => rule.id !== id)
-            }));
-        } catch (error) {
-            console.error('Error deleting rule:', error);
             throw error;
         }
     },
