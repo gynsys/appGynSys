@@ -69,15 +69,6 @@ export default function NotificationManagerPage() {
             loading,
             firstRule: rules[0]?.notification_type || 'N/A'
         });
-
-        // TEMP DEBUG: See what types we have
-        if (rules.length > 0) {
-            const types = {};
-            rules.forEach(r => {
-                types[r.notification_type] = (types[r.notification_type] || 0) + 1;
-            });
-            console.log('[NotificationManagerPage] 🔍 Types distribution:', types);
-        }
     }, [rules, loading])
 
     const handleDeleteClick = (rule) => {
@@ -245,14 +236,12 @@ export default function NotificationManagerPage() {
 
     // Get filtered rules for active tab
     const currentTab = TABS.find(t => t.id === activeTab)
-    const filteredRules = rules.filter(rule =>
-        currentTab.types.includes(rule.notification_type)
-    )
+    const filteredRules = rules.filter(rule => currentTab.filter(rule))
 
     // Count by category
     const getCategoryCount = (tabId) => {
         const tab = TABS.find(t => t.id === tabId)
-        return rules.filter(r => tab.types.includes(r.notification_type)).length
+        return rules.filter(r => tab.filter(r)).length
     }
 
     return (
