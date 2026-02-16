@@ -42,8 +42,18 @@ export default function NotificationManagerPage() {
 
     // Fetch rules on mount (will use cache if available)
     useEffect(() => {
+        console.log('[NotificationManagerPage] 🔵 Component mounted, calling fetchRules');
         fetchRules()
     }, [fetchRules])
+
+    // Debug: Log when rules change
+    useEffect(() => {
+        console.log('[NotificationManagerPage] 📊 Rules state changed:', {
+            count: rules.length,
+            loading,
+            firstRule: rules[0]?.notification_type || 'N/A'
+        });
+    }, [rules, loading])
 
     const handleDeleteClick = (rule) => {
         setRuleToDelete(rule)
@@ -96,41 +106,37 @@ export default function NotificationManagerPage() {
             // Get admin token from localStorage
             const token = localStorage.getItem('access_token')
             if (!token) {
-                toast.error('No estás autenticado como admin')
+                toast.error('No autenticado')
                 return
             }
 
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/test-push`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/send-test`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    user_email: testEmail,
-                    title: `🔔 Prueba: ${selectedRule.name}`,
-                    body: selectedRule.message_template || 'Notificación de prueba',
-                    data: {
-                        type: selectedRule.notification_type,
-                        test: true,
-                        rule_id: selectedRule.id
-                    }
+                    email: testEmail,
+                    notification_type: selectedRule.notification_type,
+                    subject: selectedRule.title_template || 'Test Notification',
+                    message: selectedRule.message_template || 'Test message'
                 })
             })
 
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.detail || 'Error al enviar notificación')
+            const result = await response.json()
+
+            if (response.ok) {
+                toast.success(result.message || 'Notificación de prueba enviada')
+                setTestEmail('')
+                setIsTestModalOpen(false)
+            } else {
+                toast.error(result.detail || 'Error al enviar notificación de prueba')
             }
 
-            const result = await response.json()
-            toast.success(`✅ Notificación enviada a ${testEmail}`)
-            setIsTestModalOpen(false)
-            setTestEmail('')
-            setSelectedRule(null)
         } catch (error) {
-            console.error('Test send error:', error)
-            toast.error(error.message || 'Error al enviar notificación de prueba')
+            console.error('Error sending test:', error)
+            toast.error('Error al enviar notificación de prueba')
         } finally {
             setIsSendingTest(false)
         }
@@ -161,7 +167,7 @@ export default function NotificationManagerPage() {
             message: rule.message_template,
             channel: rule.channel
         })
-        setEditingId(rule.id)
+        setEditingType(rule.id)
         setIsCreateOpen(true)
     }
 
