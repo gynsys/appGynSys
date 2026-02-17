@@ -34,9 +34,9 @@ def run_diagnosis():
     # 2. DOCTORS / TENANTS CHECK
     print("\n--- 2. Doctores Detectados (Tenants) ---")
     try:
-        doctors = db.execute(text("SELECT id, slug_url, full_name FROM doctors")).fetchall()
+        doctors = db.execute(text("SELECT id, slug_url, nombre_completo FROM doctors")).fetchall()
         for doc in doctors:
-            print(f"   👤 Doctor ID {doc.id}: {doc.full_name} ({doc.slug_url})")
+            print(f"   👤 Doctor ID {doc.id}: {doc.nombre_completo} ({doc.slug_url})")
         doctor_count = len(doctors)
     except Exception as e:
         print(f"❌ Error consultando doctores: {e}")
