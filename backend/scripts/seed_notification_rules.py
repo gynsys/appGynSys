@@ -1,5 +1,5 @@
 """
-Seed the 19 standard notification rules for all doctors using the centralized seed logic.
+Seed ALL granular notification rules for all doctors using the centralized seed logic.
 """
 import sys
 import os
@@ -22,7 +22,7 @@ def run_seed():
             print(f"   Seeding rules for: {doctor.slug_url} (ID: {doctor.id})")
             seed_notification_rules(db, doctor.id)
             
-        print("\n✅ All notification rules standardized to 19 types.")
+        print("\n✅ All granular notification rules (approx 101) have been successfully seeded for all doctors.")
         
     except Exception as e:
         print(f"❌ Error during seeding: {e}")

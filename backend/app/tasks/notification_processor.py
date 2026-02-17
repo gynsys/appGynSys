@@ -168,7 +168,7 @@ def evaluate_rule(rule: NotificationRule, context: dict, user_settings: CycleNot
         return context.get("period_confirmation_needed") and trigger.get("day_late") == context.get("days_late")
 
     # Simple day/offset triggers
-    for key in ["cycle_day", "days_before_period", "days_after_ovulation"]:
+    for key in ["cycle_day", "days_before_period", "days_after_ovulation", "gestation_week"]:
         if key in trigger:
             return trigger[key] == context.get(key)
 
