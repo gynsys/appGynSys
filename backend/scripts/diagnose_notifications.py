@@ -36,19 +36,22 @@ def run_diagnosis():
     try:
         rules = db.query(NotificationRule).all()
         count = len(rules)
-        expected = len(VALID_NOTIFICATION_TYPES)
+        doctor_count = db.execute(text("SELECT COUNT(*) FROM doctors")).scalar()
+        expected = len(VALID_NOTIFICATION_TYPES) * doctor_count
         
-        print(f"📊 Reglas encontradas: {count} (Esperadas: {expected})")
+        print(f"📊 Reglas encontradas: {count} (Esperadas: {expected} - {len(VALID_NOTIFICATION_TYPES)} p/doc)")
         
         if count == expected:
-            print("✅ Todas las reglas están presentes.")
+            print(f"✅ Todas las reglas están presentes para los {doctor_count} doctores.")
         else:
-            print(f"⚠️ Discrepancia en el número de reglas. Faltan: {expected - count}")
-            # Identify missing types
-            existing_types = [r.notification_type for r in rules]
+            print(f"⚠️ Discrepancia en el número total de reglas. Diferencia: {expected - count}")
+            # Identify missing types (check what's missing across all rules)
+            existing_types = set([r.notification_type for r in rules])
             missing = [t for t in VALID_NOTIFICATION_TYPES if t not in existing_types]
-            for m in missing:
-                print(f"   - Faltante: {m}")
+            if missing:
+                print(f"❌ Tipos de reglas faltantes en la base de datos:")
+                for m in missing:
+                    print(f"   - Faltante: {m}")
     except Exception as e:
         print(f"❌ Error consultando reglas: {e}")
 
@@ -59,14 +62,6 @@ def run_diagnosis():
         r = redis.from_url(settings.CELERY_BROKER_URL)
         r.ping()
         print(f"✅ Conexión exitosa a Redis Broker ({settings.CELERY_BROKER_URL})")
-        
-        # Check Celery inspection
-        # inspect = celery_app.control.inspect()
-        # active = inspect.active()
-        # if active:
-        #     print(f"✅ Celery Workers activos: {len(active)}")
-        # else:
-        #     print("⚠️ No hay workers de Celery activos detectados.")
     except Exception as e:
         print(f"❌ Error conectando a Redis/Celery: {e}")
 

@@ -21,13 +21,13 @@ class NotificationChannel(str, enum.Enum):
     DUAL = "dual"
 
 
-# Los tipos de notificación permitidos (Aprox 101)
+# Los tipos de notificación permitidos (108 en total)
 VALID_NOTIFICATION_TYPES = {
     # Ciclo Menstrual Diario (28)
-    "day_1_period_start", "day_2_symptom_check", "day_3_hygiene_tip", "day_4_energy_alert",
-    "day_5_period_end_soon", "day_6_energy_boost", "day_7_period_end", "day_8_follicular_phase",
-    "day_9_skin_care", "day_10_nutrition_tip", "day_11_ovulation_near", "day_12_fertile_window",
-    "day_13_high_fertility", "day_14_ovulation_day", "day_15_luteal_phase", "day_16_progesterone_check",
+    "day_1_period_start", "day_2_symptom_check", "day_3_hydration", "day_4_mood_track",
+    "day_5_flow_decrease", "day_6_energy_boost", "day_7_period_end", "day_8_skin_care",
+    "day_9_fertile_approaching", "day_10_fertile_start", "day_11_high_fertility", "day_12_peak_fertility",
+    "day_13_ovulation", "day_14_ovulation_peak", "day_15_fertile_end", "day_16_implantation_window",
     "day_17_mood_watch", "day_18_exercise_tip", "day_19_metabolism_alert", "day_20_rest_importance",
     "day_21_cycle_summary", "day_22_pms_start", "day_23_bloating_check", "day_24_mood_changes",
     "day_25_breast_tenderness", "day_26_period_preparation", "day_27_cramps_alert", "day_28_period_tomorrow",
@@ -36,29 +36,24 @@ VALID_NOTIFICATION_TYPES = {
     # Seguimiento Prenatal Semanal (41)
     *[f"prenatal_week_{i}" for i in range(1, 42)],
     
-    # Hitos y Alertas Prenatales
+    # Hitos y Alertas Prenatales (14)
     "prenatal_first_ultrasound", "prenatal_genetic_test", "prenatal_anatomy_scan", "prenatal_glucose_test",
     "prenatal_tdap_vaccine", "prenatal_group_b_strep", "prenatal_kick_counts", "prenatal_reduced_movement",
     "prenatal_bleeding", "prenatal_severe_headache", "prenatal_vision_changes", "prenatal_contractions",
     "prenatal_water_break", "prenatal_swelling",
     
-    # Tips Prenatales
+    # Tips Prenatales (7)
     "prenatal_daily_tip", "prenatal_nutrition", "prenatal_exercise", "prenatal_hydration",
     "prenatal_mental_health", "prenatal_sleep", "prenatal_baby_size",
     
-    # Eventos de Sistema
+    # Eventos de Sistema (13)
     "system_welcome", "system_profile_incomplete", "system_log_period", "system_backup_reminder",
     "system_update_available", "system_data_sync", "system_appointment_reminder", "system_medication_reminder",
     "system_annual_checkup", "system_pap_smear", "system_mammogram", "system_privacy_update",
-    "system_inactive_user", "symptom_alert",
+    "system_inactive_user",
     
-    # Contraceptivos
+    # Contraceptivos (4)
     "contraceptive_daily", "contraceptive_rest_start", "contraceptive_rest_end", "contraceptive_missed",
-    
-    # Tipos genéricos (compatibilidad)
-    "period_prediction", "period_start", "period_confirmation_0", "period_confirmation_1", 
-    "period_confirmation_2", "period_irregular", "fertile_window_start", "fertility_peak",
-    "ovulation_day", "fertile_window_end", "annual_checkup"
 }
 
 
