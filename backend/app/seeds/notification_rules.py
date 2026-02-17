@@ -5,9 +5,9 @@ from app.db.models.notification import NotificationRule
 def seed_notification_rules(db: Session, tenant_id: int):
     """
     Seed exactly the 19 standard notification rules for a specific doctor (tenant).
-    Wipes existing rules for this tenant first.
+    Wipes existing rules for this tenant first to ensure a clean state.
     """
-    # WIPE existing rules for this tenant to ensure clean state
+    # WIPE existing rules for this tenant
     db.query(NotificationRule).filter(NotificationRule.tenant_id == tenant_id).delete()
     db.commit()
 
@@ -221,139 +221,18 @@ def seed_notification_rules(db: Session, tenant_id: int):
         db.add(rule)
     
     db.commit()
-            "title_template": "💊 Hora de Medicamento",
-            "message_template": "Hora de tomar tu medicamento: {medication_name}.",
-            "message_text_template": "Hora de medicamento",
-            "channel": "push",
-            "send_time": "08:00"
-        },
-        {
-            "notification_type": "system_annual_checkup",
-            "trigger_condition": {"event": "annual_checkup"},
-            "priority": 308,
-            "title_template": "🩺 Chequeo Anual",
-            "message_template": "Ha pasado un año desde tu último chequeo ginecológico. Agenda tu cita.",
-            "message_text_template": "Chequeo anual pendiente",
-            "channel": "email",
-            "send_time": "09:00"
-        },
-        {
-            "notification_type": "system_pap_smear",
-            "trigger_condition": {"event": "pap_smear_due"},
-            "priority": 309,
-            "title_template": "🔬 Papanicolaou Pendiente",
-            "message_template": "Es momento de tu Papanicolaou anual. Agenda tu cita.",
-            "message_text_template": "Papanicolaou pendiente",
-            "channel": "email",
-            "send_time": "09:00"
-        },
-        {
-            "notification_type": "system_mammogram",
-            "trigger_condition": {"event": "mammogram_due"},
-            "priority": 310,
-            "title_template": "🩻 Mamografía Pendiente",
-            "message_template": "Según tu edad, es recomendable realizar una mamografía.",
-            "message_text_template": "Mamografía recomendada",
-            "channel": "email",
-            "send_time": "09:00"
-        },
-        {
-            "notification_type": "system_privacy_update",
-            "trigger_condition": {"event": "privacy_policy_update"},
-            "priority": 311,
-            "title_template": "🔒 Actualización de Privacidad",
-            "message_template": "Hemos actualizado nuestra política de privacidad.",
-            "message_text_template": "Política de privacidad actualizada",
-            "channel": "email",
-            "send_time": "10:00"
-        },
-        {
-            "notification_type": "system_inactive_user",
-            "trigger_condition": {"event": "inactive_30_days"},
-            "priority": 312,
-            "title_template": "👋 Te Extrañamos",
-            "message_template": "Hace un mes que no usas la app. ¿Todo bien? Estamos aquí para ayudarte.",
-            "message_text_template": "Te extrañamos",
-            "channel": "email",
-            "send_time": "10:00"
-        },
-        {
-            "notification_type": "contraceptive_daily",
-            "trigger_condition": {"type": "contraceptive", "subtype": "active_pill"},
-            "priority": 10,
-            "title_template": "💊 Recordatorio Anticonceptivo",
-            "message_template": "Hola {patient_name}, es hora de tomar tu pastilla anticonceptiva (Día {pill_number}).",
-            "message_text_template": "Es hora de tomar tu pastilla anticonceptiva.",
-            "channel": "dual",
-            "send_time": "08:00"
-        },
-        {
-            "notification_type": "contraceptive_rest_start",
-            "trigger_condition": {"type": "contraceptive", "subtype": "placebo", "cycle_day": 22},
-            "priority": 11,
-            "title_template": "💊 Inicio de Descanso",
-            "message_template": "Hoy comienzas tus días de descanso o placebo. Mantén la rutina.",
-            "message_text_template": "Hoy comienzas tus días de descanso o placebo.",
-            "channel": "dual",
-            "send_time": "08:00"
-        },
-        {
-            "notification_type": "contraceptive_rest_end",
-            "trigger_condition": {"type": "contraceptive", "subtype": "placebo", "cycle_day": 28},
-            "priority": 12,
-            "title_template": "📅 Fin de Descanso",
-            "message_template": "Tu periodo de descanso termina hoy. Mañana inicia un nuevo envase.",
-            "message_text_template": "Tu periodo de descanso termina hoy.",
-            "channel": "dual",
-            "send_time": "08:00"
-        },
-        {
-            "notification_type": "contraceptive_missed",
-            "trigger_condition": {"event": "pill_missed"},
-            "priority": 5,
-            "title_template": "⚠️ Pastilla Olvidada",
-            "message_template": "Parece que olvidaste registrar tu pastilla. ¡Tómala lo antes posible!",
-            "message_text_template": "Parece que olvidaste registrar tu pastilla.",
-            "channel": "push",
-            "send_time": "20:00"
-        },
-    ]
 
-    for rule_data in standard_rules:
-        # Check by notification_type + tenant_id
-        exists = db.query(NotificationRule).filter(
-            NotificationRule.tenant_id == tenant_id,
-            NotificationRule.notification_type == rule_data["notification_type"]
-        ).first()
-        
-        if not exists:
-            rule = NotificationRule(
-                tenant_id=tenant_id,
-                **rule_data
-            )
-            db.add(rule)
-    
-    db.commit()
-
-
+# Support for standalone execution if needed (though usually called from seed_notification_rules script)
 if __name__ == "__main__":
     import sys
-    import argparse
     from app.db.base import SessionLocal
-
-    parser = argparse.ArgumentParser(description="Seed notification rules for a tenant.")
-    parser.add_argument("tenant_id", type=int, help="ID of the doctor/tenant")
-    
-    args = parser.parse_args()
-    
     db = SessionLocal()
     try:
-        print(f"Seeding notification rules for tenant ID: {args.tenant_id}...")
-        seed_notification_rules(db, args.tenant_id)
-        count = db.query(NotificationRule).filter(NotificationRule.tenant_id == args.tenant_id).count()
-        print(f"Success: {count} rules seeded.")
-    except Exception as e:
-        print(f"Error seeding rules: {e}")
-        sys.exit(1)
+        if len(sys.argv) > 1:
+            tenant_id = int(sys.argv[1])
+            seed_notification_rules(db, tenant_id)
+            print(f"✅ Rules seeded for tenant {tenant_id}")
+        else:
+            print("❌ Missing tenant_id argument")
     finally:
         db.close()
