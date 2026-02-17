@@ -31,49 +31,60 @@ def run_diagnosis():
         print(f"❌ Error de conexión DB: {e}")
         return
 
-    # 2. NOTIFICATION RULES CHECK
-    print("\n--- 2. Reglas de Notificación (notification_rules) ---")
+    # 2. DOCTORS / TENANTS CHECK
+    print("\n--- 2. Doctores Detectados (Tenants) ---")
+    try:
+        doctors = db.execute(text("SELECT id, slug_url, full_name FROM doctors")).fetchall()
+        for doc in doctors:
+            print(f"   👤 Doctor ID {doc.id}: {doc.full_name} ({doc.slug_url})")
+        doctor_count = len(doctors)
+    except Exception as e:
+        print(f"❌ Error consultando doctores: {e}")
+        db.close()
+        return
+
+    # 3. NOTIFICATION RULES CHECK
+    print(f"\n--- 3. Reglas de Notificación (Total: {doctor_count} docs) ---")
     try:
         rules = db.query(NotificationRule).all()
         count = len(rules)
-        doctor_count = db.execute(text("SELECT COUNT(*) FROM doctors")).scalar()
-        expected = len(VALID_NOTIFICATION_TYPES) * doctor_count
+        expected_per_doc = len(VALID_NOTIFICATION_TYPES)
+        total_expected = expected_per_doc * doctor_count
         
-        print(f"📊 Reglas encontradas: {count} (Esperadas: {expected} - {len(VALID_NOTIFICATION_TYPES)} p/doc)")
+        print(f"📊 Reglas encontradas: {count} (Esperadas: {total_expected} - {expected_per_doc} p/doc)")
         
-        if count == expected:
+        if count >= total_expected:
             print(f"✅ Todas las reglas están presentes para los {doctor_count} doctores.")
         else:
-            print(f"⚠️ Discrepancia en el número total de reglas. Diferencia: {expected - count}")
-            # Identify missing types (check what's missing across all rules)
+            print(f"⚠️ Discrepancia en el número total de reglas. Faltan: {total_expected - count}")
+            # Identify missing types globally for debug
             existing_types = set([r.notification_type for r in rules])
             missing = [t for t in VALID_NOTIFICATION_TYPES if t not in existing_types]
             if missing:
-                print(f"❌ Tipos de reglas faltantes en la base de datos:")
+                print(f"❌ Tipos de reglas faltantes en el sistema:")
                 for m in missing:
                     print(f"   - Faltante: {m}")
     except Exception as e:
         print(f"❌ Error consultando reglas: {e}")
 
-    # 3. REDIS / CELERY BROKER CHECK
-    print("\n--- 3. Conectividad Celery / Redis ---")
+    # 4. REDIS / CELERY BROKER CHECK
+    print("\n--- 4. Conectividad Celery / Redis ---")
     try:
-        # Check Redis directly
         r = redis.from_url(settings.CELERY_BROKER_URL)
         r.ping()
         print(f"✅ Conexión exitosa a Redis Broker ({settings.CELERY_BROKER_URL})")
     except Exception as e:
         print(f"❌ Error conectando a Redis/Celery: {e}")
 
-    # 4. VAPID KEYS FOR PUSH
-    print("\n--- 4. Configuración VAPID (Push Notifications) ---")
+    # 5. VAPID KEYS FOR PUSH
+    print("\n--- 5. Configuración VAPID (Push Notifications) ---")
     if settings.VAPID_PUBLIC_KEY and settings.VAPID_PRIVATE_KEY:
         print("✅ VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY detectadas.")
     else:
-        print("❌ Faltan llaves VAPID en el entorno (.env). Las notificaciones Push fallarán.")
+        print("❌ Faltan llaves VAPID en el entorno (.env).")
 
-    # 5. PENDING QUEUE CHECK
-    print("\n--- 5. Cola de Notificaciones Pendientes ---")
+    # 6. PENDING QUEUE CHECK
+    print("\n--- 6. Cola de Notificaciones Pendientes ---")
     try:
         pending_count = db.execute(text("SELECT COUNT(*) FROM pending_notifications WHERE status = 'scheduled'")).scalar()
         print(f"✉️ Notificaciones programadas para envío: {pending_count}")
