@@ -95,190 +95,141 @@ def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: Pregn
 
     return ctx
 
-def evaluate_rule(rule: NotificationRule, context: dict, user_settings: CycleNotificationSettings) -> bool:
+from app.core.notifications.registry import NOTIFICATION_REGISTRY, NOTIFICATION_MAP
+
+def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNotificationSettings) -> bool:
     """
-    Check if a rule trigger matches the SMART CONTEXT and user preferences.
+    Check if a registry rule should fire based on context and user settings.
     """
-    trigger = rule.trigger_condition
-    if not trigger: return False
-    
     if not user_settings: return False
-
-    # Master switches filtering
-    if context.get("is_pregnant"):
-        is_daily = (rule.notification_type == "prenatal_daily_tip")
-        is_alert = (rule.notification_type == "prenatal_alert")
-        is_milestone = (rule.notification_type == "prenatal_milestone")
-
-        if is_daily and not user_settings.prenatal_daily_tips: return False
-        if is_alert and not user_settings.prenatal_symptom_alerts: return False
-        
-        if is_milestone:
-            name_lower = rule.name.lower()
-            if "ecografía" in name_lower or "ecografia" in name_lower:
-                if not user_settings.prenatal_ultrasounds: return False
-            elif "semana" in name_lower:
-                 if not user_settings.prenatal_milestones: return False
-            else:
-                 if not user_settings.prenatal_lab_results: return False
-    else:
-        # Cycle switches
-        if trigger.get("type") == "contraceptive":
-             if not user_settings.contraceptive_enabled: return False
-
-        if "is_fertile_start" in trigger or "is_ovulation_day" in trigger or "days_after_ovulation" in trigger:
-             if not user_settings.cycle_fertile_window: return False
-             
-        if "days_before_period" in trigger:
-             if "abstinencia" in rule.name.lower() or "ritmo" in rule.name.lower():
-                  if not user_settings.cycle_rhythm_method: return False
-             elif "síntoma" in rule.name.lower() or "pms" in rule.name.lower():
-                  if not user_settings.cycle_pms_symptoms: return False
-             else:
-                  if not user_settings.cycle_period_predictions: return False
-
-        if trigger.get("event") == "period_confirmation":
-             if not user_settings.period_confirmation_reminder: return False
-
-    # Logic matching
-    if context.get("is_pregnant"):
-        if rule.notification_type == "prenatal_milestone":
-             if "gestation_week" in trigger:
-                return trigger["gestation_week"] == context.get("gestation_week")
-             if "semana_inicio" in trigger and "semana_fin" in trigger:
-                  return context.get("gestation_week") == trigger["semana_inicio"]
-        
-        if rule.notification_type == "prenatal_daily_tip":
-             return (context.get("trimester") == trigger.get("trimestre")) and (context.get("gestation_day_of_week") == trigger.get("dia"))
-                 
-        if rule.notification_type == "prenatal_alert":
-             trigger_symptom = trigger.get("sintoma_disparador")
-             reported_symptoms = context.get("reported_symptoms", [])
-             if trigger_symptom and reported_symptoms:
-                 for s in reported_symptoms:
-                     if trigger_symptom.lower() in s.lower(): return True
+    
+    # 1. Evaluate logic from Registry
+    if not rule_def["logic"](context):
         return False
-
-    if trigger.get("type") == "contraceptive":
-        if trigger.get("subtype") == "new_pack":
-             return context.get("pill_event") == "new_pack"
-        return trigger.get("subtype") == context.get("pill_subtype")
-
-    if trigger.get("event") == "period_confirmation":
-        return context.get("period_confirmation_needed") and trigger.get("day_late") == context.get("days_late")
-
-    # Simple day/offset triggers
-    for key in ["cycle_day", "days_before_period", "days_after_ovulation", "gestation_week"]:
-        if key in trigger:
-            return trigger[key] == context.get(key)
-
-    if trigger.get("is_ovulation_day") and context.get("is_ovulation_day"): return True
-    if trigger.get("is_fertile_start") and context.get("is_fertile_start"): return True
-    if trigger.get("is_fertile_end") and context.get("is_fertile_end"): return True
-
-    if trigger.get("event") == "annual_checkup" and context.get("is_annual_checkup"):
-        return True
-
-    return False
+        
+    # 2. Category-based user preference filtering
+    category = rule_def["category"]
+    if context.get("is_pregnant"):
+        if category == "prenatal" and not user_settings.prenatal_milestones: return False
+        # Add more specific checks if needed (daily tips, etc)
+    else:
+        if category == "contraceptive" and not user_settings.contraceptive_enabled: return False
+        if category == "menstrual":
+            # Just basic check for now, can be expanded
+            pass
+            
+    return True
 
 @celery_app.task
 def process_dynamic_notifications():
     """
-    Daily Task (8:00 AM): Evaluates all rules for all users and queues PendingNotifications.
+    Daily Task (8:00 AM): Evaluates global rules for all users.
+    Optimized for Agnostic/Closed App model.
     """
     db = SessionLocal()
     try:
-        doctors = db.query(Doctor).filter(Doctor.is_active == True).all()
         tz = pytz.timezone('America/Caracas')
         now = datetime.now(tz)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # 1. Fetch Global Rules (Source of Truth for texts)
+        global_rules = {
+            r.notification_type: r 
+            for r in db.query(NotificationRule).filter(NotificationRule.tenant_id == None, NotificationRule.is_active == True).all()
+        }
+
+        # 2. Process all Active Users
+        users = db.query(CycleUser).filter(CycleUser.is_active == True).all()
         
-        for doctor in doctors:
-            rules = db.query(NotificationRule).filter(
-                NotificationRule.tenant_id == doctor.id,
-                NotificationRule.is_active == True
-            ).all()
-            
-            if not rules: continue
-            
-            users = db.query(CycleUser).filter(
-                CycleUser.doctor_id == doctor.id, 
-                CycleUser.is_active == True
-            ).all()
-            
-            for user in users:
-                try:
-                    user_settings = db.query(CycleNotificationSettings).filter(
-                        CycleNotificationSettings.cycle_user_id == user.id
+        for user in users:
+            try:
+                # Get user context
+                user_settings = db.query(CycleNotificationSettings).filter(
+                    CycleNotificationSettings.cycle_user_id == user.id
+                ).first()
+                if not user_settings: continue
+
+                pregnancy = db.query(PregnancyLog).filter(
+                     PregnancyLog.cycle_user_id == user.id, 
+                     PregnancyLog.is_active == True
+                ).first()
+                
+                predictions = None
+                if not pregnancy:
+                     last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == user.id).order_by(CycleLog.start_date.desc()).first()
+                     if last_cycle:
+                         predictions = calculate_predictions(last_cycle.start_date, user.cycle_avg_length, user.period_avg_length)
+                
+                smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
+                
+                # 3. Check Registry Rules
+                for rule_def in NOTIFICATION_REGISTRY:
+                    rtype = rule_def["type"]
+                    
+                    # Does it fire?
+                    if not evaluate_registry_rule(rule_def, smart_ctx, user_settings):
+                        continue
+                        
+                    # Find the Template Rule (Global or Default)
+                    template_rule = global_rules.get(rtype)
+                    if not template_rule:
+                        # Fallback to Maraiel Herrera (tenant 1) if global not found yet
+                        # or just skip if no template exists
+                        logger.warning(f"No global template found for {rtype}")
+                        continue
+
+                    # Frequency Cap
+                    already_sent = db.query(NotificationLog).filter(
+                        NotificationLog.notification_rule_id == template_rule.id,
+                        NotificationLog.recipient_id == user.id,
+                        NotificationLog.sent_at >= today_start
                     ).first()
-                    if not user_settings: continue
+                    if already_sent: continue
 
-                    pregnancy = db.query(PregnancyLog).filter(
-                         PregnancyLog.cycle_user_id == user.id, 
-                         PregnancyLog.is_active == True
+                    already_pending = db.query(PendingNotification).filter(
+                        PendingNotification.notification_rule_id == template_rule.id,
+                        PendingNotification.recipient_id == user.id,
+                        PendingNotification.status == "pending",
+                        PendingNotification.scheduled_for >= today_start
                     ).first()
-                    
-                    predictions = None
-                    if not pregnancy:
-                         last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == user.id).order_by(CycleLog.start_date.desc()).first()
-                         if last_cycle:
-                             predictions = calculate_predictions(last_cycle.start_date, user.cycle_avg_length, user.period_avg_length)
-                    
-                    smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
-                    
-                    for rule in rules:
-                        # Frequency Cap: Don't queue if sent today
-                        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-                        already_sent = db.query(NotificationLog).filter(
-                            NotificationLog.notification_rule_id == rule.id,
-                            NotificationLog.recipient_id == user.id,
-                            NotificationLog.sent_at >= today_start
-                        ).first()
-                        if already_sent: continue
+                    if already_pending: continue
 
-                        # Already pending?
-                        already_pending = db.query(PendingNotification).filter(
-                            PendingNotification.notification_rule_id == rule.id,
-                            PendingNotification.recipient_id == user.id,
-                            PendingNotification.status == "pending",
-                            PendingNotification.scheduled_for >= today_start
-                        ).first()
-                        if already_pending: continue
+                    # Schedule it
+                    try:
+                        hour, minute = map(int, template_rule.send_time.split(':'))
+                        target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                    except:
+                        target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
+                        
+                    if target_time < now:
+                        target_time = now + timedelta(minutes=5)
 
-                        if evaluate_rule(rule, smart_ctx, user_settings):
-                            # Use rule.send_time (HH:MM)
-                            try:
-                                hour, minute = map(int, rule.send_time.split(':'))
-                                target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-                            except:
-                                target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
-                                
-                            if target_time < now:
-                                target_time = now + timedelta(minutes=5) # Run soon if time passed
-
-                            # Render Content
-                            render_vars = { "patient_name": user.nombre_completo }
-                            render_vars.update(smart_ctx)
-                            
-                            rendered = rule.render_content(render_vars)
-
-                            pending = PendingNotification(
-                                notification_rule_id=rule.id,
-                                recipient_id=user.id,
-                                subject=rendered["title"],
-                                body=rendered["message_html"],
-                                message_text=rendered["message_text"],
-                                scheduled_for=target_time,
-                                channel=rule.channel,
-                                status="pending"
-                            )
-                            db.add(pending)
+                    # Render
+                    render_vars = { "patient_name": user.nombre_completo }
+                    render_vars.update(smart_ctx)
                     
-                    db.commit()
-                            
-                except Exception as e:
-                    logger.error(f"Error processing user {user.id}: {e}", exc_info=True)
-                    db.rollback()
-                    
+                    # Standard Rule render
+                    rendered = template_rule.render_content(render_vars)
+
+                    pending = PendingNotification(
+                        notification_rule_id=template_rule.id,
+                        recipient_id=user.id,
+                        subject=rendered["title"],
+                        body=rendered["message_html"],
+                        message_text=rendered["message_text"],
+                        scheduled_for=target_time,
+                        channel=template_rule.channel,
+                        status="pending"
+                    )
+                    db.add(pending)
+                
+                # Commit per user to avoid massive loss on error
+                db.commit()
+                        
+            except Exception as e:
+                logger.error(f"Error processing user {user.id}: {e}", exc_info=True)
+                db.rollback()
+                
     except Exception as e:
         logger.error(f"Critical Error in process_dynamic_notifications: {e}", exc_info=True)
     finally:

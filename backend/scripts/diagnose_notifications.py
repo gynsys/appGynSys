@@ -7,96 +7,116 @@ import redis
 # Add the app directory to sys.path to allow imports
 sys.path.append(os.getcwd())
 
-# Import config for VAPID keys
+# Import config
 try:
     from app.core.config import settings
     from app.db.models.notification import NotificationRule, VALID_NOTIFICATION_TYPES
-    from app.core.celery_app import celery_app
+    from app.core.notifications.registry import NOTIFICATION_REGISTRY
 except ImportError as e:
-    print(f"❌ Error importing app modules: {e}")
+    print(f"Error importing app modules: {e}")
     sys.exit(1)
 
 def run_diagnosis():
-    print("🔍 INICIANDO DIAGNÓSTICO DEL SISTEMA DE NOTIFICACIONES\n")
+    print("SEARCHING: INICIANDO DIAGNOSTICO DEL SISTEMA DE NOTIFICACIONES (Modelo App Cerrada)\n")
     
     # 1. DATABASE CONNECTION
-    print("--- 1. Conexión a Base de Datos ---")
+    print("--- 1. Conexion a Base de Datos ---")
     try:
-        engine = create_engine(settings.DATABASE_URL)
+        # Override with localhost if needed for running outside docker
+        db_url = settings.DATABASE_URL
+        if "db" in db_url and os.name == 'nt':
+            db_url = db_url.replace("db", "localhost").replace("5432", "5433")
+            
+        engine = create_engine(db_url)
         SessionLocal = sessionmaker(bind=engine)
         db = SessionLocal()
         db.execute(text("SELECT 1"))
-        print("✅ Conexión exitosa a la base de datos.")
+        print(f"OK: Conexion exitosa a la base de datos ({db_url}).")
     except Exception as e:
-        print(f"❌ Error de conexión DB: {e}")
+        print(f"ERROR: Error de conexion DB: {e}")
         return
 
-    # 2. DOCTORS / TENANTS CHECK
+    # 2. DOCTORS / TENANTS CHECK (Read-only now)
     print("\n--- 2. Doctores Detectados (Tenants) ---")
     try:
         doctors = db.execute(text("SELECT id, slug_url, nombre_completo FROM doctors")).fetchall()
         for doc in doctors:
-            print(f"   👤 Doctor ID {doc.id}: {doc.nombre_completo} ({doc.slug_url})")
+            print(f"   Doctor ID {doc.id}: {doc.nombre_completo} ({doc.slug_url})")
         doctor_count = len(doctors)
     except Exception as e:
-        print(f"❌ Error consultando doctores: {e}")
+        print(f"ERROR: Error consultando doctores: {e}")
         db.close()
         return
 
-    # 3. NOTIFICATION RULES CHECK
-    print(f"\n--- 3. Reglas de Notificación (Total: {doctor_count} docs) ---")
+    # 3. GLOBAL NOTIFICATION RULES CHECK
+    print(f"\n--- 3. Reglas de Notificacion GLOBALES ---")
     try:
-        rules = db.query(NotificationRule).all()
+        # Query global rules (tenant_id IS NULL)
+        rules = db.query(NotificationRule).filter(NotificationRule.tenant_id == None).all()
         count = len(rules)
-        expected_per_doc = len(VALID_NOTIFICATION_TYPES)
-        total_expected = expected_per_doc * doctor_count
+        expected = len(NOTIFICATION_REGISTRY)
         
-        print(f"📊 Reglas encontradas: {count} (Esperadas: {total_expected} - {expected_per_doc} p/doc)")
+        print(f"Stats: Reglas globales encontradas: {count} (Esperadas en Registro: {expected})")
         
-        if count >= total_expected:
-            print(f"✅ Todas las reglas están presentes para los {doctor_count} doctores.")
+        if count == expected:
+            print(f"OK: El numero de reglas coincide perfectamente con el registro ({expected}).")
         else:
-            print(f"⚠️ Discrepancia en el número total de reglas. Faltan: {total_expected - count}")
-            # Identify missing types globally for debug
-            existing_types = set([r.notification_type for r in rules])
-            missing = [t for t in VALID_NOTIFICATION_TYPES if t not in existing_types]
-            if missing:
-                print(f"❌ Tipos de reglas faltantes en el sistema:")
-                for m in missing:
-                    print(f"   - Faltante: {m}")
+            print(f"WARNING: Discrepancia detectada. Registro: {expected}, DB: {count}")
+            
+        # Check for specific types
+        existing_types = set([r.notification_type for r in rules])
+        missing_registry = [r["type"] for r in NOTIFICATION_REGISTRY if r["type"] not in existing_types]
+        
+        if missing_registry:
+            print(f"ERROR: Tipos de reglas faltantes en DB (estan en Registro):")
+            for m in missing_registry:
+                print(f"   - Faltante: {m}")
+        else:
+            print("OK: Todos los tipos del registro estan presentes en la DB.")
+
     except Exception as e:
-        print(f"❌ Error consultando reglas: {e}")
+        print(f"ERROR: Error consultando reglas: {e}")
 
     # 4. REDIS / CELERY BROKER CHECK
     print("\n--- 4. Conectividad Celery / Redis ---")
     try:
-        r = redis.from_url(settings.CELERY_BROKER_URL)
+        redis_url = settings.CELERY_BROKER_URL
+        if "://redis" in redis_url and os.name == 'nt':
+            redis_url = redis_url.replace("://redis", "://localhost")
+            
+        r = redis.from_url(redis_url)
         r.ping()
-        print(f"✅ Conexión exitosa a Redis Broker ({settings.CELERY_BROKER_URL})")
+        print(f"OK: Conexion exitosa a Redis Broker ({redis_url})")
     except Exception as e:
-        print(f"❌ Error conectando a Redis/Celery: {e}")
+        print(f"ERROR: Error conectando a Redis/Celery: {e}")
 
     # 5. VAPID KEYS FOR PUSH
-    print("\n--- 5. Configuración VAPID (Push Notifications) ---")
+    print("\n--- 5. Configuracion VAPID (Push Notifications) ---")
     if settings.VAPID_PUBLIC_KEY and settings.VAPID_PRIVATE_KEY:
-        print("✅ VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY detectadas.")
+        print("OK: VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY detectadas.")
     else:
-        print("❌ Faltan llaves VAPID en el entorno (.env).")
+        print("ERROR: Faltan llaves VAPID en el entorno (.env).")
 
     # 6. PENDING QUEUE CHECK
     print("\n--- 6. Cola de Notificaciones Pendientes ---")
     try:
-        pending_count = db.execute(text("SELECT COUNT(*) FROM pending_notifications WHERE status = 'scheduled'")).scalar()
-        print(f"✉️ Notificaciones programadas para envío: {pending_count}")
+        # Check both 'pending' and 'sent' statuses
+        pending_count = db.execute(text("SELECT COUNT(*) FROM pending_notifications WHERE status = 'pending'")).scalar()
+        print(f"Pending: Notificaciones pendientes: {pending_count}")
+        
+        sent_count = db.execute(text("SELECT COUNT(*) FROM pending_notifications WHERE status = 'sent'")).scalar()
+        print(f"Sent: Notificaciones enviadas hoy (aprox): {sent_count}")
         
         failed_count = db.execute(text("SELECT COUNT(*) FROM pending_notifications WHERE status = 'failed'")).scalar()
         if failed_count > 0:
-            print(f"⚠️ Notificaciones fallidas detectadas: {failed_count}")
+            print(f"WARNING: Notificaciones fallidas detectadas: {failed_count}")
+        else:
+            print("OK: No hay fallos detectados en la cola.")
     except Exception as e:
-        print(f"❌ Error consultando cola: {e}")
+        print(f"ERROR: Error consultando cola: {e}")
 
     db.close()
-    print("\n🏁 DIAGNÓSTICO FINALIZADO")
+    print("\nFIN: DIAGNOSTICO FINALIZADO")
 
 if __name__ == "__main__":
     run_diagnosis()

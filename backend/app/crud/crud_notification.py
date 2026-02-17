@@ -3,13 +3,17 @@ from app.db.models.notification import NotificationRule
 from app.schemas.notification import NotificationRuleUpdate
 from typing import List, Optional
 
+def get_global_rules(db: Session) -> List[NotificationRule]:
+    """Get all system-wide notification rules."""
+    return db.query(NotificationRule).filter(NotificationRule.tenant_id == None).order_by(NotificationRule.priority).all()
+
 def get_rules_by_tenant(db: Session, tenant_id: int) -> List[NotificationRule]:
     return db.query(NotificationRule).filter(NotificationRule.tenant_id == tenant_id).order_by(NotificationRule.priority).all()
 
 def get_rule_by_id(db: Session, rule_id: int) -> Optional[NotificationRule]:
     return db.query(NotificationRule).filter(NotificationRule.id == rule_id).first()
 
-def get_rule_by_type(db: Session, tenant_id: int, notification_type: str) -> Optional[NotificationRule]:
+def get_rule_by_type(db: Session, tenant_id: Optional[int], notification_type: str) -> Optional[NotificationRule]:
     return db.query(NotificationRule).filter(
         NotificationRule.tenant_id == tenant_id,
         NotificationRule.notification_type == notification_type

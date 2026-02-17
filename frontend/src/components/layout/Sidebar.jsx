@@ -15,7 +15,6 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
   const allMenuItems = [
 
     { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
-    { icon: FiBell, label: 'Notificaciones', path: '/dashboard/notifications' },
     { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
     { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
     { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict rqgZ0ScHFRO7Fo3jtobaGvBR9FluJzXxdIBOQoCeccZp9JHi0fwoWlOxVH5B9ky
+\restrict 2Xsh6VzencsawfoBPRPfzcWoZ8rOgfTR72Zw7uPNTKGcfvHDffknv9dyL7wU8wX
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -826,14 +826,18 @@ ALTER SEQUENCE public.notification_logs_id_seq OWNED BY public.notification_logs
 CREATE TABLE public.notification_rules (
     id integer NOT NULL,
     tenant_id integer NOT NULL,
-    name character varying NOT NULL,
     notification_type character varying NOT NULL,
     trigger_condition json DEFAULT '{}'::json NOT NULL,
     channel character varying DEFAULT 'email'::character varying NOT NULL,
     message_template text NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone
+    updated_at timestamp with time zone,
+    priority integer DEFAULT 50,
+    title_template character varying(255),
+    message_text_template text,
+    send_time character varying(10) DEFAULT '08:00'::character varying,
+    is_edited boolean DEFAULT false
 );
 
 
@@ -944,6 +948,51 @@ ALTER SEQUENCE public.patients_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.patients_id_seq OWNED BY public.patients.id;
+
+
+--
+-- Name: pending_notifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.pending_notifications (
+    id integer NOT NULL,
+    notification_rule_id integer,
+    recipient_id integer,
+    subject character varying(255) NOT NULL,
+    body text NOT NULL,
+    message_text text,
+    scheduled_for timestamp with time zone NOT NULL,
+    channel character varying(20) DEFAULT 'dual'::character varying,
+    status character varying(20) DEFAULT 'pending'::character varying,
+    retry_count integer DEFAULT 0,
+    last_error text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone
+);
+
+
+ALTER TABLE public.pending_notifications OWNER TO postgres;
+
+--
+-- Name: pending_notifications_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.pending_notifications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.pending_notifications_id_seq OWNER TO postgres;
+
+--
+-- Name: pending_notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.pending_notifications_id_seq OWNED BY public.pending_notifications.id;
 
 
 --
@@ -1088,6 +1137,45 @@ ALTER SEQUENCE public.pregnancy_logs_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.pregnancy_logs_id_seq OWNED BY public.pregnancy_logs.id;
+
+
+--
+-- Name: push_subscriptions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.push_subscriptions (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    endpoint character varying NOT NULL,
+    p256dh character varying NOT NULL,
+    auth character varying NOT NULL,
+    user_agent character varying,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.push_subscriptions OWNER TO postgres;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.push_subscriptions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNER TO postgres;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNED BY public.push_subscriptions.id;
 
 
 --
@@ -1490,6 +1578,13 @@ ALTER TABLE ONLY public.patients ALTER COLUMN id SET DEFAULT nextval('public.pat
 
 
 --
+-- Name: pending_notifications id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pending_notifications ALTER COLUMN id SET DEFAULT nextval('public.pending_notifications_id_seq'::regclass);
+
+
+--
 -- Name: plans id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1508,6 +1603,13 @@ ALTER TABLE ONLY public.preconsultation_templates ALTER COLUMN id SET DEFAULT ne
 --
 
 ALTER TABLE ONLY public.pregnancy_logs ALTER COLUMN id SET DEFAULT nextval('public.pregnancy_logs_id_seq'::regclass);
+
+
+--
+-- Name: push_subscriptions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions ALTER COLUMN id SET DEFAULT nextval('public.push_subscriptions_id_seq'::regclass);
 
 
 --
@@ -1557,8 +1659,7 @@ ALTER TABLE ONLY public.testimonials ALTER COLUMN id SET DEFAULT nextval('public
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-acfb5f99cde1
-37eb03e25895
+merge_all_notif
 \.
 
 
@@ -1870,20 +1971,7 @@ COPY public.notification_logs (id, notification_rule_id, recipient_id, sent_at, 
 -- Data for Name: notification_rules; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.notification_rules (id, tenant_id, name, notification_type, trigger_condition, channel, message_template, is_active, created_at, updated_at) FROM stdin;
-18	1	Fase Folicular	cycle_phase	{"cycle_day": 7}	email	<h1>???? Fase Folicular</h1><p>Hola {patient_name}, est??s en la fase folicular de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
-20	1	Semana 12 - Primer Trimestre Completo	prenatal_milestone	{"gestation_week": 12}	dual	<h1>???? ??Felicitaciones!</h1><p>Hola {patient_name}, has completado el primer trimestre. ??Es un gran hito!</p>	t	2026-01-30 13:37:46.546031+00	\N
-21	1	Semana 20 - Mitad del Embarazo	prenatal_milestone	{"gestation_week": 20}	dual	<h1>???? ??A mitad de camino!</h1><p>Hola {patient_name}, est??s en la semana 20, ??la mitad del embarazo!</p>	t	2026-01-30 13:37:46.546031+00	\N
-14	1	Día de Ovulación	cycle_phase	{"is_ovulation_day": true}	dual	<h1>???? D??a de Ovulaci??n</h1><p>Hola {patient_name}, hoy es tu d??a de ovulaci??n. Es tu pico m??ximo de fertilidad.</p>	t	2026-01-30 13:37:46.546031+00	\N
-15	1	Inicio Ventana Fértil	cycle_phase	{"is_fertile_start": true}	dual	<h1>???? Ventana F??rtil</h1><p>Hola {patient_name}, hoy comienza tu ventana f??rtil. Tienes alta probabilidad de embarazo.</p>	t	2026-01-30 13:37:46.546031+00	\N
-16	1	Recordatorio de Período (1 día antes)	cycle_phase	{"days_before_period": 1}	dual	<h1>???? Tu per??odo llega pronto</h1><p>Hola {patient_name}, seg??n tus predicciones, tu per??odo deber??a comenzar ma??ana.</p>	t	2026-01-30 13:37:46.546031+00	\N
-17	1	Recordatorio de Período (3 días antes)	cycle_phase	{"days_before_period": 3}	email	<h1>???? Recordatorio</h1><p>Hola {patient_name}, tu per??odo deber??a comenzar en aproximadamente 3 d??as.</p>	t	2026-01-30 13:37:46.546031+00	\N
-19	1	Fase Lútea	cycle_phase	{"days_after_ovulation": 3}	email	<h1>???? Fase L??tea</h1><p>Hola {patient_name}, est??s en la fase l??tea de tu ciclo.</p>	t	2026-01-30 13:37:46.546031+00	\N
-22	1	Semana 28 - Tercer Trimestre	prenatal_milestone	{"gestation_week": 28}	dual	<h1>???? Tercer Trimestre</h1><p>Hola {patient_name}, has entrado en el tercer y ??ltimo trimestre.</p>	t	2026-01-30 13:37:46.546031+00	\N
-24	1	Bienvenida al Sistema	system	{"event": "user_registered"}	email	<h1>???? Bienvenida a GynSys</h1><p>Hola {patient_name}, gracias por registrarte en nuestro sistema de seguimiento ginecol??gico.</p>	t	2026-01-30 13:37:46.546031+00	\N
-25	1	Completar Perfil	system	{"days_after_registration": 3, "profile_incomplete": true}	email	<h1>???? Completa tu Perfil</h1><p>Hola {patient_name}, completa tu perfil para aprovechar al m??ximo el sistema.</p>	t	2026-01-30 13:37:46.546031+00	\N
-26	1	prueba	cycle_phase	{"is_ovulation_day": true}	dual	esta es una  prueba	t	2026-01-31 03:51:31.091532+00	\N
-23	1	Semana 36 - Preparación para el Parto	prenatal_milestone	{"gestation_week": 36}	dual	<h1>???? Muy Pronto</h1><p>Hola {patient_name}, est??s en la semana 36. ??Tu beb?? llegar?? pronto!</p>	t	2026-01-30 13:37:46.546031+00	\N
+COPY public.notification_rules (id, tenant_id, notification_type, trigger_condition, channel, message_template, is_active, created_at, updated_at, priority, title_template, message_text_template, send_time, is_edited) FROM stdin;
 \.
 
 
@@ -1902,6 +1990,14 @@ COPY public.online_consultation_settings (id, doctor_id, first_consultation_pric
 --
 
 COPY public.patients (id, name, email, phone, date_of_birth, medical_history, created_at, updated_at, tenant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: pending_notifications; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.pending_notifications (id, notification_rule_id, recipient_id, subject, body, message_text, scheduled_for, channel, status, retry_count, last_error, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -2005,6 +2101,14 @@ COPY public.pregnancy_logs (id, cycle_user_id, is_active, last_period_date, due_
 16	9	f	2026-01-19	2026-10-26	t	2026-01-19 11:17:11.303318	2026-01-19 11:23:02.90798
 17	9	f	2025-09-12	2026-06-19	t	2026-01-19 11:43:37.397846	2026-01-19 11:57:54.991679
 18	9	f	2026-01-19	2026-10-26	t	2026-01-19 11:58:20.035008	2026-01-19 12:06:13.152738
+\.
+
+
+--
+-- Data for Name: push_subscriptions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.push_subscriptions (id, user_id, endpoint, p256dh, auth, user_agent, created_at) FROM stdin;
 \.
 
 
@@ -2217,7 +2321,7 @@ SELECT pg_catalog.setval('public.notification_logs_id_seq', 1, false);
 -- Name: notification_rules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.notification_rules_id_seq', 27, true);
+SELECT pg_catalog.setval('public.notification_rules_id_seq', 28, true);
 
 
 --
@@ -2232,6 +2336,13 @@ SELECT pg_catalog.setval('public.online_consultation_settings_id_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.patients_id_seq', 1, false);
+
+
+--
+-- Name: pending_notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.pending_notifications_id_seq', 1, false);
 
 
 --
@@ -2253,6 +2364,13 @@ SELECT pg_catalog.setval('public.preconsultation_templates_id_seq', 3, true);
 --
 
 SELECT pg_catalog.setval('public.pregnancy_logs_id_seq', 18, true);
+
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.push_subscriptions_id_seq', 1, false);
 
 
 --
@@ -2498,6 +2616,14 @@ ALTER TABLE ONLY public.patients
 
 
 --
+-- Name: pending_notifications pending_notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pending_notifications
+    ADD CONSTRAINT pending_notifications_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2527,6 +2653,22 @@ ALTER TABLE ONLY public.preconsultation_templates
 
 ALTER TABLE ONLY public.pregnancy_logs
     ADD CONSTRAINT pregnancy_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_endpoint_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_endpoint_key UNIQUE (endpoint);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_pkey PRIMARY KEY (id);
 
 
 --
@@ -2597,6 +2739,13 @@ CREATE INDEX idx_notification_logs_recipient ON public.notification_logs USING b
 --
 
 CREATE INDEX idx_notification_rules_tenant ON public.notification_rules USING btree (tenant_id);
+
+
+--
+-- Name: idx_push_subscriptions_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_push_subscriptions_user_id ON public.push_subscriptions USING btree (user_id);
 
 
 --
@@ -3169,6 +3318,22 @@ ALTER TABLE ONLY public.online_consultation_settings
 
 
 --
+-- Name: pending_notifications pending_notifications_notification_rule_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pending_notifications
+    ADD CONSTRAINT pending_notifications_notification_rule_id_fkey FOREIGN KEY (notification_rule_id) REFERENCES public.notification_rules(id);
+
+
+--
+-- Name: pending_notifications pending_notifications_recipient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.pending_notifications
+    ADD CONSTRAINT pending_notifications_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES public.cycle_users(id);
+
+
+--
 -- Name: preconsultation_questions preconsultation_questions_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3182,6 +3347,14 @@ ALTER TABLE ONLY public.preconsultation_questions
 
 ALTER TABLE ONLY public.pregnancy_logs
     ADD CONSTRAINT pregnancy_logs_cycle_user_id_fkey FOREIGN KEY (cycle_user_id) REFERENCES public.cycle_users(id);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.cycle_users(id);
 
 
 --
@@ -3299,5 +3472,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict rqgZ0ScHFRO7Fo3jtobaGvBR9FluJzXxdIBOQoCeccZp9JHi0fwoWlOxVH5B9ky
+\unrestrict 2Xsh6VzencsawfoBPRPfzcWoZ8rOgfTR72Zw7uPNTKGcfvHDffknv9dyL7wU8wX
 

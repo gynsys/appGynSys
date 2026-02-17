@@ -59,34 +59,35 @@ VALID_NOTIFICATION_TYPES = {
 
 class NotificationRule(Base):
     """
-    Notification rule - FIXED type, EDITABLE content only.
-    Cannot create new types, only modify existing 19.
+    Notification rule - Global Template (Closed App Model).
+    Managed by SuperAdmin. individual doctors do not have separate rules.
     """
     __tablename__ = "notification_rules"
 
     id = Column(Integer, primary_key=True, index=True)
-    tenant_id = Column(Integer, ForeignKey("doctors.id"), nullable=False, index=True)
     
-    # IDENTIFICADOR FIJO - Inmutable after creation
+    # Nullable for Global Rules (System-wide)
+    tenant_id = Column(Integer, ForeignKey("doctors.id"), nullable=True, index=True)
+    
+    # IDENTIFICADOR FIJO
     notification_type = Column(String(50), nullable=False, index=True)
-    # Must be one of VALID_NOTIFICATION_TYPES
     
-    # LÓGICA DE DISPARO - Fija, no editable
-    trigger_condition = Column(JSON, nullable=False, default={})
-    priority = Column(Integer, default=50)  # Fijo por tipo
+    # Metadata/Reference only (logic is now in Registry.py)
+    trigger_condition = Column(JSON, nullable=True, default={}) 
+    priority = Column(Integer, default=50)
     
-    # CONTENIDO EDITABLE
+    # CONTENIDO (Managed by Admin)
     title_template = Column(String(255), nullable=False)
     message_template = Column(Text, nullable=False)
     message_text_template = Column(Text, nullable=True)
     
-    # CONFIGURACIÓN EDITABLE
+    # SETTINGS
     channel = Column(String(20), default="dual")
-    send_time = Column(String(10), default="08:00")  # HH:MM format
+    send_time = Column(String(10), default="08:00")
     
     # ESTADO
     is_active = Column(Boolean, default=True)
-    is_edited = Column(Boolean, default=False)  # Track if modified from default
+    is_edited = Column(Boolean, default=False)
     
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -95,9 +96,9 @@ class NotificationRule(Base):
     # Relationships
     doctor = relationship("Doctor", backref="notification_rules")
     
-    # Indexes
+    # Unique per type (one global rule per type)
     __table_args__ = (
-        Index('idx_rule_tenant_type', 'tenant_id', 'notification_type', unique=True),
+        Index('idx_rule_type_tenant', 'notification_type', 'tenant_id', unique=True),
     )
     
     def validate_type(self) -> bool:

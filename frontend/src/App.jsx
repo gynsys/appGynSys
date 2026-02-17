@@ -46,7 +46,7 @@ import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPa
 import PatientsManager from './pages/dashboard/PatientsManager'
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
-import NotificationManagerPage from './pages/dashboard/NotificationManagerPage'
+import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { useState } from 'react'
 
@@ -171,7 +171,6 @@ function App() {
           <Route path="appointments" element={<AppointmentManager />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
-          <Route path="notifications" element={<NotificationManagerPage />} />
         </Route>
 
 
@@ -213,6 +212,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminTemplatesPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminRoute>
+              <AdminNotificationManagerPage />
             </AdminRoute>
           }
         />

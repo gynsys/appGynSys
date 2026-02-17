@@ -32,7 +32,7 @@ class NotificationRuleBase(BaseModel):
 
 class NotificationRuleResponse(NotificationRuleBase):
     id: int
-    tenant_id: int
+    tenant_id: Optional[int] = None
     priority: int
     trigger_condition: Dict[str, Any]  # Read-only
     created_at: datetime

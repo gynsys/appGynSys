@@ -19,33 +19,28 @@ router = APIRouter()
 
 # --- Dependencies ---
 
-async def get_current_active_doctor(
-    current_user: Doctor = Depends(get_current_user),
-) -> Doctor:
-    if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+from app.api.v1.endpoints.auth import get_current_user, get_current_admin_user
 
-# --- Doctor Endpoints (Rule Management) ---
+# --- Global Rule Management (Admin Only) ---
 
 @router.get("/rules", response_model=List[NotificationRuleResponse])
 def read_notification_rules(
     db: Session = Depends(get_db),
-    current_doctor: Doctor = Depends(get_current_active_doctor)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
-    """List all notification rules for the current doctor."""
-    return crud.get_rules_by_tenant(db, current_doctor.id)
+    """List all global notification rules (SuperAdmin only)."""
+    return crud.get_global_rules(db)
 
 @router.get("/rules/{notification_type}", response_model=NotificationRuleResponse)
 def read_notification_rule_by_type(
     notification_type: str,
     db: Session = Depends(get_db),
-    current_doctor: Doctor = Depends(get_current_active_doctor)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
-    """Get a specific notification rule by its type."""
-    rule = crud.get_rule_by_type(db, current_doctor.id, notification_type)
+    """Get a specific global notification rule (SuperAdmin only)."""
+    rule = crud.get_rule_by_type(db, None, notification_type)
     if not rule:
-        raise HTTPException(status_code=404, detail="Notification type not found for this tenant")
+        raise HTTPException(status_code=404, detail="Global notification type not found")
     return rule
 
 @router.put("/rules/{notification_type}", response_model=NotificationRuleResponse)
@@ -53,12 +48,12 @@ def update_notification_rule(
     notification_type: str,
     rule_in: NotificationRuleUpdate,
     db: Session = Depends(get_db),
-    current_doctor: Doctor = Depends(get_current_active_doctor)
+    current_admin: Doctor = Depends(get_current_admin_user)
 ):
-    """Update a notification rule by type."""
-    rule = crud.get_rule_by_type(db, current_doctor.id, notification_type)
+    """Update a global notification rule (SuperAdmin only)."""
+    rule = crud.get_rule_by_type(db, None, notification_type)
     if not rule:
-        raise HTTPException(status_code=404, detail="Notification type not found")
+        raise HTTPException(status_code=404, detail="Global notification type not found")
     
     return crud.update_rule(db, rule, rule_in)
 
