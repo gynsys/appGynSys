@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2Xsh6VzencsawfoBPRPfzcWoZ8rOgfTR72Zw7uPNTKGcfvHDffknv9dyL7wU8wX
+\restrict nNAsZchcLscxopv9d1flK2LB2GJfvQqgZg8VzWDOiBk0pX0EokwfbvwNb4roCtV
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 17.7 (Debian 17.7-0+deb13u1)
@@ -825,7 +825,7 @@ ALTER SEQUENCE public.notification_logs_id_seq OWNED BY public.notification_logs
 
 CREATE TABLE public.notification_rules (
     id integer NOT NULL,
-    tenant_id integer NOT NULL,
+    tenant_id integer,
     notification_type character varying NOT NULL,
     trigger_condition json DEFAULT '{}'::json NOT NULL,
     channel character varying DEFAULT 'email'::character varying NOT NULL,
@@ -1972,6 +1972,94 @@ COPY public.notification_logs (id, notification_rule_id, recipient_id, sent_at, 
 --
 
 COPY public.notification_rules (id, tenant_id, notification_type, trigger_condition, channel, message_template, is_active, created_at, updated_at, priority, title_template, message_text_template, send_time, is_edited) FROM stdin;
+1	\N	day_1_period_start	{}	dual	🩸 Hoy inicia tu periodo. Registra tu flujo y síntomas para un seguimiento preciso.	t	2026-02-17 21:40:22.984901+00	\N	100	Día 1 - Inicio Periodo	🩸 Hoy inicia tu periodo. Registra tu flujo y síntomas para un seguimiento preciso.	08:00	f
+2	\N	day_2_symptom_check	{}	dual	¿Cómo te sientes hoy? Registra dolor, flujo y otros síntomas.	t	2026-02-17 21:40:22.984901+00	\N	101	Día 2 - Chequeo de Dolor	¿Cómo te sientes hoy? Registra dolor, flujo y otros síntomas.	08:00	f
+3	\N	day_3_hydration	{}	dual	💧 Recuerda beber mucha agua para ayudar con los cólicos.	t	2026-02-17 21:40:22.984901+00	\N	102	Día 3 - Hidratación	💧 Recuerda beber mucha agua para ayudar con los cólicos.	08:00	f
+4	\N	day_4_mood_track	{}	dual	¿Cómo está tu ánimo hoy? Registra tus emociones.	t	2026-02-17 21:40:22.984901+00	\N	103	Día 4 - Estado de Ánimo	¿Cómo está tu ánimo hoy? Registra tus emociones.	08:00	f
+5	\N	day_5_flow_decrease	{}	dual	Tu flujo debería estar disminuyendo. ¿Cómo va tu periodo?	t	2026-02-17 21:40:22.984901+00	\N	104	Día 5 - Fin de Chequeo	Tu flujo debería estar disminuyendo. ¿Cómo va tu periodo?	08:00	f
+6	\N	day_6_energy_boost	{}	dual	✨ Tu energía debería aumentar. Buen momento para ejercitarte.	t	2026-02-17 21:40:22.984901+00	\N	105	Día 6 - Energía en Aumento	✨ Tu energía debería aumentar. Buen momento para ejercitarte.	08:00	f
+7	\N	day_7_period_end	{}	dual	Tu periodo debería estar terminando. ¡Inicia una nueva fase!	t	2026-02-17 21:40:22.984901+00	\N	106	Día 7 - Fin de Periodo	Tu periodo debería estar terminando. ¡Inicia una nueva fase!	08:00	f
+8	\N	day_8_skin_care	{}	dual	🌸 Tu piel está en su mejor momento. Cuídala bien.	t	2026-02-17 21:40:22.984901+00	\N	107	Día 8 - Piel Radiante	🌸 Tu piel está en su mejor momento. Cuídala bien.	08:00	f
+9	\N	day_9_fertile_approaching	{}	dual	❤️ Se aproxima tu ventana fértil. Estate atenta.	t	2026-02-17 21:40:22.984901+00	\N	108	Día 9 - Ventana Fértil Cerca	❤️ Se aproxima tu ventana fértil. Estate atenta.	08:00	f
+10	\N	day_10_fertile_start	{}	dual	❤️‍🔥 Inicia tu ventana fértil. Alta probabilidad de concepción.	t	2026-02-17 21:40:22.984901+00	\N	109	Día 10 - Ventana Fértil	❤️‍🔥 Inicia tu ventana fértil. Alta probabilidad de concepción.	08:00	f
+11	\N	day_11_high_fertility	{}	dual	🔥 Fertilidad muy alta. Momento ideal para concebir.	t	2026-02-17 21:40:22.984901+00	\N	110	Día 11 - Fertilidad Alta	🔥 Fertilidad muy alta. Momento ideal para concebir.	08:00	f
+12	\N	day_12_peak_fertility	{}	dual	🔥🔥 Pico máximo de fertilidad. Mayor probabilidad de embarazo.	t	2026-02-17 21:40:22.984901+00	\N	111	Día 12 - Pico de Fertilidad	🔥🔥 Pico máximo de fertilidad. Mayor probabilidad de embarazo.	08:00	f
+13	\N	day_13_ovulation	{}	dual	🥚 Probable día de ovulación. Registra síntomas.	t	2026-02-17 21:40:22.984901+00	\N	112	Día 13 - Posible Ovulación	🥚 Probable día de ovulación. Registra síntomas.	08:00	f
+14	\N	day_14_ovulation_peak	{}	dual	🥚 Día típico de ovulación (ciclo 28 días).	t	2026-02-17 21:40:22.984901+00	\N	113	Día 14 - Ovulación	🥚 Día típico de ovulación (ciclo 28 días).	08:00	f
+15	\N	day_15_fertile_end	{}	dual	✅ Termina tu ventana fértil.	t	2026-02-17 21:40:22.984901+00	\N	114	Día 15 - Fin Ventana Fértil	✅ Termina tu ventana fértil.	08:00	f
+16	\N	day_16_implantation_window	{}	dual	Si hubo concepción, puede iniciar la implantación.	t	2026-02-17 21:40:22.984901+00	\N	115	Día 16 - Posible Implantación	Si hubo concepción, puede iniciar la implantación.	08:00	f
+17	\N	day_17_mood_watch	{}	dual	Entras en fase lútea. Observa cambios en tu humor.	t	2026-02-17 21:40:22.984901+00	\N	116	Día 17 - Observa tu Humos	Entras en fase lútea. Observa cambios en tu humor.	08:00	f
+18	\N	day_18_exercise_tip	{}	dual	Buen momento para yoga o caminatas tranquilas.	t	2026-02-17 21:40:22.984901+00	\N	117	Día 18 - Ejercicio Suave	Buen momento para yoga o caminatas tranquilas.	08:00	f
+19	\N	day_19_metabolism_alert	{}	dual	Tu metabolismo aumenta. Puedes sentir más hambre.	t	2026-02-17 21:40:22.984901+00	\N	118	Día 19 - Metabolismo	Tu metabolismo aumenta. Puedes sentir más hambre.	08:00	f
+20	\N	day_20_rest_importance	{}	dual	Prioriza el sueño. Tu cuerpo se prepara para el fin del ciclo.	t	2026-02-17 21:40:22.984901+00	\N	119	Día 20 - Descanso	Prioriza el sueño. Tu cuerpo se prepara para el fin del ciclo.	08:00	f
+21	\N	day_21_cycle_summary	{}	dual	Has tenido un ciclo regular. Revisa tus registros mensuales.	t	2026-02-17 21:40:22.984901+00	\N	120	Día 21 - Resumen de Ciclo	Has tenido un ciclo regular. Revisa tus registros mensuales.	08:00	f
+22	\N	day_22_pms_start	{}	dual	💙 Pueden iniciar síntomas premenstruales. Cuídate.	t	2026-02-17 21:40:22.984901+00	\N	121	Día 22 - Posible SPM	💙 Pueden iniciar síntomas premenstruales. Cuídate.	08:00	f
+23	\N	day_23_bloating_check	{}	dual	¿Te sientes hinchada? Es normal en esta fase.	t	2026-02-17 21:40:22.984901+00	\N	122	Día 23 - Hinchazón	¿Te sientes hinchada? Es normal en esta fase.	08:00	f
+24	\N	day_24_mood_changes	{}	dual	Registra tu estado de ánimo y síntomas emocionales.	t	2026-02-17 21:40:22.984901+00	\N	123	Día 24 - Cambios de Ánimo	Registra tu estado de ánimo y síntomas emocionales.	08:00	f
+25	\N	day_25_breast_tenderness	{}	dual	¿Sensibilidad o dolor en los senos? Registra tus síntomas.	t	2026-02-17 21:40:22.984901+00	\N	124	Día 25 - Sensibilidad Mamaria	¿Sensibilidad o dolor en los senos? Registra tus síntomas.	08:00	f
+26	\N	day_26_period_preparation	{}	dual	Tu periodo debería llegar en 2-3 días. Prepárate.	t	2026-02-17 21:40:22.984901+00	\N	125	Día 26 - Preparación	Tu periodo debería llegar en 2-3 días. Prepárate.	08:00	f
+27	\N	day_27_cramps_alert	{}	dual	Pueden iniciar cólicos premenstruales.	t	2026-02-17 21:40:22.984901+00	\N	126	Día 27 - Posibles Cólicos	Pueden iniciar cólicos premenstruales.	08:00	f
+28	\N	day_28_period_tomorrow	{}	dual	📅 Tu periodo debería llegar mañana. ¿Ya llegó?	t	2026-02-17 21:40:22.984901+00	\N	127	Día 28 - Periodo Mañana	📅 Tu periodo debería llegar mañana. ¿Ya llegó?	08:00	f
+29	\N	period_late_1_day	{}	dual	📅 Tu periodo tiene 1 día de retraso. ¿Ya llegó?	t	2026-02-17 21:40:22.984901+00	\N	128	1 Día de Retraso	📅 Tu periodo tiene 1 día de retraso. ¿Ya llegó?	08:00	f
+30	\N	prenatal_week_1	{}	dual	🤰 ¡Semana 1! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	201	Semana 1 de Embarazo	🤰 ¡Semana 1! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+31	\N	prenatal_week_2	{}	dual	🤰 ¡Semana 2! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	202	Semana 2 de Embarazo	🤰 ¡Semana 2! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+32	\N	prenatal_week_3	{}	dual	🤰 ¡Semana 3! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	203	Semana 3 de Embarazo	🤰 ¡Semana 3! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+33	\N	prenatal_week_4	{}	dual	🤰 ¡Semana 4! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	204	Semana 4 de Embarazo	🤰 ¡Semana 4! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+34	\N	prenatal_week_5	{}	dual	🤰 ¡Semana 5! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	205	Semana 5 de Embarazo	🤰 ¡Semana 5! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+35	\N	prenatal_week_6	{}	dual	🤰 ¡Semana 6! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	206	Semana 6 de Embarazo	🤰 ¡Semana 6! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+36	\N	prenatal_week_7	{}	dual	🤰 ¡Semana 7! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	207	Semana 7 de Embarazo	🤰 ¡Semana 7! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+37	\N	prenatal_week_8	{}	dual	🤰 ¡Semana 8! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	208	Semana 8 de Embarazo	🤰 ¡Semana 8! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+38	\N	prenatal_week_9	{}	dual	🤰 ¡Semana 9! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	209	Semana 9 de Embarazo	🤰 ¡Semana 9! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+39	\N	prenatal_week_10	{}	dual	🤰 ¡Semana 10! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	210	Semana 10 de Embarazo	🤰 ¡Semana 10! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+40	\N	prenatal_week_11	{}	dual	🤰 ¡Semana 11! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	211	Semana 11 de Embarazo	🤰 ¡Semana 11! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+41	\N	prenatal_week_12	{}	dual	🤰 ¡Semana 12! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	212	Semana 12 de Embarazo	🤰 ¡Semana 12! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+42	\N	prenatal_week_13	{}	dual	🤰 ¡Semana 13! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	213	Semana 13 de Embarazo	🤰 ¡Semana 13! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+43	\N	prenatal_week_14	{}	dual	🤰 ¡Semana 14! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	214	Semana 14 de Embarazo	🤰 ¡Semana 14! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+44	\N	prenatal_week_15	{}	dual	🤰 ¡Semana 15! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	215	Semana 15 de Embarazo	🤰 ¡Semana 15! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+45	\N	prenatal_week_16	{}	dual	🤰 ¡Semana 16! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	216	Semana 16 de Embarazo	🤰 ¡Semana 16! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+46	\N	prenatal_week_17	{}	dual	🤰 ¡Semana 17! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	217	Semana 17 de Embarazo	🤰 ¡Semana 17! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+47	\N	prenatal_week_18	{}	dual	🤰 ¡Semana 18! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	218	Semana 18 de Embarazo	🤰 ¡Semana 18! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+48	\N	prenatal_week_19	{}	dual	🤰 ¡Semana 19! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	219	Semana 19 de Embarazo	🤰 ¡Semana 19! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+49	\N	prenatal_week_20	{}	dual	🤰 ¡Semana 20! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	220	Semana 20 de Embarazo	🤰 ¡Semana 20! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+50	\N	prenatal_week_21	{}	dual	🤰 ¡Semana 21! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	221	Semana 21 de Embarazo	🤰 ¡Semana 21! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+51	\N	prenatal_week_22	{}	dual	🤰 ¡Semana 22! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	222	Semana 22 de Embarazo	🤰 ¡Semana 22! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+52	\N	prenatal_week_23	{}	dual	🤰 ¡Semana 23! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	223	Semana 23 de Embarazo	🤰 ¡Semana 23! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+53	\N	prenatal_week_24	{}	dual	🤰 ¡Semana 24! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	224	Semana 24 de Embarazo	🤰 ¡Semana 24! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+54	\N	prenatal_week_25	{}	dual	🤰 ¡Semana 25! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	225	Semana 25 de Embarazo	🤰 ¡Semana 25! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+55	\N	prenatal_week_26	{}	dual	🤰 ¡Semana 26! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	226	Semana 26 de Embarazo	🤰 ¡Semana 26! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+56	\N	prenatal_week_27	{}	dual	🤰 ¡Semana 27! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	227	Semana 27 de Embarazo	🤰 ¡Semana 27! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+57	\N	prenatal_week_28	{}	dual	🤰 ¡Semana 28! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	228	Semana 28 de Embarazo	🤰 ¡Semana 28! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+58	\N	prenatal_week_29	{}	dual	🤰 ¡Semana 29! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	229	Semana 29 de Embarazo	🤰 ¡Semana 29! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+59	\N	prenatal_week_30	{}	dual	🤰 ¡Semana 30! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	230	Semana 30 de Embarazo	🤰 ¡Semana 30! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+60	\N	prenatal_week_31	{}	dual	🤰 ¡Semana 31! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	231	Semana 31 de Embarazo	🤰 ¡Semana 31! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+61	\N	prenatal_week_32	{}	dual	🤰 ¡Semana 32! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	232	Semana 32 de Embarazo	🤰 ¡Semana 32! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+62	\N	prenatal_week_33	{}	dual	🤰 ¡Semana 33! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	233	Semana 33 de Embarazo	🤰 ¡Semana 33! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+63	\N	prenatal_week_34	{}	dual	🤰 ¡Semana 34! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	234	Semana 34 de Embarazo	🤰 ¡Semana 34! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+64	\N	prenatal_week_35	{}	dual	🤰 ¡Semana 35! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	235	Semana 35 de Embarazo	🤰 ¡Semana 35! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+65	\N	prenatal_week_36	{}	dual	🤰 ¡Semana 36! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	236	Semana 36 de Embarazo	🤰 ¡Semana 36! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+66	\N	prenatal_week_37	{}	dual	🤰 ¡Semana 37! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	237	Semana 37 de Embarazo	🤰 ¡Semana 37! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+67	\N	prenatal_week_38	{}	dual	🤰 ¡Semana 38! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	238	Semana 38 de Embarazo	🤰 ¡Semana 38! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+68	\N	prenatal_week_39	{}	dual	🤰 ¡Semana 39! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	239	Semana 39 de Embarazo	🤰 ¡Semana 39! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+69	\N	prenatal_week_40	{}	dual	🤰 ¡Semana 40! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	240	Semana 40 de Embarazo	🤰 ¡Semana 40! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+70	\N	prenatal_week_41	{}	dual	🤰 ¡Semana 41! Revisa tu app para ver el desarrollo de tu bebé.	t	2026-02-17 21:40:22.984901+00	\N	241	Semana 41 de Embarazo	🤰 ¡Semana 41! Revisa tu app para ver el desarrollo de tu bebé.	08:00	f
+71	\N	prenatal_first_ultrasound	{}	dual	Agenda tu primera ecografía (entre semanas 6-8).	t	2026-02-17 21:40:22.984901+00	\N	250	📸 Primera Ecografía	Agenda tu primera ecografía (entre semanas 6-8).	08:00	f
+72	\N	prenatal_genetic_test	{}	dual	Considera realizar pruebas genéticas (NIPT) entre semanas 10-13.	t	2026-02-17 21:40:22.984901+00	\N	251	🧬 Test Genético	Considera realizar pruebas genéticas (NIPT) entre semanas 10-13.	08:00	f
+73	\N	prenatal_anatomy_scan	{}	dual	Ecografía anatómica completa (semana 18-22).	t	2026-02-17 21:40:22.984901+00	\N	252	📸 Ecografía Anatómica	Ecografía anatómica completa (semana 18-22).	08:00	f
+74	\N	prenatal_glucose_test	{}	dual	Test de tolerancia a la glucosa (semana 24-28).	t	2026-02-17 21:40:22.984901+00	\N	253	🍬 Test de Glucosa	Test de tolerancia a la glucosa (semana 24-28).	08:00	f
+75	\N	prenatal_tdap_vaccine	{}	dual	Vacuna contra tosferina (Tdap) - semana 27-36.	t	2026-02-17 21:40:22.984901+00	\N	254	💉 Vacuna Tdap	Vacuna contra tosferina (Tdap) - semana 27-36.	08:00	f
+76	\N	prenatal_group_b_strep	{}	dual	Test de Estreptococo Grupo B (semana 35-37).	t	2026-02-17 21:40:22.984901+00	\N	255	🦠 Test Estreptococo B	Test de Estreptococo Grupo B (semana 35-37).	08:00	f
+77	\N	prenatal_kick_counts	{}	dual	Inicia el conteo diario de movimientos fetales (semana 28+).	t	2026-02-17 21:40:22.984901+00	\N	256	👶 Conteo de Patadas	Inicia el conteo diario de movimientos fetales (semana 28+).	08:00	f
+78	\N	prenatal_reduced_movement	{}	dual	Si notas movimientos fetales reducidos, contacta a tu médico inmediatamente.	t	2026-02-17 21:40:22.984901+00	\N	5	⚠️ Movimientos Reducidos	Si notas movimientos fetales reducidos, contacta a tu médico inmediatamente.	08:00	f
+79	\N	prenatal_bleeding	{}	dual	Sangrado durante el embarazo requiere atención médica inmediata.	t	2026-02-17 21:40:22.984901+00	\N	1	🚨 Sangrado	Sangrado durante el embarazo requiere atención médica inmediata.	08:00	f
+80	\N	prenatal_severe_headache	{}	dual	Dolor de cabeza severo puede ser signo de preeclampsia.	t	2026-02-17 21:40:22.984901+00	\N	2	🤕 Dolor de Cabeza Severo	Dolor de cabeza severo puede ser signo de preeclampsia.	08:00	f
+81	\N	system_welcome	{}	dual	¡Bienvenida! Completa tu perfil para comenzar.	t	2026-02-17 21:40:22.984901+00	\N	300	👋 Bienvenida a la App	¡Bienvenida! Completa tu perfil para comenzar.	08:00	f
+82	\N	system_profile_incomplete	{}	dual	Completa tu perfil para obtener predicciones más precisas.	t	2026-02-17 21:40:22.984901+00	\N	301	📝 Completa tu Perfil	Completa tu perfil para obtener predicciones más precisas.	08:00	f
+83	\N	system_log_period	{}	dual	¿Ya te llegó el periodo? Regístralo.	t	2026-02-17 21:40:22.984901+00	\N	302	🩸 Registra tu Periodo	¿Ya te llegó el periodo? Regístralo.	08:00	f
+84	\N	system_appointment_reminder	{}	dual	Recuerda: Tienes cita médica mañana a las {appointment_time}.	t	2026-02-17 21:40:22.984901+00	\N	306	📅 Cita Médica Mañana	Recuerda: Tienes cita médica mañana a las {appointment_time}.	08:00	f
+85	\N	system_medication_reminder	{}	dual	Hora de tomar tu medicamento: {medication_name}.	t	2026-02-17 21:40:22.984901+00	\N	307	💊 Hora de Medicamento	Hora de tomar tu medicamento: {medication_name}.	08:00	f
+86	\N	system_annual_checkup	{}	dual	Ha pasado un año desde tu último chequeo ginecológico.	t	2026-02-17 21:40:22.984901+00	\N	308	🩺 Chequeo Anual	Ha pasado un año desde tu último chequeo ginecológico.	08:00	f
+87	\N	contraceptive_daily	{}	dual	Hola {patient_name}, es hora de tomar tu pastilla anticonceptiva.	t	2026-02-17 21:40:22.984901+00	\N	10	💊 Recordatorio Anticonceptivo	Hola {patient_name}, es hora de tomar tu pastilla anticonceptiva.	08:00	f
+88	\N	contraceptive_rest_start	{}	dual	Hoy comienzas tus días de descanso o placebo.	t	2026-02-17 21:40:22.984901+00	\N	11	💊 Inicio de Descanso	Hoy comienzas tus días de descanso o placebo.	08:00	f
 \.
 
 
@@ -2321,7 +2409,7 @@ SELECT pg_catalog.setval('public.notification_logs_id_seq', 1, false);
 -- Name: notification_rules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.notification_rules_id_seq', 28, true);
+SELECT pg_catalog.setval('public.notification_rules_id_seq', 88, true);
 
 
 --
@@ -2760,6 +2848,13 @@ CREATE INDEX idx_recommendation_categories_tenant ON public.recommendation_categ
 --
 
 CREATE INDEX idx_recommendations_tenant ON public.recommendations USING btree (tenant_id);
+
+
+--
+-- Name: idx_rule_type_tenant; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_rule_type_tenant ON public.notification_rules USING btree (notification_type, tenant_id);
 
 
 --
@@ -3472,5 +3567,5 @@ CREATE POLICY tenant_isolation_policy ON public.chat_rooms USING (((tenant_id)::
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2Xsh6VzencsawfoBPRPfzcWoZ8rOgfTR72Zw7uPNTKGcfvHDffknv9dyL7wU8wX
+\unrestrict nNAsZchcLscxopv9d1flK2LB2GJfvQqgZg8VzWDOiBk0pX0EokwfbvwNb4roCtV
 

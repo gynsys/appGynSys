@@ -93,10 +93,18 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
             "url": url,
             "icon": "/pwa-192x192.png",
             "badge": "/pwa-192x192.png",
-            "tag": f"gynsys-{datetime.now().strftime('%Y%m%d')}",  # Evitar duplicados
+            "tag": f"gynsys-{datetime.now().strftime('%Y%m%d')}",
             "requireInteraction": True
         })
         
+        # Process private key (might be a file path or the key itself)
+        vapid_private_key = settings.VAPID_PRIVATE_KEY
+        if vapid_private_key and not os.path.exists(vapid_private_key):
+            # If it's the raw string from .env, pywebpush might need it as a string or decoded
+            # Many implementations work best with the raw string if it's the PEM content
+            # But the ones I generated are base64url keys (raw 32 bytes).
+            pass
+
         failed_subs = []
         for sub in subs:
             try:
@@ -110,7 +118,7 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
                         }
                     },
                     data=payload,
-                    vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                    vapid_private_key=vapid_private_key,
                     vapid_claims={
                         "sub": f"mailto:{settings.VAPID_CLAIM_EMAIL}",
                         "exp": int((datetime.now() + timedelta(hours=12)).timestamp())
@@ -119,15 +127,13 @@ def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashb
                 )
                 logger.info(f"Push delivered successfully to sub_id {sub.id}")
             except WebPushException as ex:
-                if ex.response and ex.response.status_code in [404, 410]:
-                    # Subscription expired/gone
+                if ex.response is not None and ex.response.status_code in [404, 410]:
                     failed_subs.append(sub)
                 else:
                     logger.error(f"Push error for user {user_id}: {ex}")
             except Exception as e:
                 logger.error(f"Unexpected push error: {e}")
         
-        # Batch delete expired subscriptions
         if failed_subs:
             for sub in failed_subs:
                 db.delete(sub)
