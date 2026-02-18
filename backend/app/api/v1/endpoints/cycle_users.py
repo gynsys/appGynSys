@@ -138,8 +138,9 @@ async def register_cycle_user(
             detail="Cycle predictor is not available for this doctor"
         )
 
-    # Verificar email único
-    existing_user = db.query(CycleUser).filter(CycleUser.email == user_data.email).first()
+    # Verificar email único (Case-Insensitive)
+    email_lower = user_data.email.lower().strip()
+    existing_user = db.query(CycleUser).filter(CycleUser.email == email_lower).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -147,18 +148,26 @@ async def register_cycle_user(
         )
     
     # Crear usuario
-    hashed_password = hash_password(user_data.password)
-    db_user = CycleUser(
-        email=user_data.email,
-        password_hash=hashed_password,
-        nombre_completo=user_data.nombre_completo,
-        doctor_id=doctor.id,
-        is_active=True
-    )
-    
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    try:
+        hashed_password = hash_password(user_data.password)
+        db_user = CycleUser(
+            email=email_lower,
+            password_hash=hashed_password,
+            nombre_completo=user_data.nombre_completo,
+            doctor_id=doctor.id,
+            is_active=True
+        )
+        
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    except Exception as e:
+        db.rollback()
+        print(f"Registration Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error creating user. Please try again."
+        )
     
     # Generar token
     access_token = create_access_token(
@@ -170,12 +179,8 @@ async def register_cycle_user(
         }
     )
     
-    # Enviar email de bienvenida (no bloqueante)
-    try:
-        background_tasks.add_task(send_welcome_email, db_user.email, db_user.nombre_completo)
-    except Exception as e:
-        # Log error pero no fallar el registro
-        print(f"Failed to schedule welcome email: {e}")
+    # Enviar email de bienvenida (Background task - Realmente asíncrono)
+    background_tasks.add_task(send_welcome_email, db_user.email, db_user.nombre_completo)
     
     return {"access_token": access_token, "token_type": "bearer"}
 

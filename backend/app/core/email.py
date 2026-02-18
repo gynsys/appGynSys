@@ -4,17 +4,18 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Optional
 from pydantic import EmailStr
+import anyio
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-async def send_email(
+def _send_email_sync(
     email_to: EmailStr,
-    subject: str = "",
-    html_content: str = "",
+    subject: str,
+    html_content: str,
 ) -> bool:
     """
-    Send an email using SMTP settings from config.
+    Blocking SMTP operations run in a thread.
     """
     try:
         message = MIMEMultipart("alternative")
@@ -40,6 +41,19 @@ async def send_email(
     except Exception as e:
         logger.error(f"Failed to send email to {email_to}: {e}")
         return False
+
+async def send_email(
+    email_to: EmailStr,
+    subject: str = "",
+    html_content: str = "",
+) -> bool:
+    """
+    Send an email using SMTP settings from config.
+    Runs blocking SMTP logic in a separate thread.
+    """
+    return await anyio.to_thread.run_sync(
+        _send_email_sync, email_to, subject, html_content
+    )
 
 async def send_welcome_email(email_to: EmailStr, name: str) -> bool:
     subject = "¡Bienvenida a Cycle Predictor!"

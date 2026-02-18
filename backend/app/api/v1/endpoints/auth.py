@@ -196,10 +196,12 @@ async def login_google(
     """
     Login with Google ID Token (from Frontend).
     Verifies the token and returns a JWT access token.
+    Supports both Cycle Users (Patients) and Doctors.
     """
     from google.oauth2 import id_token
     from google.auth.transport import requests
     from app.core.config import settings
+    from app.db.models.cycle_user import CycleUser
     
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(
@@ -209,47 +211,25 @@ async def login_google(
         
     import requests as py_requests
     try:
-        # Verify via ID Token OR fetch via Access Token
         email = None
         name = ""
         
-        if len(login_data.token) > 500: # Likely an ID Token (JWT)
-            print(f"Verifying Google ID Token...")
-            try:
-                # TIMEOUT: Create a request session with timeout
-                import google.auth.transport.requests
-                request_session =  py_requests.Session()
-                # There isn't a direct way to set timeout on the default Request object,
-                # but we can try to use the verify_oauth2_token which uses authorized_http under the hood.
-                # simpler approach: Just trust that google library handles it or wrap in threaded timeout.
-                # BETTER: google.auth.transport.requests.Request(session=x)
-                
-                req = google.auth.transport.requests.Request(session=request_session)
-                
-                # Verify token
-                id_info = id_token.verify_oauth2_token(
-                    login_data.token,
-                    req,
-                    settings.GOOGLE_CLIENT_ID
-                )
-                email = id_info.get("email")
-                name = id_info.get("name", "")
-            except Exception as e:
-                print(f"ID Token Verification Failed: {e}")
-                raise ValueError(f"ID Token Verification Failed: {e}")
-        else:
-            print(f"Fetching Google Profile via Access Token...")
-            # If it's short, it's likely an Access Token
-            # TIMEOUT: Enforce 5s timeout
+        # 1. Verify Google Token
+        if len(login_data.token) > 500: # ID Token
+            import google.auth.transport.requests
+            request_session = py_requests.Session()
+            req = google.auth.transport.requests.Request(session=request_session)
+            id_info = id_token.verify_oauth2_token(login_data.token, req, settings.GOOGLE_CLIENT_ID)
+            email = id_info.get("email")
+            name = id_info.get("name", "")
+        else: # Access Token
             response = py_requests.get(
                 "https://www.googleapis.com/oauth2/v3/userinfo",
                 headers={"Authorization": f"Bearer {login_data.token}"},
                 timeout=5
             )
             if response.status_code != 200:
-                print(f"Access Token verification failed: {response.text}")
                 raise ValueError("Invalid Google Access Token")
-            
             user_info = response.json()
             email = user_info.get("email")
             name = user_info.get("name", "")
@@ -257,88 +237,86 @@ async def login_google(
         if not email:
             raise ValueError("Could not retrieve email from Google")
             
-        print(f"Google User Verified: {email} ({name})")
+        email = email.lower().strip()
+        print(f"Google User Verified: {email}")
         
-        # Check if doctor exists
-        doctor = get_user_by_email(db, email)
+        # 2. Identify User (Priority: CycleUser then Doctor)
+        cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
+        doctor = db.query(Doctor).filter(Doctor.email == email).first()
         
-        if not doctor:
-            print("User not found, checking whitelist...")
-            
-            # Use database-backed whitelist validation
+        user_type = "doctor"
+        user_id = None
+        doc_id = None
+
+        if cycle_user:
+            user_type = "cycle_user"
+            user_id = cycle_user.id
+            doc_id = cycle_user.doctor_id
+            print(f"Logged in as CycleUser: {email}")
+        elif doctor:
+            user_type = "doctor"
+            user_id = doctor.id
+            doc_id = doctor.id
+            print(f"Logged in as Doctor: {email}")
+        else:
+            # 3. Handle Auto-Registration (If whitelisted/applicable)
+            # Default to Doctor for now if whitelisted, but ideally we'd know the context
             from app.core.oauth_utils import is_email_whitelisted
-            
-            if not is_email_whitelisted(email, db):
-                print(f"Email {email} not in whitelist - access denied")
+            if is_email_whitelisted(email, db):
+                print(f"Whitelisted email {email}, auto-registering as Doctor...")
+                slug = generate_slug_from_name(name)
+                counter = 1
+                original_slug = slug
+                while get_user_by_slug(db, slug):
+                    slug = f"{original_slug}-{counter}"
+                    counter += 1
+                
+                new_doctor = Doctor(
+                    email=email,
+                    nombre_completo=name,
+                    slug_url=slug,
+                    is_verified=True,
+                    is_active=True,
+                    status='approved',
+                    role='user'
+                )
+                db.add(new_doctor)
+                db.commit()
+                db.refresh(new_doctor)
+                user_id = new_doctor.id
+                doc_id = new_doctor.id
+                user_type = "doctor"
+            else:
+                # If not whitelisted and not found, deny access
+                # NOTE: For CycleUsers, registration usually happens via /register
+                # But if we want auto-google-registration for CycleUsers, we'd need context here.
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="This email is not authorized for Google OAuth login. Please contact support."
+                    detail="Account not found. Please register first."
                 )
-            
-            print("User not found but whitelisted, registering new...")
-            # Create new doctor account (Auto-Registration)
-            slug = generate_slug_from_name(name)
-            # Ensure slug is unique
-            counter = 1
-            original_slug = slug
-            while get_user_by_slug(db, slug):
-                slug = f"{original_slug}-{counter}"
-                counter += 1
-            
-            doctor = Doctor(
-                email=email,
-                password_hash=None,  # No password for OAuth users
-                nombre_completo=name,
-                slug_url=slug,
-                is_verified=True,  # Google email is verified
-                is_active=True,    
-                status='approved' 
-            )
-            db.add(doctor)
-            db.commit()
-            db.refresh(doctor)
-            
-            # Async: Apply Template
-            try:
-                apply_doctor_template_async.delay(doctor.id)
-            except Exception as e:
-                 print(f"Template Async Error (Non-fatal): {e}")
-            
-        else:
-            print("User found, updating...")
-            # Update existing doctor info if needed
-            if not doctor.nombre_completo:
-                doctor.nombre_completo = name
-                db.commit()
-                
-        # Check active status (if user existed and was banned/inactive)
-        if not doctor.is_active:
-             print("User inactive!")
+
+        # 4. Final Verification
+        active_user = cycle_user or doctor or (new_doctor if 'new_doctor' in locals() else None)
+        if active_user and not active_user.is_active:
              raise HTTPException(status_code=403, detail="Account is inactive")
 
-        # Create JWT token
-        access_token = create_access_token(
-            data={"sub": doctor.email, "doctor_id": doctor.id}
-        )
-        print("Generated JWT Token successfully.")
+        # 5. Create JWT Token
+        token_data = {
+            "sub": email,
+            "user_id": user_id,
+            "user_type": user_type,
+            "doctor_id": doc_id
+        }
+        access_token = create_access_token(data=token_data)
         
         return {"access_token": access_token, "token_type": "bearer"}
         
     except ValueError as e:
-        # Invalid token
-        print(f"ValueError: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         import traceback
         traceback.print_exc()
-        print(f"Google Login Critical Error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Google Login Failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Google Login Failed: {str(e)}")
 
 
 
