@@ -106,3 +106,34 @@ Ejecuta el script para generar un archivo `.zip` completo (BD + Imágenes):
 
 ## 📄 Licencia
 Este proyecto es privado y propietario.
+
+## 🏗️ Infraestructura de Producción (DigitalOcean)
+
+Esta sección documenta los detalles críticos del despliegue en producción para facilitar el mantenimiento.
+
+- **Servidor (IP):** `167.172.115.154`
+- **Usuario SSH:** `root`
+- **Ubicación App:** `/opt/appgynsys`
+- **Orquestación:** Docker Compose
+
+### Servicios Activos
+| Servicio | Contenedor | Puerto Interno | Propósito |
+| :--- | :--- | :--- | :--- |
+| **Backend** | `appgynsys-backend-1` | 8000 | API Principal |
+| **Base de Datos**| `appgynsys-db-1` | 5432 | PostgreSQL 15 |
+| **Cola de Tareas**| `appgynsys-celery_{worker/beat}`| N/A | Envío de correos y notificaciones |
+| **Cache** | `appgynsys-redis-1` | 6379 | Broker de Celery y Cache |
+
+### Comandos de Mantenimiento (SSH)
+
+**Limpieza de Datos de Prueba (Mi Ciclo):**
+```bash
+ssh root@167.172.115.154 "docker exec appgynsys-db-1 psql -U postgres -d gynsys -c 'TRUNCATE cycle_logs, symptom_logs, pregnancy_logs, cycle_notification_settings, push_subscriptions, notification_logs CASCADE; DELETE FROM cycle_users; DELETE FROM patients;'"
+```
+
+**Reinicio de Servicios:**
+```bash
+ssh root@167.172.115.154 "cd /opt/appgynsys && docker compose restart backend celery_worker"
+```
+
+Para más detalles, consultar el archivo [`INFRASTRUCTURE_MAP.md`](./INFRASTRUCTURE_MAP.md) en la raíz.

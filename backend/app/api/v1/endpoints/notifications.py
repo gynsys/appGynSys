@@ -12,7 +12,7 @@ from app.schemas.notification import (
     PushSubscriptionSchema,
     VapidKeyResponse
 )
-from app.crud import crud_notification as crud
+from app.services import notifications as service
 from app.core.config import settings
 
 router = APIRouter()
@@ -29,7 +29,7 @@ def read_notification_rules(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """List all global notification rules (SuperAdmin only)."""
-    return crud.get_global_rules(db)
+    return service.get_global_rules(db)
 
 @router.get("/rules/{notification_type}", response_model=NotificationRuleResponse)
 def read_notification_rule_by_type(
@@ -38,7 +38,7 @@ def read_notification_rule_by_type(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """Get a specific global notification rule (SuperAdmin only)."""
-    rule = crud.get_rule_by_type(db, None, notification_type)
+    rule = service.get_rule_by_type(db, None, notification_type)
     if not rule:
         raise HTTPException(status_code=404, detail="Global notification type not found")
     return rule
@@ -51,11 +51,11 @@ def update_notification_rule(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """Update a global notification rule (SuperAdmin only)."""
-    rule = crud.get_rule_by_type(db, None, notification_type)
+    rule = service.get_rule_by_type(db, None, notification_type)
     if not rule:
         raise HTTPException(status_code=404, detail="Global notification type not found")
     
-    return crud.update_rule(db, rule, rule_in)
+    return service.update_rule(db, rule, rule_in)
 
 # --- Patient Endpoints (Push Subscription) ---
 
@@ -78,7 +78,7 @@ def subscribe_push(
 ):
     """Subscribe current user to Push Notifications."""
     print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription}")
-    crud.create_or_update_subscription(db, subscription, current_user.id)
+    service.create_or_update_subscription(db, subscription, current_user.id)
     return {"message": "Subscribed successfully"}
 
 @router.post("/unsubscribe")
@@ -88,7 +88,7 @@ def unsubscribe_push(
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Unsubscribe specific device from Push Notifications."""
-    crud.delete_subscription_by_endpoint(db, endpoint)
+    service.delete_subscription_by_endpoint(db, endpoint)
     return {"message": "Unsubscribed successfully"}
 
 # --- Admin/System Endpoints ---

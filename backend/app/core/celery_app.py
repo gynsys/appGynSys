@@ -15,12 +15,12 @@ celery_app.conf.update(
 from celery.schedules import crontab
 
 celery_app.conf.beat_schedule = {
-    "evaluate-dynamic-rules": {
-        "task": "app.tasks.notification_processor.process_dynamic_notifications",
+    "run-daily-notification-check": {
+        "task": "app.tasks.notifications.run_daily_notification_check",
         "schedule": crontab(hour=8, minute=0),
     },
     "process-notification-queue": {
-        "task": "app.tasks.notification_sender.process_notification_queue",
+        "task": "app.tasks.notifications.process_notification_queue",
         "schedule": crontab(minute='*/10'),
     },
 }
@@ -30,7 +30,7 @@ celery_app.autodiscover_tasks(['app'])
 # Explicitly import task modules to ensure they register their tasks with the app instance
 try:
     import app.tasks.email_tasks
-    import app.tasks.notification_processor
-    import app.tasks.notification_sender
+    import app.tasks.notifications
+
 except ImportError:
     pass
