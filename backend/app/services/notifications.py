@@ -28,7 +28,7 @@ from app.db.models.push_subscription import PushSubscription
 from app.schemas.notification import NotificationRuleUpdate, PushSubscriptionSchema
 from app.cycle_predictor.logic import calculate_predictions
 from app.tasks.email_tasks import _send_smtp_email, _send_web_push
-from app.db.session import SessionLocal  # Asegúrate de tener esto
+from app.db.base import SessionLocal  # Asegúrate de tener esto
 
 logger = logging.getLogger(__name__)
 
