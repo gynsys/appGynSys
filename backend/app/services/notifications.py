@@ -27,7 +27,7 @@ from app.db.models.cycle_predictor import CycleLog, PregnancyLog, SymptomLog, Cy
 from app.db.models.push_subscription import PushSubscription
 from app.schemas.notification import NotificationRuleUpdate, PushSubscriptionSchema
 from app.cycle_predictor.logic import calculate_predictions
-from app.tasks.email_tasks import _send_smtp_email, _send_web_push
+from app.tasks.email_tasks import _send_integrated_email, _send_web_push
 from app.db.base import SessionLocal  # Asegúrate de tener esto
 
 logger = logging.getLogger(__name__)
@@ -450,7 +450,7 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
     if not push_success:
         if user.email:
             try:
-                _send_smtp_email(user.email, item.subject, item.body)
+                _send_integrated_email(user.email, item.subject, item.body)
                 return True, "email", None
             except Exception as e:
                 return False, "email", str(e)

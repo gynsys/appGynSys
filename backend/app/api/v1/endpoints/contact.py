@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.crud import admin as crud_admin
-from app.tasks.email_tasks import _send_smtp_email
+from app.tasks.email_tasks import _send_integrated_email
 
 router = APIRouter()
 
@@ -52,7 +52,7 @@ def send_contact_email(
 
     # Send email (using background task to avoid blocking)
     background_tasks.add_task(
-        _send_smtp_email,
+        _send_integrated_email,
         to_email=recipient_email,
         subject=subject,
         html_content=html_content
