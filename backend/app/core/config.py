@@ -108,6 +108,9 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: str = "no-reply@gynsys.com"
     EMAILS_FROM_NAME: str = "GynSys Notificaciones"
     
+    # Email Settings (Resend API)
+    RESEND_API_KEY: Optional[str] = None
+    
     # MinIO / S3
     MINIO_ENDPOINT: str = "minio:9000" # Internal Docker URL
     MINIO_PUBLIC_ENDPOINT: str = "http://localhost:9000" # URL accessible from Browser

@@ -20,6 +20,7 @@ from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
 from app.core.celery_app import celery_app
+from app.core.email import _send_email_sync, _send_email_resend_sync
 from app.db.base import get_db, SessionLocal
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
@@ -32,39 +33,15 @@ logger = logging.getLogger(__name__)
 
 
 
-def _send_smtp_email(to_email: str, subject: str, html_content: str, attachments: list = None):
+def _send_integrated_email(to_email: str, subject: str, html_content: str, attachments: list = None):
     """
-    Helper to send email via SMTP, optionally with attachments.
-    attachments: list of dicts {'filename': str, 'content': bytes}
+    Unified dispatcher for Celery tasks.
+    Prioritizes Resend API if configured, falls back to SMTP.
     """
-    # Check if SMTP is configured (basic check)
-    if not settings.SMTP_USER or "tu_correo" in settings.SMTP_USER:
-        return
-
-    try:
-        msg = MIMEMultipart()
-        msg["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>"
-        msg["To"] = to_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(html_content, "html"))
-
-        if attachments:
-            for attachment in attachments:
-                if attachment.get('content'):
-                    part = MIMEApplication(
-                        attachment['content'],
-                        Name=attachment.get('filename', 'attachment')
-                    )
-                    part['Content-Disposition'] = f'attachment; filename="{attachment.get("filename", "attachment")}"'
-                    msg.attach(part)
-
-        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
-        server.starttls()
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        logger.error(f"Error sending email: {e}")
+    if settings.RESEND_API_KEY:
+        return _send_email_resend_sync(to_email, subject, html_content, attachments)
+    
+    return _send_email_sync(to_email, subject, html_content, attachments)
 
 
 def _send_web_push(user_id: int, title: str, body: str, url: str = "/cycle/dashboard", db=None):
@@ -154,7 +131,7 @@ def send_welcome_email(email: str, doctor_name: str):
     <h1>Bienvenido Dr/a. {doctor_name}</h1>
     <p>Su cuenta ha sido creada exitosamente.</p>
     """
-    _send_smtp_email(email, subject, content)
+    _send_integrated_email(email, subject, content)
 
 
 @celery_app.task
@@ -180,7 +157,7 @@ def send_welcome_dual_task(user_id: int, email: str, name: str):
             html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
 
         # 2. Intentar Email (SMTP)
-        _send_smtp_email(email, subject, html_content)
+        _send_integrated_email(email, subject, html_content)
         
         # 3. Intentar Push
         # Nota: Para un usuario nuevo, esto fallará si no tiene subscripción aún.
@@ -251,7 +228,7 @@ def send_consultation_report_email(email: str, patient_name: str, report_url: st
     <p><small>GynSys - Gestión Médica</small></p>
     """
     
-    _send_smtp_email(email, subject, html_content, attachments)
+    _send_integrated_email(email, subject, html_content, attachments)
     return {"status": "sent", "recipient": email}
 
 
@@ -286,7 +263,7 @@ def send_appointment_notification_email(
     """
     
     pass
-    _send_smtp_email(doctor_email, subject, content)
+    _send_integrated_email(doctor_email, subject, content)
     
     return {"status": "sent", "recipient": doctor_email}
 
@@ -333,7 +310,7 @@ def send_appointment_status_update(
         return # Ignore other statuses for now
 
     pass
-    _send_smtp_email(patient_email, subject, content)
+    _send_integrated_email(patient_email, subject, content)
     return {"status": "sent", "recipient": patient_email}
 
 
@@ -370,7 +347,7 @@ def send_new_tenant_notification(tenant_data: dict):
     <p>Ingresa al panel administrativo para aprobar o rechazar esta cuenta.</p>
     """
     
-    _send_smtp_email(admin_email, subject, html_content)
+    _send_integrated_email(admin_email, subject, html_content)
     return {"status": "sent", "to": admin_email}
 
 
@@ -462,7 +439,7 @@ def send_tenant_approval_email(self, email: str, doctor_name: str, slug: str):
         <p>Desde allí tus pacientes podrán agendar citas y completar preconsultas.</p>
         """
         
-        _send_smtp_email(email, subject, content)
+        _send_integrated_email(email, subject, content)
         return {"status": "sent", "email": email, "link": landing_url}
         
     except Exception as exc:
@@ -869,7 +846,7 @@ def send_preconsulta_completed_notification(
     </html>
     """
     
-    _send_smtp_email(doctor_email, subject, html_content)
+    _send_integrated_email(doctor_email, subject, html_content)
     return {"status": "sent", "recipient": doctor_email}
 
 
@@ -892,7 +869,7 @@ def send_reset_password_email(email: str, token: str):
     <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
     """
     
-    _send_smtp_email(email, subject, html_content)
+    _send_integrated_email(email, subject, html_content)
     return {"status": "sent", "recipient": email}
 
 
@@ -915,7 +892,7 @@ def send_cycle_user_reset_password_email(email: str, token: str):
     <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
     """
     
-    _send_smtp_email(email, subject, html_content)
+    _send_integrated_email(email, subject, html_content)
     return {"status": "sent", "recipient": email}
 
 
@@ -943,7 +920,7 @@ def send_settings_updated_email(cycle_user_id: int):
             <p style="margin-top: 32px; font-size: 12px; color: #9ca3af;">GynSys &copy; 2026</p>
         </div>
         """
-        _send_smtp_email(user.email, subject, html_content)
+        _send_integrated_email(user.email, subject, html_content)
         return {"status": "sent", "recipient": user.email}
     finally:
         db.close()

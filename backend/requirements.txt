@@ -50,4 +50,7 @@ pywebpush==1.14.0
 py-vapid==1.9.1
 cryptography<43  # Pin to <43 for pywebpush compatibility
 
+# Email API
+resend==0.8.0
+
 numpy
