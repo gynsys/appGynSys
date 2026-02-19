@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any, List
 
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, 
-    ForeignKey, Text, JSON, Index
+    ForeignKey, Text, JSON, Index, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -181,7 +181,16 @@ class PendingNotification(Base):
     last_error = Column(Text, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    channel_used = Column(String(50), nullable=True)
+    locked_by = Column(String(100), nullable=True)  # Para debugging de workers
+    locked_at = Column(DateTime(timezone=True), nullable=True)
+    
+    __table_args__ = (
+        UniqueConstraint('recipient_id', 'notification_rule_id', func.date(scheduled_for), 
+                        name='uix_pending_user_rule_date'),
+    )
 
     # Relationships
     rule = relationship("NotificationRule")

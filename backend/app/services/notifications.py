@@ -1,14 +1,23 @@
 """
-Servicio Monolítico de Notificaciones (The Brain)
+Servicio Monolítico de Notificaciones (The Brain) - Versión Producción
 Consolida: Reglas (Registry), Procesamiento (Processor), Envío (Sender) y CRUD.
 """
 import logging
 import json
+import random
+import time
+import os
 from datetime import datetime, timedelta, date
+from enum import Enum
+from typing import List, Optional, Dict, Any, Tuple
+from contextlib import contextmanager
+from functools import lru_cache
+
 import pytz
-from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload, sessionmaker
+from sqlalchemy import desc, func, UniqueConstraint
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 
 from app.core.config import settings
 from app.db.models.notification import NotificationRule, NotificationLog, PendingNotification, NotificationChannel
@@ -19,8 +28,115 @@ from app.db.models.push_subscription import PushSubscription
 from app.schemas.notification import NotificationRuleUpdate, PushSubscriptionSchema
 from app.cycle_predictor.logic import calculate_predictions
 from app.tasks.email_tasks import _send_smtp_email, _send_web_push
+from app.db.session import SessionLocal  # Asegúrate de tener esto
 
 logger = logging.getLogger(__name__)
+
+# ==============================================================================
+# CONFIGURACIÓN
+# ==============================================================================
+
+MAX_NOTIFICATIONS_PER_USER_PER_DAY = 5
+BATCH_SIZE_USERS = 100
+BATCH_SIZE_DELIVERY = 50
+MAX_RETRIES = 5
+CIRCUIT_FAILURE_THRESHOLD = 5
+CIRCUIT_RECOVERY_TIMEOUT = 60
+
+# ==============================================================================
+# UTILIDADES (Timezone, Logging, Circuit Breaker)
+# ==============================================================================
+
+def normalize_to_caracas(dt: Optional[datetime] = None) -> datetime:
+    """Garantiza datetime aware en America/Caracas."""
+    tz = pytz.timezone('America/Caracas')
+    if dt is None:
+        return datetime.now(tz)
+    if dt.tzinfo is None:
+        return tz.localize(dt)
+    return dt.astimezone(tz)
+
+def get_worker_id() -> str:
+    """Identificador único del worker actual."""
+    return f"{os.getpid()}_{threading.current_thread().ident}"
+
+def log_notification_event(event_type: str, user_id: int, rule_type: str, details: dict):
+    """Logging estructurado en JSON."""
+    logger.info(json.dumps({
+        "event": event_type,
+        "user_id": user_id,
+        "rule_type": rule_type,
+        "timestamp": datetime.utcnow().isoformat(),
+        "worker_id": get_worker_id(),
+        **details
+    }))
+
+class CircuitState(Enum):
+    CLOSED = "closed"
+    OPEN = "open"
+    HALF_OPEN = "half_open"
+
+class CircuitBreaker:
+    """
+    Circuit breaker por proceso. NOTA: Si usas múltiples workers/procesos,
+    cada uno tiene su propio estado. Para distribuido, implementar con Redis.
+    """
+    def __init__(self, failure_threshold=CIRCUIT_FAILURE_THRESHOLD, recovery_timeout=CIRCUIT_RECOVERY_TIMEOUT):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self._reset()
+
+    def _reset(self):
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = CircuitState.CLOSED
+
+    def can_execute(self) -> bool:
+        if self.state == CircuitState.CLOSED:
+            return True
+        if self.state == CircuitState.OPEN:
+            if self.last_failure_time and (datetime.now() - self.last_failure_time).seconds > self.recovery_timeout:
+                self.state = CircuitState.HALF_OPEN
+                logger.info("Circuit breaker entering HALF_OPEN state")
+                return True
+            return False
+        return True  # HALF_OPEN
+
+    def record_success(self):
+        if self.state == CircuitState.HALF_OPEN:
+            self._reset()
+            logger.info("Circuit breaker CLOSED (recovered)")
+        else:
+            self.failure_count = max(0, self.failure_count - 1)
+
+    def record_failure(self):
+        self.failure_count += 1
+        self.last_failure_time = datetime.now()
+        if self.failure_count >= self.failure_threshold:
+            if self.state != CircuitState.OPEN:
+                logger.warning(f"Circuit breaker OPEN after {self.failure_count} failures")
+            self.state = CircuitState.OPEN
+
+# Circuit breaker global para push (singleton por proceso)
+push_circuit = CircuitBreaker()
+
+def calculate_next_retry_time(retry_count: int, base_delay_minutes: int = 5) -> datetime:
+    """Backoff exponencial con jitter."""
+    delay = base_delay_minutes * (2 ** retry_count) + random.randint(0, 5)
+    return normalize_to_caracas() + timedelta(minutes=delay)
+
+@contextmanager
+def session_scope():
+    """Context manager para sesiones de DB con manejo automático de rollback/commit."""
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 # ==============================================================================
 # 1. REGISTRY (REGLAS Y TEXTOS)
@@ -139,66 +255,102 @@ def update_rule(db: Session, db_obj: NotificationRule, rule_in: NotificationRule
     return db_obj
 
 def create_or_update_subscription(db: Session, sub_in: PushSubscriptionSchema, user_id: int) -> PushSubscription:
-    db_obj = db.query(PushSubscription).filter(PushSubscription.endpoint == sub_in.endpoint).first()
-    if db_obj:
-        db_obj.user_id = user_id
-        db_obj.p256dh = sub_in.keys.p256dh
-        db_obj.auth = sub_in.keys.auth
-    else:
-        db_obj = PushSubscription(
-            user_id=user_id,
-            endpoint=sub_in.endpoint,
-            p256dh=sub_in.keys.p256dh,
-            auth=sub_in.keys.auth
+    """UPSERT atómico para suscripciones push (PostgreSQL)."""
+    stmt = insert(PushSubscription).values(
+        user_id=user_id,
+        endpoint=sub_in.endpoint,
+        p256dh=sub_in.keys.p256dh,
+        auth=sub_in.keys.auth,
+        updated_at=normalize_to_caracas()
+    ).on_conflict_do_update(
+        index_elements=['endpoint'],
+        set_=dict(
+            user_id=user_id, 
+            p256dh=sub_in.keys.p256dh, 
+            auth=sub_in.keys.auth,
+            updated_at=normalize_to_caracas()
         )
-        db.add(db_obj)
+    )
+    db.execute(stmt)
     db.commit()
-    db.refresh(db_obj)
-    return db_obj
+    return db.query(PushSubscription).filter_by(endpoint=sub_in.endpoint).first()
 
 def delete_subscription_by_endpoint(db: Session, endpoint: str) -> bool:
-    db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
+    result = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
     db.commit()
-    return True
+    return result > 0
 
 
 # ==============================================================================
 # 3. CONTEXT & PROCESSING LOGIC (THE BRAIN)
 # ==============================================================================
 
-def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: PregnancyLog, db_session: Session) -> dict:
-    """Build a comprehensive context object describing the user's current status."""
-    tz = pytz.timezone('America/Caracas')
-    today = datetime.now(tz).date()
-    ctx = { "today": today }
-    
-    # 1. Pregnancy Context
-    if pregnancy:
-        ctx["is_pregnant"] = True
-        gestation_days = (today - pregnancy.last_period_date).days
-        ctx["gestation_days"] = gestation_days
-        ctx["gestation_week"] = gestation_days // 7
-        ctx["gestation_day_of_week"] = (gestation_days % 7) + 1 
-        
-        if ctx["gestation_week"] < 14: ctx["trimester"] = 1
-        elif ctx["gestation_week"] < 28: ctx["trimester"] = 2
-        else: ctx["trimester"] = 3
-            
-    # Universal Symptom Check
-    symptom_log = db_session.query(SymptomLog).filter(
-        SymptomLog.cycle_user_id == user.id,
-        SymptomLog.date == today
-    ).first()
-    if symptom_log and symptom_log.symptoms:
-        if isinstance(symptom_log.symptoms, list): ctx["reported_symptoms"] = symptom_log.symptoms
-        elif isinstance(symptom_log.symptoms, str): ctx["reported_symptoms"] = [symptom_log.symptoms]
+def safe_render_content(rule: NotificationRule, context: dict) -> Optional[dict]:
+    """Renderiza contenido de forma segura, con fallback a los valores del registro."""
+    try:
+        return rule.render_content(context)
+    except (KeyError, TypeError) as e:
+        logger.error(f"Error renderizando {rule.notification_type}: variable faltante {e}")
+        registry_rule = NOTIFICATION_MAP.get(rule.notification_type)
+        if registry_rule:
+            return {
+                "title": registry_rule["title"],
+                "message_html": f"<p>{registry_rule['message']}</p>",
+                "message_text": registry_rule["message"]
+            }
+        return None
+    except Exception as e:
+        logger.error(f"Error inesperado renderizando {rule.notification_type}: {e}")
+        return None
 
-    if pregnancy: return ctx
-    
-    ctx["is_pregnant"] = False
-    
-    # 2. Cycle Context
-    if predictions:
+def validate_smart_context(ctx: dict) -> Tuple[bool, Optional[str]]:
+    """Valida que el contexto tenga los campos mínimos necesarios."""
+    if not ctx.get("today"):
+        return False, "Missing today"
+    if ctx.get("is_pregnant"):
+        if not ctx.get("gestation_week") and not ctx.get("gestation_days"):
+            return False, "Pregnant but no gestation info"
+    return True, None
+
+def calculate_smart_context(user: CycleUser, predictions: Optional[dict], pregnancy: Optional[PregnancyLog], db_session: Session) -> dict:
+    """Construye un objeto de contexto completo describiendo el estado actual de la usuaria."""
+    today = normalize_to_caracas().date()
+    ctx = {"today": today, "is_pregnant": False}
+
+    # 1. Síntomas universales (siempre se calculan)
+    try:
+        symptom_log = db_session.query(SymptomLog).filter(
+            SymptomLog.cycle_user_id == user.id,
+            SymptomLog.date == today
+        ).first()
+        if symptom_log and symptom_log.symptoms:
+            if isinstance(symptom_log.symptoms, list):
+                ctx["reported_symptoms"] = symptom_log.symptoms
+            elif isinstance(symptom_log.symptoms, str):
+                ctx["reported_symptoms"] = [symptom_log.symptoms]
+    except Exception as e:
+        logger.warning(f"Error cargando síntomas para user {user.id}: {e}")
+
+    # 2. Contexto de embarazo (si aplica)
+    if pregnancy and pregnancy.is_active:
+        ctx["is_pregnant"] = True
+        try:
+            gestation_days = (today - pregnancy.last_period_date).days
+            ctx["gestation_days"] = max(0, gestation_days)
+            ctx["gestation_week"] = ctx["gestation_days"] // 7
+            ctx["gestation_day_of_week"] = (ctx["gestation_days"] % 7) + 1
+            if ctx["gestation_week"] < 14:
+                ctx["trimester"] = 1
+            elif ctx["gestation_week"] < 28:
+                ctx["trimester"] = 2
+            else:
+                ctx["trimester"] = 3
+        except Exception as e:
+            logger.error(f"Error calculando gestación para user {user.id}: {e}")
+        return ctx
+
+    # 3. Contexto de ciclo menstrual (solo si no embarazo)
+    if predictions and isinstance(predictions, dict):
         ctx["cycle_day"] = predictions.get("cycle_day", 0)
         ctx["is_ovulation_day"] = (today == predictions.get("ovulation_date"))
         ctx["is_fertile_start"] = (today == predictions.get("fertile_window_start"))
@@ -209,7 +361,6 @@ def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: Pregn
             
         if predictions.get("next_period_start"):
             ctx["days_before_period"] = (predictions["next_period_start"] - today).days
-            
             days_late = (today - predictions["next_period_start"]).days
             if days_late > 0:
                 ctx["period_confirmation_needed"] = True
@@ -217,34 +368,51 @@ def calculate_smart_context(user: CycleUser, predictions: dict, pregnancy: Pregn
                 
         ctx["phase"] = predictions.get("phase")
 
-    # 3. Contraceptive Context
+    # 4. Contexto anticonceptivo
     cycle_day = ctx.get("cycle_day", 0)
     if cycle_day > 0:
         ctx["pill_number"] = cycle_day
-        if cycle_day <= 21: ctx["pill_subtype"] = "active_pill"
-        elif cycle_day <= 28: ctx["pill_subtype"] = "placebo"
-        if cycle_day == 1: ctx["pill_event"] = "new_pack"
+        if cycle_day <= 21:
+            ctx["pill_subtype"] = "active_pill"
+        elif cycle_day <= 28:
+            ctx["pill_subtype"] = "placebo"
+        if cycle_day == 1:
+            ctx["pill_event"] = "new_pack"
 
-    # 4. Annual Checkup
+    # 5. Chequeo anual
     if user.created_at:
-        user_created_date = user.created_at.date()
-        if user_created_date.month == today.month and user_created_date.day == today.day:
-            ctx["is_annual_checkup"] = True
+        try:
+            user_created_date = user.created_at.date()
+            if user_created_date.month == today.month and user_created_date.day == today.day:
+                ctx["is_annual_checkup"] = True
+        except Exception:
+            pass
 
     return ctx
 
 def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNotificationSettings) -> bool:
-    if not user_settings: return False
+    """Evalúa si una regla del registro debe dispararse, aplicando preferencias del usuario."""
+    if not user_settings:
+        return False
     
-    # 1. Logic
-    if not rule_def["logic"](context): return False
+    # Si está embarazada, solo reglas prenatales o del sistema
+    if context.get("is_pregnant") and rule_def["category"] not in ("prenatal", "system"):
+        return False
+    
+    # 1. Evaluar lógica de la regla
+    try:
+        if not rule_def["logic"](context):
+            return False
+    except Exception as e:
+        logger.error(f"Error ejecutando lógica de regla {rule_def['type']}: {e}")
+        return False
         
-    # 2. Preferences
+    # 2. Verificar preferencias
     category = rule_def["category"]
-    if context.get("is_pregnant"):
-        if category == "prenatal" and not user_settings.prenatal_milestones: return False
-    else:
-        if category == "contraceptive" and not user_settings.contraceptive_enabled: return False
+    if category == "prenatal" and not getattr(user_settings, 'prenatal_milestones', True):
+        return False
+    if category == "contraceptive" and not getattr(user_settings, 'contraceptive_enabled', False):
+        return False
             
     return True
 
@@ -252,191 +420,406 @@ def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNo
 # 4. DELIVERY LOGIC (SENDER)
 # ==============================================================================
 
-def send_dual_notification_logic(db, item: PendingNotification):
-    """Core delivery logic: ALWAYS Push -> Email failover (Dual)."""
+def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tuple[bool, Optional[str], Optional[str]]:
+    """Lógica de envío dual: Push -> Email failover, con circuit breaker."""
     user = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
-    if not user: return False, None, "User not found"
+    if not user:
+        return False, None, "User not found"
     
     push_success = False
     error_msg = None
+    channel_used = None
     
-    # Try Push
-    try:
-        push_body = item.message_text or item.subject
-        _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
-        push_success = True 
-    except Exception as e:
-        error_msg = f"Push error: {str(e)}"
-    
-    # Failover to Email
-    if not push_success:
+    # Intentar push si el circuit breaker lo permite
+    if push_circuit.can_execute():
         try:
-            _send_smtp_email(user.email, item.subject, item.body)
-            return True, "email", None
+            push_body = item.message_text or item.subject
+            _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
+            push_success = True
+            push_circuit.record_success()
+            channel_used = "push"
         except Exception as e:
-            return False, "email", str(e)
-            
-    if push_success:
-        return True, "push", None
-        
-    return False, None, error_msg or "No valid channel succeeded"
+            push_circuit.record_failure()
+            error_msg = f"Push error: {str(e)}"
+            log_notification_event("push_failure", user.id, item.rule.notification_type if item.rule else "unknown", {"error": str(e)})
+    else:
+        logger.warning(f"Circuit breaker OPEN, skipping push for user {user.id}")
+        error_msg = "Circuit breaker OPEN"
+    
+    # Failover a email (solo si push falló o no se intentó)
+    if not push_success:
+        if user.email:
+            try:
+                _send_smtp_email(user.email, item.subject, item.body)
+                return True, "email", None
+            except Exception as e:
+                return False, "email", str(e)
+        else:
+            return False, None, "No email address and push failed"
+    
+    return True, channel_used, None
 
+# ==============================================================================
+# 5. TAREAS PROGRAMADAS (PROCESSOR)
+# ==============================================================================
 
-def run_daily_evaluation(db: Session):
+@lru_cache(maxsize=1)
+def get_cached_global_rules(ttl_hash: int = 0) -> Dict[str, NotificationRule]:
     """
-    Daily Task (8:00 AM): Evaluates global rules for all users.
-    Optimized for Agnostic/Closed App model.
+    Cache de reglas globales con TTL de 1 hora.
+    El ttl_hash fuerza el refresco cada hora.
     """
-    try:
-        tz = pytz.timezone('America/Caracas')
-        now = datetime.now(tz)
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-
-        # 1. Fetch Global Rules (Source of Truth for texts)
-        global_rules = {
+    with session_scope() as db:
+        rules = {
             r.notification_type: r 
-            for r in db.query(NotificationRule).filter(NotificationRule.tenant_id == None, NotificationRule.is_active == True).all()
+            for r in db.query(NotificationRule).filter(
+                NotificationRule.tenant_id == None, 
+                NotificationRule.is_active == True
+            ).all()
         }
+        logger.info(f"Loaded {len(rules)} global rules into cache")
+        return rules
 
-        # 2. Process all Active Users
-        users = db.query(CycleUser).filter(CycleUser.is_active == True).all()
-        
-        for user in users:
-            try:
-                # Get user context
-                user_settings = db.query(CycleNotificationSettings).filter(
-                    CycleNotificationSettings.cycle_user_id == user.id
-                ).first()
-                if not user_settings: continue
-
-                pregnancy = db.query(PregnancyLog).filter(
-                     PregnancyLog.cycle_user_id == user.id, 
-                     PregnancyLog.is_active == True
-                ).first()
-                
-                predictions = None
-                if not pregnancy:
-                     last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == user.id).order_by(CycleLog.start_date.desc()).first()
-                     if last_cycle:
-                         predictions = calculate_predictions(last_cycle.start_date, user.cycle_avg_length, user.period_avg_length)
-                
-                smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
-                
-                # 3. Check Registry Rules
-                for rule_def in NOTIFICATION_REGISTRY:
-                    rtype = rule_def["type"]
-                    
-                    # Does it fire?
-                    if not evaluate_registry_rule(rule_def, smart_ctx, user_settings):
-                        continue
-                        
-                    # Find the Template Rule (Global or Default)
-                    template_rule = global_rules.get(rtype)
-                    if not template_rule:
-                        logger.warning(f"No global template found for {rtype}")
-                        continue
-
-                    # Frequency Cap
-                    already_sent = db.query(NotificationLog).filter(
-                        NotificationLog.notification_rule_id == template_rule.id,
-                        NotificationLog.recipient_id == user.id,
-                        NotificationLog.sent_at >= today_start
-                    ).first()
-                    if already_sent: continue
-
-                    already_pending = db.query(PendingNotification).filter(
-                        PendingNotification.notification_rule_id == template_rule.id,
-                        PendingNotification.recipient_id == user.id,
-                        PendingNotification.status == "pending",
-                        PendingNotification.scheduled_for >= today_start
-                    ).first()
-                    if already_pending: continue
-
-                    # Schedule it
-                    try:
-                        hour, minute = map(int, template_rule.send_time.split(':'))
-                        target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-                    except:
-                        target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
-                        
-                    if target_time < now:
-                        target_time = now + timedelta(minutes=5)
-
-                    # Render
-                    render_vars = { "patient_name": user.nombre_completo }
-                    render_vars.update(smart_ctx)
-                    
-                    # Standard Rule render
-                    rendered = template_rule.render_content(render_vars)
-
-                    pending = PendingNotification(
-                        notification_rule_id=template_rule.id,
-                        recipient_id=user.id,
-                        subject=rendered["title"],
-                        body=rendered["message_html"],
-                        message_text=rendered["message_text"],
-                        scheduled_for=target_time,
-                        channel=template_rule.channel,
-                        status="pending"
-                    )
-                    db.add(pending)
-                
-                # Commit per user to avoid massive loss on error
-                db.commit()
-                        
-            except Exception as e:
-                logger.error(f"Error processing user {user.id}: {e}", exc_info=True)
-                db.rollback()
-                
-    except Exception as e:
-        logger.error(f"Critical Error in process_dynamic_notifications: {e}", exc_info=True)
-
-
-def deliver_pending_notifications(db: Session):
+def _process_single_user(user_id: int, global_rules: Dict[str, NotificationRule], now: datetime, today_date: date):
     """
-    Periodic task to send pending notifications that are due.
+    Procesa un único usuario en una sesión independiente.
+    Aislamiento completo: fallos de un usuario no afectan a otros.
+    """
+    with session_scope() as db:
+        user = db.query(CycleUser).filter(CycleUser.id == user_id, CycleUser.is_active == True).first()
+        if not user:
+            return
+        
+        # Obtener settings
+        user_settings = db.query(CycleNotificationSettings).filter(
+            CycleNotificationSettings.cycle_user_id == user.id
+        ).first()
+        if not user_settings:
+            return
+        
+        # Obtener embarazo activo
+        pregnancy = db.query(PregnancyLog).filter(
+            PregnancyLog.cycle_user_id == user.id, 
+            PregnancyLog.is_active == True
+        ).first()
+        
+        # Calcular predicciones solo si no está embarazada
+        predictions = None
+        if not pregnancy:
+            try:
+                last_cycle = db.query(CycleLog).filter(
+                    CycleLog.cycle_user_id == user.id
+                ).order_by(CycleLog.start_date.desc()).first()
+                
+                if last_cycle and user.cycle_avg_length:
+                    predictions = calculate_predictions(
+                        last_cycle.start_date, 
+                        user.cycle_avg_length, 
+                        user.period_avg_length
+                    )
+                    if not isinstance(predictions, dict):
+                        logger.warning(f"Invalid predictions for user {user.id}")
+                        predictions = None
+            except Exception as e:
+                logger.error(f"Error calculating predictions for user {user.id}: {e}")
+        
+        # Calcular contexto
+        smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
+        
+        # Validar contexto
+        is_valid, error = validate_smart_context(smart_ctx)
+        if not is_valid:
+            logger.error(f"Invalid context for user {user.id}: {error}")
+            return
+        
+        # Control de frecuencia: contar notificaciones ya enviadas/programadas hoy
+        sent_today = {
+            log.notification_rule_id for log in db.query(NotificationLog).filter(
+                NotificationLog.recipient_id == user.id,
+                func.date(NotificationLog.sent_at) == today_date
+            )
+        }
+        
+        pending_today = {
+            pend.notification_rule_id for pend in db.query(PendingNotification).filter(
+                PendingNotification.recipient_id == user.id,
+                PendingNotification.status.in_(["pending", "retrying"]),
+                func.date(PendingNotification.scheduled_for) == today_date
+            )
+        }
+        
+        total_today = len(sent_today) + len(pending_today)
+        if total_today >= MAX_NOTIFICATIONS_PER_USER_PER_DAY:
+            logger.info(f"User {user.id} reached daily notification limit")
+            return
+        
+        # Evaluar reglas
+        notifications_created = 0
+        available_slots = MAX_NOTIFICATIONS_PER_USER_PER_DAY - total_today
+        
+        for rule_def in NOTIFICATION_REGISTRY:
+            if notifications_created >= available_slots:
+                break
+            
+            rtype = rule_def["type"]
+            
+            # Evaluar regla
+            try:
+                if not evaluate_registry_rule(rule_def, smart_ctx, user_settings):
+                    continue
+            except Exception as e:
+                logger.error(f"Error evaluating rule {rtype} for user {user.id}: {e}")
+                continue
+            
+            template_rule = global_rules.get(rtype)
+            if not template_rule:
+                logger.warning(f"No global template found for {rtype}")
+                continue
+            
+            rule_id = template_rule.id
+            
+            # Control de frecuencia (doble check por race condition)
+            if rule_id in sent_today or rule_id in pending_today:
+                continue
+            
+            # Renderizar contenido
+            render_vars = {"patient_name": user.nombre_completo or "Usuario"}
+            render_vars.update(smart_ctx)
+            rendered = safe_render_content(template_rule, render_vars)
+            if not rendered:
+                continue
+            
+            # Calcular hora de envío
+            try:
+                hour, minute = map(int, template_rule.send_time.split(':'))
+                target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+            except (ValueError, AttributeError):
+                target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
+            
+            if target_time < now:
+                target_time = now + timedelta(minutes=5)
+            
+            # Crear notificación pendiente
+            pending = PendingNotification(
+                notification_rule_id=rule_id,
+                recipient_id=user.id,
+                subject=rendered["title"],
+                body=rendered["message_html"],
+                message_text=rendered["message_text"],
+                scheduled_for=target_time,
+                channel=template_rule.channel,
+                status="pending"
+            )
+            db.add(pending)
+            
+            # Flush para capturar IntegrityError antes del commit final
+            try:
+                db.flush()
+                sent_today.add(rule_id)  # Actualizar cache local
+                pending_today.add(rule_id)
+                notifications_created += 1
+                log_notification_event("scheduled", user.id, rtype, {"scheduled_for": target_time.isoformat()})
+            except IntegrityError as ie:
+                db.rollback()
+                if "uix_pending_user_rule_date" in str(ie) or "unique" in str(ie).lower():
+                    logger.debug(f"Duplicate prevented for user {user.id}, rule {rtype}")
+                else:
+                    logger.error(f"IntegrityError for user {user.id}, rule {rtype}: {ie}")
+                continue
+            except Exception as e:
+                logger.error(f"Error creating notification for user {user.id}, rule {rtype}: {e}")
+                continue
+        
+        logger.info(f"Created {notifications_created} notifications for user {user.id}")
+
+def run_daily_evaluation():
+    """
+    Tarea diaria: Evalúa reglas globales para todos los usuarios.
+    Cada usuario se procesa en su propia sesión para aislamiento completo.
     """
     try:
-        tz = pytz.timezone('America/Caracas')
-        now = datetime.now(tz)
+        now = normalize_to_caracas()
+        today_date = now.date()
         
-        # Obtener notificaciones pendientes vencidas
-        pending_list = db.query(PendingNotification).filter(
-            PendingNotification.status.in_(["pending", "retrying"]),
-            PendingNotification.scheduled_for <= now
-        ).limit(50).all() 
+        # Cache de reglas globales (refresca cada hora)
+        ttl_hash = int(time.time()) // 3600
+        global_rules = get_cached_global_rules(ttl_hash)
         
-        for item in pending_list:
+        if not global_rules:
+            logger.error("No global rules found, aborting")
+            return
+        
+        # Contador de progreso
+        processed = 0
+        errors = 0
+        
+        # Streaming de usuarios con sesión separada solo para leer IDs
+        with session_scope() as db:
+            user_ids = [
+                row[0] for row in db.query(CycleUser.id).filter(
+                    CycleUser.is_active == True
+                ).yield_per(BATCH_SIZE_USERS)
+            ]
+        
+        logger.info(f"Starting daily evaluation for {len(user_ids)} users")
+        
+        # Procesar cada usuario en sesión independiente
+        for user_id in user_ids:
             try:
-                # Lógica de entrega
-                success, channel_used, error = send_dual_notification_logic(db, item)
+                _process_single_user(user_id, global_rules, now, today_date)
+                processed += 1
                 
-                if success:
-                    item.status = "sent"
-                    # Registrar en el log de auditoría
-                    log = NotificationLog(
-                        notification_rule_id=item.notification_rule_id,
-                        recipient_id=item.recipient_id,
-                        notification_type=item.rule.notification_type if item.rule else "unknown",
-                        title_sent=item.subject,
-                        status="sent",
-                        channel_used=channel_used
-                    )
-                    db.add(log)
-                else:
-                    item.retry_count += 1
-                    item.last_error = error
-                    if item.retry_count >= 5:
-                        item.status = "failed"
-                    else:
-                        item.status = "retrying"
+                if processed % 100 == 0:
+                    logger.info(f"Progress: {processed}/{len(user_ids)} users processed")
                     
-                    logger.warning(f"Notification {item.id} failed (try {item.retry_count}): {error}")
-                
-                db.commit()
             except Exception as e:
-                db.rollback()
-                logger.error(f"Error processing pending notification {item.id}: {e}", exc_info=True)
+                errors += 1
+                logger.error(f"Critical error processing user {user_id}: {e}", exc_info=True)
+                continue
+        
+        logger.info(f"Daily evaluation complete: {processed} processed, {errors} errors")
+        
+    except Exception as e:
+        logger.error(f"Critical error in run_daily_evaluation: {e}", exc_info=True)
+
+def deliver_pending_notifications():
+    """
+    Tarea periódica para enviar notificaciones pendientes.
+    Implementa patrón de dos fases: lock -> procesar fuera de transacción -> actualizar.
+    """
+    try:
+        now = normalize_to_caracas()
+        processed = 0
+        max_iterations = 10  # Evitar loop infinito
+        
+        for _ in range(max_iterations):
+            # Fase 1: Obtener y lockear un lote de notificaciones
+            with session_scope() as db:
+                # Actualizar a "processing" para que otros workers no las tomen
+                subquery = db.query(PendingNotification.id).filter(
+                    PendingNotification.status.in_(["pending", "retrying"]),
+                    PendingNotification.scheduled_for <= now
+                ).with_for_update(skip_locked=True).limit(BATCH_SIZE_DELIVERY).subquery()
                 
+                pending_ids = [
+                    row[0] for row in db.query(subquery.c.id).all()
+                ]
+                
+                if not pending_ids:
+                    break
+                
+                # Marcar como processing
+                db.query(PendingNotification).filter(
+                    PendingNotification.id.in_(pending_ids)
+                ).update({
+                    "status": "processing",
+                    "updated_at": now
+                }, synchronize_session=False)
+            
+            # Fase 2: Procesar fuera de transacción (libera conexión durante envío)
+            for pid in pending_ids:
+                try:
+                    # Recargar notificación en nueva sesión
+                    with session_scope() as db:
+                        item = db.query(PendingNotification).get(pid)
+                        if not item or item.status != "processing":
+                            continue
+                        
+                        # Enviar notificación
+                        success, channel_used, error = send_dual_notification_logic(db, item)
+                        
+                        # Actualizar resultado
+                        if success:
+                            item.status = "sent"
+                            item.sent_at = now
+                            item.channel_used = channel_used
+                            
+                            log = NotificationLog(
+                                notification_rule_id=item.notification_rule_id,
+                                recipient_id=item.recipient_id,
+                                notification_type=item.rule.notification_type if item.rule else "unknown",
+                                title_sent=item.subject,
+                                status="sent",
+                                channel_used=channel_used,
+                                sent_at=now
+                            )
+                            db.add(log)
+                            log_notification_event("sent", item.recipient_id, item.rule.notification_type if item.rule else "unknown", {"channel": channel_used})
+                        else:
+                            item.retry_count += 1
+                            item.last_error = error[:500] if error else None  # Limitar longitud
+                            
+                            if item.retry_count >= MAX_RETRIES:
+                                item.status = "failed"
+                                log_notification_event("permanent_failure", item.recipient_id, item.rule.notification_type if item.rule else "unknown", {"error": error})
+                            else:
+                                item.status = "retrying"
+                                item.scheduled_for = calculate_next_retry_time(item.retry_count)
+                                log_notification_event("retry", item.recipient_id, item.rule.notification_type if item.rule else "unknown", {"retry_count": item.retry_count, "error": error})
+                        
+                        processed += 1
+                        
+                except Exception as e:
+                    logger.error(f"Error processing notification {pid}: {e}", exc_info=True)
+                    # Intentar marcar como failed
+                    try:
+                        with session_scope() as db:
+                            db.query(PendingNotification).filter_by(id=pid).update({
+                                "status": "failed",
+                                "last_error": str(e)[:500]
+                            })
+                    except Exception as e2:
+                        logger.error(f"Could not mark notification {pid} as failed: {e2}")
+        
+        if processed > 0:
+            logger.info(f"Delivered {processed} notifications")
+            
     except Exception as e:
         logger.error(f"Critical error in deliver_pending_notifications: {e}", exc_info=True)
+
+# ==============================================================================
+# 6. HEALTH CHECK
+# ==============================================================================
+
+def get_notification_system_health(db: Session) -> dict:
+    """Devuelve métricas de salud del sistema de notificaciones."""
+    try:
+        now = normalize_to_caracas()
+        yesterday = now - timedelta(days=1)
+        
+        pending_count = db.query(PendingNotification).filter(PendingNotification.status == "pending").count()
+        failed_count = db.query(PendingNotification).filter(PendingNotification.status == "failed").count()
+        retrying_count = db.query(PendingNotification).filter(PendingNotification.status == "retrying").count()
+        processing_count = db.query(PendingNotification).filter(PendingNotification.status == "processing").count()
+        
+        sent_last_24h = db.query(NotificationLog).filter(NotificationLog.sent_at >= yesterday).count()
+        failed_last_24h = db.query(PendingNotification).filter(
+            PendingNotification.status == "failed",
+            PendingNotification.updated_at >= yesterday
+        ).count()
+        
+        # Determinar estado
+        status = "healthy"
+        if failed_count > 100 or failed_last_24h > 50:
+            status = "degraded"
+        if failed_count > 500 or failed_last_24h > 200:
+            status = "critical"
+        
+        return {
+            "status": status,
+            "pending_queue": pending_count,
+            "processing": processing_count,
+            "failed_total": failed_count,
+            "retrying": retrying_count,
+            "sent_last_24h": sent_last_24h,
+            "failed_last_24h": failed_last_24h,
+            "circuit_breaker": {
+                "state": push_circuit.state.value,
+                "failures": push_circuit.failure_count,
+                "threshold": push_circuit.failure_threshold
+            },
+            "timestamp": now.isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error en health check: {e}")
+        return {"status": "unhealthy", "error": str(e), "timestamp": normalize_to_caracas().isoformat()}
