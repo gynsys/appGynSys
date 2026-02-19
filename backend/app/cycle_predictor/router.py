@@ -390,7 +390,7 @@ def get_settings(
     # We need to know the doctor_id. CycleUser has doctor_id.
     user = db.query(CycleUser).filter(CycleUser.id == cycle_user_id).first()
     if user and user.doctor_id:
-        from app.db.models.notification import NotificationRule, NotificationType
+        from app.db.models.notification import NotificationRule
         custom_rules = db.query(NotificationRule).filter(
             NotificationRule.tenant_id == user.doctor_id,
             NotificationRule.notification_type == 'custom', # Match enum value 'custom'
