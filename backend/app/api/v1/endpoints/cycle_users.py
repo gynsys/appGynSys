@@ -17,7 +17,7 @@ from app.schemas.cycle_user import CycleUserCreate, CycleUserResponse, CycleUser
 from app.schemas.token import Token, PasswordResetRequest, PasswordResetConfirm
 from app.core.security import hash_password, create_access_token, verify_access_token, verify_password
 from app.core.email import send_welcome_email
-from app.tasks.email_tasks import send_cycle_user_reset_password_email
+from app.tasks.email_tasks import send_cycle_user_reset_password_email, send_welcome_dual_task
 from app.core.config import settings
 
 router = APIRouter()
@@ -179,8 +179,11 @@ async def register_cycle_user(
         }
     )
     
-    # Enviar email de bienvenida (Background task - Realmente asíncrono)
-    background_tasks.add_task(send_welcome_email, db_user.email, db_user.nombre_completo)
+    # Deshabilitar auto-login tras registro si se prefiere que el usuario confirme algo,
+    # pero aquí seguimos con el flujo actual que retorna el token directamente.
+    
+    # Enviar notificaciones de bienvenida (Email + Push) via Celery
+    send_welcome_dual_task.delay(db_user.id, db_user.email, db_user.nombre_completo)
     
     return {"access_token": access_token, "token_type": "bearer"}
 

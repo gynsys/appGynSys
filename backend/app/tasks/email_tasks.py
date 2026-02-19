@@ -158,6 +158,46 @@ def send_welcome_email(email: str, doctor_name: str):
 
 
 @celery_app.task
+def send_welcome_dual_task(user_id: int, email: str, name: str):
+    """
+    Send dual welcome notification to cycle predictor user: Email + Push.
+    """
+    db = SessionLocal()
+    try:
+        # 1. Preparar Email
+        subject = "¡Bienvenida a Cycle Predictor!"
+        template_path = "app/templates/welcome_email.html"
+        
+        try:
+            if os.path.exists(template_path):
+                with open(template_path, "r", encoding="utf-8") as f:
+                    template = f.read()
+                html_content = template.replace("{{name}}", name)
+            else:
+                html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
+        except Exception as e:
+            logger.error(f"Error loading welcome template: {e}")
+            html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
+
+        # 2. Intentar Email (SMTP)
+        _send_smtp_email(email, subject, html_content)
+        
+        # 3. Intentar Push
+        # Nota: Para un usuario nuevo, esto fallará si no tiene subscripción aún.
+        _send_web_push(
+            user_id, 
+            "👋 ¡Bienvenida!", 
+            f"¡Hola {name}! Gracias por unirte a Cycle Predictor.", 
+            "/cycle/dashboard", 
+            db
+        )
+    except Exception as e:
+        logger.error(f"Error in send_welcome_dual_task: {e}")
+    finally:
+        db.close()
+
+
+@celery_app.task
 def send_consultation_report_email(email: str, patient_name: str, report_url: str = None, pdf_bytes: bytes = None):
     """
     Send consultation report link and attachment to patient.
