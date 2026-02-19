@@ -109,10 +109,13 @@ function App() {
   // Show loading screen during initialization
   if (isInitializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Cargando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <div className="flex flex-col items-center">
+          <img
+            src="/GynSys.png"
+            alt="GynSys Logo"
+            className="w-32 h-auto animate-pulse"
+          />
         </div>
       </div>
     )
