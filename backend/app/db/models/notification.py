@@ -188,8 +188,7 @@ class PendingNotification(Base):
     locked_at = Column(DateTime(timezone=True), nullable=True)
     
     __table_args__ = (
-        UniqueConstraint('recipient_id', 'notification_rule_id', func.date(scheduled_for), 
-                        name='uix_pending_user_rule_date'),
+        Index('uix_pending_user_rule_date', 'recipient_id', 'notification_rule_id', func.date(scheduled_for), unique=True),
     )
 
     # Relationships
