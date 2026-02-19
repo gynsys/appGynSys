@@ -60,12 +60,29 @@ class Settings(BaseSettings):
 
     @validator("CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v):
+        origins = v
         if isinstance(v, str):
             # Permite formato JSON o CSV
             if v.startswith("["):
                 import json
-                return json.loads(v)
-            return [i.strip() for i in v.split(",")]
+                origins = json.loads(v)
+            else:
+                origins = [i.strip() for i in v.split(",")]
+        
+        # Enforce Production Domains (Safety Net against outdated .env)
+        required_origins = [
+            "https://gynsys.net",
+            "https://www.gynsys.net",
+            "https://api.gynsys.net",
+            "https://appgynsys.onrender.com"
+        ]
+        
+        if isinstance(origins, list):
+            for domain in required_origins:
+                if domain not in origins:
+                    origins.append(domain)
+            return origins
+            
         return v
 
     # Debug flag (read from .env; useful for local development)
