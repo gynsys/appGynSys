@@ -5,6 +5,7 @@ Uses Pydantic BaseSettings to load environment variables.
 
 from pydantic_settings import BaseSettings
 from typing import Optional, List, Union
+import os
 from pydantic import AnyHttpUrl, validator
 
 
