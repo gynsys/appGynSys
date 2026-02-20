@@ -141,22 +141,26 @@ def send_welcome_dual_task(user_id: int, email: str, name: str):
     """
     db = SessionLocal()
     try:
+        # Recuperar al usuario con su doctor
+        user = db.query(CycleUser).options(joinedload(CycleUser.doctor)).filter(CycleUser.id == user_id).first()
+        doctor_name = user.doctor.nombre_completo if user and user.doctor else "su doctora"
+
         # 1. Preparar Email
-        subject = "¡Bienvenida a Cycle Predictor!"
+        subject = "A Mi Ciclo"
         template_path = "app/templates/welcome_email.html"
         
         try:
             if os.path.exists(template_path):
                 with open(template_path, "r", encoding="utf-8") as f:
                     template = f.read()
-                html_content = template.replace("{{name}}", name)
+                html_content = template.replace("{{name}}", name).replace("{{doctor_name}}", doctor_name)
             else:
-                html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
+                html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a A Mi Ciclo. Atentamente, Dra. {doctor_name}.</p>"
         except Exception as e:
             logger.error(f"Error loading welcome template: {e}")
-            html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
+            html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a A Mi Ciclo. Atentamente, Dra. {doctor_name}.</p>"
 
-        # 2. Intentar Email (SMTP)
+        # 2. Intentar Email (Integrated: Resend or SMTP)
         _send_integrated_email(email, subject, html_content)
         
         # 3. Intentar Push
@@ -164,7 +168,7 @@ def send_welcome_dual_task(user_id: int, email: str, name: str):
         _send_web_push(
             user_id, 
             "👋 ¡Bienvenida!", 
-            f"¡Hola {name}! Gracias por unirte a Cycle Predictor.", 
+            f"¡Hola {name}! Gracias por unirte a A Mi Ciclo.", 
             "/cycle/dashboard", 
             db
         )

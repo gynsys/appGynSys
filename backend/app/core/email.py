@@ -122,15 +122,15 @@ async def send_email(
         _send_email_sync, email_to, subject, html_content, attachments
     )
 
-async def send_welcome_email(email_to: EmailStr, name: str) -> bool:
-    subject = "¡Bienvenida a Cycle Predictor!"
+async def send_welcome_email(email_to: EmailStr, name: str, doctor_name: str = "su doctora") -> bool:
+    subject = "A Mi Ciclo"
     try:
         with open("app/templates/welcome_email.html", "r", encoding="utf-8") as f:
             template = f.read()
         
-        html_content = template.replace("{{name}}", name)
+        html_content = template.replace("{{name}}", name).replace("{{doctor_name}}", doctor_name)
         return await send_email(email_to, subject, html_content)
     except FileNotFoundError:
         # Fallback template if file missing
-        html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a Cycle Predictor.</p>"
+        html_content = f"<h1>Hola {name}!</h1><p>Bienvenida a A Mi Ciclo. Atentamente, Dra. {doctor_name}.</p>"
         return await send_email(email_to, subject, html_content)

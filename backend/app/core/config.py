@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # URLs
+    FRONTEND_URL: str = "https://www.gynsys.net"
+    BACKEND_URL: str = "https://api.gynsys.net"
 
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = None
