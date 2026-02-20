@@ -1,75 +1,47 @@
-import { useState, useEffect } from 'react';
 import { FiDownload } from 'react-icons/fi';
 import { useToastStore } from '../../store/toastStore';
+import usePWAStore from '../../store/pwaStore';
 
 const PWAInstallButton = () => {
-    const [deferredPrompt, setDeferredPrompt] = useState(null);
-    const [isVisible, setIsVisible] = useState(false);
-    const [isStandalone, setIsStandalone] = useState(false);
+    const { deferredPrompt, isStandalone, setDeferredPrompt } = usePWAStore();
     const toast = useToastStore();
-
-    useEffect(() => {
-        // Detectar si ya está en modo standalone (PWA instalada)
-        const checkStandalone = () => {
-            const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
-                || window.navigator.standalone
-                || document.referrer.includes('android-app://');
-            setIsStandalone(isStandaloneMode);
-        };
-
-        checkStandalone();
-
-        const handleBeforeInstallPrompt = (e) => {
-            // Prevenir que el navegador muestre su propio prompt
-            e.preventDefault();
-            // Guardar el evento para dispararlo luego
-            setDeferredPrompt(e);
-            setIsVisible(true);
-        };
-
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-        // Detectar si la app fue instalada exitosamente
-        window.addEventListener('appinstalled', () => {
-            setIsVisible(false);
-            setDeferredPrompt(null);
-            toast.success('¡App instalada correctamente!');
-        });
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
-    }, [toast]);
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) {
-            // Caso iOS o navegadores que no soportan beforeinstallprompt
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+            // Detectar iOS
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
+
+            if (isIOS) {
                 toast.info('Para instalar: presiona el icono de compartir y luego "Añadir a pantalla de inicio"');
+            } else if (window.chrome || (navigator.userAgent.indexOf("Chrome") !== -1)) {
+                // Caso Chrome Desktop donde el evento antes pudo fallar o fue ignorado
+                toast.info('Busca el icono de "Instalar" (computadora con flecha) en la barra de direcciones de tu navegador.');
             } else {
-                toast.info('Instalación no soportada en este navegador. Intenta con Chrome o Safari.');
+                toast.info('Instalación no soportada o ya instalada. Intenta con Chrome en Android o Safari en iOS.');
             }
             return;
         }
 
-        // Mostrar el prompt nativo
-        deferredPrompt.prompt();
+        try {
+            // Mostrar el prompt nativo
+            deferredPrompt.prompt();
 
-        // Esperar la respuesta del usuario
-        const { outcome } = await deferredPrompt.userChoice;
+            // Esperar la respuesta del usuario
+            const { outcome } = await deferredPrompt.userChoice;
 
-        if (outcome === 'accepted') {
-            console.log('Usuario aceptó la instalación');
-        } else {
-            console.log('Usuario rechazó la instalación');
+            if (outcome === 'accepted') {
+                toast.success('¡Gracias por instalar GynSys!');
+            }
+
+            // Limpiar el prompt global
+            setDeferredPrompt(null);
+        } catch (err) {
+            console.error('Error durante la instalación:', err);
+            toast.error('Hubo un error al intentar instalar la aplicación.');
         }
-
-        // Solo se puede usar una vez
-        setDeferredPrompt(null);
-        setIsVisible(false);
     };
 
-    // Mostrar siempre si NO está en modo standalone
+    // No mostrar si ya está instalada
     if (isStandalone) return null;
 
     return (

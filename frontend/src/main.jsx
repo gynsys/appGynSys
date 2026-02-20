@@ -11,6 +11,17 @@ registerSW({
 })
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import usePWAStore from './store/pwaStore';
+
+// Capturar el evento de instalación lo antes posible
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  usePWAStore.getState().setDeferredPrompt(e);
+});
+
+window.addEventListener('appinstalled', () => {
+  usePWAStore.getState().setDeferredPrompt(null);
+});
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
