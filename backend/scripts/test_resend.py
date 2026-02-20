@@ -8,33 +8,41 @@ from app.core.email import send_email
 import asyncio
 
 async def test_resend():
-    # Resend restricts free tier/unverified domains to onboarding@resend.dev
-    # or the specific verified domain. 
-    # Since the user hasn't verified gynsys.com yet on Resend, we must use the test sender.
-    sender = "onboarding@resend.dev" 
-    
-    print(f"Sending test email to: {test_email} from {sender}...")
-    # Update send_email to allow overriding sender if possible, 
-    # but send_email uses settings.EMAILS_FROM_EMAIL. 
-    # We might need to temporarily mock settings or just test the library directly.
+    # Test 1: Onboarding (Safe Fallback)
+    sender_fallback = "onboarding@resend.dev" 
+    print(f"Test 1: Sending from {sender_fallback}...")
     
     import resend
     from app.core.config import settings
     resend.api_key = settings.RESEND_API_KEY
     
-    params = {
-        "from": "onboarding@resend.dev",
-        "to": [test_email],
-        "subject": subject,
-        "html": content,
-    }
-    
     try:
-        email = resend.Emails.send(params)
-        print(f"SUCCESS: Resend ID: {email}")
-        return
+        email = resend.Emails.send({
+            "from": sender_fallback,
+            "to": [test_email],
+            "subject": f"{subject} (Fallback)",
+            "html": content,
+        })
+        print(f"SUCCESS (Fallback): Resend ID: {email}")
     except Exception as e:
-        print(f"FAILED DIRECT RESEND: {e}")
+        print(f"FAILED (Fallback): {e}")
+
+    # Test 2: GynSys.net (User Domain)
+    sender_domain = "info@gynsys.net"
+    print(f"\nTest 2: Sending from {sender_domain}...")
+    try:
+        email = resend.Emails.send({
+            "from": sender_domain,
+            "to": [test_email],
+            "subject": f"{subject} (Domain)",
+            "html": content,
+        })
+        print(f"SUCCESS (Domain): Resend ID: {email}")
+    except Exception as e:
+        print(f"FAILED (Domain): {e}")
+        print("NOTE: Verify that 'gynsys.net' is added and verified in the Resend Dashboard.")
+
+    return
         
     # success = await send_email(test_email, subject, content)
 
