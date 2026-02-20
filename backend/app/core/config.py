@@ -127,8 +127,6 @@ class Settings(BaseSettings):
     VAPID_CLAIM_EMAIL: str = "admin@gynsys.com"
     
     class Config:
-        # Check both local .env and Render's secret path
-        import os
         render_env = "/etc/secrets/.env"
         if os.path.exists(render_env):
             env_file = render_env
