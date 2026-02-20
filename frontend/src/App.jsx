@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import GynSysLoader from './components/common/GynSysLoader'
 import { Toaster } from 'sonner'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
