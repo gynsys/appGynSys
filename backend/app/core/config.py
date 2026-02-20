@@ -110,8 +110,8 @@ class Settings(BaseSettings):
     
     # Resend
     RESEND_API_KEY: str | None = os.getenv("RESEND_API_KEY")
-    # Force onboarding@resend.dev until domain is verified
-    EMAILS_FROM_EMAIL: str | None = "onboarding@resend.dev" 
+    # Force verified domain sender
+    EMAILS_FROM_EMAIL: str | None = "info@gynsys.net" 
     EMAILS_FROM_NAME: str = "GynSys Notificaciones"
     
     # MinIO / S3
