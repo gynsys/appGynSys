@@ -108,17 +108,7 @@ function App() {
 
   // Show loading screen during initialization
   if (isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <div className="flex flex-col items-center">
-          <img
-            src="/GynSys.png"
-            alt="GynSys Logo"
-            className="w-32 h-auto animate-pulse"
-          />
-        </div>
-      </div>
-    )
+    return <GynSysLoader />
   }
 
   return (

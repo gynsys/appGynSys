@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import Spinner from '../components/common/Spinner'
+import GynSysLoader from '../components/common/GynSysLoader'
 import { useEffect } from 'react'
 
 export default function AdminRoute({ children }) {
@@ -13,11 +13,7 @@ export default function AdminRoute({ children }) {
   }, [isAuthenticated, user, loadUser])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    )
+    return <GynSysLoader />
   }
 
   if (!isAuthenticated) {
