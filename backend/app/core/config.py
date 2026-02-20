@@ -100,16 +100,18 @@ class Settings(BaseSettings):
     # Data Encryption
     ENCRYPTION_KEY: str = "r4Pn0YDQH7obBlPFuPHzWj_hEWLotrVUHonpkba_fn8="
 
-    # Email Settings (SMTP)
-    SMTP_HOST: str = "smtp.gmail.com"
+    # Email
+    SMTP_TLS: bool = True
     SMTP_PORT: int = 587
-    SMTP_USER: str = "tu_correo@gmail.com"
-    SMTP_PASSWORD: str = "tu_contraseña_de_aplicacion"
-    EMAILS_FROM_EMAIL: str = "no-reply@gynsys.com"
-    EMAILS_FROM_NAME: str = "GynSys Notificaciones"
+    SMTP_HOST: str | None = "smtp.gmail.com"
+    SMTP_USER: str | None = "multitenant.app@gmail.com"
+    SMTP_PASSWORD: str | None = "tu_password"
     
-    # Email Settings (Resend API)
-    RESEND_API_KEY: Optional[str] = None
+    # Resend
+    RESEND_API_KEY: str | None = os.getenv("RESEND_API_KEY")
+    # Force onboarding@resend.dev until domain is verified
+    EMAILS_FROM_EMAIL: str | None = "onboarding@resend.dev" 
+    EMAILS_FROM_NAME: str = "GynSys Notificaciones"
     
     # MinIO / S3
     MINIO_ENDPOINT: str = "minio:9000" # Internal Docker URL
