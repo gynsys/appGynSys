@@ -31,6 +31,7 @@ import { getImageUrl } from '../lib/imageUtils'
 import LoginModal from '../components/features/LoginModal'
 import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
+import PWAInstallButton from '../components/common/PWAInstallButton'
 
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
@@ -307,20 +308,23 @@ export default function DoctorProfilePage() {
         containerBgColor={containerBgColor}
       />
 
-      {/* Admin Panel Button - Relocated from Navbar */}
-      {isAuthenticated && (
+      {/* Admin Panel Button & PWA Install - Relocated from Navbar */}
+      {(isAuthenticated || true) && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="flex items-center justify-end">
-            <button
-              onClick={() => handleProtectedAction('/dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
-              style={{ backgroundColor: 'rgb(174, 55, 103)' }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span>Panel Admin</span>
-            </button>
+          <div className="flex items-center justify-end space-x-3">
+            <PWAInstallButton />
+            {isAuthenticated && (
+              <button
+                onClick={() => handleProtectedAction('/dashboard')}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
+                style={{ backgroundColor: 'rgb(174, 55, 103)' }}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>Panel Admin</span>
+              </button>
+            )}
           </div>
         </div>
       )}
