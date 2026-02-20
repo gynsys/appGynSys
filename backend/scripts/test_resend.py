@@ -8,6 +8,10 @@ from app.core.email import send_email
 import asyncio
 
 async def test_resend():
+    test_email = "ie672ca@gmail.com" # User's email from logs or a safe test one
+    subject = "Prueba de Integración Resend - GynSys"
+    content = "<h1>¡Hola!</h1><p>Esta es una prueba directa de la integración de Resend desde el servidor.</p>"
+
     # Test 1: Onboarding (Safe Fallback)
     sender_fallback = "onboarding@resend.dev" 
     print(f"Test 1: Sending from {sender_fallback}...")
