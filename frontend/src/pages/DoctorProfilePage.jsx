@@ -84,12 +84,6 @@ export default function DoctorProfilePage() {
     }
   }, [location.pathname, appointmentId])
 
-  useEffect(() => {
-    if (location.pathname.includes('/preconsulta') && appointmentId) {
-      setIsPreconsultaOpen(true)
-    }
-  }, [location.pathname, appointmentId])
-
   const handleLogout = () => {
     // Show success message first
     toast.success('Sesión cerrada exitosamente')
@@ -325,6 +319,7 @@ export default function DoctorProfilePage() {
         onAppointmentClick={handleOpenAppointment}
         onTestClick={handleOpenTest}
         onCycleClick={handleOpenCycle}
+        onLoginClick={() => setIsLoginModalOpen(true)}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
@@ -630,7 +625,6 @@ export default function DoctorProfilePage() {
       <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} primaryColor={primaryColor} darkMode={isDarkTheme} />
 
-      {/* Online Consultation Modal (triggered from hero section) */}
       {/* Online Consultation Modal (triggered from hero section) */}
       <OnlineChatBooking
         doctorId={doctor.id}

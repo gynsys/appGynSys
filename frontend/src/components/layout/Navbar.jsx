@@ -3,17 +3,12 @@ import { getImageUrl } from '../../lib/imageUtils'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
-import LoginModal from '../features/LoginModal'
 import { useAuthStore } from '../../store/authStore'
 import usePWAStore from '../../store/pwaStore'
-import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
-
-import EndometriosisTestModal from '../features/EndometriosisTestModal'
 import PWAInstallButton from '../common/PWAInstallButton'
 
-export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, containerShadow = true, containerBgColor }) {
+export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, onLoginClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const { isAuthenticated, user, logout } = useAuthStore()
   const { isStandalone } = usePWAStore()
@@ -174,7 +169,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 </div>
               ) : (
                 <button
-                  onClick={() => setIsLoginModalOpen(true)}
+                  onClick={() => onLoginClick ? onLoginClick() : null}
                   className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md group"
                 >
                   <FiLogIn className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -254,7 +249,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 ) : (
                   <button
                     onClick={() => {
-                      setIsLoginModalOpen(true)
+                      if (onLoginClick) onLoginClick()
                       setIsMenuOpen(false)
                     }}
                     className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
@@ -298,14 +293,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           }
         </div >
 
-        <LoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-          onSuccess={() => {
-            setIsLoginModalOpen(false);
-            navigate('/cycle/dashboard');
-          }}
-        />
       </nav >
     </>
   )
