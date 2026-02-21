@@ -49,7 +49,7 @@ export default function DoctorProfilePage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
+  const [isHeroTestOpen, setIsHeroTestOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const [isOnlineConsultationModalOpen, setIsOnlineConsultationModalOpen] = useState(false)
   const [onlineSettings, setOnlineSettings] = useState(null)
@@ -253,7 +253,7 @@ export default function DoctorProfilePage() {
     }
   }
 
-  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
+  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isHeroTestOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
 
   // Bottom Navigation Handlers
   const scrollToTop = () => {
@@ -414,11 +414,11 @@ export default function DoctorProfilePage() {
                     </div>
                   )}
 
-                  {/* Endometriosis Test CTA - Tactical Placement */}
+                  {/* Endometriosis Test CTA - Tactical Placement (PC ONLY) */}
                   {isModuleEnabled('endometriosis_test') && (
-                    <div className="flex justify-center md:justify-end">
+                    <div className="hidden md:flex justify-end mt-8">
                       <button
-                        onClick={() => setIsTestModalOpen(true)}
+                        onClick={() => setIsHeroTestOpen(true)}
                         className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
                       >
                         <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
@@ -562,12 +562,12 @@ export default function DoctorProfilePage() {
         )}
       </div>
 
-      {/* Endometriosis Test Modal */}
+      {/* Endometriosis Test Modal - Shared for Hero button */}
       {
         isModuleEnabled('endometriosis_test') && (
           <EndometriosisTestModal
-            isOpen={isTestModalOpen}
-            onClose={() => setIsTestModalOpen(false)}
+            isOpen={isHeroTestOpen}
+            onClose={() => setIsHeroTestOpen(false)}
             primaryColor={primaryColor}
             doctorName={doctor?.nombre_completo}
             doctorId={doctor?.id}

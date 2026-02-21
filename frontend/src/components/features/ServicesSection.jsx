@@ -96,8 +96,8 @@ export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', 
         })}
       </div>
 
-      {/* Appointment CTA - Strategic Placement at the end of services */}
-      <div className="mt-12 flex justify-center md:justify-end mr-4">
+      {/* Appointment CTA - Strategic Placement at the end of services (PC ONLY) */}
+      <div className="hidden md:flex mt-12 justify-center md:justify-end mr-4">
         <button
           onClick={onAppointmentClick}
           className="px-10 py-4 rounded-xl font-bold text-lg shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-white group"
