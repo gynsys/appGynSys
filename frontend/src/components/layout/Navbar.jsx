@@ -266,7 +266,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 {showEndoTest && (
                   <button
                     onClick={() => {
-                      setIsTestModalOpen(true)
+                      onTestClick()
                       setIsMenuOpen(false)
                     }}
                     className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
@@ -297,26 +297,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
             navigate('/cycle/dashboard');
           }}
         />
-
-        <CyclePredictorModal
-          open={isCycleModalOpen}
-          onOpenChange={setIsCycleModalOpen}
-          isDarkMode={isDarkTheme}
-        />
-
-        {showEndoTest && (
-          <EndometriosisTestModal
-            isOpen={isTestModalOpen}
-            onClose={() => setIsTestModalOpen(false)}
-            onSchedule={onAppointmentClick}
-            onCycle={() => setIsCycleModalOpen(true)}
-            doctorName={doctor?.nombre_completo}
-            doctorPhoto={doctor?.foto_perfil}
-            primaryColor={primaryColor}
-            doctorId={doctor?.id}
-            isDarkMode={isDarkTheme}
-          />
-        )}
       </nav >
     </>
   )

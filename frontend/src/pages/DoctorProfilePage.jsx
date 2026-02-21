@@ -315,6 +315,7 @@ export default function DoctorProfilePage() {
         doctor={doctor}
         primaryColor={primaryColor}
         onAppointmentClick={() => setIsAppointmentModalOpen(true)}
+        onTestClick={() => setIsHeroTestOpen(true)}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
