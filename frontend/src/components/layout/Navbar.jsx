@@ -175,11 +175,10 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition shadow-md hover:shadow-lg"
-                  style={{ backgroundColor: 'rgb(174, 55, 103)' }}
+                  className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md group"
                 >
-                  <FiLogIn className="w-5 h-5" />
-                  <span>Login</span>
+                  <FiLogIn className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-medium">Login</span>
                 </button>
               )}
             </div >
