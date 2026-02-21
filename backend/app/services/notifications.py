@@ -371,10 +371,13 @@ def calculate_smart_context(user: CycleUser, predictions: Optional[dict], pregna
     # 4. Contexto anticonceptivo
     cycle_day = ctx.get("cycle_day", 0)
     if cycle_day > 0:
+        ctx["type"] = "contraceptive"
         ctx["pill_number"] = cycle_day
         if cycle_day <= 21:
+            ctx["subtype"] = "active_pill"
             ctx["pill_subtype"] = "active_pill"
         elif cycle_day <= 28:
+            ctx["subtype"] = "placebo"
             ctx["pill_subtype"] = "placebo"
         if cycle_day == 1:
             ctx["pill_event"] = "new_pack"
@@ -589,9 +592,13 @@ def _process_single_user(user_id: int, global_rules: Dict[str, NotificationRule]
             if not rendered:
                 continue
             
-            # Calcular hora de envío
+            # Calcular hora de envío (respetar preferencia de usuario para anticonceptivos)
             try:
-                hour, minute = map(int, template_rule.send_time.split(':'))
+                send_time = template_rule.send_time
+                if rule_def["category"] == "contraceptive" and user_settings.contraceptive_time:
+                    send_time = user_settings.contraceptive_time
+                
+                hour, minute = map(int, send_time.split(':'))
                 target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
             except (ValueError, AttributeError):
                 target_time = now.replace(hour=8, minute=0, second=0, microsecond=0)

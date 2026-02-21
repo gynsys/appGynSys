@@ -150,8 +150,8 @@ class NotificationLog(Base):
     status = Column(String(20), default="sent")  # sent, failed, skipped
     error_message = Column(Text, nullable=True)
     
-    # Context snapshot for debugging
-    context_snapshot = Column(JSON, default=dict)
+    # Context snapshot for debugging (Disabled until migration)
+    # context_snapshot = Column(JSON, default=dict)
 
     # Relationships
     rule = relationship("NotificationRule")
