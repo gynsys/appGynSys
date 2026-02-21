@@ -308,14 +308,10 @@ export default function DoctorProfilePage() {
         containerBgColor={containerBgColor}
       />
 
-      {/* Admin Panel Button & PWA Install - Sticky Row */}
-      {(isAuthenticated || true) && (
+      {/* Admin Panel Button - Sticky Row */}
+      {(isAuthenticated) && (
         <div className="sticky top-[72px] z-40 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
           <div className="flex items-center justify-end space-x-3 pointer-events-auto">
-            {/* Oculto en móvil, visible en desktop */}
-            <div className="hidden md:block">
-              <PWAInstallButton isFloating={true} />
-            </div>
             {isAuthenticated && (
               <button
                 onClick={() => handleProtectedAction('/dashboard')}
