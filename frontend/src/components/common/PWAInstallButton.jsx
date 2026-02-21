@@ -1,4 +1,4 @@
-import { FiDownload } from 'react-icons/fi';
+import { FiDownload, FiActivity } from 'react-icons/fi';
 import { useToastStore } from '../../store/toastStore';
 import usePWAStore from '../../store/pwaStore';
 
