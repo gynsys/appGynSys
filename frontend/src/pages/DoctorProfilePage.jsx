@@ -65,7 +65,7 @@ export default function DoctorProfilePage() {
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollToTop(window.scrollY > 600)
+      setShowScrollToTop(window.scrollY > 1100)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -511,7 +511,7 @@ export default function DoctorProfilePage() {
         {showScrollToTop && (
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-10 h-10 rounded-full shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center bg-white/5 backdrop-blur-md mb-2 border border-white/10 hover:bg-white/10"
+            className="w-10 h-10 rounded-full shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center bg-transparent mb-2 border border-[#98A2A644] hover:border-[#98A2A688]"
             style={{ color: '#98A2A6' }}
             aria-label="Volver arriba"
           >
