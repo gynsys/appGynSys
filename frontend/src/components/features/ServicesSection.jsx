@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { FiCalendar } from 'react-icons/fi'
 import { servicesService } from '../../services/servicesService'
 import { getImageUrl } from '../../lib/imageUtils'
 
 import SectionCard from '../common/SectionCard'
 
-export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', cardShadow = true, containerShadow = true, containerBgColor, sectionTitle, theme }) {
+export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', cardShadow = true, containerShadow = true, containerBgColor, sectionTitle, theme, onAppointmentClick }) {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -93,6 +94,18 @@ export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', 
             </div>
           )
         })}
+      </div>
+
+      {/* Appointment CTA - Strategic Placement at the end of services */}
+      <div className="mt-12 flex justify-center md:justify-end mr-4">
+        <button
+          onClick={onAppointmentClick}
+          className="px-10 py-4 rounded-xl font-bold text-lg shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-white group"
+          style={{ backgroundColor: primaryColor }}
+        >
+          <FiCalendar className="mr-3 w-6 h-6 group-hover:rotate-12 transition-transform" />
+          Agendar Cita
+        </button>
       </div>
     </SectionCard>
   )

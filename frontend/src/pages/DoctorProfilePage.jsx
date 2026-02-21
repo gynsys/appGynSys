@@ -395,11 +395,11 @@ export default function DoctorProfilePage() {
                   </h2>
 
                   {doctor.biografia ? (
-                    <div className="prose prose-lg dark:prose-invert text-gray-600/90 leading-relaxed text-justify font-medium"
+                    <div className="prose prose-lg dark:prose-invert text-gray-600/90 leading-relaxed text-justify font-medium mb-8"
                       dangerouslySetInnerHTML={{ __html: doctor.biografia }}
                     />
                   ) : (
-                    <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed text-justify font-medium relative z-10">
+                    <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed text-justify font-medium relative z-10 mb-8">
                       <p>
                         Soy <span className="text-gray-900 font-bold">{doctor.especialidad || 'Ginecólogo - Obstetra'}</span> graduada de la
                         <strong> {doctor.universidad || 'Universidad Central de Venezuela (UCV)'}</strong>, una de las instituciones más prestigiosas.
@@ -411,6 +411,19 @@ export default function DoctorProfilePage() {
                       <p>
                         Mi compromiso es escucharte y acompañarte, para que juntas construyamos el camino hacia tu bienestar pleno.
                       </p>
+                    </div>
+                  )}
+
+                  {/* Endometriosis Test CTA - Tactical Placement */}
+                  {isModuleEnabled('endometriosis_test') && (
+                    <div className="flex justify-center md:justify-end">
+                      <button
+                        onClick={() => setIsTestModalOpen(true)}
+                        className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
+                      >
+                        <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
+                        Realizar Test Endometriosis
+                      </button>
                     </div>
                   )}
                 </ScrollReveal>
@@ -444,6 +457,7 @@ export default function DoctorProfilePage() {
               containerBgColor={containerBgColor}
               sectionTitle={doctor.services_section_title || 'Nuestros Servicios'}
               theme={theme}
+              onAppointmentClick={() => setIsAppointmentModalOpen(true)}
             />
           </ScrollReveal>
         )}
