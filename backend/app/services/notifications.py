@@ -639,6 +639,41 @@ def _process_single_user(user_id: int, global_rules: Dict[str, NotificationRule]
         
         logger.info(f"Created {notifications_created} notifications for user {user.id}")
 
+def trigger_immediate_evaluation(db: Session, user_id: int):
+    """
+    Disparador para re-evaluación inmediata de notificaciones de un usuario.
+    Se usa ante eventos como: registro, cambios de ajustes, logs de ciclo, etc.
+    Limita la re-evaluación a la sesión actual para mayor reactividad.
+    """
+    try:
+        now = normalize_to_caracas()
+        today_date = now.date()
+        
+        # 1. Limpieza: Eliminar notificaciones PENDIENTES de hoy que puedan ser obsoletas
+        # No eliminamos las que ya se están procesando o enviando.
+        db.query(PendingNotification).filter(
+            PendingNotification.recipient_id == user_id,
+            PendingNotification.status.in_(["pending", "retrying"]),
+            func.date(PendingNotification.scheduled_for) == today_date
+        ).delete(synchronize_session=False)
+        db.commit()
+        
+        # 2. Re-evaluar: Usar la lógica central para regenerar
+        ttl_hash = int(time.time()) // 3600
+        global_rules = get_cached_global_rules(ttl_hash)
+        
+        if global_rules:
+            _process_single_user(user_id, global_rules, now, today_date)
+            logger.info(f"Immediate evaluation triggered and completed for user {user_id}")
+            
+            # 3. Forzar envío inmediato si hay algo programado para "ahora" o ya pasó
+            # Esto ayuda a que el usuario vea el resultado de su acción instantáneamente
+            deliver_pending_notifications()
+            
+    except Exception as e:
+        logger.error(f"Error triggering immediate evaluation for user {user_id}: {e}", exc_info=True)
+        db.rollback()
+
 def run_daily_evaluation():
     """
     Tarea diaria: Evalúa reglas globales para todos los usuarios.

@@ -18,6 +18,7 @@ from app.schemas.token import Token, PasswordResetRequest, PasswordResetConfirm
 from app.core.security import hash_password, create_access_token, verify_access_token, verify_password
 from app.core.email import send_welcome_email
 from app.tasks.email_tasks import send_cycle_user_reset_password_email, send_welcome_dual_task
+from app.services.notifications import trigger_immediate_evaluation
 from app.core.config import settings
 
 router = APIRouter()
@@ -184,6 +185,9 @@ async def register_cycle_user(
     
     # Enviar notificaciones de bienvenida (Email + Push) via Celery
     send_welcome_dual_task.delay(db_user.id, db_user.email, db_user.nombre_completo)
+    
+    # Evaluar y programar notificaciones del día actual inmediatamente
+    trigger_immediate_evaluation(db, db_user.id)
     
     return {"access_token": access_token, "token_type": "bearer"}
 

@@ -65,6 +65,7 @@ async def check_cycle_predictor_enabled(
     return True
 
 from app.cycle_predictor.logic import calculate_predictions
+from app.services.notifications import trigger_immediate_evaluation
 
 @router.get("/predictions", response_model=schemas.PredictionResponse, dependencies=[Depends(check_cycle_predictor_enabled)])
 def get_predictions(
@@ -235,6 +236,11 @@ def create_cycle(
     db.add(db_cycle)
     db.commit()
     db.refresh(db_cycle)
+    
+    # Re-evaluar notificaciones tras nuevo ciclo
+    if not isinstance(current_actor, Doctor):
+        trigger_immediate_evaluation(db, current_actor.id)
+        
     return db_cycle
 
 @router.put("/cycles/{cycle_id}", response_model=schemas.CycleLog, dependencies=[Depends(check_cycle_predictor_enabled)])
@@ -261,6 +267,11 @@ def update_cycle(
     
     db.commit()
     db.refresh(db_cycle)
+    
+    # Re-evaluar notificaciones tras cambio de ciclo
+    if not isinstance(current_actor, Doctor):
+        trigger_immediate_evaluation(db, current_actor.id)
+        
     return db_cycle
 
 @router.delete("/cycles/{cycle_id}", dependencies=[Depends(check_cycle_predictor_enabled)])
@@ -337,6 +348,11 @@ def create_symptom(
     db.add(db_symptom)
     db.commit()
     db.refresh(db_symptom)
+    
+    # Re-evaluar notificaciones tras reporte de síntomas
+    if not isinstance(current_actor, Doctor):
+        trigger_immediate_evaluation(db, current_actor.id)
+        
     return db_symptom
 
 @router.put("/symptoms/{symptom_id}", response_model=schemas.SymptomLog, dependencies=[Depends(check_cycle_predictor_enabled)])
@@ -360,6 +376,11 @@ def update_symptom(
         
     db.commit()
     db.refresh(db_symptom)
+    
+    # Re-evaluar tras cambio de síntomas
+    if not isinstance(current_actor, Doctor):
+        trigger_immediate_evaluation(db, current_actor.id)
+        
     return db_symptom
 
 # --- Notification Settings ---
@@ -433,6 +454,9 @@ def update_settings(
         
     db.commit()
     db.refresh(db_settings)
+    
+    # Re-evaluar notificaciones tras cambio de ajustes (ej: hora píldora)
+    trigger_immediate_evaluation(db, cycle_user_id)
     
     # Send confirmation email
     background_tasks.add_task(send_settings_updated_email, cycle_user_id)

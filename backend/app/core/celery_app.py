@@ -21,7 +21,7 @@ celery_app.conf.beat_schedule = {
     },
     "process-notification-queue": {
         "task": "app.tasks.notifications.process_notification_queue",
-        "schedule": crontab(minute='*/10'),
+        "schedule": crontab(minute='*/1'),
     },
 }
 # Auto-discover tasks and ensure modules are loaded
