@@ -562,18 +562,6 @@ export default function DoctorProfilePage() {
           </a>
         )}
 
-        {/* Floating Predictor Button - Restored for test as per user request */}
-        {isModuleEnabled('cycle_predictor') && (
-          <button
-            onClick={handleOpenCycle}
-            className="fixed bottom-24 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group overflow-hidden"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
-            <FiActivity className="w-6 h-6 text-white" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white animate-ping" />
-          </button>
-        )}
       </div>
 
       {/* Shared Modals */}
