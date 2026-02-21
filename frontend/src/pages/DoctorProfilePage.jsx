@@ -326,19 +326,6 @@ export default function DoctorProfilePage() {
         containerBgColor={containerBgColor}
       />
 
-      {/* Shared Modals - Rendered high for better stacking context on PC */}
-      <EndometriosisTestModal
-        isOpen={isTestModalOpen}
-        onClose={() => setIsTestModalOpen(false)}
-        primaryColor={primaryColor}
-        doctorName={doctor?.nombre_completo}
-        doctorId={doctor?.id}
-        doctorPhoto={doctor?.photo_url}
-        isDarkMode={isDarkTheme}
-        onSchedule={handleOpenAppointment}
-        onCycle={handleOpenCycle}
-      />
-
       {/* Admin Panel Button - Sticky Row */}
       {(isAuthenticated) && (
         <div className="sticky top-[72px] z-40 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
@@ -433,27 +420,18 @@ export default function DoctorProfilePage() {
                     </div>
                   )}
 
-                  {/* Action Buttons - Hero (PC ONLY) */}
-                  <div className="hidden md:flex flex-wrap justify-end gap-4 mt-8">
-                    {isModuleEnabled('endometriosis_test') && (
+                  {/* Endometriosis Test CTA - Tactical Placement (PC ONLY) */}
+                  {isModuleEnabled('endometriosis_test') && (
+                    <div className="hidden md:flex justify-end mt-8">
                       <button
                         onClick={handleOpenTest}
-                        className="px-6 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
+                        className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
                       >
                         <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
                         Realizar Test Endometriosis
                       </button>
-                    )}
-
-                    <button
-                      onClick={handleOpenAppointment}
-                      className="px-6 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-white"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      <Calendar className="mr-2 w-5 h-5" />
-                      Agendar Cita
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </ScrollReveal>
               </div>
             </div>
@@ -578,8 +556,18 @@ export default function DoctorProfilePage() {
         )}
       </div>
 
-
-      {/* Appointment Modal */}
+      {/* Shared Modals */}
+      <EndometriosisTestModal
+        isOpen={isTestModalOpen}
+        onClose={() => setIsTestModalOpen(false)}
+        primaryColor={primaryColor}
+        doctorName={doctor?.nombre_completo}
+        doctorId={doctor?.id}
+        doctorPhoto={doctor?.photo_url}
+        isDarkMode={isDarkTheme}
+        onSchedule={handleOpenAppointment}
+        onCycle={handleOpenCycle}
+      />
       <AppointmentModal
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}

@@ -182,8 +182,8 @@ export default function EndometriosisTestModal({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="fixed inset-0 bg-gray-900 bg-opacity-90 transition-opacity backdrop-blur-sm"
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 bg-black/75 transition-opacity"
                   aria-hidden="true"
                   onClick={handleClose}
                 />
