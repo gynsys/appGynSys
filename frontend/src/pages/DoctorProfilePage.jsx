@@ -346,13 +346,6 @@ export default function DoctorProfilePage() {
             title=""
           >
             <div className="max-w-6xl mx-auto">
-              {/* PWA Install Button - Solo, below the doctor's pointing gesture area */}
-              <div className="flex justify-center mb-10 px-4 md:hidden">
-                <div className="w-full max-w-sm">
-                  <PWAInstallButton isFloating={true} fullWidth={true} />
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 
                 {/* Doctor Photo with Animation */}

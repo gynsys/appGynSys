@@ -8,6 +8,7 @@ import { useAuthStore } from '../../store/authStore'
 import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
 
 import EndometriosisTestModal from '../features/EndometriosisTestModal'
+import PWAInstallButton from '../common/PWAInstallButton'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -83,28 +84,35 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               </div>
             </div>
 
-            {/* Second Row (Mobile Only): Action Buttons */}
-            <div className="flex md:hidden w-full items-center justify-between space-x-2 pb-1">
-              {/* Cycle Predictor Button */}
-              <button
-                onClick={() => navigate('/cycle/dashboard')}
-                className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
-                style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
-              >
-                <FiActivity className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">Mi ciclo</span>
-              </button>
-
-              {/* Endometriosis Test Button (if enabled) */}
-              {showEndoTest && (
+            {/* Second Row (Mobile Only): Action Buttons Hub */}
+            <div className="flex md:hidden w-full flex-col space-y-2 pb-2 px-1">
+              <div className="flex w-full items-center justify-between space-x-2">
+                {/* Cycle Predictor Button */}
                 <button
-                  onClick={() => setIsTestModalOpen(true)}
-                  className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors bg-pink-50 dark:bg-pink-900/20"
-                  style={{ borderColor: 'rgb(236 72 153 / 0.3)', color: 'rgb(236 72 153)' }}
+                  onClick={() => navigate('/cycle/dashboard')}
+                  className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
+                  style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
                 >
-                  <span className="text-xs font-medium">Test Endometriosis</span>
+                  <FiActivity className="w-3.5 h-3.5" />
+                  <span className="text-xs font-medium">Mi ciclo</span>
                 </button>
-              )}
+
+                {/* Endometriosis Test Button (if enabled) */}
+                {showEndoTest && (
+                  <button
+                    onClick={() => setIsTestModalOpen(true)}
+                    className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors bg-pink-50 dark:bg-pink-900/20"
+                    style={{ borderColor: 'rgb(236 72 153 / 0.3)', color: 'rgb(236 72 153)' }}
+                  >
+                    <span className="text-xs font-medium">Test Endometriosis</span>
+                  </button>
+                )}
+              </div>
+
+              {/* PWA Install Button - Full Width below other buttons */}
+              <div className="w-full">
+                <PWAInstallButton isFloating={true} fullWidth={true} />
+              </div>
             </div>
 
 

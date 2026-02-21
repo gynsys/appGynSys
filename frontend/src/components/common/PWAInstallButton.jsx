@@ -8,35 +8,34 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) {
-            // Detectar iOS
+            // Detectar Plataforma
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const isChrome = /Chrome/.test(navigator.userAgent);
 
             if (isIOS) {
                 toast.info('iOS: Pulsa "Compartir" y luego "Añadir a pantalla de inicio" ✨');
-            } else if (window.chrome || (navigator.userAgent.indexOf("Chrome") !== -1)) {
-                toast.info('¡Casi listo! Busca el icono de instalación en la barra de tu navegador 🛠️');
+            } else if (isAndroid && isChrome) {
+                // Si estamos en Android Chrome y no hay prompt, puede ser que ya se intentó o el navegador lo bloquea temporalmente
+                toast.info('Pulsa los 3 puntos (⋮) y selecciona "Instalar aplicación" 📲');
             } else {
-                toast.info('Para instalar: usa Chrome en Android o Safari en iOS 📲');
+                toast.info('Usa Chrome en Android o Safari en iOS para instalar la App 🛠️');
             }
             return;
         }
 
         try {
-            // Mostrar el prompt nativo
+            // Mostrar el prompt nativo directamente
             deferredPrompt.prompt();
-
-            // Esperar la respuesta del usuario
             const { outcome } = await deferredPrompt.userChoice;
 
             if (outcome === 'accepted') {
-                toast.success('¡Gracias por instalar GynSys!');
+                toast.success('¡Instalación iniciada! 🎉');
             }
-
-            // Limpiar el prompt global
             setDeferredPrompt(null);
         } catch (err) {
-            console.error('Error durante la instalación:', err);
-            toast.error('Hubo un error al intentar instalar la aplicación.');
+            console.error('Error PWA:', err);
+            toast.error('Usa el menú de tu navegador para instalar 🛠️');
         }
     };
 
