@@ -62,6 +62,11 @@ export default function DoctorProfilePage() {
   const [isPreconsultaOpen, setIsPreconsultaOpen] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
 
+  // Modal Handlers
+  const handleOpenTest = () => setIsTestModalOpen(true)
+  const handleOpenAppointment = () => setIsAppointmentModalOpen(true)
+  const handleOpenCycle = () => setIsCycleModalOpen(true)
+
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -314,11 +319,24 @@ export default function DoctorProfilePage() {
       <Navbar
         doctor={doctor}
         primaryColor={primaryColor}
-        onAppointmentClick={() => setIsAppointmentModalOpen(true)}
-        onTestClick={() => setIsTestModalOpen(true)}
-        onCycleClick={() => setIsCycleModalOpen(true)}
+        onAppointmentClick={handleOpenAppointment}
+        onTestClick={handleOpenTest}
+        onCycleClick={handleOpenCycle}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
+      />
+
+      {/* Shared Modals - Rendered high for better stacking context on PC */}
+      <EndometriosisTestModal
+        isOpen={isTestModalOpen}
+        onClose={() => setIsTestModalOpen(false)}
+        primaryColor={primaryColor}
+        doctorName={doctor?.nombre_completo}
+        doctorId={doctor?.id}
+        doctorPhoto={doctor?.photo_url}
+        isDarkMode={isDarkTheme}
+        onSchedule={handleOpenAppointment}
+        onCycle={handleOpenCycle}
       />
 
       {/* Admin Panel Button - Sticky Row */}
@@ -415,18 +433,27 @@ export default function DoctorProfilePage() {
                     </div>
                   )}
 
-                  {/* Endometriosis Test CTA - Tactical Placement (PC ONLY) */}
-                  {isModuleEnabled('endometriosis_test') && (
-                    <div className="hidden md:flex justify-end mt-8">
+                  {/* Action Buttons - Hero (PC ONLY) */}
+                  <div className="hidden md:flex flex-wrap justify-end gap-4 mt-8">
+                    {isModuleEnabled('endometriosis_test') && (
                       <button
-                        onClick={() => setIsTestModalOpen(true)}
-                        className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
+                        onClick={handleOpenTest}
+                        className="px-6 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
                       >
                         <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
                         Realizar Test Endometriosis
                       </button>
-                    </div>
-                  )}
+                    )}
+
+                    <button
+                      onClick={handleOpenAppointment}
+                      className="px-6 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-white"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <Calendar className="mr-2 w-5 h-5" />
+                      Agendar Cita
+                    </button>
+                  </div>
                 </ScrollReveal>
               </div>
             </div>
@@ -551,18 +578,6 @@ export default function DoctorProfilePage() {
         )}
       </div>
 
-      {/* Endometriosis Test Modal - Shared for Hero and Navbar buttons */}
-      <EndometriosisTestModal
-        isOpen={isTestModalOpen}
-        onClose={() => setIsTestModalOpen(false)}
-        primaryColor={primaryColor}
-        doctorName={doctor?.nombre_completo}
-        doctorId={doctor?.id}
-        doctorPhoto={doctor?.photo_url}
-        isDarkMode={isDarkTheme}
-        onSchedule={() => setIsAppointmentModalOpen(true)}
-        onCycle={() => setIsCycleModalOpen(true)}
-      />
 
       {/* Appointment Modal */}
       <AppointmentModal
