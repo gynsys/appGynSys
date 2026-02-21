@@ -32,6 +32,7 @@ import LoginModal from '../components/features/LoginModal'
 import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
 import PWAInstallButton from '../components/common/PWAInstallButton'
+import CycleMarketingSection from '../components/features/CycleMarketingSection'
 
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
@@ -482,6 +483,15 @@ export default function DoctorProfilePage() {
               theme={theme}
             />
           </ScrollReveal>
+        )}
+
+        {/* Cycle Marketing Section - SEO & Conversion */}
+        {isModuleEnabled('cycle_predictor') && (
+          <CycleMarketingSection
+            primaryColor={primaryColor}
+            containerBgColor={containerBgColor}
+            theme={theme}
+          />
         )}
 
         {/* Recommendations Section */}
