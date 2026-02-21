@@ -470,17 +470,25 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
 def get_cached_global_rules(ttl_hash: int = 0) -> Dict[str, NotificationRule]:
     """
     Cache de reglas globales con TTL de 1 hora.
-    El ttl_hash fuerza el refresco cada hora.
+    Desvincula los objetos de la sesión para evitar DetachedInstanceError.
     """
     with session_scope() as db:
-        rules = {
-            r.notification_type: r 
-            for r in db.query(NotificationRule).filter(
-                NotificationRule.tenant_id == None, 
-                NotificationRule.is_active == True
-            ).all()
-        }
-        logger.info(f"Loaded {len(rules)} global rules into cache")
+        # Cargamos todas las columnas necesarias explícitamente si fuera necesario, 
+        # pero expunge() es suficiente para columnas simples.
+        rules_list = db.query(NotificationRule).filter(
+            NotificationRule.tenant_id == None, 
+            NotificationRule.is_active == True
+        ).all()
+        
+        # Desvincular de la sesión y quitar el estado de 'expirado' para que no intenten refrescarse
+        for r in rules_list:
+            db.expunge(r)
+            # Marcar como 'permanente' en memoria (sin sesión)
+            from sqlalchemy.orm import make_transient
+            make_transient(r)
+            
+        rules = {r.notification_type: r for r in rules_list}
+        logger.info(f"Loaded {len(rules)} global rules into cache (transient)")
         return rules
 
 def _process_single_user(user_id: int, global_rules: Dict[str, NotificationRule], now: datetime, today_date: date):
@@ -763,7 +771,11 @@ def deliver_pending_notifications():
                 try:
                     # Recargar notificación en nueva sesión
                     with session_scope() as db:
-                        item = db.query(PendingNotification).get(pid)
+                        from sqlalchemy.orm import joinedload
+                        item = db.query(PendingNotification).options(
+                            joinedload(PendingNotification.rule)
+                        ).filter_by(id=pid).first()
+                        
                         if not item or item.status != "processing":
                             continue
                         
