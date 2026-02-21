@@ -65,7 +65,7 @@ export default function DoctorProfilePage() {
   // Modal Handlers
   const handleOpenTest = () => setIsTestModalOpen(true)
   const handleOpenAppointment = () => setIsAppointmentModalOpen(true)
-  const handleOpenCycle = () => setIsCycleModalOpen(true)
+  const handleOpenCycle = () => navigate('/cycle/dashboard')
 
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
   useEffect(() => {
