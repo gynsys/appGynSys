@@ -57,7 +57,7 @@ export default function CertificationsSection({ primaryColor, certifications = [
                         </div>
                     ))}
                 </div>
-            </div >
-        </SectionCard >
+            </div>
+        </SectionCard>
     );
 }

@@ -24,7 +24,6 @@ import FAQSection from '../components/features/FAQSection'
 import CertificationsSection from '../components/features/CertificationsSection'
 import SectionCard from '../components/common/SectionCard'
 import SocialLinks from '../components/common/SocialLinks'
-import SocialLinks from '../components/common/SocialLinks'
 
 import { getImageUrl } from '../lib/imageUtils'
 
