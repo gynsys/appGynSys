@@ -37,15 +37,15 @@ export default function BlogSection({ doctor, primaryColor, cardShadow = true, c
       scrollMargin="scroll-mt-32"
       containerBgColor={containerBgColor}
       theme={theme}
+      title="Contenido Destacado"
     >
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Contenido Destacado</h2>
+      <div className="flex justify-end mb-6 -mt-4">
         <Link
           to={`/dr/${doctor.slug_url}/blog`}
-          className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition-colors"
+          className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center transition-colors text-sm uppercase tracking-wider"
           style={{ color: primaryColor }}
         >
-          Ver todo <span aria-hidden="true" className="ml-1">&rarr;</span>
+          Ver todo el blog <span aria-hidden="true" className="ml-1">&rarr;</span>
         </Link>
       </div>
 

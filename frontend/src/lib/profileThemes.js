@@ -12,7 +12,7 @@ export const PROFILE_THEMES = {
         name: 'Consultorio Clínico',
         container: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl',
         button: 'shadow-none border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700',
-        title: 'font-semibold tracking-normal uppercase text-sm text-gray-500 mb-4',
+        title: 'font-semibold tracking-normal',
         decorator: 'none'
     },
     soft: {
@@ -28,7 +28,7 @@ export const PROFILE_THEMES = {
         name: 'Executive Dark',
         container: 'bg-gray-950 border border-gray-800 shadow-2xl shadow-black/50 rounded-2xl',
         button: 'border border-gray-700 hover:border-gray-500 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]',
-        title: 'font-bold tracking-tighter uppercase',
+        title: 'font-bold tracking-tighter',
         decorator: 'neon'
     }
 }

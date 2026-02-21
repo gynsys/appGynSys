@@ -19,6 +19,7 @@ export default function SectionCard({
     scrollMargin = 'scroll-mt-24',
     children,
     title,
+    subtitle,
     theme = 'glass'
 }) {
     const themeConfig = getThemeClasses(theme)
@@ -66,11 +67,18 @@ export default function SectionCard({
                 )}
 
                 {/* Optional Title within component to ensure consistent styling */}
-                {title && (
-                    <h2 className={`text-3xl md:text-4xl text-gray-900 dark:text-white mb-10 text-center relative z-10 ${themeConfig.title || 'font-bold'}`}>
-                        {title}
-                    </h2>
-                )}
+                <div className="text-center mb-12 relative z-10">
+                    {title && (
+                        <h2 className={`text-4xl md:text-5xl text-gray-900 dark:text-white mb-4 ${themeConfig.title || 'font-bold'}`}>
+                            {title}
+                        </h2>
+                    )}
+                    {subtitle && (
+                        <p className="max-w-3xl mx-auto text-gray-600 dark:text-gray-400 text-lg md:text-xl font-medium">
+                            {subtitle}
+                        </p>
+                    )}
+                </div>
 
                 {children}
             </div>

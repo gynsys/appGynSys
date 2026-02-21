@@ -106,8 +106,8 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
         containerBgColor={containerBgColor}
         containerShadow={containerShadow}
         theme={theme}
+        title="Galería de Trabajo"
       >
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Galería</h2>
         <div className="flex justify-center py-8">
           {/* Height placeholder to prevent layout shift */}
           <div className="w-full h-[56vw] md:h-[40vw] lg:h-[30vw] max-h-[720px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
@@ -126,11 +126,8 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
       containerShadow={containerShadow}
       className="w-full"
       theme={theme}
+      title="Galería de Trabajo"
     >
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Galería de Trabajo</h2>
-
-      </div>
 
       {images.length === 0 ? (
         <div className="text-center py-12">

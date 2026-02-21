@@ -94,18 +94,14 @@ export default function RecommendationsCarousel({ doctorSlug, primaryColor = '#4
     // >= 8: Marquee Infinite Scroll
 
     return (
-        <section className="py-12 mb-16 bg-transparent border border-gray-100 dark:border-gray-800 rounded-3xl">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h2 className={`text-3xl font-bold ${textColor} mb-2`}>
-                        Mis Recomendaciones
-                    </h2>
-                    <p className={`${subTextColor}`}>
-                        Productos y recursos que seleccioné pensando en tu bienestar
-                    </p>
-                </div>
+        <SectionCard
+            id="recomendaciones"
+            title="Mis Recomendaciones"
+            subtitle="Productos y recursos que seleccioné pensando en tu bienestar"
+            theme={isDarkMode ? 'dark' : 'glass'}
+            className="mb-16"
+        >
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
 
                 {/* Categories Tabs */}
                 {categories.length > 0 && (
@@ -330,7 +326,7 @@ export default function RecommendationsCarousel({ doctorSlug, primaryColor = '#4
                     </Modal>
                 )}
             </div>
-        </section>
+        </SectionCard>
     )
 }
 
