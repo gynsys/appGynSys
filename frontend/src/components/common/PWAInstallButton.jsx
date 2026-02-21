@@ -2,7 +2,7 @@ import { FiDownload } from 'react-icons/fi';
 import { useToastStore } from '../../store/toastStore';
 import usePWAStore from '../../store/pwaStore';
 
-const PWAInstallButton = ({ isFloating = false }) => {
+const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     const { deferredPrompt, isStandalone, setDeferredPrompt } = usePWAStore();
     const toast = useToastStore();
 
@@ -48,7 +48,7 @@ const PWAInstallButton = ({ isFloating = false }) => {
         return (
             <button
                 onClick={handleInstallClick}
-                className="px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 group"
+                className={`${fullWidth ? 'w-full' : ''} px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 group`}
                 title="Descargar App"
             >
                 <FiDownload className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -60,11 +60,11 @@ const PWAInstallButton = ({ isFloating = false }) => {
     return (
         <button
             onClick={handleInstallClick}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold transition-all shadow-md hover:shadow-lg group"
+            className={`${fullWidth ? 'w-full justify-center' : 'space-x-2'} flex items-center px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold transition-all shadow-md hover:shadow-lg group`}
             title="Instalar GynSys"
         >
             <FiDownload className="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">Descargar App</span>
+            <span className={fullWidth ? '' : 'hidden sm:inline'}>Descargar App</span>
         </button>
     );
 };

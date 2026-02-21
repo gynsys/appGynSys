@@ -312,7 +312,10 @@ export default function DoctorProfilePage() {
       {(isAuthenticated || true) && (
         <div className="sticky top-[72px] z-40 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
           <div className="flex items-center justify-end space-x-3 pointer-events-auto">
-            <PWAInstallButton isFloating={true} />
+            {/* Oculto en móvil, visible en desktop */}
+            <div className="hidden md:block">
+              <PWAInstallButton isFloating={true} />
+            </div>
             {isAuthenticated && (
               <button
                 onClick={() => handleProtectedAction('/dashboard')}
@@ -514,38 +517,43 @@ export default function DoctorProfilePage() {
 
 
 
+        {/* Mobile PWA Install - Option 1: Full Width below main actions */}
+        <div className="w-full md:hidden mt-2">
+          <PWAInstallButton isFloating={true} fullWidth={true} />
+        </div>
+
         {/* Cycle Predictor Button */}
         {isModuleEnabled('cycle_predictor') && (
           <button
             onClick={() => setIsCycleModalOpen(true)}
-            className="px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white"
+            className="flex-1 md:flex-none px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white"
             style={{
               color: isDarkTheme ? '#111827' : primaryColor,
               border: isDarkTheme ? '2px solid #111827' : `2px solid ${primaryColor}`
             }}
           >
             <FiActivity className="mr-2 w-4 h-4" />
-            Predictor de Ciclos
+            <span className="md:inline">Mi ciclo</span>
           </button>
         )}
 
         {isModuleEnabled('endometriosis_test') && (
           <button
             onClick={() => setIsTestModalOpen(true)}
-            className="px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white"
+            className="flex-1 md:flex-none px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white"
             style={{
               color: isDarkTheme ? '#111827' : primaryColor,
               border: isDarkTheme ? '2px solid #111827' : `2px solid ${primaryColor}`
             }}
           >
             <FiClipboard className="mr-2 w-4 h-4" />
-            Test Endometriosis
+            <span className="md:inline">Test Endometriosis</span>
           </button>
         )}
 
         <button
           onClick={() => setIsAppointmentModalOpen(true)}
-          className="px-4 py-2 rounded-full font-medium text-sm text-white shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center animate-heartbeat"
+          className="w-full md:w-auto px-4 py-2 rounded-full font-medium text-sm text-white shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center animate-heartbeat"
           style={{
             backgroundColor: primaryColor,
             color: 'white' // Keep text white for contrast on primary color
