@@ -82,36 +82,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               </div>
             </div>
 
-            {/* Second Row (Mobile Only): Action Buttons Hub */}
-            <div className="flex md:hidden w-full flex-col space-y-2 pb-2 px-1">
-              <div className="flex w-full items-center justify-between space-x-2">
-                {/* Cycle Predictor Button */}
-                <button
-                  onClick={onCycleClick}
-                  className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
-                  style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
-                >
-                  <FiActivity className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">Mi ciclo</span>
-                </button>
 
-                {/* Endometriosis Test Button (if enabled) */}
-                {showEndoTest && (
-                  <button
-                    onClick={onTestClick}
-                    className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors bg-pink-50 dark:bg-pink-900/20"
-                    style={{ borderColor: 'rgb(236 72 153 / 0.3)', color: 'rgb(236 72 153)' }}
-                  >
-                    <span className="text-xs font-medium">Test Endometriosis</span>
-                  </button>
-                )}
-              </div>
-
-              {/* PWA Install Button - Full Width below other buttons */}
-              <div className="w-full">
-                <PWAInstallButton isFloating={true} fullWidth={true} />
-              </div>
-            </div>
 
 
             {/* Desktop Menu */}
@@ -260,7 +231,16 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     Iniciar Sesión
                   </button>
                 )}
-                {/* Blog removed - now in bottom nav */}
+                <button
+                  onClick={() => {
+                    onCycleClick()
+                    setIsMenuOpen(false)
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Mi Ciclo
+                </button>
+
                 {showEndoTest && (
                   <button
                     onClick={() => {

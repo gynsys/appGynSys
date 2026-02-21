@@ -24,7 +24,7 @@ import FAQSection from '../components/features/FAQSection'
 import CertificationsSection from '../components/features/CertificationsSection'
 import SectionCard from '../components/common/SectionCard'
 import SocialLinks from '../components/common/SocialLinks'
-import { BottomNav, NavIcons } from '../components/common/BottomNav'
+import SocialLinks from '../components/common/SocialLinks'
 
 import { getImageUrl } from '../lib/imageUtils'
 
@@ -282,33 +282,7 @@ export default function DoctorProfilePage() {
     setIsAppointmentModalOpen(true)
   }
 
-  // Bottom nav configuration
-  const navItems = [
-    {
-      icon: <NavIcons.Home />,
-      label: 'Inicio',
-      action: scrollToTop,
-      isActive: window.scrollY < 100
-    },
-    {
-      icon: <NavIcons.WhatsApp />,
-      label: 'WhatsApp',
-      action: openWhatsApp,
-      isActive: false
-    },
-    {
-      icon: <NavIcons.Calendar />,
-      label: 'Agendar',
-      action: navigateToBooking,
-      isActive: isAppointmentModalOpen
-    },
-    {
-      icon: <NavIcons.Blog />,
-      label: 'Blog',
-      action: () => navigate(`/dr/${slug}/blog`),
-      isActive: false
-    }
-  ]
+
 
   return (
     <div
@@ -525,8 +499,8 @@ export default function DoctorProfilePage() {
         )}
       </main>
 
-      {/* Floating Action Buttons - Hidden on Mobile (using Bottom Nav instead) */}
-      <div className="hidden md:flex fixed bottom-6 right-6 flex-col space-y-3 z-40 items-center">
+      {/* Floating Action Buttons */}
+      <div className="flex fixed bottom-6 right-6 flex-col space-y-3 z-40 items-center">
         {/* Back to Top Button - Smooth fade transition and minimalist design */}
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -629,8 +603,7 @@ export default function DoctorProfilePage() {
       />
 
 
-      {/* Bottom Navigation - Mobile Only */}
-      <BottomNav items={navItems} theme={primaryColor} />
+
 
     </div >
   )
