@@ -2,7 +2,7 @@ import { FiDownload } from 'react-icons/fi';
 import { useToastStore } from '../../store/toastStore';
 import usePWAStore from '../../store/pwaStore';
 
-const PWAInstallButton = () => {
+const PWAInstallButton = ({ isFloating = false }) => {
     const { deferredPrompt, isStandalone, setDeferredPrompt } = usePWAStore();
     const toast = useToastStore();
 
@@ -43,6 +43,19 @@ const PWAInstallButton = () => {
 
     // No mostrar si ya está instalada
     if (isStandalone) return null;
+
+    if (isFloating) {
+        return (
+            <button
+                onClick={handleInstallClick}
+                className="px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 group"
+                title="Descargar App"
+            >
+                <FiDownload className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
+                Descargar App
+            </button>
+        );
+    }
 
     return (
         <button

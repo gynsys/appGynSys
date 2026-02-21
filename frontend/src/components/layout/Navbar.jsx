@@ -107,23 +107,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               )}
             </div>
 
-            {/* Desktop Only Cycle Button (hidden on mobile, shown in flex row on desktop) */}
-            <div className="hidden md:flex items-center">
-              <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    navigate('/cycle/dashboard')
-                  } else {
-                    setIsCycleModalOpen(true)
-                  }
-                }}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
-                style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
-              >
-                <FiActivity className="w-4 h-4" />
-                <span className="text-sm font-medium">Mi ciclo</span>
-              </button>
-            </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
