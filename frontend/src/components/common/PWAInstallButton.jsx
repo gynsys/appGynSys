@@ -12,12 +12,11 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
 
             if (isIOS) {
-                toast.info('Para instalar: presiona el icono de compartir y luego "Añadir a pantalla de inicio"');
+                toast.info('iOS: Pulsa "Compartir" y luego "Añadir a pantalla de inicio" ✨');
             } else if (window.chrome || (navigator.userAgent.indexOf("Chrome") !== -1)) {
-                // Caso Chrome Desktop donde el evento antes pudo fallar o fue ignorado
-                toast.info('Busca el icono de "Instalar" (computadora con flecha) en la barra de direcciones de tu navegador.');
+                toast.info('¡Casi listo! Busca el icono de instalación en la barra de tu navegador 🛠️');
             } else {
-                toast.info('Instalación no soportada o ya instalada. Intenta con Chrome en Android o Safari en iOS.');
+                toast.info('Para instalar: usa Chrome en Android o Safari en iOS 📲');
             }
             return;
         }
@@ -48,8 +47,8 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         return (
             <button
                 onClick={handleInstallClick}
-                className={`${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-sm shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-indigo-600 text-white hover:bg-indigo-700 group ring-4 ring-indigo-500/20`}
-                title="Instalar App Now"
+                className={`${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-white/10 dark:bg-gray-800/20 backdrop-blur-md border border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white group`}
+                title="Instalar App"
             >
                 <FiDownload className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
                 Instalar App
@@ -60,7 +59,7 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     return (
         <button
             onClick={handleInstallClick}
-            className={`${fullWidth ? 'w-full justify-center px-6 py-3' : 'space-x-2 px-4 py-2'} flex items-center rounded-xl bg-indigo-600 text-white font-bold transition-all shadow-xl hover:bg-indigo-700 active:scale-95 group`}
+            className={`${fullWidth ? 'w-full justify-center px-6 py-3' : 'space-x-2 px-4 py-2'} flex items-center rounded-xl bg-white/10 dark:bg-gray-800/20 backdrop-blur-md border border-indigo-500/40 text-indigo-600 dark:text-indigo-400 font-bold transition-all shadow-xl hover:bg-indigo-600 hover:text-white active:scale-95 group`}
             title="Instalar App"
         >
             <FiDownload className="w-5 h-5 group-hover:scale-110 transition-transform" />
