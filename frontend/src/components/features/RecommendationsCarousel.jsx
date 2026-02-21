@@ -4,6 +4,7 @@ import { FiChevronLeft, FiChevronRight, FiExternalLink, FiShoppingBag, FiInfo } 
 import { FaAmazon, FaPaypal, FaInstagram, FaYoutube, FaWhatsapp } from 'react-icons/fa'
 import { recommendationService } from '../../services/recommendationService'
 import Modal from '../common/Modal'
+import SectionCard from '../common/SectionCard'
 
 export default function RecommendationsCarousel({ doctorSlug, primaryColor = '#4F46E5', isDarkMode }) {
     const [items, setItems] = useState([])
