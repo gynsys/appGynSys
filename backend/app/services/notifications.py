@@ -12,6 +12,7 @@ from enum import Enum
 from typing import List, Optional, Dict, Any, Tuple
 from contextlib import contextmanager
 from functools import lru_cache
+import threading
 
 import pytz
 from sqlalchemy.orm import Session, joinedload, sessionmaker
@@ -424,43 +425,53 @@ def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNo
 # ==============================================================================
 
 def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tuple[bool, Optional[str], Optional[str]]:
-    """Lógica de envío dual: Push -> Email failover, con circuit breaker."""
+    """Lógica de envío dual REAL: Envía por ambos canales (Push + Email) si el canal es 'dual'."""
     user = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
     if not user:
         return False, None, "User not found"
     
+    channel_pref = item.channel or "dual"
     push_success = False
-    error_msg = None
-    channel_used = None
+    email_success = False
+    errors = []
+    channels_sent = []
     
-    # Intentar push si el circuit breaker lo permite
-    if push_circuit.can_execute():
-        try:
-            push_body = item.message_text or item.subject
-            _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
-            push_success = True
-            push_circuit.record_success()
-            channel_used = "push"
-        except Exception as e:
-            push_circuit.record_failure()
-            error_msg = f"Push error: {str(e)}"
-            log_notification_event("push_failure", user.id, item.rule.notification_type if item.rule else "unknown", {"error": str(e)})
-    else:
-        logger.warning(f"Circuit breaker OPEN, skipping push for user {user.id}")
-        error_msg = "Circuit breaker OPEN"
+    # 1. INTENTAR PUSH (Si es dual o push)
+    if channel_pref in ("dual", "push"):
+        if push_circuit.can_execute():
+            try:
+                push_body = item.message_text or item.subject
+                _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
+                push_success = True
+                push_circuit.record_success()
+                channels_sent.append("push")
+            except Exception as e:
+                push_circuit.record_failure()
+                errors.append(f"Push error: {str(e)}")
+                log_notification_event("push_failure", user.id, item.rule.notification_type if item.rule else "unknown", {"error": str(e)})
+        else:
+            logger.warning(f"Circuit breaker OPEN, skipping push for user {user.id}")
+            errors.append("Push circuit breaker OPEN")
     
-    # Failover a email (solo si push falló o no se intentó)
-    if not push_success:
+    # 2. INTENTAR EMAIL (Si es dual o email)
+    # NOTA: Ya no es un failover. Si es dual, enviamos ambos para asegurar alcance.
+    if channel_pref in ("dual", "email"):
         if user.email:
             try:
                 _send_integrated_email(user.email, item.subject, item.body)
-                return True, "email", None
+                email_success = True
+                channels_sent.append("email")
             except Exception as e:
-                return False, "email", str(e)
+                errors.append(f"Email error: {str(e)}")
         else:
-            return False, None, "No email address and push failed"
+            errors.append("No email address found")
     
-    return True, channel_used, None
+    # Resultado final: Éxito si al menos uno funcionó (o ambos)
+    success = push_success or email_success
+    final_channel = "+".join(channels_sent) if channels_sent else None
+    final_error = "; ".join(errors) if errors else None
+    
+    return success, final_channel, final_error
 
 # ==============================================================================
 # 5. TAREAS PROGRAMADAS (PROCESSOR)
