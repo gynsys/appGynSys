@@ -10,12 +10,10 @@ import CyclePredictorModal from '../cycle-predictor/CyclePredictorModal'
 import EndometriosisTestModal from '../features/EndometriosisTestModal'
 import PWAInstallButton from '../common/PWAInstallButton'
 
-export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, containerShadow = true, containerBgColor }) {
+export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
-  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const { isAuthenticated, user, logout } = useAuthStore()
   const navigate = useNavigate()
 
@@ -89,7 +87,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               <div className="flex w-full items-center justify-between space-x-2">
                 {/* Cycle Predictor Button */}
                 <button
-                  onClick={() => navigate('/cycle/dashboard')}
+                  onClick={onCycleClick}
                   className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors"
                   style={{ borderColor: `${primaryColor}33`, color: primaryColor }}
                 >
@@ -100,7 +98,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 {/* Endometriosis Test Button (if enabled) */}
                 {showEndoTest && (
                   <button
-                    onClick={() => setIsTestModalOpen(true)}
+                    onClick={onTestClick}
                     className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg border-2 transition-colors bg-pink-50 dark:bg-pink-900/20"
                     style={{ borderColor: 'rgb(236 72 153 / 0.3)', color: 'rgb(236 72 153)' }}
                   >

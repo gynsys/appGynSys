@@ -49,7 +49,7 @@ export default function DoctorProfilePage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
-  const [isHeroTestOpen, setIsHeroTestOpen] = useState(false)
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const [isOnlineConsultationModalOpen, setIsOnlineConsultationModalOpen] = useState(false)
   const [onlineSettings, setOnlineSettings] = useState(null)
@@ -253,7 +253,7 @@ export default function DoctorProfilePage() {
     }
   }
 
-  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isHeroTestOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
+  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
 
   // Bottom Navigation Handlers
   const scrollToTop = () => {
@@ -315,7 +315,8 @@ export default function DoctorProfilePage() {
         doctor={doctor}
         primaryColor={primaryColor}
         onAppointmentClick={() => setIsAppointmentModalOpen(true)}
-        onTestClick={() => setIsHeroTestOpen(true)}
+        onTestClick={() => setIsTestModalOpen(true)}
+        onCycleClick={() => setIsCycleModalOpen(true)}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
@@ -419,7 +420,7 @@ export default function DoctorProfilePage() {
                   {isModuleEnabled('endometriosis_test') && (
                     <div className="hidden md:flex justify-end mt-8">
                       <button
-                        onClick={() => setIsHeroTestOpen(true)}
+                        onClick={() => setIsTestModalOpen(true)}
                         className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
                       >
                         <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
@@ -532,18 +533,6 @@ export default function DoctorProfilePage() {
           <FiArrowUp className="w-5 h-5 opacity-70" />
         </button>
 
-        {/* Desktop Only Appointment Button */}
-        <button
-          onClick={() => setIsAppointmentModalOpen(true)}
-          className="px-4 py-2 rounded-full font-medium text-sm text-white shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center animate-heartbeat"
-          style={{
-            backgroundColor: primaryColor,
-            color: 'white'
-          }}
-        >
-          <FiCalendar className="mr-2 w-4 h-4" />
-          Agendar Cita
-        </button>
 
         {/* WhatsApp Button - Desktop */}
         {doctor.whatsapp_url && (
@@ -563,12 +552,12 @@ export default function DoctorProfilePage() {
         )}
       </div>
 
-      {/* Endometriosis Test Modal - Shared for Hero button */}
+      {/* Endometriosis Test Modal - Shared for Hero and Navbar buttons */}
       {
         isModuleEnabled('endometriosis_test') && (
           <EndometriosisTestModal
-            isOpen={isHeroTestOpen}
-            onClose={() => setIsHeroTestOpen(false)}
+            isOpen={isTestModalOpen}
+            onClose={() => setIsTestModalOpen(false)}
             primaryColor={primaryColor}
             doctorName={doctor?.nombre_completo}
             doctorId={doctor?.id}
