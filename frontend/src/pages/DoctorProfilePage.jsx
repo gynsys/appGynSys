@@ -308,10 +308,10 @@ export default function DoctorProfilePage() {
         containerBgColor={containerBgColor}
       />
 
-      {/* Admin Panel Button & PWA Install - Relocated from Navbar */}
+      {/* Admin Panel Button & PWA Install - Sticky Row */}
       {(isAuthenticated || true) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="flex items-center justify-end space-x-3">
+        <div className="sticky top-[72px] z-40 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
+          <div className="flex items-center justify-end space-x-3 pointer-events-auto">
             <PWAInstallButton isFloating={true} />
             {isAuthenticated && (
               <button
