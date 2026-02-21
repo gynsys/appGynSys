@@ -45,7 +45,7 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     };
 
     // Estilo base para ambos estados
-    const baseClasses = `${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center backdrop-blur-md border`;
+    const baseClasses = `${fullWidth ? 'w-full px-2 py-1.5' : 'px-4 py-1.5'} rounded-lg font-medium text-xs shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center backdrop-blur-md border`;
     const activeStyle = "bg-white/10 dark:bg-gray-800/20 border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white";
     const installedStyle = "bg-green-500/10 border-green-500/40 text-green-600 dark:text-green-400 cursor-default";
 
