@@ -643,7 +643,7 @@ export default function DoctorProfilePage() {
 
 
       {/* Bottom Navigation - Mobile Only */}
-      <BottomNav items={navItems} theme={primaryColor} />
+      <BottomNav items={navItems} theme={primaryColor} className="md:hidden" />
 
     </div >
   )
