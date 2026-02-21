@@ -12,7 +12,7 @@ export default function CertificationsSection({ primaryColor, certifications = [
             id="certificaciones"
             containerBgColor={containerBgColor}
             theme={theme}
-        // No explicit title, using internal header
+            title="Formación Académica y Afiliaciones"
         >
             <style>{`
         @keyframes scroll {
@@ -28,12 +28,6 @@ export default function CertificationsSection({ primaryColor, certifications = [
           animation-play-state: paused;
         }
       `}</style>
-
-            <div className="text-center pb-8">
-                <h3 className="text-xl font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-widest">
-                    Formación Académica y Afiliaciones
-                </h3>
-            </div>
 
             <div className="relative">
                 {/* Gradient overlays for smooth fading at edges */}
@@ -63,7 +57,7 @@ export default function CertificationsSection({ primaryColor, certifications = [
                         </div>
                     ))}
                 </div>
-            </div>
-        </SectionCard>
+            </div >
+        </SectionCard >
     );
 }
