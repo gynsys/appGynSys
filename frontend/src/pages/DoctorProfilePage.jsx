@@ -345,7 +345,6 @@ export default function DoctorProfilePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* About Section - Right after navbar */}
-        {/* About Section - Right after navbar */}
         <ScrollReveal variant="fade-up" className="w-full">
           <SectionCard
             id="sobre-mi"
@@ -553,21 +552,17 @@ export default function DoctorProfilePage() {
       </div>
 
       {/* Endometriosis Test Modal - Shared for Hero and Navbar buttons */}
-      {
-        isModuleEnabled('endometriosis_test') && (
-          <EndometriosisTestModal
-            isOpen={isTestModalOpen}
-            onClose={() => setIsTestModalOpen(false)}
-            primaryColor={primaryColor}
-            doctorName={doctor?.nombre_completo}
-            doctorId={doctor?.id}
-            doctorPhoto={doctor?.photo_url}
-            isDarkMode={isDarkTheme}
-            onSchedule={() => setIsAppointmentModalOpen(true)}
-            onCycle={() => setIsCycleModalOpen(true)}
-          />
-        )
-      }
+      <EndometriosisTestModal
+        isOpen={isTestModalOpen}
+        onClose={() => setIsTestModalOpen(false)}
+        primaryColor={primaryColor}
+        doctorName={doctor?.nombre_completo}
+        doctorId={doctor?.id}
+        doctorPhoto={doctor?.photo_url}
+        isDarkMode={isDarkTheme}
+        onSchedule={() => setIsAppointmentModalOpen(true)}
+        onCycle={() => setIsCycleModalOpen(true)}
+      />
 
       {/* Appointment Modal */}
       <AppointmentModal
