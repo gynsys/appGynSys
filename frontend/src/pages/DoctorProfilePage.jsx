@@ -346,42 +346,6 @@ export default function DoctorProfilePage() {
             title=""
           >
             <div className="max-w-6xl mx-auto">
-              {/* Action Buttons Hub - Visible on Mobile and Desktop top */}
-              <div className="flex flex-col items-center mb-12 space-y-4">
-                <div className="flex flex-row justify-center gap-4 w-full max-w-lg">
-                  {isModuleEnabled('cycle_predictor') && (
-                    <button
-                      onClick={() => setIsCycleModalOpen(true)}
-                      className="flex-1 px-4 py-3 rounded-full font-bold text-sm shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white border-2"
-                      style={{
-                        color: isDarkTheme ? '#111827' : primaryColor,
-                        borderColor: isDarkTheme ? '#111827' : primaryColor
-                      }}
-                    >
-                      <FiActivity className="mr-2 w-5 h-5" />
-                      Mi ciclo
-                    </button>
-                  )}
-                  {isModuleEnabled('endometriosis_test') && (
-                    <button
-                      onClick={() => setIsTestModalOpen(true)}
-                      className="flex-1 px-4 py-3 rounded-full font-bold text-sm shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white border-2"
-                      style={{
-                        color: isDarkTheme ? '#111827' : primaryColor,
-                        borderColor: isDarkTheme ? '#111827' : primaryColor
-                      }}
-                    >
-                      <FiClipboard className="mr-2 w-5 h-5" />
-                      Test
-                    </button>
-                  )}
-                </div>
-                {/* PWA Install Button - Full Width on Mobile */}
-                <div className="w-full max-w-lg px-2">
-                  <PWAInstallButton isFloating={true} fullWidth={true} />
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 
                 {/* Doctor Photo with Animation */}

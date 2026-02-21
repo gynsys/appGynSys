@@ -48,7 +48,7 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         return (
             <button
                 onClick={handleInstallClick}
-                className={`${fullWidth ? 'w-full' : ''} px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 group`}
+                className={`${fullWidth ? 'w-full px-6 py-2' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-lg transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-white/5 dark:bg-gray-900/20 backdrop-blur-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:border-indigo-500 hover:bg-indigo-500 hover:text-white group`}
                 title="Instalar App"
             >
                 <FiDownload className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
