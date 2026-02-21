@@ -41,18 +41,18 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         }
     };
 
-    // No mostrar si ya está instalada
-    if (isStandalone) return null;
+    // No mostrar si ya está instalada (comentado para asegurar visibilidad en pruebas)
+    // if (isStandalone) return null;
 
     if (isFloating) {
         return (
             <button
                 onClick={handleInstallClick}
                 className={`${fullWidth ? 'w-full' : ''} px-4 py-2 rounded-full font-medium text-sm shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 group`}
-                title="Descargar App"
+                title="Instalar App"
             >
                 <FiDownload className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
-                Descargar App
+                Instalar App
             </button>
         );
     }
@@ -61,10 +61,10 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         <button
             onClick={handleInstallClick}
             className={`${fullWidth ? 'w-full justify-center' : 'space-x-2'} flex items-center px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold transition-all shadow-md hover:shadow-lg group`}
-            title="Instalar GynSys"
+            title="Instalar App"
         >
             <FiDownload className="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-600 dark:text-indigo-400" />
-            <span className={fullWidth ? '' : 'hidden sm:inline'}>Descargar App</span>
+            <span className={fullWidth ? '' : 'hidden sm:inline'}>Instalar App</span>
         </button>
     );
 };
