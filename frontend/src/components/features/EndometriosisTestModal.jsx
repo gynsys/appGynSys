@@ -174,8 +174,8 @@ export default function EndometriosisTestModal({
       {createPortal(
         <AnimatePresence>
           {isOpen && (
-            <div className="fixed inset-0 z-[9999] overflow-hidden sm:overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-              <div className="flex flex-col sm:flex-row items-center justify-center min-h-screen text-center sm:block sm:p-0">
+            <div className={`fixed inset-0 z-[9999] overflow-y-auto ${isDarkMode ? 'dark' : ''}`} aria-labelledby="modal-title" role="dialog" aria-modal="true">
+              <div className="flex items-center justify-center min-h-screen p-0 sm:p-4 text-center">
 
                 {/* Background overlay */}
                 <motion.div
@@ -188,17 +188,15 @@ export default function EndometriosisTestModal({
                   onClick={handleClose}
                 />
 
-                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
                 {/* Modal Panel */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9, y: 100 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 100 }}
-                  transition={{ duration: 0.4, ease: [0.19, 1.0, 0.22, 1.0] }} // specific spring ease
-                  className={`inline-block align-bottom ${bgClass} sm:rounded-2xl text-left overflow-y-auto shadow-2xl transform transition-all 
-                w-full h-[100dvh] sm:h-auto sm:my-8 sm:align-middle sm:max-w-lg 
-                flex flex-col sm:block absolute inset-0 sm:relative sm:inset-auto ${isDarkMode ? 'dark' : ''}`}
+                  transition={{ duration: 0.4, ease: [0.19, 1.0, 0.22, 1.0] }}
+                  className={`relative ${bgClass} sm:rounded-2xl text-left overflow-y-auto shadow-2xl transform transition-all 
+                w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-lg 
+                flex flex-col justify-start`}
                 >
                   <div className={`flex-1 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 relative ${bgClass} flex flex-col justify-center sm:block`}>
                     <button
