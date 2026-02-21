@@ -17,7 +17,7 @@ from celery.schedules import crontab
 celery_app.conf.beat_schedule = {
     "run-daily-notification-check": {
         "task": "app.tasks.notifications.run_daily_notification_check",
-        "schedule": crontab(hour=8, minute=0),
+        "schedule": crontab(hour=4, minute=0),
     },
     "process-notification-queue": {
         "task": "app.tasks.notifications.process_notification_queue",
