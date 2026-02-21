@@ -507,17 +507,15 @@ export default function DoctorProfilePage() {
 
       {/* Floating Action Buttons - Hidden on Mobile (using Bottom Nav instead) */}
       <div className="hidden md:flex fixed bottom-6 right-6 flex-col space-y-3 z-40 items-center">
-        {/* Back to Top Button - Conditional rendering and clearer style */}
-        {showScrollToTop && (
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-10 h-10 rounded-full shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center bg-transparent mb-2 border border-[#98A2A644] hover:border-[#98A2A688]"
-            style={{ color: '#98A2A6' }}
-            aria-label="Volver arriba"
-          >
-            <FiArrowUp className="w-5 h-5 opacity-70" />
-          </button>
-        )}
+        {/* Back to Top Button - Smooth fade transition and minimalist design */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className={`w-10 h-10 rounded-full transform hover:scale-110 active:scale-95 transition-all duration-700 flex items-center justify-center bg-transparent mb-2 border border-[#98A2A644] hover:border-[#98A2A688] ${showScrollToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+          style={{ color: '#98A2A6' }}
+          aria-label="Volver arriba"
+        >
+          <FiArrowUp className="w-5 h-5 opacity-70" />
+        </button>
 
         {/* Desktop Only Appointment Button */}
         <button
