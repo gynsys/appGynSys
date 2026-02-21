@@ -66,7 +66,7 @@ export default function CycleLayout() {
             style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
         >
             {/* Header - Visible on all screens */}
-            <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+            <header className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
                 <div className="flex items-center justify-between px-4 h-14">
                     {/* Back Button */}
                     <button
@@ -81,11 +81,10 @@ export default function CycleLayout() {
 
                     {/* Title */}
                     <h1 className="text-base font-semibold text-gray-900 dark:text-white">
-                        Predictor de Ciclos
+                        Calculadora Menstrual
                     </h1>
 
                     {/* User Avatar */}
-                    {/* User Avatar or Login Action */}
                     <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
                         onClick={() => !isAuthenticated && setIsLoginModalOpen(true)}
@@ -102,7 +101,7 @@ export default function CycleLayout() {
             </header>
 
             {/* Page Content */}
-            <main className="max-w-7xl mx-auto">
+            <main className="max-w-4xl mx-auto">
                 <Outlet />
             </main>
 

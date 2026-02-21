@@ -32,43 +32,41 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
                     Aquí podrás llevar un control detallado de tu salud femenina. Explora las funciones que hemos diseñado para ti:
                 </p>
 
-                {/* Mode Selector - Only for Authenticated Users */}
-                {isAuthenticated && (
-                    <div className="flex justify-center mt-2">
-                        <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-full border dark:border-gray-700">
-                            <button
-                                onClick={() => handleModeChange('calculator')}
-                                title="Calculadora Menstrual: Predicciones de ciclo, días fértiles y control diario."
-                                className={cn(
-                                    "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
-                                    mode === 'calculator'
-                                        ? "bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm"
-                                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                )}
-                            >
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    Calculadora
-                                </span>
-                            </button>
-                            <button
-                                onClick={() => handleModeChange('prenatal')}
-                                title="Control Prenatal: Seguimiento semana a semana, controles médicos y modo embarazo."
-                                className={cn(
-                                    "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
-                                    mode === 'prenatal'
-                                        ? "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm"
-                                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                )}
-                            >
-                                <span className="flex items-center gap-1.5">
-                                    <Baby className="w-3.5 h-3.5" />
-                                    Control Prenatal
-                                </span>
-                            </button>
-                        </div>
+                {/* Mode Selector - Always Visible */}
+                <div className="flex justify-center mt-2">
+                    <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-full border dark:border-gray-700">
+                        <button
+                            onClick={() => handleModeChange('calculator')}
+                            title="Calculadora Menstrual: Predicciones de ciclo, días fértiles y control diario."
+                            className={cn(
+                                "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                                mode === 'calculator'
+                                    ? "bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm"
+                                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            )}
+                        >
+                            <span className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" />
+                                Calculadora
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => handleModeChange('prenatal')}
+                            title="Control Prenatal: Seguimiento semana a semana, controles médicos y modo embarazo."
+                            className={cn(
+                                "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                                mode === 'prenatal'
+                                    ? "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm"
+                                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            )}
+                        >
+                            <span className="flex items-center gap-1.5">
+                                <Baby className="w-3.5 h-3.5" />
+                                Control Prenatal
+                            </span>
+                        </button>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Features Grid */}

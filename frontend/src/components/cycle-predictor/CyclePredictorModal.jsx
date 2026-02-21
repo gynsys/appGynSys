@@ -58,7 +58,7 @@ export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: pr
             <DialogContent className={cn("max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-gray-900 dark:border-gray-700 [&>button]:top-2", isDarkMode && "dark")}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col">
                     <DialogHeader className="flex flex-row items-center justify-between pb-4 border-b dark:border-gray-700 shrink-0 relative px-6 md:px-0">
-                        <DialogTitle className="sr-only">Predictor de Ciclo y Embarazo</DialogTitle>
+                        <DialogTitle className="sr-only">Calculadora Menstrual y Control Prenatal</DialogTitle>
                         {/* 1. Tabs List OR Pregnancy Title (Centered) */}
                         <div className="flex-1 flex justify-center">
                             <TabsList className="flex p-0 bg-transparent gap-2 md:gap-6 h-auto">
@@ -76,7 +76,7 @@ export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: pr
                                         className="data-[state=active]:bg-transparent data-[state=active]:text-pink-600 dark:data-[state=active]:text-pink-400 md:data-[state=active]:bg-gray-100 md:dark:data-[state=active]:bg-gray-800 font-medium text-sm px-2 md:px-4 py-2 rounded-full transition-all hover:text-pink-500"
                                     >
                                         <Calendar className="w-4 h-4 mr-2" />
-                                        <span className="hidden sm:inline">Calendario</span>
+                                        <span className="hidden sm:inline">Calculadora</span>
                                     </TabsTrigger>
                                 )}
 
