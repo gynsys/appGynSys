@@ -60,6 +60,17 @@ export default function DoctorProfilePage() {
   const [searchParams] = useSearchParams()
   const appointmentId = searchParams.get('appointment_id')
   const [isPreconsultaOpen, setIsPreconsultaOpen] = useState(false)
+  const [showScrollToTop, setShowScrollToTop] = useState(false)
+
+  // Manejar visibilidad del botón "Ir arriba" basado en scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollToTop(window.scrollY > 600)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (location.pathname.includes('/preconsulta') && appointmentId) {
@@ -496,18 +507,17 @@ export default function DoctorProfilePage() {
 
       {/* Floating Action Buttons - Hidden on Mobile (using Bottom Nav instead) */}
       <div className="hidden md:flex fixed bottom-6 right-6 flex-col space-y-3 z-40 items-center">
-        {/* Back to Top Button */}
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="w-10 h-10 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center bg-transparent mb-2"
-          style={{
-            color: '#98A2A6',
-            border: '2px solid #98A2A6'
-          }}
-          aria-label="Volver arriba"
-        >
-          <FiArrowUp className="w-6 h-6" />
-        </button>
+        {/* Back to Top Button - Conditional rendering and clearer style */}
+        {showScrollToTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-10 h-10 rounded-full shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center bg-white/5 backdrop-blur-md mb-2 border border-white/10 hover:bg-white/10"
+            style={{ color: '#98A2A6' }}
+            aria-label="Volver arriba"
+          >
+            <FiArrowUp className="w-5 h-5 opacity-70" />
+          </button>
+        )}
 
         {/* Desktop Only Appointment Button */}
         <button
