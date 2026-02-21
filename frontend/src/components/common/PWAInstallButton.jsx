@@ -41,17 +41,17 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         }
     };
 
-    // No mostrar si ya está instalada (comentado para asegurar visibilidad en pruebas)
-    // if (isStandalone) return null;
+    // No mostrar si ya está instalada
+    if (isStandalone) return null;
 
     if (isFloating) {
         return (
             <button
                 onClick={handleInstallClick}
-                className={`${fullWidth ? 'w-full px-6 py-2' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-lg transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-white/5 dark:bg-gray-900/20 backdrop-blur-md border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:border-indigo-500 hover:bg-indigo-500 hover:text-white group`}
-                title="Instalar App"
+                className={`${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-sm shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-indigo-600 text-white hover:bg-indigo-700 group ring-4 ring-indigo-500/20`}
+                title="Instalar App Now"
             >
-                <FiDownload className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
+                <FiDownload className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
                 Instalar App
             </button>
         );
@@ -60,10 +60,10 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     return (
         <button
             onClick={handleInstallClick}
-            className={`${fullWidth ? 'w-full justify-center' : 'space-x-2'} flex items-center px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold transition-all shadow-md hover:shadow-lg group`}
+            className={`${fullWidth ? 'w-full justify-center px-6 py-3' : 'space-x-2 px-4 py-2'} flex items-center rounded-xl bg-indigo-600 text-white font-bold transition-all shadow-xl hover:bg-indigo-700 active:scale-95 group`}
             title="Instalar App"
         >
-            <FiDownload className="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-600 dark:text-indigo-400" />
+            <FiDownload className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span className={fullWidth ? '' : 'hidden sm:inline'}>Instalar App</span>
         </button>
     );
