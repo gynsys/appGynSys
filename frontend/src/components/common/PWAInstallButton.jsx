@@ -7,6 +7,12 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     const toast = useToastStore();
 
     const handleInstallClick = async () => {
+        // Caso: Ya está instalada
+        if (isStandalone) {
+            toast.success('¡GynSys ya está instalada en tu dispositivo! ✨');
+            return;
+        }
+
         if (!deferredPrompt) {
             // Detectar Plataforma
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
@@ -16,8 +22,7 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
             if (isIOS) {
                 toast.info('iOS: Pulsa "Compartir" y luego "Añadir a pantalla de inicio" ✨');
             } else if (isAndroid && isChrome) {
-                // Si estamos en Android Chrome y no hay prompt, puede ser que ya se intentó o el navegador lo bloquea temporalmente
-                toast.info('Pulsa los 3 puntos (⋮) y selecciona "Instalar aplicación" 📲');
+                toast.info('Busca "Instalar aplicación" en el menú (⋮) de tu Chrome 📲');
             } else {
                 toast.info('Usa Chrome en Android o Safari en iOS para instalar la App 🛠️');
             }
@@ -39,18 +44,24 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
         }
     };
 
-    // No mostrar si ya está instalada
-    if (isStandalone) return null;
+    // Estilo base para ambos estados
+    const baseClasses = `${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center backdrop-blur-md border`;
+    const activeStyle = "bg-white/10 dark:bg-gray-800/20 border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white";
+    const installedStyle = "bg-green-500/10 border-green-500/40 text-green-600 dark:text-green-400 cursor-default";
 
     if (isFloating) {
         return (
             <button
                 onClick={handleInstallClick}
-                className={`${fullWidth ? 'w-full px-6 py-3' : 'px-4 py-2'} rounded-full font-bold text-xs shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center bg-white/10 dark:bg-gray-800/20 backdrop-blur-md border border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white group`}
-                title="Instalar App"
+                className={`${baseClasses} ${isStandalone ? installedStyle : activeStyle} group`}
+                title={isStandalone ? "App Instalada" : "Instalar App"}
             >
-                <FiDownload className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
-                Instalar App
+                {isStandalone ? (
+                    <FiActivity className="mr-2 w-5 h-5" />
+                ) : (
+                    <FiDownload className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
+                )}
+                {isStandalone ? 'App Instalada' : 'Instalar App'}
             </button>
         );
     }
