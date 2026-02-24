@@ -1,0 +1,50 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    name: Run Notification Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'backend/pyproject.toml'
+
+      - name: Install test dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-mock
+          pip install pytz sqlalchemy alembic celery pydantic pydantic-settings python-dotenv python-jose[cryptography] passlib[bcrypt] bcrypt
+
+      - name: Run notification tests
+        run: |
+          python -m pytest tests/test_notifications.py -v --tb=short
+        env:
+          # Variables mínimas para que app.core.config no falle al importar
+          DATABASE_URL: "sqlite:///./test.db"
+          SECRET_KEY: "test-secret-key-for-ci-only"
+          FRONTEND_URL: "https://example.com"
+          API_URL: "https://api.example.com"
+          VAPID_PUBLIC_KEY: "test-vapid-public"
+          VAPID_PRIVATE_KEY: "test-vapid-private"
+          VAPID_CLAIMS_EMAIL: "test@example.com"
