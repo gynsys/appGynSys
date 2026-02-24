@@ -21,10 +21,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # 1. Eliminar índice único existente
+    # PostgreSQL no permite DROP INDEX directamente cuando hay un CONSTRAINT asociado.
+    # Primero eliminamos el CONSTRAINT (que también elimina el índice implícito),
+    # luego creamos un índice no-único de reemplazo para mantener el rendimiento.
+    op.execute(
+        "ALTER TABLE pending_notifications DROP CONSTRAINT IF EXISTS uix_pending_user_rule_date;"
+    )
+    # También intentar eliminar el índice por si existe independiente del constraint
     op.execute("DROP INDEX IF EXISTS uix_pending_user_rule_date;")
 
-    # 2. Crear índice no-único de reemplazo (para mantener rendimiento en queries)
+    # Crear índice no-único de reemplazo (para mantener rendimiento en queries)
     op.create_index(
         'ix_pending_user_rule_date',
         'pending_notifications',
@@ -34,10 +40,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Restaurar el índice único (puede fallar si hay duplicados en BD)
+    # Restaurar el constraint único (puede fallar si hay duplicados en BD)
     op.drop_index('ix_pending_user_rule_date', table_name='pending_notifications')
-
     op.execute("""
-        CREATE UNIQUE INDEX uix_pending_user_rule_date
-        ON pending_notifications (recipient_id, notification_rule_id, DATE(scheduled_for));
+        ALTER TABLE pending_notifications
+        ADD CONSTRAINT uix_pending_user_rule_date
+        UNIQUE (recipient_id, notification_rule_id, DATE(scheduled_for));
     """)
