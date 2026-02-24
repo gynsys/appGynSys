@@ -23,6 +23,10 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.notifications.process_notification_queue",
         "schedule": crontab(minute='*/1'),
     },
+    "recover-stale-processing": {
+        "task": "app.tasks.notifications.recover_stale_processing",
+        "schedule": crontab(minute='*/10'),
+    },
 }
 # Auto-discover tasks and ensure modules are loaded
 celery_app.autodiscover_tasks(['app'])

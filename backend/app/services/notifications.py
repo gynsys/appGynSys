@@ -37,12 +37,17 @@ logger = logging.getLogger(__name__)
 # CONFIGURACIÓN
 # ==============================================================================
 
-MAX_NOTIFICATIONS_PER_USER_PER_DAY = 5
+# Configuración del sistema de notificaciones
+MAX_NOTIFICATIONS_PER_CATEGORY_PER_DAY = 1  # Máx 1 notif por categoría por día
+# Categorías válidas (deben coincidir con el campo 'category' de NOTIFICATION_REGISTRY)
+NOTIFICATION_CATEGORIES = ("menstrual", "prenatal", "contraceptive", "system")
 BATCH_SIZE_USERS = 100
 BATCH_SIZE_DELIVERY = 50
 MAX_RETRIES = 5
 CIRCUIT_FAILURE_THRESHOLD = 5
 CIRCUIT_RECOVERY_TIMEOUT = 60
+# Tiempo máximo que una notificación puede estar en estado 'processing' antes de ser rescatada
+STALE_PROCESSING_TIMEOUT_MINUTES = 15
 
 # ==============================================================================
 # UTILIDADES (Timezone, Logging, Circuit Breaker)
@@ -276,10 +281,16 @@ def update_rule(db: Session, db_obj: NotificationRule, rule_in: NotificationRule
     update_data = rule_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_obj, field, value)
-    
+
     db_obj.is_edited = True
     db.commit()
     db.refresh(db_obj)
+
+    # Invalidar cache de reglas para que todos los workers carguen la versión actualizada
+    # en su próxima ejecución (TTL: hasta 1h, pero se limpia inmediatamente en este proceso)
+    get_cached_global_rules.cache_clear()
+    logger.info(f"Rule cache cleared after editing rule {db_obj.notification_type}")
+
     return db_obj
 
 def create_or_update_subscription(db: Session, sub_in: PushSubscriptionSchema, user_id: int) -> PushSubscription:
@@ -628,45 +639,55 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
             logger.error(f"Invalid context for user {user.id}: {error}")
             return
         
-        # Control de frecuencia: contar notificaciones ya enviadas/programadas hoy
-        sent_today = {
+        # Control de frecuencia POR CATEGORÍA:
+        # Construir un mapa de qué categorías ya tienen notificaciones hoy
+        # (enviadas o en cola), independientemente del rule_id específico.
+        # Esto permite múltiples categorías en el mismo día (prenatal + contraceptive)
+        # pero evita duplicar dentro de la misma categoría.
+
+        # Mapa rule_id -> notification_type  (para cruzar con el NOTIFICATION_MAP)
+        rule_id_to_type: Dict[int, str] = {
+            v.id: k for k, v in global_rules.items()
+        }
+
+        sent_rule_ids = set(
             log.notification_rule_id for log in db.query(NotificationLog).filter(
                 NotificationLog.recipient_id == user.id,
                 func.date(NotificationLog.sent_at) == today_date
             )
-        }
-        
-        pending_today = {
+        )
+        pending_rule_ids = set(
             pend.notification_rule_id for pend in db.query(PendingNotification).filter(
                 PendingNotification.recipient_id == user.id,
-                PendingNotification.status.in_(["pending", "retrying"]),
+                PendingNotification.status.in_(["pending", "retrying", "processing"]),
                 func.date(PendingNotification.scheduled_for) == today_date
             )
-        }
-        
-        total_today = len(sent_today) + len(pending_today)
+        )
+        active_rule_ids = sent_rule_ids | pending_rule_ids
+
+        # Categorías ya cubiertas hoy
+        categories_sent_today: set = set()
+        for rid in active_rule_ids:
+            ntype = rule_id_to_type.get(rid)
+            if ntype:
+                reg_entry = NOTIFICATION_MAP.get(ntype)
+                if reg_entry:
+                    categories_sent_today.add(reg_entry["category"])
 
         # Log inicio de evaluación
         log_notification_event("EVAL_TRIGGERED", user.id, "*", {
             "ctx_type": smart_ctx.get("type"),
-            "sent_today": len(sent_today),
-            "pending_today": len(pending_today),
+            "active_rule_ids": len(active_rule_ids),
+            "categories_sent_today": list(categories_sent_today),
             "debug_mode": _DEBUG_MODE,
         })
 
-        if total_today >= MAX_NOTIFICATIONS_PER_USER_PER_DAY and not _DEBUG_MODE:
-            logger.info(f"User {user.id} reached daily notification limit ({total_today}/{MAX_NOTIFICATIONS_PER_USER_PER_DAY})")
-            return
-        
-        # Evaluar reglas
+        # Evaluar reglas (sin límite global, el límite es por categoría)
         notifications_created = 0
-        available_slots = MAX_NOTIFICATIONS_PER_USER_PER_DAY - total_today
         
         for rule_def in NOTIFICATION_REGISTRY:
-            if notifications_created >= available_slots:
-                break
-            
             rtype = rule_def["type"]
+            category = rule_def.get("category", "system")
             
             # Evaluar lógica de la regla
             try:
@@ -685,21 +706,28 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
 
             rule_id = template_rule.id
 
-            # Control de frecuencia (saltar si ya fue enviada/programada hoy)
-            if rule_id in sent_today or rule_id in pending_today:
+            # Control de frecuencia por rule_id (evita duplicados exactos)
+            if rule_id in active_rule_ids:
                 if _DEBUG_MODE:
                     log_notification_event("RULE_SKIPPED", user.id, rtype, {
-                        "reason": "already_sent_but_debug_bypass",
-                        "was_in_sent": rule_id in sent_today,
-                        "was_in_pending": rule_id in pending_today,
+                        "reason": "already_queued_but_debug_bypass",
+                        "rule_id": rule_id,
                     })
                 else:
                     log_notification_event("RULE_SKIPPED", user.id, rtype, {
-                        "reason": "already_sent",
-                        "was_in_sent": rule_id in sent_today,
-                        "was_in_pending": rule_id in pending_today,
+                        "reason": "already_queued",
+                        "rule_id": rule_id,
                     })
                     continue
+
+            # Control de frecuencia por CATEGORÍA (1 por categoría por día)
+            if category in categories_sent_today and not _DEBUG_MODE:
+                log_notification_event("RULE_SKIPPED", user.id, rtype, {
+                    "reason": "category_limit",
+                    "category": category,
+                    "limit": MAX_NOTIFICATIONS_PER_CATEGORY_PER_DAY,
+                })
+                continue
             
             # Renderizar contenido
             render_vars = {"patient_name": user.nombre_completo or "Usuario"}
@@ -738,8 +766,9 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
             # Flush para capturar IntegrityError antes del commit final
             try:
                 db.flush()
-                sent_today.add(rule_id)  # Actualizar cache local
-                pending_today.add(rule_id)
+                sent_today.add(rule_id)  # Actualizar cache local — mantenemos por compatibilidad
+                active_rule_ids.add(rule_id)
+                categories_sent_today.add(category)
                 notifications_created += 1
                 log_notification_event("RULE_QUEUED", user.id, rtype, {
                     "rule_id": rule_id,
@@ -941,9 +970,55 @@ def deliver_pending_notifications():
         
         if processed > 0:
             logger.info(f"Delivered {processed} notifications")
-            
+
     except Exception as e:
         logger.error(f"Critical error in deliver_pending_notifications: {e}", exc_info=True)
+
+
+def recover_stale_processing_notifications() -> int:
+    """
+    Rescata notificaciones atascadas en estado 'processing' que llevan más
+    de STALE_PROCESSING_TIMEOUT_MINUTES sin actualizarse.
+
+    Esto ocurre cuando un Celery worker muere en medio del envío (OOM, crash,
+    reinicio). Sin esta función, esas notificaciones nunca se reintentan.
+
+    Retorna el número de registros rescatados.
+    """
+    try:
+        now = normalize_to_caracas()
+        cutoff = now - timedelta(minutes=STALE_PROCESSING_TIMEOUT_MINUTES)
+
+        with session_scope() as db:
+            stale_ids = [
+                row[0] for row in db.query(PendingNotification.id).filter(
+                    PendingNotification.status == "processing",
+                    PendingNotification.updated_at < cutoff
+                ).all()
+            ]
+
+            if not stale_ids:
+                return 0
+
+            rescued = db.query(PendingNotification).filter(
+                PendingNotification.id.in_(stale_ids)
+            ).update({
+                "status": "retrying",
+                "retry_count": PendingNotification.retry_count + 1,
+                "last_error": f"Recovered from stale processing state (>{STALE_PROCESSING_TIMEOUT_MINUTES}min)",
+                "scheduled_for": now + timedelta(minutes=2),  # Reintento en 2 minutos
+                "updated_at": now,
+            }, synchronize_session=False)
+
+            logger.warning(
+                f"[RECOVERY] Rescued {rescued} stale 'processing' notifications "
+                f"(stuck >{STALE_PROCESSING_TIMEOUT_MINUTES}min). IDs: {stale_ids[:10]}"
+            )
+            return rescued
+
+    except Exception as e:
+        logger.error(f"Error in recover_stale_processing_notifications: {e}", exc_info=True)
+        return 0
 
 # ==============================================================================
 # 6. HEALTH CHECK
