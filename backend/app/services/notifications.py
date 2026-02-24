@@ -58,19 +58,26 @@ def normalize_to_caracas(dt: Optional[datetime] = None) -> datetime:
     return dt.astimezone(tz)
 
 def get_worker_id() -> str:
-    """Identificador único del worker actual."""
-    return f"{os.getpid()}_{threading.current_thread().ident}"
+    """Identificador único del worker actual. Resistente a errores de scope en Celery fork workers."""
+    try:
+        import threading as _threading
+        return f"{os.getpid()}_{_threading.current_thread().ident}"
+    except Exception:
+        return str(os.getpid())
 
-def log_notification_event(event_type: str, user_id: int, rule_type: str, details: dict):
-    """Logging estructurado en JSON."""
-    logger.info(json.dumps({
-        "event": event_type,
-        "user_id": user_id,
-        "rule_type": rule_type,
-        "timestamp": datetime.utcnow().isoformat(),
-        "worker_id": get_worker_id(),
-        **details
-    }))
+def log_notification_event(event_type: str, user_id: int, rule_type: str, details: dict) -> None:
+    """Logging estructurado en JSON. No propaga excepciones para no bloquear el flujo principal."""
+    try:
+        logger.info(json.dumps({
+            "event": event_type,
+            "user_id": user_id,
+            "rule_type": rule_type,
+            "timestamp": datetime.utcnow().isoformat(),
+            "worker_id": get_worker_id(),
+            **details
+        }))
+    except Exception as _log_ex:
+        logger.warning(f"log_notification_event failed silently: {_log_ex}")
 
 class CircuitState(Enum):
     CLOSED = "closed"
@@ -477,32 +484,45 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
 # 5. TAREAS PROGRAMADAS (PROCESSOR)
 # ==============================================================================
 
+class _RuleData:
+    """
+    Contenedor simple de datos primitivos de una NotificationRule.
+    No depende de sesión SQLAlchemy, eliminando DetachedInstanceError.
+    """
+    __slots__ = (
+        "id", "notification_type", "send_time", "channel",
+        "title_template", "message_text_template", "is_active", "priority",
+    )
+
+    def __init__(self, rule: "NotificationRule") -> None:
+        self.id: int = rule.id
+        self.notification_type: str = rule.notification_type
+        self.send_time: Optional[str] = rule.send_time
+        self.channel: str = rule.channel
+        self.title_template: Optional[str] = rule.title_template
+        self.message_text_template: Optional[str] = rule.message_text_template
+        self.is_active: bool = rule.is_active
+        self.priority: int = rule.priority if rule.priority is not None else 99
+
+
 @lru_cache(maxsize=1)
-def get_cached_global_rules(ttl_hash: int = 0) -> Dict[str, NotificationRule]:
+def get_cached_global_rules(ttl_hash: int = 0) -> Dict[str, "_RuleData"]:
     """
     Cache de reglas globales con TTL de 1 hora.
-    Desvincula los objetos de la sesión para evitar DetachedInstanceError.
+    Almacena datos primitivos en lugar de objetos ORM para evitar DetachedInstanceError.
     """
     with session_scope() as db:
-        # Cargamos todas las columnas necesarias explícitamente si fuera necesario, 
-        # pero expunge() es suficiente para columnas simples.
         rules_list = db.query(NotificationRule).filter(
-            NotificationRule.tenant_id == None, 
+            NotificationRule.tenant_id == None,
             NotificationRule.is_active == True
         ).all()
-        
-        # Desvincular de la sesión y quitar el estado de 'expirado' para que no intenten refrescarse
-        for r in rules_list:
-            db.expunge(r)
-            # Marcar como 'permanente' en memoria (sin sesión)
-            from sqlalchemy.orm import make_transient
-            make_transient(r)
-            
-        rules = {r.notification_type: r for r in rules_list}
-        logger.info(f"Loaded {len(rules)} global rules into cache (transient)")
+
+        # Convertir a datos primitivos ANTES de cerrar la sesión
+        rules = {r.notification_type: _RuleData(r) for r in rules_list}
+        logger.info(f"Loaded {len(rules)} global rules into cache (primitive data)")
         return rules
 
-def _process_single_user(user_id: int, global_rules: Dict[str, NotificationRule], now: datetime, today_date: date):
+def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now: datetime, today_date: date):
     """
     Procesa un único usuario en una sesión independiente.
     Aislamiento completo: fallos de un usuario no afectan a otros.
