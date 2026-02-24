@@ -293,22 +293,46 @@ def delete_subscription_by_endpoint(db: Session, endpoint: str) -> bool:
 # 3. CONTEXT & PROCESSING LOGIC (THE BRAIN)
 # ==============================================================================
 
-def safe_render_content(rule: NotificationRule, context: dict) -> Optional[dict]:
-    """Renderiza contenido de forma segura, con fallback a los valores del registro."""
+def safe_render_content(rule: "Union[NotificationRule, _RuleData]", context: dict) -> Optional[dict]:
+    """Renderiza contenido de forma segura con fallback.
+    Compatible con objetos ORM (NotificationRule) y datos primitivos (_RuleData).
+    """
+    ntype = rule.notification_type
     try:
-        return rule.render_content(context)
-    except (KeyError, TypeError) as e:
-        logger.error(f"Error renderizando {rule.notification_type}: variable faltante {e}")
-        registry_rule = NOTIFICATION_MAP.get(rule.notification_type)
+        # Si es un ORM con el método render_content, lo usamos directamente
+        if hasattr(rule, "render_content"):
+            return rule.render_content(context)
+
+        # Para _RuleData extraemos plantillas y renderizamos manualmente
+        title_tpl = getattr(rule, "title_template", "") or ""
+        text_tpl = getattr(rule, "message_text_template", "") or ""
+
+        def _fmt(tpl: str) -> str:
+            try:
+                return tpl.format_map(context)
+            except (KeyError, AttributeError):
+                return tpl
+
+        rendered_title = _fmt(title_tpl)
+        rendered_text = _fmt(text_tpl)
+        rendered_html = f"<p>{rendered_text}</p>" if rendered_text and not rendered_text.startswith("<") else rendered_text
+
+        return {
+            "title": rendered_title,
+            "message_html": rendered_html,
+            "message_text": rendered_text,
+        }
+
+    except Exception as e:
+        logger.error(f"Error inesperado renderizando {ntype}: {e}", exc_info=True)
+        # Fallback al registro estático en memoria
+        registry_rule = NOTIFICATION_MAP.get(ntype)
         if registry_rule:
             return {
                 "title": registry_rule["title"],
                 "message_html": f"<p>{registry_rule['message']}</p>",
-                "message_text": registry_rule["message"]
+                "message_text": registry_rule["message"],
             }
-        return None
-    except Exception as e:
-        logger.error(f"Error inesperado renderizando {rule.notification_type}: {e}")
         return None
 
 def validate_smart_context(ctx: dict) -> Tuple[bool, Optional[str]]:
