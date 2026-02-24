@@ -30,13 +30,17 @@ CELERY BEAT (scheduler)
     │                            ├── evaluate_registry_rule() × 108 reglas
     │                            └── PendingNotification → INSERT BD
     │
-    └── Cada 1 min → process_notification_queue()
-                       └── service.deliver_pending_notifications()
-                            ├── SELECT pending WHERE scheduled_for <= now
-                            ├── send_dual_notification_logic()
-                            │    ├── push_service (Web Push)
-                            │    └── email (Resend)
-                            └── UPDATE status → 'sent' | 'retrying' | 'failed'
+    ├── Cada 1 min → process_notification_queue()
+    │                   └── service.deliver_pending_notifications()
+    │                        ├── SELECT pending WHERE scheduled_for <= now
+    │                        ├── send_dual_notification_logic()
+    │                        │    ├── push_service (Web Push)
+    │                        │    └── email (Resend)
+    │                        └── UPDATE status → 'sent' | 'retrying' | 'failed'
+    │
+    └── Cada 10 min → recover_stale_processing()  ✨ NUEVO
+                        └── service.recover_stale_processing_notifications()
+                             └── UPDATE status 'processing' (>15min) → 'retrying'
 ```
 
 ---
@@ -49,20 +53,20 @@ CELERY BEAT (scheduler)
 backend/
 ├── app/
 │   ├── services/
-│   │   ├── notifications.py          ⭐ CEREBRO PRINCIPAL (910 líneas)
+│   │   ├── notifications.py          ⭐ CEREBRO PRINCIPAL (~1070 líneas)
 │   │   └── push_service.py           Push Web (VAPID/webpush)
 │   ├── tasks/
 │   │   ├── notifications.py          Wrapper Celery → delega a services/
 │   │   └── email_tasks.py            Tarea Celery para emails
 │   ├── api/v1/endpoints/
-│   │   └── notifications.py          Endpoints REST (reglas + push subs)
+│   │   └── notifications.py          Endpoints REST + 4 endpoints de diagnóstico
 │   ├── db/models/
 │   │   ├── notification.py           Modelos ORM: Rules, Logs, Pending
 │   │   └── push_subscription.py     Modelo ORM: PushSubscription
 │   ├── schemas/
 │   │   └── notification.py           Pydantic: Request/Response schemas
 │   ├── core/
-│   │   ├── celery_app.py             Config Celery + beat_schedule
+│   │   ├── celery_app.py             Config Celery + beat_schedule (3 tareas)
 │   │   └── push.py                   Config VAPID client
 │   └── seeds/
 │       └── notification_rules.py     Seed inicial de reglas en BD
@@ -276,6 +280,7 @@ Se llama cuando el usuario cambia sus configuraciones, registra un ciclo, etc.:
 |-------|----------|-----------------|
 | `run-daily-notification-check` | `04:00 AM` (VE) | `run_daily_evaluation()` |
 | `process-notification-queue` | Cada **1 minuto** | `deliver_pending_notifications()` |
+| `recover-stale-processing` | Cada **10 minutos** | `recover_stale_processing_notifications()` |
 
 > ⚠️ El timezone del Celery es `America/Caracas` (`UTC-4`). Las horas en `notification_rules.send_time` están en Caracas.
 
@@ -620,3 +625,100 @@ class _RuleData:
 **App location:** `/opt/appgynsys`  
 **SSH:** `ssh root@167.172.115.154`  
 **docker-compose:** `/opt/appgynsys/docker-compose.yml`
+
+---
+
+## 16. Confiabilidad y Control de Frecuencia
+
+### 16.1 Límite por Categoría (desde commit `717622f`)
+
+El sistema ya **no tiene un límite global de 5 notificaciones por día**. El límite es ahora por **categoría**, lo que permite que una usuaria embarazada reciba simultáneamente:
+
+- `prenatal_week_28` (categoría `prenatal`) ✅
+- `prenatal_glucose_test` (categoría `prenatal`) — **bloqueada** (ya tiene 1 prenatal hoy)
+- `contraceptive_daily` — **inaplicable** si está embarazada
+- `system_appointment_reminder` (categoría `system`) ✅
+
+| Categoría | Máximo por día | Cuándo aplica |
+|-----------|---------------|---------------|
+| `menstrual` | 1 | Ciclo activo (no embarazada) |
+| `prenatal` | 1 | Cuando `is_pregnant=True` |
+| `contraceptive` | 1 | Con `contraceptive_enabled=True` |
+| `system` | 1 | Eventos puntuales (cita, aniversario, etc.) |
+
+**Configuración:** `MAX_NOTIFICATIONS_PER_CATEGORY_PER_DAY = 1` en `notifications.py`.
+
+Para el DEBUG: `NOTIFICATIONS_DEBUG_MODE=True` bypasea **todos** los controles de categoría y de `rule_id`, permitiendo re-enviar cualquier notificación.
+
+### 16.2 Recovery de `processing` Huérfano
+
+El estado `processing` es **el punto más frágil del sistema**: si un Celery worker muere en mitad de un envío (OOM, reinicio del container), la notificación queda atascada en `processing` para siempre.
+
+**Solución implementada:** tarea `recover_stale_processing` ejecutada cada 10 minutos:
+
+```python
+# Consulta que realiza la tarea:
+UPDATE pending_notifications
+SET status='retrying', retry_count = retry_count + 1,
+    scheduled_for = NOW() + INTERVAL '2 min'
+WHERE status = 'processing'
+AND updated_at < NOW() - INTERVAL '15 min'
+```
+
+Cuando hay registros rescatados, se emite un `logger.WARNING` visible con:
+```
+[RECOVERY] Rescued 3 stale 'processing' notifications (stuck >15min). IDs: [12, 45, 67]
+```
+
+**Verificar manualmente en producción:**
+```bash
+ssh root@167.172.115.154
+docker exec appgynsys-db-1 psql -U postgres -d gynsys -c \
+  "SELECT id, recipient_id, status, updated_at FROM pending_notifications WHERE status='processing';"
+```
+
+### 16.3 Invalidación de Cache de Reglas
+
+La función `get_cached_global_rules()` usa `@lru_cache` con TTL de 1 hora. Cuando un admin edita una regla vía `PUT /api/v1/notifications/rules/{type}`, el cache del proceso actual se invalida inmediatamente:
+
+```python
+# Sucede automáticamente en update_rule():
+get_cached_global_rules.cache_clear()
+```
+
+> **Limitación:** Solo invalida el cache en el **proceso que recibió el request** (el backend).
+> Los Celery workers tienen cada uno su propio cache y tardan hasta 1h en actualizarse.
+> Si necesitas actualizar inmediatamente en todos los workers, reinicia el container celery_worker.
+
+---
+
+## 17. Roadmap de Mejoras Futuras
+
+Las siguientes etapas están planificadas para hacer el sistema más robusto:
+
+| Etapa | Descripción | Prioridad | Estado |
+|-------|-------------|-----------|--------|
+| **4** | Tests automáticos para `evaluate_registry_rule()` y el pipeline completo | Alta | ⏳ Pendiente |
+| **5** | Dashboard visual de salud en la UI admin (conectar `/health` endpoint) | Alta | ⏳ Pendiente |
+| **6** | Cache de reglas en Redis (compartido entre todos los workers) | Media | ⏳ Pendiente |
+| **7** | Circuit Breaker distribuido vía Redis | Media | ⏳ Pendiente |
+| **8** | Panel admin para operar retry/evaluate sin SSH | Alta | ⏳ Pendiente |
+| **9** | Preferencias de ventana horaria por usuaria | Media | ⏳ Pendiente |
+| **10** | Exactly-once delivery: push → email → SMS para alertas críticas | Alta | ⏳ Pendiente |
+| **–** | Modularizar `services/notifications.py` en sub-módulos | Baja | ⏳ Pendiente |
+
+### Etapa más urgente: Tests (Etapa 4)
+
+El test mínimo que previene la regresión más común:
+
+```python
+# backend/tests/test_notifications.py
+def test_safe_render_content_with_rule_data():
+    """Garantiza que _RuleData puede ser renderizado por safe_render_content."""
+    from app.services.notifications import _RuleData, safe_render_content, NOTIFICATION_REGISTRY
+    # Simular un _RuleData (no requiere DB real si se mockea el ORM)
+    rule_dict = NOTIFICATION_REGISTRY[0]  # contraceptive_daily por ejemplo
+    rendered = safe_render_content_from_dict(rule_dict, {"patient_name": "Ana"})
+    assert rendered is not None
+```
+
