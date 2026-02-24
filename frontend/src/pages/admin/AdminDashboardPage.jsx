@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/layout/AdminLayout'
 import { useAdminStore } from '../../store/adminStore'
 import Spinner from '../../components/common/Spinner'
+import NotificationHealthWidget from '../../components/admin/NotificationHealthWidget'
 
 export default function AdminDashboardPage() {
   const { tenants, plans, modules, fetchTenants, fetchPlans, fetchModules, loading, error } = useAdminStore()
@@ -139,6 +140,11 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Notification System Health */}
+        <div className="mb-8">
+          <NotificationHealthWidget />
         </div>
 
         {/* Recent Activity */}

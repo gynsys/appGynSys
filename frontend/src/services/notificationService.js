@@ -28,6 +28,21 @@ const notificationService = {
         const response = await api.put(`/notifications/rules/${notificationType}`, ruleData);
         console.log('[NotificationService] ✅ Rule updated:', response.data);
         return response.data;
+    },
+
+    getHealth: async () => {
+        const response = await api.get('/notifications/health');
+        return response.data;
+    },
+
+    retriggerEvaluation: async (userId) => {
+        const response = await api.post(`/notifications/debug/user/${userId}/evaluate`);
+        return response.data;
+    },
+
+    retryFailed: async (userId) => {
+        const response = await api.post(`/notifications/debug/user/${userId}/retry`);
+        return response.data;
     }
 };
 
