@@ -129,7 +129,13 @@ class Settings(BaseSettings):
     VAPID_PRIVATE_KEY: Optional[str] = None
     VAPID_PUBLIC_KEY: Optional[str] = None
     VAPID_CLAIM_EMAIL: str = "admin@gynsys.com"
-    
+
+    # Notificaciones — Modo Debug
+    # Cuando True: bypasea la guardia de "1 notificación por tipo por día"
+    # Permite re-enviar la misma notificación múltiples veces para pruebas.
+    # NUNCA activar en producción real con usuarios reales.
+    NOTIFICATIONS_DEBUG_MODE: bool = False
+
     class Config:
         render_env = "/etc/secrets/.env"
         if os.path.exists(render_env):

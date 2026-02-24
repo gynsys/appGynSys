@@ -188,7 +188,10 @@ class PendingNotification(Base):
     locked_at = Column(DateTime(timezone=True), nullable=True)
     
     __table_args__ = (
-        Index('uix_pending_user_rule_date', 'recipient_id', 'notification_rule_id', func.date(scheduled_for), unique=True),
+        # NOTA: Restricción UNIQUE eliminada para facilitar pruebas de desarrollo.
+        # La guardia de duplicados se maneja en código (services/notifications.py)
+        # controlada por la variable NOTIFICATIONS_DEBUG_MODE en .env
+        Index('ix_pending_user_rule_date', 'recipient_id', 'notification_rule_id'),
     )
 
     # Relationships

@@ -65,17 +65,37 @@ def get_worker_id() -> str:
     except Exception:
         return str(os.getpid())
 
-def log_notification_event(event_type: str, user_id: int, rule_type: str, details: dict) -> None:
-    """Logging estructurado en JSON. No propaga excepciones para no bloquear el flujo principal."""
+def log_notification_event(
+    event_type: str,
+    user_id: int,
+    rule_type: str,
+    details: Optional[dict] = None,
+    level: str = "info"
+) -> None:
+    """Logging estructurado en JSON con nivel configurable.
+    Eventos definidos:
+      - EVAL_TRIGGERED   : inicio de evaluación para un usuario
+      - RULE_QUEUED      : regla evaluada como verdadera y encolada
+      - RULE_SKIPPED     : regla saltada (con reason: daily_limit, already_sent, user_disabled, logic_false, debug_bypass)
+      - sent             : notificación enviada exitosamente
+      - retry            : enviando de nuevo tras fallo temporal
+      - permanent_failure: alcanzó MAX_RETRIES sin éxito
+    No propaga excepciones para no bloquear el flujo principal.
+    """
     try:
-        logger.info(json.dumps({
+        payload = {
             "event": event_type,
             "user_id": user_id,
             "rule_type": rule_type,
             "timestamp": datetime.utcnow().isoformat(),
             "worker_id": get_worker_id(),
-            **details
-        }))
+        }
+        if details:
+            payload.update(details)
+
+        msg = json.dumps(payload, default=str)
+        log_fn = getattr(logger, level, logger.info)
+        log_fn(msg)
     except Exception as _log_ex:
         logger.warning(f"log_notification_event failed silently: {_log_ex}")
 
@@ -546,6 +566,16 @@ def get_cached_global_rules(ttl_hash: int = 0) -> Dict[str, "_RuleData"]:
         logger.info(f"Loaded {len(rules)} global rules into cache (primitive data)")
         return rules
 
+# Flag de modo debug — cargado al inicio del módulo, no en cada llamada
+_DEBUG_MODE: bool = False
+try:
+    from app.core.config import settings as _settings
+    _DEBUG_MODE = bool(getattr(_settings, "NOTIFICATIONS_DEBUG_MODE", False))
+    if _DEBUG_MODE:
+        logger.warning("[NOTIFICATIONS_DEBUG_MODE=True] Duplicate guard BYPASSED — not for production!")
+except Exception:
+    pass
+
 def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now: datetime, today_date: date):
     """
     Procesa un único usuario en una sesión independiente.
@@ -615,8 +645,17 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
         }
         
         total_today = len(sent_today) + len(pending_today)
-        if total_today >= MAX_NOTIFICATIONS_PER_USER_PER_DAY:
-            logger.info(f"User {user.id} reached daily notification limit")
+
+        # Log inicio de evaluación
+        log_notification_event("EVAL_TRIGGERED", user.id, "*", {
+            "ctx_type": smart_ctx.get("type"),
+            "sent_today": len(sent_today),
+            "pending_today": len(pending_today),
+            "debug_mode": _DEBUG_MODE,
+        })
+
+        if total_today >= MAX_NOTIFICATIONS_PER_USER_PER_DAY and not _DEBUG_MODE:
+            logger.info(f"User {user.id} reached daily notification limit ({total_today}/{MAX_NOTIFICATIONS_PER_USER_PER_DAY})")
             return
         
         # Evaluar reglas
@@ -629,24 +668,38 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
             
             rtype = rule_def["type"]
             
-            # Evaluar regla
+            # Evaluar lógica de la regla
             try:
-                if not evaluate_registry_rule(rule_def, smart_ctx, user_settings):
+                rule_passed = evaluate_registry_rule(rule_def, smart_ctx, user_settings)
+                if not rule_passed:
+                    log_notification_event("RULE_SKIPPED", user.id, rtype, {"reason": "logic_false"})
                     continue
             except Exception as e:
                 logger.error(f"Error evaluating rule {rtype} for user {user.id}: {e}")
                 continue
-            
+
             template_rule = global_rules.get(rtype)
             if not template_rule:
                 logger.warning(f"No global template found for {rtype}")
                 continue
-            
+
             rule_id = template_rule.id
-            
-            # Control de frecuencia (doble check por race condition)
+
+            # Control de frecuencia (saltar si ya fue enviada/programada hoy)
             if rule_id in sent_today or rule_id in pending_today:
-                continue
+                if _DEBUG_MODE:
+                    log_notification_event("RULE_SKIPPED", user.id, rtype, {
+                        "reason": "already_sent_but_debug_bypass",
+                        "was_in_sent": rule_id in sent_today,
+                        "was_in_pending": rule_id in pending_today,
+                    })
+                else:
+                    log_notification_event("RULE_SKIPPED", user.id, rtype, {
+                        "reason": "already_sent",
+                        "was_in_sent": rule_id in sent_today,
+                        "was_in_pending": rule_id in pending_today,
+                    })
+                    continue
             
             # Renderizar contenido
             render_vars = {"patient_name": user.nombre_completo or "Usuario"}
@@ -681,13 +734,19 @@ def _process_single_user(user_id: int, global_rules: Dict[str, "_RuleData"], now
                 status="pending"
             )
             db.add(pending)
-            
+
             # Flush para capturar IntegrityError antes del commit final
             try:
                 db.flush()
                 sent_today.add(rule_id)  # Actualizar cache local
                 pending_today.add(rule_id)
                 notifications_created += 1
+                log_notification_event("RULE_QUEUED", user.id, rtype, {
+                    "rule_id": rule_id,
+                    "channel": template_rule.channel,
+                    "scheduled_for": target_time.isoformat(),
+                    "debug_mode": _DEBUG_MODE,
+                })
                 log_notification_event("scheduled", user.id, rtype, {"scheduled_for": target_time.isoformat()})
             except IntegrityError as ie:
                 db.rollback()

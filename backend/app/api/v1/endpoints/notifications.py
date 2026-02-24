@@ -77,7 +77,9 @@ def subscribe_push(
     current_user: CycleUser = Depends(get_current_cycle_user)
 ):
     """Subscribe current user to Push Notifications."""
-    print(f"DEBUG: Receiving subscription for user {current_user.id}: {subscription}")
+    import logging
+    _log = logging.getLogger(__name__)
+    _log.debug(f"Receiving subscription for user {current_user.id}: endpoint={subscription.endpoint[:40]}")
     service.create_or_update_subscription(db, subscription, current_user.id)
     return {"message": "Subscribed successfully"}
 
@@ -91,5 +93,140 @@ def unsubscribe_push(
     service.delete_subscription_by_endpoint(db, endpoint)
     return {"message": "Unsubscribed successfully"}
 
-# --- Admin/System Endpoints ---
-# (None for now, mainly handled by Celery)
+
+# =============================================================================
+# ENDPOINTS DE DIAGNÓSTICO (SuperAdmin Only)
+# =============================================================================
+
+@router.get("/health")
+def get_system_health(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Retorna métricas de salud del sistema de notificaciones.
+    - pending_queue: notificaciones esperando envío
+    - failed_total: notificaciones que agotaron reintentos
+    - sent_last_24h: enviadas en las últimas 24h
+    - circuit_breaker: estado del circuito push
+    """
+    return service.get_notification_system_health(db)
+
+
+@router.get("/debug/user/{user_id}")
+def get_user_notification_debug(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Retorna la cola y el historial de notificaciones de un usuario específico.
+    Útil para diagnosticar por qué una notificación no llegó.
+    """
+    from app.db.models.notification import PendingNotification, NotificationLog
+    from app.db.models.cycle_user import CycleUser
+    from sqlalchemy import desc
+
+    user = db.query(CycleUser).filter(CycleUser.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"Cycle user {user_id} not found")
+
+    pending = db.query(PendingNotification).filter(
+        PendingNotification.recipient_id == user_id
+    ).order_by(desc(PendingNotification.created_at)).limit(20).all()
+
+    logs = db.query(NotificationLog).filter(
+        NotificationLog.recipient_id == user_id
+    ).order_by(desc(NotificationLog.sent_at)).limit(20).all()
+
+    return {
+        "user_id": user_id,
+        "user_name": user.nombre_completo,
+        "user_email": user.email,
+        "pending_notifications": [
+            {
+                "id": p.id,
+                "rule_id": p.notification_rule_id,
+                "status": p.status,
+                "channel": p.channel,
+                "scheduled_for": p.scheduled_for.isoformat() if p.scheduled_for else None,
+                "retry_count": p.retry_count,
+                "last_error": p.last_error,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in pending
+        ],
+        "notification_logs": [
+            {
+                "type": lg.notification_type,
+                "status": lg.status,
+                "channel_used": lg.channel_used,
+                "sent_at": lg.sent_at.isoformat() if lg.sent_at else None,
+                "title": lg.title_sent,
+            }
+            for lg in logs
+        ]
+    }
+
+
+@router.post("/debug/user/{user_id}/retry")
+def retry_failed_notifications(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Resetea todas las notificaciones en estado 'failed' de un usuario a 'pending'
+    para que sean reintentadas en el próximo ciclo de la cola (cada 1 minuto).
+    Útil durante debugging para re-intentar sin esperar al día siguiente.
+    """
+    from app.db.models.notification import PendingNotification
+    from app.services.notifications import normalize_to_caracas
+
+    updated = db.query(PendingNotification).filter(
+        PendingNotification.recipient_id == user_id,
+        PendingNotification.status == "failed"
+    ).update({
+        "status": "pending",
+        "retry_count": 0,
+        "last_error": None,
+        "scheduled_for": normalize_to_caracas(),
+    }, synchronize_session=False)
+
+    db.commit()
+
+    return {
+        "message": f"Reset {updated} failed notification(s) to pending for user {user_id}",
+        "user_id": user_id,
+        "notifications_reset": updated
+    }
+
+
+@router.post("/debug/user/{user_id}/evaluate")
+def force_user_evaluation(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Fuerza una re-evaluación inmediata del pipeline de notificaciones para el usuario.
+    Llama a trigger_immediate_evaluation() que:
+    1. Borra pending de hoy con status pending/retrying
+    2. Ejecuta _process_single_user() de nuevo
+    3. Intenta entregar si hay notificaciones listas
+    """
+    from app.db.models.cycle_user import CycleUser
+
+    user = db.query(CycleUser).filter(CycleUser.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"Cycle user {user_id} not found")
+
+    try:
+        service.trigger_immediate_evaluation(user_id, db)
+        return {
+            "message": f"Immediate evaluation triggered for user {user_id} ({user.email})",
+            "user_id": user_id,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Evaluation error: {str(e)}")
+
