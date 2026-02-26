@@ -53,8 +53,15 @@ CELERY BEAT (scheduler)
 backend/
 ├── app/
 │   ├── services/
-│   │   ├── notifications.py          ⭐ CEREBRO PRINCIPAL (~1070 líneas)
-│   │   └── push_service.py           Push Web (VAPID/webpush)
+│   │   ├── notifications/         ⭐ PAQUETE MODULAR (Etapa 3)
+│   │   │   ├── __init__.py        API pública y re-exports
+│   │   │   ├── base.py            Utilidades, logging y circuit breaker
+│   │   │   ├── registry.py        Definiciones de reglas y evaluación
+│   │   │   ├── context.py         Cálculo de contexto inteligente
+│   │   │   ├── processor.py       Orquestación (Daily, Delivery, Recovery)
+│   │   │   ├── sender.py          Renderizado y envío físico
+│   │   │   └── health.py          Métricas de salud
+│   │   └── push_service.py        Push Web (VAPID/webpush)
 │   ├── tasks/
 │   │   ├── notifications.py          Wrapper Celery → delega a services/
 │   │   └── email_tasks.py            Tarea Celery para emails
@@ -630,25 +637,18 @@ class _RuleData:
 
 ## 16. Confiabilidad y Control de Frecuencia
 
-### 16.1 Límite por Categoría (desde commit `717622f`)
+### 16.1 Múltiples Notificaciones y Cambios de Horario (Actualizado)
 
-El sistema ya **no tiene un límite global de 5 notificaciones por día**. El límite es ahora por **categoría**, lo que permite que una usuaria embarazada reciba simultáneamente:
+El sistema **ya no tiene límites** arbitrarios por día o por categoría. Todas las reglas que evalúen como verdaderas en un día (e.g. `prenatal_week_28` y `prenatal_glucose_test`) se enviarán simultáneamente, permitiendo la máxima flexibilidad en la comunicación.
 
-- `prenatal_week_28` (categoría `prenatal`) ✅
-- `prenatal_glucose_test` (categoría `prenatal`) — **bloqueada** (ya tiene 1 prenatal hoy)
-- `contraceptive_daily` — **inaplicable** si está embarazada
-- `system_appointment_reminder` (categoría `system`) ✅
+**¿Qué pasa si una usuaria cambia la hora de envío (ej. hora de la píldora) en el mismo día?**
+- Si la notificación **ya se envió** a la hora antigua: 
+  - Si la **nueva hora** está en el **futuro** (hoy), el sistema encolará y **reenviará** la notificación en ese nuevo horario. Esto garantiza que la usuaria reciba la alerta independientemente del cambio que haga en el día.
+  - Si la **nueva hora** está en el **pasado** (hoy), el sistema **respetará el envío original** y no volverá a hacer _spam_ hasta el día siguiente.
 
-| Categoría | Máximo por día | Cuándo aplica |
-|-----------|---------------|---------------|
-| `menstrual` | 1 | Ciclo activo (no embarazada) |
-| `prenatal` | 1 | Cuando `is_pregnant=True` |
-| `contraceptive` | 1 | Con `contraceptive_enabled=True` |
-| `system` | 1 | Eventos puntuales (cita, aniversario, etc.) |
+El sistema utiliza la restricción lógica de `pending_rule_ids` y `sent_rule_ids` contrastado con el `target_time > now` para lograr este comportamiento sin duplicar _infinitamente_ notificaciones en cada re-evaluación (`trigger_immediate_evaluation`).
 
-**Configuración:** `MAX_NOTIFICATIONS_PER_CATEGORY_PER_DAY = 1` en `notifications.py`.
-
-Para el DEBUG: `NOTIFICATIONS_DEBUG_MODE=True` bypasea **todos** los controles de categoría y de `rule_id`, permitiendo re-enviar cualquier notificación.
+Para el DEBUG: `NOTIFICATIONS_DEBUG_MODE=True` (variable en el `.env`) bypasea de todas formas los chequeos para recrear notificaciones enviadas, permitiendo forzar el envío constante en pruebas.
 
 ### 16.2 Recovery de `processing` Huérfano
 
@@ -698,14 +698,14 @@ Las siguientes etapas están planificadas para hacer el sistema más robusto:
 
 | Etapa | Descripción | Prioridad | Estado |
 |-------|-------------|-----------|--------|
-| **4** | Tests automáticos para `evaluate_registry_rule()` y el pipeline completo | Alta | ⏳ Pendiente |
-| **5** | Dashboard visual de salud en la UI admin (conectar `/health` endpoint) | Alta | ⏳ Pendiente |
+| **4** | Tests automáticos para `evaluate_registry_rule()` y el pipeline completo | Alta | ✅ Completado |
+| **5** | Dashboard visual de salud en la UI admin (conectar `/health` endpoint) | Alta | ✅ Completado |
 | **6** | Cache de reglas en Redis (compartido entre todos los workers) | Media | ⏳ Pendiente |
 | **7** | Circuit Breaker distribuido vía Redis | Media | ⏳ Pendiente |
-| **8** | Panel admin para operar retry/evaluate sin SSH | Alta | ⏳ Pendiente |
+| **8** | Panel admin para operar retry/evaluate sin SSH | Alta | ✅ Parcial (API lista) |
 | **9** | Preferencias de ventana horaria por usuaria | Media | ⏳ Pendiente |
 | **10** | Exactly-once delivery: push → email → SMS para alertas críticas | Alta | ⏳ Pendiente |
-| **–** | Modularizar `services/notifications.py` en sub-módulos | Baja | ⏳ Pendiente |
+| **11** | Modularización de `services/notifications.py` en sub-módulos | Baja | ✅ Completado |
 
 ### Etapa más urgente: Tests (Etapa 4)
 
