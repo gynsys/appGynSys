@@ -74,6 +74,7 @@ def calculate_predictions(last_period_start: date, cycle_length: int = 28, perio
         "fertile_window_start": fertile_window_start,
         "fertile_window_end": fertile_window_end,
         "pregnancy_probability": pregnancy_probability,
+        "period_length": period_length,
         "cycle_day": cycle_day,
         "phase": phase
     }
