@@ -187,7 +187,7 @@ async def register_cycle_user(
     send_welcome_dual_task.delay(db_user.id, db_user.email, db_user.nombre_completo)
     
     # Evaluar y programar notificaciones del día actual inmediatamente
-    trigger_immediate_evaluation(db, db_user.id)
+    trigger_immediate_evaluation(db_user.id, db)
     
     return {"access_token": access_token, "token_type": "bearer"}
 

@@ -239,7 +239,7 @@ def create_cycle(
     
     # Re-evaluar notificaciones tras nuevo ciclo
     if not isinstance(current_actor, Doctor):
-        trigger_immediate_evaluation(db, current_actor.id)
+        trigger_immediate_evaluation(current_actor.id, db)
         
     return db_cycle
 
@@ -270,7 +270,7 @@ def update_cycle(
     
     # Re-evaluar notificaciones tras cambio de ciclo
     if not isinstance(current_actor, Doctor):
-        trigger_immediate_evaluation(db, current_actor.id)
+        trigger_immediate_evaluation(current_actor.id, db)
         
     return db_cycle
 
@@ -351,7 +351,7 @@ def create_symptom(
     
     # Re-evaluar notificaciones tras reporte de síntomas
     if not isinstance(current_actor, Doctor):
-        trigger_immediate_evaluation(db, current_actor.id)
+        trigger_immediate_evaluation(current_actor.id, db)
         
     return db_symptom
 
@@ -379,7 +379,7 @@ def update_symptom(
     
     # Re-evaluar tras cambio de síntomas
     if not isinstance(current_actor, Doctor):
-        trigger_immediate_evaluation(db, current_actor.id)
+        trigger_immediate_evaluation(current_actor.id, db)
         
     return db_symptom
 
@@ -456,7 +456,7 @@ def update_settings(
     db.refresh(db_settings)
     
     # Re-evaluar notificaciones tras cambio de ajustes (ej: hora píldora)
-    trigger_immediate_evaluation(db, cycle_user_id)
+    trigger_immediate_evaluation(cycle_user_id, db)
     
     # Send confirmation email
     background_tasks.add_task(send_settings_updated_email, cycle_user_id)
