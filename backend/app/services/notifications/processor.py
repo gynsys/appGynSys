@@ -70,14 +70,19 @@ def _process_single_user(user_id: int, global_rules: Dict[str, _RuleData], now: 
             return
 
         rule_id_to_type: Dict[int, str] = {v.id: k for k, v in global_rules.items()}
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+
         sent_rule_ids = {log.notification_rule_id for log in db.query(NotificationLog).filter(
             NotificationLog.recipient_id == user.id,
-            func.date(NotificationLog.sent_at) == today_date
+            NotificationLog.sent_at >= today_start,
+            NotificationLog.sent_at < today_end
         )}
         pending_rule_ids = {pend.notification_rule_id for pend in db.query(PendingNotification).filter(
             PendingNotification.recipient_id == user.id,
             PendingNotification.status.in_(["pending", "retrying", "processing"]),
-            func.date(PendingNotification.scheduled_for) == today_date
+            PendingNotification.scheduled_for >= today_start,
+            PendingNotification.scheduled_for < today_end
         )}
 
         notifications_created = 0
@@ -212,10 +217,14 @@ def trigger_immediate_evaluation(user_id: int, db: Session):
     try:
         now = normalize_to_caracas()
         today_date = now.date()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        
         db.query(PendingNotification).filter(
             PendingNotification.recipient_id == user_id,
             PendingNotification.status.in_(["pending", "retrying"]),
-            func.date(PendingNotification.scheduled_for) == today_date
+            PendingNotification.scheduled_for >= today_start,
+            PendingNotification.scheduled_for < today_end
         ).delete(synchronize_session=False)
         db.commit()
         
