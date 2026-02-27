@@ -75,7 +75,12 @@ class TestEvaluateRegistryRule:
 
     def test_prenatal_deshabilitado_bloquea(self, ctx_pregnant_week28, user_settings_no_prenatal):
         """Si el usuario deshabilitó milestones prenatales, no debe recibirlos."""
-        prenatal_rule = NOTIFICATION_MAP["prenatal_week_28"]
+        prenatal_rule = {
+            "type": "prenatal_weekly_milestone",
+            "category": "prenatal_milestone",
+            "priority": 110,
+            "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 1
+        }
         result = evaluate_registry_rule(prenatal_rule, ctx_pregnant_week28, user_settings_no_prenatal)
         assert result is False, "Usuaria con prenatal_milestones=False no debe recibir prenatales"
 
@@ -437,7 +442,7 @@ class TestCategoryLimit:
     def test_bleeding_alert_es_de_categoria_prenatal(self):
         """La regla prenatal_bleeding debe tener category='prenatal'."""
         rule = NOTIFICATION_MAP["prenatal_bleeding"]
-        assert rule["category"] == "prenatal"
+        assert rule["category"].startswith("prenatal")
 
     def test_day_9_es_de_categoria_menstrual(self):
         """La regla de día 9 debe tener category='menstrual'."""

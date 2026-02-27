@@ -74,10 +74,22 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
             "category": "prenatal",
             "priority": 200 + i,
             "title": f"Semana {i} de Embarazo",
-            "message": f"🤰 ¡Semana {i}! Revisa tu app para ver el desarrollo de tu bebé.",
-            "logic": lambda c, i=i: is_week(c, i)
+            "message": f"🤰 ¡Semana {i}! Tu cuerpo y tu bebé están cambiando. Revisa tu app para ver el desarrollo de esta semana.",
+            "logic": lambda c, i=i: is_week(c, i) and c.get("gestation_day_of_week") == 1
         } for i in range(1, 42)
     ],
+
+    # ===== PRENATAL DAILY ROUTINES (New Rotating System) =====
+    { "type": "prenatal_weekly_milestone", "category": "prenatal_milestone", "priority": 110, "title": "👶 Desarrollo del Bebé", "message": "¡Semana {gestation_week}! Tu bebé sigue creciendo. Descubre los nuevos órganos y sentidos que está desarrollando esta semana.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 1 },
+    { "type": "prenatal_daily_nutrition_tip", "category": "prenatal_tip", "priority": 111, "title": "🥗 Tip de Nutrición", "message": "Asegúrate de incluir hierro y calcio en tu dieta hoy. Las espinacas y los lácteos son tus mejores aliados para el crecimiento fetal.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 2 },
+    { "type": "prenatal_symptom_check", "category": "prenatal_symptom_alert", "priority": 112, "title": "📋 Bienestar y Síntomas", "message": "¿Sientes náuseas o cansancio? Es muy común. Registra cómo te sientes hoy en la aplicación para llevar un control seguro.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 3 },
+    { "type": "prenatal_medical_tests_reminder", "category": "prenatal_test", "priority": 113, "title": "🩺 Estudios Médicos", "message": "Revisa si tienes laboratorios o pruebas de sangre pendientes para este trimestre. Mantener tus exámenes al día es vital.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 4 },
+    { "type": "prenatal_exercise_tip", "category": "prenatal_tip", "priority": 114, "title": "🧘‍♀️ Movimiento y Salud", "message": "El ejercicio suave como caminar o yoga prenatal ayuda a reducir dolores de espalda y mejora la circulación. ¡Muévete un poco hoy!", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 5 },
+    { "type": "prenatal_ultrasound_prep", "category": "prenatal_ultrasound", "priority": 115, "title": "📸 Preparación Ecografía", "message": "Las ecografías son ventanas al mundo de tu bebé. Recuerda agendar tus ecos morfológicos en las semanas correspondientes.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 6 },
+    { "type": "prenatal_rest_mindfulness", "category": "prenatal_tip", "priority": 116, "title": "😴 Descanso y Conexión", "message": "Domingo de descanso. Tómate un momento en silencio, respira y conéctate con tu bebé. Dormir bien es fundamental.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 7 },
+
+    { "type": "prenatal_daily_supplements", "category": "prenatal_tip", "priority": 10, "title": "💊 Protege a tu bebé", "message": "¡Buenos días mamá! No olvides tomar tu vitamina prenatal, calcio o ácido fólico.", "logic": lambda c: c.get("is_pregnant") is True },
+    { "type": "prenatal_daily_symptoms", "category": "prenatal", "priority": 15, "title": "📋 Chequeo Diario", "message": "¿Cómo te sientes hoy médica o emocionalmente? Registra tus síntomas.", "logic": lambda c: c.get("is_pregnant") is True },
 
     # ===== PRENATAL MILESTONES & ALERTS =====
     { "type": "prenatal_first_ultrasound", "category": "prenatal", "priority": 250, "title": "📸 Primera Ecografía", "message": "Agenda tu primera ecografía (entre semanas 6-8).", "logic": lambda c: has_event(c, "first_ultrasound") },
@@ -113,7 +125,7 @@ def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNo
         return False
     
     # Si está embarazada, solo reglas prenatales o del sistema
-    if context.get("is_pregnant") and rule_def["category"] not in ("prenatal", "system"):
+    if context.get("is_pregnant") and not rule_def["category"].startswith("prenatal") and rule_def["category"] != "system":
         return False
     
     try:
@@ -124,8 +136,21 @@ def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNo
         return False
         
     category = rule_def["category"]
-    if category == "prenatal" and not getattr(user_settings, 'prenatal_milestones', True):
-        return False
+    
+    # Evaluar las 5 subcategorías prenatales contra los respectivos switches del usuario
+    if category.startswith("prenatal"):
+        if category == "prenatal_milestone" and not getattr(user_settings, 'prenatal_milestones', True):
+            return False
+        if category == "prenatal_tip" and not getattr(user_settings, 'prenatal_daily_tips', True):
+            return False
+        if category == "prenatal_symptom_alert" and not getattr(user_settings, 'prenatal_symptom_alerts', True):
+            return False
+        if category == "prenatal_ultrasound" and not getattr(user_settings, 'prenatal_ultrasounds', True):
+            return False
+        if category == "prenatal_test" and not getattr(user_settings, 'prenatal_lab_results', True): # Maping medical tests to lab results switch
+            return False
+        # Las de categoría genérica "prenatal" por defecto pasan si cumplen lo anterior
+
     if category == "contraceptive" and not getattr(user_settings, 'contraceptive_enabled', False):
         return False
     if category == "rhythm" and not getattr(user_settings, 'rhythm_method_enabled', False):

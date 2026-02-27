@@ -308,10 +308,10 @@ def seed_notification_rules(db: Session, tenant_id: int):
         *[
             {
                 "notification_type": f"prenatal_week_{i}",
-                "trigger_condition": {"gestation_week": i},
+                "trigger_condition": {"gestation_week": i, "gestation_day_of_week": 1},
                 "priority": 200 + i,
                 "title_template": f"Semana {i} de Embarazo",
-                "message_template": f"🤰 ¡Semana {i}! Revisa tu app para ver el desarrollo de tu bebé.",
+                "message_template": f"🤰 ¡Semana {i}! Tu cuerpo y tu bebé están cambiando. Revisa tu app para ver el desarrollo de esta semana.",
                 "message_text_template": f"Iniciando semana {i} de gestación.",
                 "channel": "dual",
                 "send_time": "09:00"
@@ -460,74 +460,146 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "send_time": "08:00"
         },
         {
-            "notification_type": "prenatal_daily_tip",
-            "trigger_condition": {"type": "daily_tip"},
+            "notification_type": "prenatal_daily_tip_2",
+            "trigger_condition": {"gestation_day_of_week": 2},
             "priority": 100,
-            "title_template": "💡 Consejo del Día",
-            "message_template": "Tip para la semana {gestation_week}: {tip_content}",
-            "message_text_template": "Nuevo consejo prenatal",
+            "title_template": "🥗 Nutrición Saludable",
+            "message_template": "A la hora de comer, prioriza el plato saludable: verduras, proteína y un poco de carbohidrato. ¿Un antojo de media tarde? Prueba con fruta natural.",
+            "message_text_template": "Nutrición saludable hoy.",
             "channel": "dual",
-            "send_time": "10:00"
+            "send_time": "13:30"
         },
         {
-            "notification_type": "prenatal_nutrition",
-            "trigger_condition": {"type": "nutrition_tip"},
+            "notification_type": "prenatal_daily_tip_3",
+            "trigger_condition": {"gestation_day_of_week": 3},
             "priority": 101,
-            "title_template": "🥗 Nutrición Prenatal",
-            "message_template": "Recuerda consumir ácido fólico, hierro y calcio diariamente.",
-            "message_text_template": "Tip de nutrición",
+            "title_template": "💧 Hidratación y Cuidado",
+            "message_template": "¡Hora de beber agua! Intenta alcanzar los 2 litros al día. ¿Un tip extra? Aplica crema hidratante en vientre y masajéalo.",
+            "message_text_template": "Recuerda hidratarte.",
             "channel": "dual",
-            "send_time": "08:30"
+            "send_time": "11:00"
         },
         {
-            "notification_type": "prenatal_exercise",
-            "trigger_condition": {"type": "exercise_tip"},
+            "notification_type": "prenatal_daily_tip_4",
+            "trigger_condition": {"gestation_day_of_week": 4},
             "priority": 102,
-            "title_template": "🏃‍♀️ Ejercicio Prenatal",
-            "message_template": "El ejercicio moderado es beneficioso. Camina 30 minutos diarios.",
-            "message_text_template": "Tip de ejercicio",
+            "title_template": "🧘‍♀️ Bienestar y Vínculo",
+            "message_template": "Tómate 5 minutos. Respira hondo, relájate y dile algo bonito a tu bebé. Él te escucha y siente tu amor.",
+            "message_text_template": "Conecta con tu bebé.",
             "channel": "dual",
-            "send_time": "07:00"
+            "send_time": "18:00"
         },
         {
-            "notification_type": "prenatal_hydration",
-            "trigger_condition": {"type": "hydration_reminder"},
+            "notification_type": "prenatal_daily_tip_5",
+            "trigger_condition": {"gestation_day_of_week": 5},
             "priority": 103,
-            "title_template": "💧 Hidratación",
-            "message_template": "Bebe al menos 8 vasos de agua al día durante el embarazo.",
-            "message_text_template": "Recuerda hidratarte",
+            "title_template": "🏃‍♀️ Ejercicio Suave",
+            "message_template": "Levántate, estira las piernas y da un pequeño paseo. El movimiento suave alivia la espalda y mejora la circulación.",
+            "message_text_template": "Tip de movimiento.",
+            "channel": "dual",
+            "send_time": "11:30"
+        },
+        {
+            "notification_type": "prenatal_daily_tip_6",
+            "trigger_condition": {"gestation_day_of_week": 6},
+            "priority": 104,
+            "title_template": "🛒 Preparación",
+            "message_template": "Si vas a hacer compras, incluye espinacas, lentejas o yogur. ¿Ya pensaste qué guardar en la bolsa para el hospital?",
+            "message_text_template": "Tips de fin de semana.",
+            "channel": "dual",
+            "send_time": "11:00"
+        },
+        {
+            "notification_type": "prenatal_daily_tip_7",
+            "trigger_condition": {"gestation_day_of_week": 7},
+            "priority": 105,
+            "title_template": "😴 Descanso Profundo",
+            "message_template": "Hora de descansar mamá. Desconecta de las pantallas y recuerda dormir sobre tu lado izquierdo para ayudar a la circulación.",
+            "message_text_template": "Consejo de descanso.",
+            "channel": "dual",
+            "send_time": "21:30"
+        },
+        # ===== PRENATAL DAILY ROUTINES (New Rotating System) =====
+        # Rotaremos el contenido por día de la semana (1 al 7) en base a su categoría
+        {
+            "notification_type": "prenatal_weekly_milestone",
+            "trigger_condition": {"category": "prenatal_milestone", "gestation_day_of_week": 1},
+            "priority": 110,
+            "title_template": "👶 Desarrollo del Bebé",
+            "message_template": "¡Semana {gestation_week}! Tu bebé sigue creciendo. Descubre los nuevos órganos y sentidos que está desarrollando esta semana.",
+            "message_text_template": "Semana {gestation_week}: Descubre el desarrollo de tu bebé.",
+            "channel": "dual",
+            "send_time": "09:00"
+        },
+        {
+            "notification_type": "prenatal_daily_nutrition_tip",
+            "trigger_condition": {"category": "prenatal_tip", "gestation_day_of_week": 2},
+            "priority": 111,
+            "title_template": "🥗 Tip de Nutrición",
+            "message_template": "Asegúrate de incluir hierro y calcio en tu dieta hoy. Las espinacas y los lácteos son tus mejores aliados para el crecimiento fetal.",
+            "message_text_template": "Tip nutricional del día: Hierro y calcio.",
             "channel": "dual",
             "send_time": "12:00"
         },
         {
-            "notification_type": "prenatal_mental_health",
-            "trigger_condition": {"type": "mental_health"},
-            "priority": 104,
-            "title_template": "🧘‍♀️ Salud Mental",
-            "message_template": "Tu salud mental es importante. Practica mindfulness y descansa.",
-            "message_text_template": "Cuida tu salud mental",
+            "notification_type": "prenatal_symptom_check",
+            "trigger_condition": {"category": "prenatal_symptom_alert", "gestation_day_of_week": 3},
+            "priority": 112,
+            "title_template": "📋 Bienestar y Síntomas",
+            "message_template": "¿Sientes náuseas o cansancio? Es muy común. Registra cómo te sientes hoy en la aplicación para llevar un control seguro.",
+            "message_text_template": "Revisión de bienestar y síntomas.",
+            "channel": "dual",
+            "send_time": "15:00"
+        },
+        {
+            "notification_type": "prenatal_medical_tests_reminder",
+            "trigger_condition": {"category": "prenatal_test", "gestation_day_of_week": 4},
+            "priority": 113,
+            "title_template": "🩺 Estudios Médicos",
+            "message_template": "Revisa si tienes laboratorios o pruebas de sangre pendientes para este trimestre. Mantener tus exámenes al día es vital.",
+            "message_text_template": "Recordatorio de estudios médicos.",
+            "channel": "dual",
+            "send_time": "10:00"
+        },
+        {
+            "notification_type": "prenatal_exercise_tip",
+            "trigger_condition": {"category": "prenatal_tip", "gestation_day_of_week": 5},
+            "priority": 114,
+            "title_template": "🧘‍♀️ Movimiento y Salud",
+            "message_template": "El ejercicio suave como caminar o yoga prenatal ayuda a reducir dolores de espalda y mejora la circulación. ¡Muévete un poco hoy!",
+            "message_text_template": "Tip de movimiento suave.",
+            "channel": "dual",
+            "send_time": "17:00"
+        },
+        {
+            "notification_type": "prenatal_ultrasound_prep",
+            "trigger_condition": {"category": "prenatal_ultrasound", "gestation_day_of_week": 6},
+            "priority": 115,
+            "title_template": "📸 Preparación Ecografía",
+            "message_template": "Las ecografías son ventanas al mundo de tu bebé. Recuerda agendar tus ecos morfológicos en las semanas correspondientes.",
+            "message_text_template": "Tips sobre tus próximas ecografías.",
+            "channel": "dual",
+            "send_time": "10:00"
+        },
+        {
+            "notification_type": "prenatal_rest_mindfulness",
+            "trigger_condition": {"category": "prenatal_tip", "gestation_day_of_week": 7},
+            "priority": 116,
+            "title_template": "😴 Descanso y Conexión",
+            "message_template": "Domingo de descanso. Tómate un momento en silencio, respira y conéctate con tu bebé. Dormir bien es fundamental.",
+            "message_text_template": "Día de descanso y conexión.",
             "channel": "dual",
             "send_time": "20:00"
         },
         {
-            "notification_type": "prenatal_sleep",
-            "trigger_condition": {"type": "sleep_tip"},
-            "priority": 105,
-            "title_template": "😴 Descanso",
-            "message_template": "Duerme de lado izquierdo para mejorar la circulación.",
-            "message_text_template": "Tip de descanso",
+            "notification_type": "prenatal_daily_supplements",
+            "trigger_condition": {"category": "prenatal"},
+            "priority": 10,
+            "title_template": "💊 Protege a tu bebé",
+            "message_template": "¡Buenos días mamá! No olvides tomar tu vitamina prenatal, calcio o ácido fólico. ¡Tu bebé te lo agradece profundamente!",
+            "message_text_template": "Recordatorio de vitaminas prenatales.",
             "channel": "dual",
-            "send_time": "21:00"
-        },
-        {
-            "notification_type": "prenatal_baby_size",
-            "trigger_condition": {"type": "baby_size"},
-            "priority": 106,
-            "title_template": "📏 Tamaño del Bebé",
-            "message_template": "Semana {gestation_week}: Tu bebé mide aproximadamente {baby_size}.",
-            "message_text_template": "Tamaño del bebé",
-            "channel": "dual",
-            "send_time": "09:30"
+            "send_time": "09:00"
         },
 
         # ===== SISTEMA (13 rules) =====
