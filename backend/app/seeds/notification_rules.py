@@ -304,20 +304,6 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "send_time": "09:00"
         },
 
-        # ===== PRENATAL (41 SEMANAS) =====
-        *[
-            {
-                "notification_type": f"prenatal_week_{i}",
-                "trigger_condition": {"gestation_week": i, "gestation_day_of_week": 1},
-                "priority": 200 + i,
-                "title_template": f"Semana {i} de Embarazo",
-                "message_template": f"🤰 ¡Semana {i}! Tu cuerpo y tu bebé están cambiando. Revisa tu app para ver el desarrollo de esta semana.",
-                "message_text_template": f"Iniciando semana {i} de gestación.",
-                "channel": "dual",
-                "send_time": "09:00"
-            } for i in range(1, 42)
-        ],
-
         # ===== PRENATAL MILESTONES & ALERTS (21 rules) =====
         {
             "notification_type": "prenatal_first_ultrasound",

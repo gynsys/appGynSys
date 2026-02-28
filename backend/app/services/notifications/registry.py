@@ -67,18 +67,6 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
     { "type": "rhythm_before_period_2", "category": "rhythm", "priority": 158, "title": "Día Seguro - Pre Periodo (4/5)", "message": "Tu periodo está por llegar. Día completamente seguro para relaciones.", "logic": lambda c: c.get("days_before_period") == 2 },
     { "type": "rhythm_before_period_1", "category": "rhythm", "priority": 159, "title": "Día Seguro - Pre Periodo (5/5)", "message": "Último día antes de tu periodo. Fase completamente infértil.", "logic": lambda c: c.get("days_before_period") == 1 },
 
-    # ===== PRENATAL (41 SEMANAS) =====
-    *[
-        {
-            "type": f"prenatal_week_{i}",
-            "category": "prenatal",
-            "priority": 200 + i,
-            "title": f"Semana {i} de Embarazo",
-            "message": f"🤰 ¡Semana {i}! Tu cuerpo y tu bebé están cambiando. Revisa tu app para ver el desarrollo de esta semana.",
-            "logic": lambda c, i=i: is_week(c, i) and c.get("gestation_day_of_week") == 1
-        } for i in range(1, 42)
-    ],
-
     # ===== PRENATAL DAILY ROUTINES (New Rotating System) =====
     { "type": "prenatal_weekly_milestone", "category": "prenatal_milestone", "priority": 110, "title": "👶 Desarrollo del Bebé", "message": "¡Semana {gestation_week}! Tu bebé sigue creciendo. Descubre los nuevos órganos y sentidos que está desarrollando esta semana.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 1 },
     { "type": "prenatal_daily_nutrition_tip", "category": "prenatal_tip", "priority": 111, "title": "🥗 Tip de Nutrición", "message": "Asegúrate de incluir hierro y calcio en tu dieta hoy. Las espinacas y los lácteos son tus mejores aliados para el crecimiento fetal.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 2 },
