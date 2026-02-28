@@ -348,20 +348,40 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "trigger_condition": {"event": "anatomy_scan"},
             "priority": 252,
             "title_template": "📸 Ecografía Anatómica",
-            "message_template": "Ecografía anatómica completa (semana 18-22).",
-            "message_text_template": "Ecografía anatómica",
+            "message_template": "Es hora de tu ecografía morfológica (semana 18-22). Un momento clave para ver el desarrollo detallado de tu bebé.",
+            "message_text_template": "Agenda tu ecografía anatómica (semana 18-22)",
             "channel": "dual",
             "send_time": "10:00"
+        },
+        {
+            "notification_type": "prenatal_3d_5d_ultrasound",
+            "trigger_condition": {"gestation_week": [27]},
+            "priority": 252,
+            "title_template": "📸 Eco 3D/4D/5D",
+            "message_template": "¡Es el mejor momento para ver la carita de tu bebé! Agenda tu ecografía 3D/4D/5D entre las semanas 26 y 30 para obtener las mejores imágenes.",
+            "message_text_template": "Es buen momento para agendar tu Eco 3D/5D",
+            "channel": "dual",
+            "send_time": "11:00"
+        },
+        {
+            "notification_type": "prenatal_monthly_dentist",
+            "trigger_condition": {"gestation_week": [16, 24, 32]},
+            "priority": 252,
+            "title_template": "🦷 Cuidado Dental",
+            "message_template": "Mes de revisión. ¿Has ido al dentista este mes? Recuerda que tus encías necesitan cuidados extra durante el embarazo para evitar gingivitis gestacional.",
+            "message_text_template": "Recordatorio: Cuida tus encías y visita al dentista",
+            "channel": "dual",
+            "send_time": "12:00"
         },
         {
             "notification_type": "prenatal_glucose_test",
             "trigger_condition": {"event": "glucose_test"},
             "priority": 253,
             "title_template": "🍬 Test de Glucosa",
-            "message_template": "Test de tolerancia a la glucosa (semana 24-28).",
-            "message_text_template": "Test de glucosa",
+            "message_template": "Recuerda realizarte el test de tolerancia a la glucosa de O'Sullivan (semana 24-28).",
+            "message_text_template": "Tiempo para el test de glucosa (semana 24-28)",
             "channel": "dual",
-            "send_time": "09:00"
+            "send_time": "10:00"
         },
         {
             "notification_type": "prenatal_tdap_vaccine",
