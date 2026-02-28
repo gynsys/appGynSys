@@ -753,3 +753,114 @@ def test_safe_render_content_with_rule_data():
     assert rendered is not None
 ```
 
+---
+
+## 18. Guía de Limpieza de Base de Datos y Resolución de Problemas (Troubleshooting Avanzado)
+
+Durante el mantenimiento y la actualización de reglas de notificación, es muy común encontrarse con dos grandes bloqueadores al intentar manipular la base de datos de producción directamente mediante scripts de Python:
+1. **Problemas de Entorno (ModuleNotFound):** El `sys.path` dentro del contenedor Docker no reconoce la carpeta `/app` ni `app.db` adecuadamente si no se ejecuta desde el punto de montaje y usuario correctos.
+2. **Violaciones de Llave Foránea (IntegrityError):** Las reglas de notificación (`notification_rules`) no pueden borrarse si existen notificaciones encoladas (`pending_notifications`) que dependan de ellas.
+
+Para evitar perder tiempo con comandos bloqueados mediante SSH y scripts asilados, **siempre** sigue esta guía cuando necesites borrar datos obsoletos o recrear (re-seed) permisos o notificaciones en producción.
+
+### 18.1. Solución Definitiva para Scripts Manuales en el VPS (Droplet)
+
+No ejecutes comandos de Python en línea (`python -c "..."`) ni uses `bash -c "cat <<EOF"` desde PowerShell hacia SSH, porque los caracteres de escape (`"` y `'`) se corrompen provocando errores de sintaxis o fallando silenciosamente.
+
+**El flujo correcto paso a paso es:**
+
+**Paso 1: Escribir el script localmente**
+Crea el script en tu máquina (por ejemplo `temp_deploy/force_clean.py`).
+
+⚠️ **Importante:** Para evitar el `ModuleNotFoundError: No module named 'app'`, siempre inyecta el path `/app` en la primera línea de tu script antes de hacer cualquier import del proyecto:
+```python
+import sys
+import os
+# Fuerza a Python a mirar en la carpeta /app para que encuentre el módulo 'app'
+# independientemente del directorio de trabajo actual
+sys.path.insert(0, "/app")
+os.environ["PYTHONPATH"] = "/app"
+
+from sqlalchemy import text
+from app.db.base import SessionLocal  # Asegúrate de usar app.db.base, NO app.db.session
+```
+
+**Paso 2: Subir el script al servidor de forma cruda**
+Usa `scp` (Secure Copy Protocol) para enviar el archivo `.py` limpio a la carpeta scripts del servidor:
+```bash
+scp C:\Users\pablo\Documents\appgynsys\temp_deploy\force_clean.py root@167.172.115.154:/opt/appgynsys/backend/scripts/
+```
+
+**Paso 3: Ejecutar dentro de Docker forzando el path**
+Entra por SSH normal y dile a `docker compose` que ejecute el archivo con Python, diciéndole a bash explícitamente que cambie a la carpeta `/app` primero:
+```bash
+ssh root@167.172.115.154
+cd /opt/appgynsys
+docker compose exec -T backend bash -c 'cd /app && PYTHONPATH=/app python scripts/force_clean.py'
+```
+
+### 18.2. Manejo de Integridad Referencial (Cascade Deletes)
+
+Si intentas borrar reglas del sistema (`notification_rules`), PostgreSQL te detendrá con `psycopg2.errors.ForeignKeyViolation` si algún usuario tiene esa notificación en cola para ser enviada. 
+
+Para borrar reglas de forma segura, tu script SIEMPRE debe buscar y eliminar las dependencias de `pending_notifications` **primero**.
+
+**Script plantilla de borrado seguro (`force_clean.py`):**
+```python
+import sys
+import os
+sys.path.insert(0, "/app")
+os.environ["PYTHONPATH"] = "/app"
+
+from sqlalchemy import text
+from app.db.base import SessionLocal
+from app.db.models.notification import NotificationRule, PendingNotification
+from app.seeds.notification_rules import seed_notification_rules
+
+def run():
+    db = SessionLocal()
+    
+    print("1. Buscando reglas para borrar...")
+    # Ejemplo: Encontrar reglas con prefijo "prenatal_week_"
+    rule_ids = db.query(NotificationRule.id).filter(
+        NotificationRule.notification_type.like("prenatal_week_%")
+    ).all()
+    rule_ids = [r[0] for r in rule_ids]
+    
+    if rule_ids:
+        print(f"Borrando dependencias para {len(rule_ids)} reglas encontradas...")
+        deleted_pending = db.query(PendingNotification).filter(
+            PendingNotification.notification_rule_id.in_(rule_ids)
+        ).delete(synchronize_session=False)
+        print(f"  -> Eliminadas {deleted_pending} notificaciones pendientes asociadas.")
+
+    print("2. Borrando las reglas maestras...")
+    deleted_rules = db.query(NotificationRule).filter(
+        NotificationRule.id.in_(rule_ids)
+    ).delete(synchronize_session=False)
+    db.commit()
+    print(f"  -> Borradas {deleted_rules} reglas obsoletas.")
+
+    print("3. Recreando notificaciones globales (seeding)...")
+    seed_notification_rules(db, None)
+    
+    print("4. Recreando configuraciones para cada doctor (Tenant)...")
+    tenants = db.execute(text("SELECT id FROM doctors")).fetchall()
+    for t in tenants:
+        seed_notification_rules(db, t[0])
+
+    print("¡Terminado correctamente!")
+
+if __name__ == "__main__":
+    run()
+```
+
+### 18.3. Reinicio de Cache (Paso final obligatorio)
+
+Las notificaciones de Global Rules y el framework de Celery mantienen el cache fuertemente atado a la memoria RAM. Al hacer cualquier cambio directo en la base de datos (con scripts o SQL), debes matar y reiniciar esos contenedores, o los envíos fallarán por inconsistencia de datos (`DetachedInstanceError` o IDs que ya no existen).
+
+Ejecuta SIEMPRE:
+```bash
+docker compose restart backend celery_worker celery_beat
+```
+
