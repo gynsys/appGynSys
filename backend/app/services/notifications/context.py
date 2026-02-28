@@ -31,6 +31,8 @@ def calculate_smart_context(user: CycleUser, predictions: Optional[dict], pregna
             gestation_days = (today - pregnancy.last_period_date).days
             ctx["gestation_days"] = max(0, gestation_days)
             ctx["gestation_week"] = ctx["gestation_days"] // 7
+            # El día 0 de gestación (FUR) sería día 1 de la semana 0. 
+            # Los días de la semana deben ir del 1 al 7.
             ctx["gestation_day_of_week"] = (ctx["gestation_days"] % 7) + 1
             if ctx["gestation_week"] < 14:
                 ctx["trimester"] = 1

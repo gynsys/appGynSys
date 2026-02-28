@@ -89,7 +89,7 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
     { "type": "prenatal_rest_mindfulness", "category": "prenatal_tip", "priority": 116, "title": "😴 Descanso y Conexión", "message": "Domingo de descanso. Tómate un momento en silencio, respira y conéctate con tu bebé. Dormir bien es fundamental.", "logic": lambda c: c.get("is_pregnant") and c.get("gestation_day_of_week") == 7 },
 
     { "type": "prenatal_daily_supplements", "category": "prenatal_tip", "priority": 10, "title": "💊 Protege a tu bebé", "message": "¡Buenos días mamá! No olvides tomar tu vitamina prenatal, calcio o ácido fólico.", "logic": lambda c: c.get("is_pregnant") is True },
-    { "type": "prenatal_daily_symptoms", "category": "prenatal", "priority": 15, "title": "📋 Chequeo Diario", "message": "¿Cómo te sientes hoy médica o emocionalmente? Registra tus síntomas.", "logic": lambda c: c.get("is_pregnant") is True },
+    { "type": "prenatal_daily_symptom_check", "category": "prenatal", "priority": 15, "title": "📋 Chequeo Diario", "message": "¿Cómo te sientes hoy médica o emocionalmente? Registra tus síntomas.", "logic": lambda c: c.get("is_pregnant") is True },
 
     # ===== PRENATAL MILESTONES & ALERTS =====
     { "type": "prenatal_first_ultrasound", "category": "prenatal", "priority": 250, "title": "📸 Primera Ecografía", "message": "Agenda tu primera ecografía (entre semanas 6-8).", "logic": lambda c: has_event(c, "first_ultrasound") },

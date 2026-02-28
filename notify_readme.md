@@ -180,7 +180,7 @@ frontend/src/
 
 ---
 
-## 4. Tipos de Notificación (108 tipos)
+## 4. Tipos de Notificación (98 tipos actuales)
 
 ### Categorías
 
@@ -188,10 +188,38 @@ frontend/src/
 |-----------|----------|---------|---------|
 | **Menstrual diario** | 29 | `day_N_`, `period_late_N` | `cycle_day == N` |
 | **Prenatal semanal** | 41 | `prenatal_week_N` | `gestation_week == N` |
-| **Hitos prenatales** | 14 | `prenatal_*` | `event == "..."` |
-| **Tips prenatales** | 7 | `prenatal_daily_tip`, etc. | varios |
-| **Sistema** | 13 | `system_*` | eventos de sistema |
-| **Anticonceptivos** | 4 | `contraceptive_*` | `type == "contraceptive"` |
+| **Hitos prenatales** | 10 | `prenatal_*` | `event == "..."` |
+| **Sistema** | 6 | `system_*` | eventos de sistema |
+| **Anticonceptivos** | 2 | `contraceptive_*` | `type == "contraceptive"` |
+| **Método del Ritmo** | 10 | `rhythm_*` | `days_after/before_period` |
+
+### 4.1. Cronograma Dinámico: Los 30 días del Mes (Flujo Ginecología)
+Para una usuaria estándar que no está embarazada, el sistema genera el siguiente pipeline de notificaciones a lo largo de un mes (basado en un ciclo asumiendo métricas promedio, ej. regla de 5 días):
+
+**Fase Menstrual (Días 1 al 7)**
+- **Día 1:** "Inicio Periodo" (Aviso para registrar flujo).
+- **Día 2 al 6:** Chequeos diarios de estado de ánimo, hidratación, dolor y aumento de energía.
+- **Día 6 al 10 (RITMO):** "Días Seguros Post-Periodo" (1 al 5 días después de culminar el sangrado).
+- **Día 7:** "Fin de Periodo" (Aviso de culminación del flujo).
+
+**Fase Folicular y Ventana Fértil (Días 8 al 15)**
+- **Día 8 y 9:** Cuidado de la piel y aviso de que la ventana fértil se acerca.
+- **Día 10 al 14:** Alertas de "Fertilidad Alta" y "Pico de Fertilidad", culminando con el aviso de **Ovulación en el Día 14**.
+- **Día 15:** "Fin de la Ventana Fértil".
+
+**Fase Lútea Temprana (Días 16 al 21)**
+- **Día 16 y 17:** Posible implantación (si hubo concepción) y aviso para empezar a observar el humor.
+- **Día 18 al 21:** Tips de ejercicio suave, alerta de aumento de metabolismo (hambre) y resumen del ciclo.
+
+**Fase Lútea Tardía y SPM (Días 22 al 28)**
+- **Día 22:** "Posible SPM" (Inicio oficial de síntomas premenstruales).
+- **Día 23 al 27:** Chequeos de hinchazón, cambios de ánimo, sensibilidad mamaria y posibles cólicos.
+- **Día 24 al 28 (RITMO):** "Días Seguros Pre-Periodo" (Los 5 días previos a la llegada esperada de la menstruación).
+- **Día 28:** "Periodo Mañana" (Aviso de que el próximo periodo está a punto de llegar).
+
+**Día 29 en adelante:**
+- Alarmas dinámicas de **"Retraso de Periodo"** (1 día de retraso, etc.) si la usuaria no ha registrado su nuevo sangrado.
+- *Nota:* Si la usuaria tiene activa la `Píldora Anticonceptiva`, esta se disparará todos los 30 días a su `contraceptive_time` ignorando la fase del ciclo.
 
 ### Lógica de evaluación — `NOTIFICATION_REGISTRY`
 En `backend/app/services/notifications.py`, el `NOTIFICATION_REGISTRY` es una lista de dicts Python con esta estructura:
@@ -435,8 +463,11 @@ ssh root@167.172.115.154 "docker logs appgynsys-backend-1 2>&1 | grep -i 'error\
 ### 10.2 Consultas SQL de diagnóstico
 
 ```bash
-# Conectarse a la BD en producción
+# Conectarse a la BD en producción (¡El nombre real de la BD es 'gynsys'!)
 docker exec -i appgynsys-db-1 psql -U postgres -d gynsys
+
+# Comando rápido para contar notificaciones agrupadas por categoría
+docker compose exec -T db psql -U postgres -d gynsys -c "SELECT category, COUNT(*) FROM notification_rules GROUP BY category;"
 ```
 
 ```sql
