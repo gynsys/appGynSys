@@ -1,14 +1,32 @@
 # app/seeds/notification_rules.py
 from sqlalchemy.orm import Session
-from app.db.models.notification import NotificationRule
+from app.db.models.notification import NotificationRule, PendingNotification
 
 def seed_notification_rules(db: Session, tenant_id: int):
     """
     Seed ALL 101 notification rules for a specific doctor (tenant).
     Wipes existing rules first for a clean state.
     """
+    # Get IDs of rules to delete
+    if tenant_id is None:
+        rule_ids_query = db.query(NotificationRule.id).filter(NotificationRule.tenant_id.is_(None))
+    else:
+        rule_ids_query = db.query(NotificationRule.id).filter(NotificationRule.tenant_id == tenant_id)
+        
+    rule_ids = [r[0] for r in rule_ids_query.all()]
+    
+    # WIPE pending notifications for these rules
+    if rule_ids:
+        db.query(PendingNotification).filter(
+            PendingNotification.notification_rule_id.in_(rule_ids)
+        ).delete(synchronize_session=False)
+
     # WIPE existing rules for this tenant
-    db.query(NotificationRule).filter(NotificationRule.tenant_id == tenant_id).delete()
+    if tenant_id is None:
+        db.query(NotificationRule).filter(NotificationRule.tenant_id.is_(None)).delete(synchronize_session=False)
+    else:
+        db.query(NotificationRule).filter(NotificationRule.tenant_id == tenant_id).delete(synchronize_session=False)
+
     db.commit()
 
     standard_rules = [
