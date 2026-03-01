@@ -197,12 +197,25 @@ export default function DoctorProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <style>
+          {`
+            @keyframes heartbeat {
+              0% { transform: scale(1); }
+              14% { transform: scale(1.15); }
+              28% { transform: scale(1); }
+              42% { transform: scale(1.15); }
+              70% { transform: scale(1); }
+            }
+            .animate-heartbeat {
+              animation: heartbeat 1.5s infinite;
+            }
+          `}
+        </style>
         <div className="text-center flex flex-col items-center">
           <img
             src="/GynSys.png"
             alt="Cargando perfil..."
-            className="w-24 h-auto object-contain animate-pulse drop-shadow-md"
-            style={{ animationDuration: '1.5s' }}
+            className="w-24 h-auto object-contain animate-heartbeat drop-shadow-md"
           />
         </div>
       </div>
