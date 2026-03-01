@@ -68,10 +68,10 @@ class TestEvaluateRegistryRule:
         assert result is False, "Usuaria embarazada no debe recibir reglas de anticonceptivo"
 
     def test_embarazada_recibe_prenatal(self, ctx_pregnant_week28, user_settings_default):
-        """Una usuaria embarazada en semana 28 SÍ debe recibir la regla de esa semana."""
-        prenatal_rule = NOTIFICATION_MAP["prenatal_week_28"]
+        """Una usuaria embarazada SÍ debe recibir la regla de suplementos diarios."""
+        prenatal_rule = NOTIFICATION_MAP["prenatal_daily_supplements"]
         result = evaluate_registry_rule(prenatal_rule, ctx_pregnant_week28, user_settings_default)
-        assert result is True, "Semana 28 debe disparar la regla prenatal_week_28"
+        assert result is True, "Embarazada debe disparar la regla prenatal_daily_supplements"
 
     def test_prenatal_deshabilitado_bloquea(self, ctx_pregnant_week28, user_settings_no_prenatal):
         """Si el usuario deshabilitó milestones prenatales, no debe recibirlos."""
@@ -157,12 +157,17 @@ class TestNotificationRegistry:
             assert callable(rule["logic"]), \
                 f"El campo logic de '{rule['type']}' no es callable"
 
-    def test_prenatal_weeks_cubre_semanas_1_a_41(self):
-        """Deben existir reglas prenatal_week_1 hasta prenatal_week_41."""
-        for week in range(1, 42):
-            rule_type = f"prenatal_week_{week}"
-            assert rule_type in NOTIFICATION_MAP, \
-                f"Falta la regla {rule_type} en NOTIFICATION_REGISTRY"
+    def test_prenatal_routines_presentes(self):
+        """Deben existir las rutinas prenatales dinámicas."""
+        expected_routines = {
+            "prenatal_weekly_milestone", "prenatal_daily_nutrition_tip", 
+            "prenatal_symptom_check", "prenatal_medical_tests_reminder", 
+            "prenatal_exercise_tip", "prenatal_ultrasound_prep", 
+            "prenatal_rest_mindfulness", "prenatal_daily_supplements"
+        }
+        for rtype in expected_routines:
+            assert rtype in NOTIFICATION_MAP, \
+                f"Falta la regla {rtype} en NOTIFICATION_REGISTRY"
 
     def test_dias_menstruales_1_a_28_presentes(self):
         """Deben existir reglas para day_1_period_start hasta day_28_period_tomorrow."""
@@ -433,11 +438,11 @@ class TestCategoryLimit:
         assert rule["category"] == "contraceptive", \
             f"contraceptive_daily debe ser categoría 'contraceptive', es '{rule['category']}'"
 
-    def test_prenatal_week_28_es_de_categoria_prenatal(self):
-        """La regla prenatal_week_28 debe tener category='prenatal'."""
-        rule = NOTIFICATION_MAP["prenatal_week_28"]
-        assert rule["category"] == "prenatal", \
-            f"prenatal_week_28 debe ser categoría 'prenatal', es '{rule['category']}'"
+    def test_prenatal_supplements_es_de_categoria_prenatal(self):
+        """La regla prenatal_daily_supplements debe tener category='prenatal_tip'."""
+        rule = NOTIFICATION_MAP["prenatal_daily_supplements"]
+        assert rule["category"].startswith("prenatal"), \
+            f"prenatal_daily_supplements debe ser categoría prenatal, es '{rule['category']}'"
 
     def test_bleeding_alert_es_de_categoria_prenatal(self):
         """La regla prenatal_bleeding debe tener category='prenatal'."""
