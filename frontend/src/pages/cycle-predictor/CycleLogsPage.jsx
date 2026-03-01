@@ -59,7 +59,7 @@ export default function CycleLogsPage() {
                 </TabsContent>
 
                 <TabsContent value="calendar" className="mt-0">
-                    <CycleCalendarTab />
+                    <CycleCalendarTab activePregnancy={activePregnancy} />
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-0">

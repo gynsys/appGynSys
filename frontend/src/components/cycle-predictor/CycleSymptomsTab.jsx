@@ -300,38 +300,40 @@ export default function CycleSymptomsTab({ activePregnancy }) {
                         </div>
                     </div>
 
-                    <div>
-                        <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-medium dark:text-gray-400">Nivel de Dolor {activePregnancy ? '' : 'Menstrual'}</h4>
-                            <span className={cn(
-                                "text-sm font-medium px-2 py-0.5 rounded-full",
-                                painLevel === 0 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                    painLevel <= 3 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                        painLevel <= 6 ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
-                                            "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            )}>
-                                {painLevel === 0 ? 'Sin dolor' :
-                                    painLevel <= 3 ? 'Leve' :
-                                        painLevel <= 6 ? 'Moderado' : 'Severo'} ({painLevel})
-                            </span>
+                    {!activePregnancy && (
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium dark:text-gray-400">Nivel de Dolor Menstrual</h4>
+                                <span className={cn(
+                                    "text-sm font-medium px-2 py-0.5 rounded-full",
+                                    painLevel === 0 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                        painLevel <= 3 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                            painLevel <= 6 ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
+                                                "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                )}>
+                                    {painLevel === 0 ? 'Sin dolor' :
+                                        painLevel <= 3 ? 'Leve' :
+                                            painLevel <= 6 ? 'Moderado' : 'Severo'} ({painLevel})
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center gap-1 overflow-visible p-1">
+                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
+                                    <button
+                                        key={level}
+                                        onClick={() => setPainLevel(level)}
+                                        className={cn(
+                                            "w-8 h-8 rounded-full text-xs font-medium flex items-center justify-center transition-all",
+                                            painLevel === level
+                                                ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2 dark:ring-offset-background"
+                                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:text-gray-400"
+                                        )}
+                                    >
+                                        {level}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center gap-1 overflow-visible p-1">
-                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
-                                <button
-                                    key={level}
-                                    onClick={() => setPainLevel(level)}
-                                    className={cn(
-                                        "w-8 h-8 rounded-full text-xs font-medium flex items-center justify-center transition-all",
-                                        painLevel === level
-                                            ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2 dark:ring-offset-background"
-                                            : "bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:text-gray-400"
-                                    )}
-                                >
-                                    {level}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
                     <div>
                         <Button
