@@ -864,3 +864,13 @@ Ejecuta SIEMPRE:
 docker compose restart backend celery_worker celery_beat
 ```
 
+### 18.4. Resumen: Bloque Rápido de Actualización (Copy-Paste)
+
+Si un desarrollador modificó las reglas en `backend/app/seeds/notification_rules.py` y subió los cambios a GitHub, **estos son los 4 comandos exactos que debes copiar, pegar y ejecutar en la consola del Droplet** para aplicar los cambios a las usuarias y evitar dolores de cabeza con el cache o rutas de Docker:
+
+```bash
+cd /opt/appgynsys
+git pull origin main
+docker compose exec backend bash -c 'cd /app && PYTHONPATH=/app python scripts/force_clean.py'
+docker compose restart backend celery_worker celery_beat
+```
