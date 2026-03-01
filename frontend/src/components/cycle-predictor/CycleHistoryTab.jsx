@@ -17,7 +17,7 @@ import {
 } from '../ui/dialog'
 import Button from '../common/Button'
 
-export default function CycleHistoryTab() {
+export default function CycleHistoryTab({ activePregnancy }) {
     const [historyData, setHistoryData] = useState({ cycles: [], symptoms: [] })
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
@@ -125,8 +125,9 @@ export default function CycleHistoryTab() {
     }
 
     // Merge and sort all items for timeline
+    // If pregnant, filter out standard cycles as they are not relevant during pregnancy
     const timelineItems = [
-        ...historyData.cycles.map(c => ({ ...c, type: 'cycle', date: c.start_date })),
+        ...(activePregnancy ? [] : historyData.cycles.map(c => ({ ...c, type: 'cycle', date: c.start_date }))),
         ...historyData.symptoms.map(s => ({ ...s, type: 'symptom', date: s.date }))
     ].sort((a, b) => new Date(b.date) - new Date(a.date))
 
@@ -142,8 +143,8 @@ export default function CycleHistoryTab() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-semibold">Historial Completo</h3>
-                    <p className="text-sm text-muted-foreground">Resumen de tus ciclos y síntomas registrados</p>
+                    <h3 className="text-lg font-semibold">{activePregnancy ? 'Historial Prenatal' : 'Historial Completo'}</h3>
+                    <p className="text-sm text-muted-foreground">{activePregnancy ? 'Resumen de tus síntomas y chequeos durante el embarazo' : 'Resumen de tus ciclos y síntomas registrados'}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     {/* Clear History Button */}
@@ -168,35 +169,37 @@ export default function CycleHistoryTab() {
                 </div>
             </div>
 
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-4 text-center">
-                        <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.total_cycles}</p>
-                        <p className="text-sm text-muted-foreground">Ciclos registrados</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-4 text-center">
-                        <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.avg_period_length}</p>
-                        <p className="text-sm text-muted-foreground">Días de periodo (prom)</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-4 text-center">
-                        <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.avg_cycle_length}</p>
-                        <p className="text-sm text-muted-foreground">Duración ciclo (prom)</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-4 text-center">
-                        <p className="text-3xl font-bold text-primary dark:text-gray-400">
-                            {stats.cycle_range_min === 0 ? '0' : `${stats.cycle_range_min}-${stats.cycle_range_max}`}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Rango (días)</p>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Statistics Cards - Only show if not pregnant, as cycle length doesn't apply */}
+            {!activePregnancy && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                            <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.total_cycles}</p>
+                            <p className="text-sm text-muted-foreground">Ciclos registrados</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                            <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.avg_period_length}</p>
+                            <p className="text-sm text-muted-foreground">Días de periodo (prom)</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                            <p className="text-3xl font-bold text-primary dark:text-gray-400">{stats.avg_cycle_length}</p>
+                            <p className="text-sm text-muted-foreground">Duración ciclo (prom)</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                            <p className="text-3xl font-bold text-primary dark:text-gray-400">
+                                {stats.cycle_range_min === 0 ? '0' : `${stats.cycle_range_min}-${stats.cycle_range_max}`}
+                            </p>
+                            <p className="text-sm text-muted-foreground">Rango (días)</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* Timeline */}
             <div className="space-y-4">

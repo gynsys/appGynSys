@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Calendar, History } from 'lucide-react';
 import CycleSymptomsTab from '../../components/cycle-predictor/CycleSymptomsTab';
 import CycleHistoryTab from '../../components/cycle-predictor/CycleHistoryTab';
 import CycleCalendarTab from '../../components/cycle-predictor/CycleCalendarTab';
+import cycleService from '../../services/cycleService';
+import { useAuthStore } from '../../store/authStore';
 
 /**
  * CycleLogsPage - Combined view for symptoms logging and history
@@ -11,6 +13,16 @@ import CycleCalendarTab from '../../components/cycle-predictor/CycleCalendarTab'
  */
 export default function CycleLogsPage() {
     const [activeTab, setActiveTab] = useState('symptoms');
+    const [activePregnancy, setActivePregnancy] = useState(null);
+    const { isAuthenticated } = useAuthStore();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            cycleService.getActivePregnancy()
+                .then(preg => setActivePregnancy(preg))
+                .catch(e => console.error(e));
+        }
+    }, [isAuthenticated]);
 
     return (
         <div className="p-4 md:p-6">
@@ -20,7 +32,7 @@ export default function CycleLogsPage() {
                     📝 Registros
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Síntomas, calendario e historial de ciclos
+                    {activePregnancy ? 'Síntomas e historial prenatal' : 'Síntomas, calendario e historial de ciclos'}
                 </p>
             </div>
 
@@ -43,7 +55,7 @@ export default function CycleLogsPage() {
                 </TabsList>
 
                 <TabsContent value="symptoms" className="mt-0">
-                    <CycleSymptomsTab />
+                    <CycleSymptomsTab activePregnancy={activePregnancy} />
                 </TabsContent>
 
                 <TabsContent value="calendar" className="mt-0">
@@ -51,7 +63,7 @@ export default function CycleLogsPage() {
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-0">
-                    <CycleHistoryTab />
+                    <CycleHistoryTab activePregnancy={activePregnancy} />
                 </TabsContent>
             </Tabs>
         </div>

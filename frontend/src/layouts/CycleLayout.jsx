@@ -4,6 +4,7 @@ import { LayoutDashboard, FileText, Bell, User } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { BottomNav } from '../components/common/BottomNav';
 import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog';
+import cycleService from '../services/cycleService';
 
 /**
  * CycleLayout - Auth-protected layout for Cycle Predictor PWA
@@ -12,8 +13,18 @@ import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog';
 export default function CycleLayout() {
     const { isAuthenticated, user } = useAuthStore();
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [activePregnancy, setActivePregnancy] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Fetch pregnancy status to adapt header
+    useEffect(() => {
+        if (isAuthenticated) {
+            cycleService.getActivePregnancy()
+                .then(preg => setActivePregnancy(preg))
+                .catch(e => console.error("Error fetching pregnancy status text", e));
+        }
+    }, [isAuthenticated, location.pathname]);
 
     // Authentication Guard
     // Authentication Guard REMOVED to allow guest access
@@ -81,7 +92,7 @@ export default function CycleLayout() {
 
                     {/* Title */}
                     <h1 className="text-base font-semibold text-gray-900 dark:text-white">
-                        Calculadora Menstrual
+                        {activePregnancy ? 'Asistente Prenatal' : 'Calculadora Menstrual'}
                     </h1>
 
                     {/* User Avatar */}
