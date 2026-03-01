@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 const isValidDate = (d) => d instanceof Date && !isNaN(d)
 
 // Custom Calendar Component - Pure CSS Grid
-export function CustomCalendar({ selected, onSelect, onDoubleClick, isPeriodDay, isFertileDay, isOvulationDay }) {
+export function CustomCalendar({ selected, onSelect, onDoubleClick, isPeriodDay, isFertileDay, isOvulationDay, isMilestoneDay }) {
     const [currentMonth, setCurrentMonth] = useState(selected || new Date())
 
     const monthStart = startOfMonth(currentMonth)
@@ -76,12 +76,14 @@ export function CustomCalendar({ selected, onSelect, onDoubleClick, isPeriodDay,
                     const isPeriod = isPeriodDay && isPeriodDay(day)
                     const isFertile = isFertileDay && isFertileDay(day)
                     const isOvulation = isOvulationDay && isOvulationDay(day)
+                    const isMilestone = isMilestoneDay && isMilestoneDay(day)
                     const todayClass = isToday(day) ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-100 font-bold border border-pink-200 dark:border-pink-800' : ''
                     const selectedClass = isSelected(day) ? 'bg-pink-500 text-white hover:bg-pink-600' : ''
                     const outsideClass = !isCurrentMonth(day) ? 'text-gray-400 dark:text-gray-600 opacity-50' : 'text-gray-900 dark:text-white'
 
                     let markerClass = ''
-                    if (isPeriod) markerClass = 'ring-2 ring-pink-400 ring-inset'
+                    if (isMilestone) markerClass = 'bg-purple-100 dark:bg-purple-900/60 ring-2 ring-purple-400 ring-inset font-bold text-purple-700 dark:text-purple-300'
+                    else if (isPeriod) markerClass = 'ring-2 ring-pink-400 ring-inset'
                     else if (isFertile) markerClass = 'ring-2 ring-teal-600 ring-inset'
                     else if (isOvulation) markerClass = 'ring-2 ring-teal-200 ring-inset'
 
@@ -374,10 +376,25 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
         }
     }
 
-    // Funciones para detectar días especiales
+    // Helper para detectar días especiales de fertilidad/menstruación
     const isPeriodDay = (date) => getCycleDayStatus(date) === 'period'
     const isFertileDay = (date) => getCycleDayStatus(date) === 'fertile'
     const isOvulationDay = (date) => getCycleDayStatus(date) === 'ovulation'
+
+    // Helper para detectar hitos importantes de embarazo en el calendario
+    const isPregnancyMilestoneDay = (date) => {
+        if (!activePregnancy?.last_period_date) return false;
+
+        // Sumamos las semanas correspondientes a cada hito desde la FUR (Fecha de Última Regla)
+        // Hitos: 11, 12, 20, 24, 28, 32, 35
+        const lmp = parseISO(activePregnancy.last_period_date);
+        const diff = differenceInCalendarDays(date, lmp);
+
+        // Check if the difference in days corresponds exactly to the start of a milestone week
+        // Ex: 11 weeks = 11 * 7 = 77 days
+        const milestoneDays = [11 * 7, 12 * 7, 20 * 7, 24 * 7, 28 * 7, 32 * 7, 35 * 7];
+        return milestoneDays.includes(diff);
+    };
 
     return (
         <div className="space-y-6">
@@ -530,33 +547,48 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                                     selected={selectedDate}
                                     onSelect={setSelectedDate}
                                     onDoubleClick={(date) => {
-                                        setSelectedDate(date)
-                                        handleConfirmStart(date)
+                                        if (!activePregnancy) {
+                                            setSelectedDate(date)
+                                            handleConfirmStart(date)
+                                        }
                                     }}
-                                    isPeriodDay={isPeriodDay}
-                                    isFertileDay={isFertileDay}
-                                    isOvulationDay={isOvulationDay}
+                                    isPeriodDay={activePregnancy ? undefined : isPeriodDay}
+                                    isFertileDay={activePregnancy ? undefined : isFertileDay}
+                                    isOvulationDay={activePregnancy ? undefined : isOvulationDay}
+                                    isMilestoneDay={activePregnancy ? isPregnancyMilestoneDay : undefined}
                                 />
 
                                 {/* Center Legend */}
-                                <div className="flex flex-wrap justify-center gap-6 mt-6 pt-4 border-t dark:border-gray-700">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-pink-400"></div>
-                                        <span className="text-xs text-muted-foreground dark:text-gray-400">Período</span>
+                                {activePregnancy ? (
+                                    <div className="flex flex-wrap justify-center gap-6 mt-6 pt-4 border-t dark:border-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 rounded-full bg-purple-100 ring-2 ring-purple-400 ring-inset"></div>
+                                            <span className="text-xs text-muted-foreground dark:text-gray-400">Examen o Hito Médico</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-teal-600"></div>
-                                        <span className="text-xs text-muted-foreground dark:text-gray-400">Días fértiles</span>
+                                ) : (
+                                    <div className="flex flex-wrap justify-center gap-6 mt-6 pt-4 border-t dark:border-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-pink-400"></div>
+                                            <span className="text-xs text-muted-foreground dark:text-gray-400">Período</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-teal-600"></div>
+                                            <span className="text-xs text-muted-foreground dark:text-gray-400">Días fértiles</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-teal-200"></div>
+                                            <span className="text-xs text-muted-foreground dark:text-gray-400">Ovulación</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-teal-200"></div>
-                                        <span className="text-xs text-muted-foreground dark:text-gray-400">Ovulación</span>
-                                    </div>
-                                </div>
+                                )}
                             </div>
-                            <p className="text-center text-lg font-medium text-muted-foreground animate-in fade-in slide-in-from-top-4">
-                                ¿Tu período llegó en otra fecha? Presiona doble click en la fecha para registrarlo
-                            </p>
+
+                            {!activePregnancy && (
+                                <p className="text-center text-lg font-medium text-muted-foreground animate-in fade-in slide-in-from-top-4">
+                                    ¿Tu período llegó en otra fecha? Presiona doble click en la fecha para registrarlo
+                                </p>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
