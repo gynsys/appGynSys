@@ -197,9 +197,13 @@ export default function DoctorProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-gray-600">Cargando...</p>
+        <div className="text-center flex flex-col items-center">
+          <img
+            src="/GynSys.png"
+            alt="Cargando perfil..."
+            className="w-24 h-auto object-contain animate-pulse drop-shadow-md"
+            style={{ animationDuration: '1.5s' }}
+          />
         </div>
       </div>
     )
