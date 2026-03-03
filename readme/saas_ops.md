@@ -54,3 +54,45 @@ Para actualizar la plantilla basada en un usuario existente (Ej: Mariel Herrera)
 docker exec -w /app -e PYTHONPATH=. appgynsys-backend-1 python scripts/extract_saas_template.py
 ```
 2. Git commit y push para que el cambio sea permanente.
+
+## 5. Resolución de Problemas y Recuperación de Datos
+
+### Tablas Críticas de Médicos (Saas)
+- `consultations`: Historias médicas y diagnósticos.
+- `appointments`: Gestión de citas y preconsultas.
+- `patients`: Listado de pacientes.
+- `preconsultation_questions`: Configuración de preguntas por doctor.
+- `services`: Servicios y especialidades configuradas.
+
+### Recuperación desde Backups
+Si se detecta pérdida de datos o discrepancias tras cambios de roles:
+
+1. **Localizar Backups**:
+   - `/opt/appgynsys/backend/backups/`: Copias automáticas cada hora (archivos `.sql`).
+   - `backups/`: Zips históricos de migraciones.
+
+2. **Crear Base de Datos de Recuperación**:
+   ```bash
+   docker exec appgynsys-db-1 psql -U postgres -c "CREATE DATABASE gynsys_restore;"
+   ```
+
+3. **Restaurar Backup a la DB de Recuperación**:
+   ```bash
+   docker exec -i appgynsys-db-1 psql -U postgres -d gynsys_restore < /ruta/al/backup.sql
+   ```
+
+4. **Transferir Datos Quirúrgicamente**:
+   Ejemplo para restaurar consultas de un doctor (ID 1) desde `gynsys_restore`:
+   ```bash
+   # Exportar desde restore
+   docker exec appgynsys-db-1 pg_dump -U postgres -d gynsys_restore \
+     -t consultations -t appointments -t preconsultation_questions \
+     --data-only --no-owner --no-privileges > /tmp/restore_data.sql
+   
+   # Importar a live
+   docker exec -i appgynsys-db-1 psql -U postgres -d gynsys < /tmp/restore_data.sql
+   ```
+
+### Monitoreo de Backups
+- Ver logs: `docker logs appgynsys-backend-1 | grep backup`
+- El servicio corre en el startup del backend (`backend/app/main.py`) y usa `PGPASSWORD` del `.env`.
