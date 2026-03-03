@@ -343,17 +343,38 @@ def send_new_tenant_notification(tenant_data: dict):
     """
     Send notification to admin about new tenant registration.
     """
-    admin_email = "dramarielh@gmail.com"
+    admin_email = settings.ADMIN_EMAIL
+    admin_url = f"{settings.FRONTEND_URL}/admin/tenants"
     subject = f"Nuevo Registro de Doctor: {tenant_data.get('nombre_completo')}"
     
     html_content = f"""
-    <h1>Nuevo Doctor Registrado</h1>
-    <p><strong>Nombre:</strong> {tenant_data.get('nombre_completo')}</p>
-    <p><strong>Email:</strong> {tenant_data.get('email')}</p>
-    <p><strong>Plan ID:</strong> {tenant_data.get('plan_id')}</p>
-    <p><strong>Referencia Pago:</strong> {tenant_data.get('payment_reference')}</p>
-    <hr>
-    <p>Ingresa al panel administrativo para aprobar o rechazar esta cuenta.</p>
+    <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h1 style="color: #4F46E5;">Nuevo Doctor Registrado</h1>
+        <p>Se ha recibido una nueva solicitud de registro para el SaaS:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Nombre:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">{tenant_data.get('nombre_completo')}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">{tenant_data.get('email')}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Plan ID:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">{tenant_data.get('plan_id')}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Referencia Pago:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">{tenant_data.get('payment_reference') or 'No proporcionada'}</td>
+            </tr>
+        </table>
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="{admin_url}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Revisar y Aprobar en Panel Admin</a>
+        </div>
+        <hr style="margin-top: 30px; border: 0; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666;">GynSys SaaS Automático — Notificaciones</p>
+    </div>
     """
     
     _send_integrated_email(admin_email, subject, html_content)

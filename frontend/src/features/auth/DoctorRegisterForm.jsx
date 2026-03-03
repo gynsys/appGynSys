@@ -20,6 +20,7 @@ export default function DoctorRegisterForm() {
     })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
 
     useEffect(() => {
         const plan = searchParams.get('plan')
@@ -27,6 +28,15 @@ export default function DoctorRegisterForm() {
             setFormData(prev => ({ ...prev, plan_id: parseInt(plan) }))
         }
     }, [searchParams])
+
+    useEffect(() => {
+        if (isSuccess) {
+            const timer = setTimeout(() => {
+                navigate('/')
+            }, 8000)
+            return () => clearTimeout(timer)
+        }
+    }, [isSuccess, navigate])
 
     const handleChange = (e) => {
         setFormData({
@@ -53,14 +63,45 @@ export default function DoctorRegisterForm() {
                 nombre_completo: formData.nombre_completo,
                 plan_id: formData.plan_id
             })
-            // Successful registration for doctor redirects to dashboard
-            navigate('/dashboard')
+            // Set success state instead of immediate redirect
+            setIsSuccess(true)
         } catch (err) {
             const detail = err.response?.data?.detail
             setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
         } finally {
             setLoading(false)
         }
+    }
+
+    if (isSuccess) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white px-4 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-indigo-50/50 skew-x-12 translate-x-20 z-0"></div>
+                <div className="w-full max-w-lg relative z-10">
+                    <Card className="shadow-2xl border-gray-100 rounded-[40px] overflow-hidden p-8 text-center animate-in fade-in zoom-in duration-500">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-3xl font-black text-gray-900 mb-4">¡Información enviada con éxito!</h2>
+                        <div className="space-y-4 text-gray-600 font-medium">
+                            <p>Tu solicitud ha sido recibida y está siendo procesada por nuestro equipo técnico.</p>
+                            <p className="bg-indigo-50 p-4 rounded-2xl text-indigo-700 text-sm">
+                                📧 Recibirás un correo electrónico de confirmación una vez que tu cuenta sea aprobada (generalmente en menos de 24 horas).
+                            </p>
+                            <p className="text-sm">Serás redirigido a la página principal en unos segundos...</p>
+                        </div>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="mt-8 w-full h-14 rounded-2xl font-black bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition-all"
+                        >
+                            Volver al Inicio
+                        </button>
+                    </Card>
+                </div>
+            </div>
+        )
     }
 
     return (

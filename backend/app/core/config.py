@@ -129,6 +129,7 @@ class Settings(BaseSettings):
     VAPID_PRIVATE_KEY: Optional[str] = None
     VAPID_PUBLIC_KEY: Optional[str] = None
     VAPID_CLAIM_EMAIL: str = "admin@gynsys.com"
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "dramarielh@gmail.com")
 
     # Notificaciones — Modo Debug
     # Cuando True: bypasea la guardia de "1 notificación por tipo por día"
