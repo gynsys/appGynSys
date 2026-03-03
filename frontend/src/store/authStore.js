@@ -59,7 +59,18 @@ export const useAuthStore = create((set, get) => {
         const data = await authService.register(userData)
         // After registration, try to login automatically
         if (userData.email && userData.password) {
-          await get().login(userData.email, userData.password)
+          try {
+            await get().login(userData.email, userData.password)
+          } catch (loginError) {
+            // If 403, it means account is pending approval, which is success for the registration phase
+            if (loginError.response?.status === 403) {
+              console.log("Registration successful, account pending approval.")
+              set({ loading: false })
+              return data
+            }
+            // For other login errors, we might still want to throw if it's not a pending account issue
+            throw loginError
+          }
         }
         return data
       } catch (error) {
