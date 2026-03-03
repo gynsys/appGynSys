@@ -621,7 +621,7 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "priority": 10,
             "title_template": "💊 Protege a tu bebé",
             "message_template": "¡Buenos días mamá! No olvides tomar tu vitamina prenatal, calcio o ácido fólico. ¡Tu bebé te lo agradece profundamente!",
-            "message_text_template": "Recordatorio de vitaminas prenatales.",
+            "message_text_template": "¡Buenos días mamá! No olvides tomar tu vitamina prenatal, calcio o ácido fólico. ¡Tu bebé te lo agradece profundamente!",
             "channel": "dual",
             "send_time": "09:00"
         },
