@@ -49,18 +49,18 @@ def extract_template():
         }
 
         # 3. Services
-        cursor.execute("SELECT name, description, icon, \"order\" FROM services WHERE doctor_id = 1")
+        cursor.execute("SELECT title, description, image_url, \"order\" FROM services WHERE doctor_id = 1")
         services = []
         for s in cursor.fetchall():
             services.append({
-                "name": f"Servicio: {s[0]}",
+                "title": f"Servicio: {s[0]}",
                 "description": "Describe aquí en qué consiste este servicio médico.",
-                "icon": s[2],
+                "image_url": s[2],
                 "order": s[3]
             })
 
         # 4. FAQs
-        cursor.execute("SELECT question, answer, \"order\" FROM faqs WHERE doctor_id = 1")
+        cursor.execute("SELECT question, answer, display_order FROM faqs WHERE doctor_id = 1")
         faqs = []
         for f in cursor.fetchall():
             faqs.append({
@@ -69,7 +69,18 @@ def extract_template():
                 "order": f[2]
             })
 
-        # 5. Preconsultation Questions
+        # 5. Testimonials
+        cursor.execute("SELECT patient_name, content, photo_url, rating FROM testimonials WHERE doctor_id = 1")
+        testimonials = []
+        for t in cursor.fetchall():
+            testimonials.append({
+                "name": "Paciente Satisfecho",
+                "content": "Escribe aquí un testimonio representativo de tu atención médica.",
+                "photo_url": t[2],
+                "rating": t[3]
+            })
+
+        # 6. Preconsultation Questions
         cursor.execute("SELECT question_text, question_type, options, is_required, \"order\", category FROM preconsultation_questions WHERE doctor_id = 1")
         questions = []
         for q in cursor.fetchall():
@@ -100,6 +111,7 @@ def extract_template():
             "show_certifications_carousel": False,
             "services": services,
             "faqs": faqs,
+            "testimonials": testimonials,
             "preconsultation_questions": questions,
             "schedule": None,
             "pdf_config": None,
