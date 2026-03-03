@@ -6,10 +6,11 @@ export default function RegisterPage() {
   const [searchParams] = useSearchParams()
   const type = searchParams.get('type')
 
-  if (type === 'doctor') {
-    return <DoctorRegisterForm />
+  // Default to SaaS/Doctor registration for gynsys.net entry point
+  if (type === 'patient' || type === 'cycle') {
+    return <RegisterForm />
   }
 
-  return <RegisterForm />
+  return <DoctorRegisterForm />
 }
 

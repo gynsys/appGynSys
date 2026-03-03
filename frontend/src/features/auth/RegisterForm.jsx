@@ -20,12 +20,22 @@ export default function RegisterForm() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   useEffect(() => {
     // Get doctor_slug from URL params
     const doctorSlug = searchParams.get('doctor') || 'mariel-herrera' // Default fallback
     setFormData(prev => ({ ...prev, doctor_slug: doctorSlug }))
   }, [searchParams])
+
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        navigate('/')
+      }, 8000)
+      return () => clearTimeout(timer)
+    }
+  }, [isSuccess, navigate])
 
   const handleChange = (e) => {
     setFormData({
@@ -57,13 +67,44 @@ export default function RegisterForm() {
         nombre_completo: formData.nombre_completo,
         doctor_slug: formData.doctor_slug,
       })
-      navigate('/cycle/dashboard')
+      setIsSuccess(true)
     } catch (err) {
       const detail = err.response?.data?.detail
       setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-pink-50/50 skew-x-12 translate-x-20 z-0"></div>
+        <div className="w-full max-w-lg relative z-10">
+          <Card className="shadow-2xl border-gray-100 rounded-[40px] overflow-hidden p-8 text-center animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-black text-gray-900 mb-4">¡Información enviada con éxito!</h2>
+            <div className="space-y-4 text-gray-600 font-medium">
+              <p>Tu solicitud de registro ha sido recibida correctamente.</p>
+              <p className="bg-pink-50 p-4 rounded-2xl text-pink-700 text-sm">
+                📧 Recibirás un correo electrónico de confirmación una vez que tu cuenta esté activa.
+              </p>
+              <p className="text-sm">Serás redirigido a la página principal en unos segundos...</p>
+            </div>
+            <button
+              onClick={() => navigate('/')}
+              className="mt-8 w-full h-14 rounded-2xl font-black bg-pink-500 text-white shadow-xl hover:bg-pink-600 transition-all font-sans"
+            >
+              Volver al Inicio
+            </button>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -79,17 +120,17 @@ export default function RegisterForm() {
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <span className="text-3xl font-semibold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-            GynTrack
+            GynSys <span className="text-sm font-bold opacity-70">App</span>
           </span>
         </div>
 
-        <Card className="shadow-2xl border-0 backdrop-blur-sm bg-white/90">
+        <Card className="shadow-2xl border-0 backdrop-blur-sm bg-white/90 rounded-[30px] overflow-hidden">
           <CardHeader className="space-y-1 text-center pb-6">
             <CardTitle className="text-3xl text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
               Crear cuenta
             </CardTitle>
             <CardDescription className="text-base text-gray-600">
-              Comienza a llevar el control de tu ciclo
+              Gestión inteligente para tu salud femenina
             </CardDescription>
           </CardHeader>
           <CardContent>
