@@ -180,6 +180,11 @@ export default function DoctorProfilePage() {
       )
       // Persist for Cycle App (Guest Mode)
       localStorage.setItem('tenant_theme_primary', doctor.theme_primary_color)
+
+      // Persist for Smart Redirect (SaaS Flow)
+      if (doctor.slug_url) {
+        localStorage.setItem('last_doctor_slug', doctor.slug_url)
+      }
     }
     // document.title removed as per user request to avoid PWA title issues
 

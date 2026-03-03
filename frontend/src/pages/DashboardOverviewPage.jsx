@@ -12,6 +12,7 @@ import { useDarkMode } from '../hooks/useDarkMode'
 import { dashboardService } from '../services/dashboardService'
 import DashboardCalendar from '../components/dashboard/DashboardCalendar'
 import { useAppointmentStore } from '../store/appointmentStore'
+import WelcomeTourModal from '../components/dashboard/WelcomeTourModal'
 
 export default function DashboardOverviewPage() {
   const navigate = useNavigate()
@@ -186,6 +187,7 @@ export default function DashboardOverviewPage() {
           onSave={handleSaveSchedule}
         />
       )}
+      <WelcomeTourModal doctor={doctor} />
     </>
   )
 }

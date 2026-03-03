@@ -1,236 +1,261 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import HeroSlider from '../components/features/HeroSlider'
 import LoginModal from '../components/features/LoginModal'
+import { Check, ArrowRight, Shield, Calendar, Clipboard, Activity, Globe, Users } from 'lucide-react'
 
 export default function LandingPage() {
   const { isAuthenticated, user, logout } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
+  const features = [
+    {
+      icon: <Globe className="w-10 h-10 text-indigo-600" />,
+      title: "Tu Propia Web Profesional",
+      description: "Crea tu sitio médico personalizado con tu slug único en minutos. Sin complicaciones técnicas."
+    },
+    {
+      icon: <Calendar className="w-10 h-10 text-indigo-600" />,
+      title: "Agendamiento Inteligente",
+      description: "Permite que tus pacientes reserven citas 24/7 con integración directa en tu calendario."
+    },
+    {
+      icon: <Clipboard className="w-10 h-10 text-indigo-600" />,
+      title: "Pre-consultas Digitales",
+      description: "Recibe información clínica vital antes de la consulta para optimizar tu tiempo y diagnóstico."
+    },
+    {
+      icon: <Activity className="w-10 h-10 text-indigo-600" />,
+      title: "Blog y Educación",
+      description: "Comparte tus conocimientos y posiciona tu marca personal con un blog profesional integrado."
+    },
+    {
+      icon: <Users className="w-10 h-10 text-indigo-600" />,
+      title: "Gestión de Pacientes",
+      description: "Centraliza la información de tus pacientes, historias clínicas y seguimientos en un solo lugar."
+    },
+    {
+      icon: <Shield className="w-10 h-10 text-indigo-600" />,
+      title: "Seguridad Integral",
+      description: "Tus datos y los de tus pacientes están protegidos con los más altos estándares de seguridad."
+    }
+  ]
+
+  const pricingPlans = [
+    {
+      id: 1,
+      name: "Básico",
+      price: "29.99",
+      description: "Ideal para profesionales que inician su presencia digital.",
+      features: ["Página Web con /dr/slug", "Gestión de Citas", "FAQs (hasta 15)", "Blog Básico"],
+      cta: "Comenzar Básico",
+      popular: false
+    },
+    {
+      id: 2,
+      name: "Profesional",
+      price: "49.99",
+      description: "Potencia tu práctica con herramientas de análisis y mayor alcance.",
+      features: ["Todo lo del Básico", "Analítica de Visitas", "Testimonios Destacados", "Soporte Prioritario", "Galería Ampliada"],
+      cta: "Seleccionar Profesional",
+      popular: true
+    },
+    {
+      id: 3,
+      name: "Premium",
+      price: "79.99",
+      description: "Para clínicas consolidadas que requieren excelencia absoluta.",
+      features: ["Todo lo del Profesional", "Dominio Personalizado", "Gestor de cuenta dedicado", "Todo Ilimitado", "Integraciones VIP"],
+      cta: "Ir a Premium",
+      popular: false
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-white selection:bg-indigo-100">
+      {/* Navigation */}
+      <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-indigo-600">GynSys</h1>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-xl">G</span>
+              </div>
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-500">
+                GynSys
+              </span>
             </div>
-            <nav className="flex items-center space-x-4">
+
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Funcionalidades</a>
+              <a href="#pricing" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Planes</a>
               {isAuthenticated ? (
-                <>
-                  <span className="text-gray-700 text-sm font-medium hidden sm:block">
-                    {user?.email}
-                  </span>
-                  <Link
-                    to={user?.role === 'admin' ? '/admin' : '/dashboard'}
-                    className="text-indigo-600 hover:text-indigo-800 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    {user?.role === 'admin' ? 'Ir al Panel Admin' : 'Ir al Dashboard'}
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </>
+                <Link to={user?.role === 'admin' ? '/admin' : '/dashboard'} className="bg-indigo-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                  Dashboard
+                </Link>
               ) : (
-                <>
-                  <button
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Iniciar Sesión
-                  </button>
-                </>
+                <button onClick={() => setIsLoginModalOpen(true)} className="bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-full font-bold hover:bg-indigo-100 transition-all">
+                  Iniciar Sesión
+                </button>
               )}
-            </nav>
-            <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center">
-          <h1 className="text-5xl font-extrabold text-gray-900 sm:text-6xl">
-            Tu Clínica Digital
-            <span className="text-indigo-600"> en Minutos</span>
+      <section className="pt-32 pb-20 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-bold text-sm tracking-wide uppercase">
+            Plataforma SaaS para Ginecólogas
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-tight mb-8">
+            Tu clínica digital, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              profesional en minutos
+            </span>
           </h1>
-          <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-            GynSys te permite crear tu propia página web profesional personalizable
-            con herramientas integradas para gestionar citas, blog médico y pre-consultas.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12 leading-relaxed">
+            Potencia tu consulta con una página web personalizada, gestión de citas automatizada y formularios de pre-consulta inteligentes. Todo en un solo lugar.
           </p>
-          <div className="mt-10 flex justify-center space-x-4">
-            <a
-              href="#planes"
-              className="bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-indigo-700"
-            >
-              Ver Planes y Registrarse
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <Link to="/register" className="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
+              Comenzar ahora
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+            <a href="#pricing" className="w-full sm:w-auto px-10 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-2xl font-black text-lg hover:border-indigo-200 transition-all">
+              Ver planes
             </a>
           </div>
-        </div>
 
-        {/* Hero Slider - Imágenes destacadas */}
-        <div className="flex justify-center items-center w-full">
-          <HeroSlider />
-        </div>
-
-        {/* Features Section */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-indigo-600 text-4xl mb-4">📅</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Gestión de Citas
-            </h3>
-            <p className="text-gray-600">
-              Sistema completo de agendamiento que tus pacientes pueden usar directamente desde tu página.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-indigo-600 text-4xl mb-4">📋</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Pre-consultas Digitales
-            </h3>
-            <p className="text-gray-600">
-              Formularios digitales que tus pacientes completan antes de la visita.
-            </p>
+          {/* Hero Mockup Placeholder */}
+          <div className="mt-20 relative max-w-5xl mx-auto">
+            <div className="absolute inset-0 bg-indigo-600/5 blur-3xl rounded-full"></div>
+            <img
+              src="/saas_landing_hero_bg"
+              alt="GynSys Dashboard"
+              className="relative rounded-3xl shadow-2xl border border-gray-100 w-full object-cover h-[500px]"
+              onError={(e) => { e.target.src = 'https://placehold.co/1200x600/6366f1/ffffff?text=Tu+Clínica+Digital' }}
+            />
           </div>
         </div>
+      </section>
 
-        {/* Hero Slider - Imágenes destacadas */}
-        <div className="flex justify-center items-center w-full">
-          <HeroSlider />
+      {/* Features Grid */}
+      <section id="features" className="py-24 bg-gray-50/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">Todo lo que necesitas</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">
+              Diseñado específicamente para las necesidades del sector ginecológico moderno.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {features.map((f, i) => (
+              <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50 transition-all group">
+                <div className="p-3 bg-indigo-50 rounded-2xl inline-block mb-6 group-hover:scale-110 transition-transform">
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-3">{f.title}</h3>
+                <p className="text-gray-600 leading-relaxed font-medium">{f.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        {/* Features Section */}
-        <div id="planes" className="mt-24">
-          <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-12">
-            Elige el plan perfecto para ti
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 px-4 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">Planes diseñados para crecer</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">Selecciona el plan que mejor se adapte a tu etapa profesional.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            {pricingPlans.map((plan, i) => (
+              <div
+                key={i}
+                className={`relative p-10 rounded-[40px] border transition-all ${plan.popular
+                    ? 'bg-indigo-600 text-white border-transparent shadow-2xl shadow-indigo-200 scale-105 z-10'
+                    : 'bg-white text-gray-900 border-gray-100 hover:border-indigo-200'
+                  }`}
+              >
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-1.5 rounded-full text-sm font-black uppercase tracking-widest shadow-lg">
+                    Más popular
+                  </div>
+                )}
+                <div className="mb-8">
+                  <h3 className="text-2xl font-black mb-2">{plan.name}</h3>
+                  <p className={`text-sm ${plan.popular ? 'text-indigo-100' : 'text-gray-500'} font-medium`}>
+                    {plan.description}
+                  </p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-5xl font-black">${plan.price}</span>
+                  <span className={`text-lg font-bold ml-1 ${plan.popular ? 'text-indigo-200' : 'text-gray-400'}`}>/mes</span>
+                </div>
+                <ul className="space-y-4 mb-10">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-center font-bold text-sm">
+                      <div className={`p-1 rounded-full mr-3 ${plan.popular ? 'bg-white/20' : 'bg-indigo-50'}`}>
+                        <Check className={`w-4 h-4 ${plan.popular ? 'text-white' : 'text-indigo-600'}`} />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to={`/register?plan=${plan.id}`}
+                  className={`block w-full text-center py-4 rounded-2xl font-black text-lg transition-all ${plan.popular
+                      ? 'bg-white text-indigo-600 hover:bg-gray-50 shadow-lg'
+                      : 'bg-gray-900 text-white hover:bg-black'
+                    }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Final */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto bg-gradient-to-r from-indigo-700 to-indigo-500 rounded-[50px] p-12 md:p-20 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-white/10 blur-3xl rounded-full"></div>
+          <h2 className="text-4xl md:text-6xl font-black text-white mb-8 relative z-10">
+            ¿Lista para transformar <br />tu consulta?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Plan Básico */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900">Plan Básico</h3>
-                <p className="mt-4 text-gray-500">Para profesionales independientes</p>
-                <p className="mt-8">
-                  <span className="text-4xl font-extrabold text-gray-900">$29.99</span>
-                  <span className="text-base font-medium text-gray-500">/mes</span>
-                </p>
-                <ul className="mt-6 space-y-4">
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Testimonios (max 10)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Galería (max 20)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">FAQs (max 15)</span>
-                  </li>
-                </ul>
-                <div className="mt-8">
-                  <Link
-                    to="/register?plan=1"
-                    className="block w-full bg-indigo-600 text-white text-center px-4 py-2 rounded-md font-medium hover:bg-indigo-700"
-                  >
-                    Seleccionar Plan
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Plan Profesional */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-indigo-500 transform scale-105">
-              <div className="bg-indigo-500 text-white text-center py-1 text-sm font-bold uppercase tracking-wide">
-                Más Popular
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900">Plan Profesional</h3>
-                <p className="mt-4 text-gray-500">Para clínicas en crecimiento</p>
-                <p className="mt-8">
-                  <span className="text-4xl font-extrabold text-gray-900">$49.99</span>
-                  <span className="text-base font-medium text-gray-500">/mes</span>
-                </p>
-                <ul className="mt-6 space-y-4">
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Testimonios (max 15)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Galería (max 30)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">FAQs (max 15)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Dashboard de Analíticas</span>
-                  </li>
-                </ul>
-                <div className="mt-8">
-                  <Link
-                    to="/register?plan=2"
-                    className="block w-full bg-indigo-600 text-white text-center px-4 py-2 rounded-md font-medium hover:bg-indigo-700"
-                  >
-                    Seleccionar Plan
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Plan Premium */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900">Plan Premium</h3>
-                <p className="mt-4 text-gray-500">Para clínicas establecidas</p>
-                <p className="mt-8">
-                  <span className="text-4xl font-extrabold text-gray-900">$79.99</span>
-                  <span className="text-base font-medium text-gray-500">/mes</span>
-                </p>
-                <ul className="mt-6 space-y-4">
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Todo Ilimitado</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Dominio Personalizado</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span className="text-gray-600">Soporte Prioritario</span>
-                  </li>
-                </ul>
-                <div className="mt-8">
-                  <Link
-                    to="/register?plan=3"
-                    className="block w-full bg-indigo-600 text-white text-center px-4 py-2 rounded-md font-medium hover:bg-indigo-700"
-                  >
-                    Seleccionar Plan
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+          <p className="text-xl text-indigo-100 mb-12 max-w-2xl mx-auto font-medium relative z-10">
+            Únete a las ginecólogas que ya están optimizando su tiempo y mejorando la experiencia de sus pacientes con GynSys.
+          </p>
+          <Link to="/register" className="inline-flex items-center px-12 py-5 bg-white text-indigo-600 rounded-3xl font-black text-xl hover:bg-gray-50 transition-all shadow-xl shadow-black/20 relative z-10">
+            Crear mi cuenta gratis
+            <ArrowRight className="ml-2 w-6 h-6" />
+          </Link>
         </div>
-      </main>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600">
-            © 2024 GynSys. Todos los derechos reservados.
-          </p>
+      <footer className="py-12 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-gray-500 font-bold text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-[10px]">G</span>
+            </div>
+            <span>© 2024 GynSys SaaS System.</span>
+          </div>
+          <div className="flex space-x-8">
+            <a href="#" className="hover:text-indigo-600 transition-colors">Términos</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">Privacidad</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">Contacto</a>
+          </div>
         </div>
       </footer>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   )
 }

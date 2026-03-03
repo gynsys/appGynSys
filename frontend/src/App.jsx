@@ -130,7 +130,13 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/dr/mariel-herrera" replace />} />
+        <Route path="/" element={
+          localStorage.getItem('last_doctor_slug') ? (
+            <Navigate to={`/dr/${localStorage.getItem('last_doctor_slug')}`} replace />
+          ) : (
+            <LandingPage />
+          )
+        } />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
