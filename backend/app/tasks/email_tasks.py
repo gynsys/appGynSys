@@ -25,6 +25,11 @@ from app.db.base import get_db, SessionLocal
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
 from app.db.models.push_subscription import PushSubscription
+from app.db.models.service import Service
+from app.db.models.faq import FAQ
+from app.db.models.testimonial import Testimonial
+from app.db.models.preconsultation import PreconsultationQuestion
+from app.db.models.tenant_module import TenantModule
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -405,6 +410,71 @@ def apply_doctor_template_async(doctor_id: int):
                 doctor.schedule = template['schedule']
             if 'pdf_config' in template:
                 doctor.pdf_config = template['pdf_config']
+
+            # Apply Services
+            for s_data in template.get('services', []):
+                new_service = Service(
+                    doctor_id=doctor.id,
+                    title=s_data.get('title'),
+                    description=s_data.get('description'),
+                    image_url=s_data.get('image_url'),
+                    order=s_data.get('order', 0)
+                )
+                db.add(new_service)
+
+            # Apply FAQs
+            for f_data in template.get('faqs', []):
+                new_faq = FAQ(
+                    doctor_id=doctor.id,
+                    question=f_data.get('question'),
+                    answer=f_data.get('answer'),
+                    display_order=f_data.get('order', 0)
+                )
+                db.add(new_faq)
+
+            # Apply Testimonials
+            for t_data in template.get('testimonials', []):
+                new_testimonial = Testimonial(
+                    doctor_id=doctor.id,
+                    patient_name=t_data.get('name'),
+                    content=t_data.get('content'),
+                    photo_url=t_data.get('photo_url'),
+                    rating=t_data.get('rating', 5),
+                    is_approved=True,
+                    is_featured=True
+                )
+                db.add(new_testimonial)
+
+            # Apply Preconsultation Questions
+            for q_data in template.get('preconsultation_questions', []):
+                import uuid
+                new_question = PreconsultationQuestion(
+                    id=str(uuid.uuid4()),
+                    doctor_id=doctor.id,
+                    text=q_data.get('question_text'),
+                    type=q_data.get('question_type'),
+                    options=q_data.get('options'),
+                    required=q_data.get('is_required', False),
+                    order=q_data.get('order', 0),
+                    category=q_data.get('category', 'general'),
+                    is_active=True
+                )
+                db.add(new_question)
+
+            # Apply Enabled Modules
+            for module_name in template.get('enabled_modules', []):
+                # Check if already exists to avoid duplicates
+                existing = db.query(TenantModule).filter(
+                    TenantModule.tenant_id == doctor.id,
+                    TenantModule.module_name == module_name
+                ).first()
+                if not existing:
+                    new_mod = TenantModule(
+                        tenant_id=doctor.id,
+                        module_name=module_name,
+                        is_enabled=True
+                    )
+                    db.add(new_mod)
 
             db.commit()
             print(f"[SUCCESS] Template applied for Doctor {doctor.email}")
