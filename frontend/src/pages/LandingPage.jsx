@@ -119,7 +119,7 @@ export default function LandingPage() {
             Potencia tu consulta con una página web personalizada, gestión de citas automatizada y formularios de pre-consulta inteligentes. Todo en un solo lugar.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link to="/register" className="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
+            <Link to="/register?type=doctor" className="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
               Comenzar ahora
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
@@ -177,8 +177,8 @@ export default function LandingPage() {
               <div
                 key={i}
                 className={`relative p-10 rounded-[40px] border transition-all ${plan.popular
-                    ? 'bg-indigo-600 text-white border-transparent shadow-2xl shadow-indigo-200 scale-105 z-10'
-                    : 'bg-white text-gray-900 border-gray-100 hover:border-indigo-200'
+                  ? 'bg-indigo-600 text-white border-transparent shadow-2xl shadow-indigo-200 scale-105 z-10'
+                  : 'bg-white text-gray-900 border-gray-100 hover:border-indigo-200'
                   }`}
               >
                 {plan.popular && (
@@ -207,10 +207,10 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  to={`/register?plan=${plan.id}`}
+                  to={`/register?type=doctor&plan=${plan.id}`}
                   className={`block w-full text-center py-4 rounded-2xl font-black text-lg transition-all ${plan.popular
-                      ? 'bg-white text-indigo-600 hover:bg-gray-50 shadow-lg'
-                      : 'bg-gray-900 text-white hover:bg-black'
+                    ? 'bg-white text-indigo-600 hover:bg-gray-50 shadow-lg'
+                    : 'bg-gray-900 text-white hover:bg-black'
                     }`}
                 >
                   {plan.cta}
@@ -231,7 +231,7 @@ export default function LandingPage() {
           <p className="text-xl text-indigo-100 mb-12 max-w-2xl mx-auto font-medium relative z-10">
             Únete a las ginecólogas que ya están optimizando su tiempo y mejorando la experiencia de sus pacientes con GynSys.
           </p>
-          <Link to="/register" className="inline-flex items-center px-12 py-5 bg-white text-indigo-600 rounded-3xl font-black text-xl hover:bg-gray-50 transition-all shadow-xl shadow-black/20 relative z-10">
+          <Link to="/register?type=doctor" className="inline-flex items-center px-12 py-5 bg-white text-indigo-600 rounded-3xl font-black text-xl hover:bg-gray-50 transition-all shadow-xl shadow-black/20 relative z-10">
             Crear mi cuenta gratis
             <ArrowRight className="ml-2 w-6 h-6" />
           </Link>

@@ -57,7 +57,7 @@ export default function RegisterForm() {
         nombre_completo: formData.nombre_completo,
         doctor_slug: formData.doctor_slug,
       })
-      navigate('/cycles/dashboard')
+      navigate('/cycle/dashboard')
     } catch (err) {
       const detail = err.response?.data?.detail
       setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
