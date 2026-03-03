@@ -81,7 +81,7 @@ def extract_template():
             })
 
         # 6. Preconsultation Questions
-        cursor.execute("SELECT question_text, question_type, options, is_required, \"order\", category FROM preconsultation_questions WHERE doctor_id = 1")
+        cursor.execute("SELECT text, type, options, required, \"order\", category FROM preconsultation_questions WHERE doctor_id = 1")
         questions = []
         for q in cursor.fetchall():
             questions.append({
