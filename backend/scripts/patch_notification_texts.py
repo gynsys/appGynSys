@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 import re
-from app.db.session import get_db_session
+from app.services.notifications.base import session_scope
 from app.db.models.notification import NotificationRule
-from app.core.logging import logger
 
 def clean_html(raw_html: str) -> str:
     """Removes HTML tags and normalizes whitespace."""
@@ -17,7 +16,7 @@ def patch_notifications():
     Syncs message_text_template with message_template for all rules
     where they differ significantly or text is too short.
     """
-    with get_db_session() as db:
+    with session_scope() as db:
         rules = db.query(NotificationRule).all()
         updated_count = 0
         
