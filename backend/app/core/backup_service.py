@@ -35,11 +35,17 @@ async def run_backup():
             "-f", str(backup_file)
         ]
         
+        # Prepare environment with password
+        env = os.environ.copy()
+        db_password = os.getenv("POSTGRES_PASSWORD", "")
+        env["PGPASSWORD"] = db_password
+
         # Run process
         process = await asyncio.create_subprocess_exec(
             *command,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            env=env
         )
         
         stdout, stderr = await process.communicate()
