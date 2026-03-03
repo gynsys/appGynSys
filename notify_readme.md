@@ -128,6 +128,8 @@ frontend/src/
 | `is_active` | bool | Si la regla está habilitada |
 | `priority` | int | Prioridad (menor = más urgente) |
 > **Constraint:** `UNIQUE(notification_type, tenant_id)` — Un tipo por tenant/global.
+> [!IMPORTANT]
+> **Discrepancia de Textos (Push vs Email):** Las Push usan `message_text_template` (texto plano) y los Email/Dashboard usan `message_template` (HTML). Si ves textos cortos en el celular, es porque estas plantillas no están sincronizadas. Usa `patch_notification_texts.py` para nivelarlas.
 
 #### `pending_notifications` — Cola de envío
 | Columna | Tipo | Descripción |
@@ -798,6 +800,25 @@ ssh root@167.172.115.154
 cd /opt/appgynsys
 docker compose exec -T backend bash -c 'cd /app && PYTHONPATH=/app python scripts/force_clean.py'
 ```
+
+### 18.2. Mantenimiento de Plantillas y Duplicados ✨ NUEVO (2026-03-03)
+
+Si notas que las notificaciones Push llegan con textos genéricos ("Recordatorio de...") mientras que en el dashboard se ven completas, o si sospechas que hay duplicidad de reglas, usa estos scripts de mantenimiento:
+
+#### Sincronizar textos Push (Plain Text) con Dashboard (HTML)
+Este script toma el mensaje completo de la versión HTML, elimina los tags y lo guarda en la versión de texto para que las Push sean idénticas a lo configurado.
+```bash
+# Dentro del servidor
+docker exec -w /app -e PYTHONPATH=. appgynsys-backend-1 python scripts/patch_notification_texts.py
+```
+
+#### Verificar duplicidad de reglas por Doctor
+Si el conteo de reglas en el dashboard parece incorrecto, verifica que no haya duplicados del mismo tipo para un mismo doctor:
+```bash
+# Dentro del servidor
+docker exec -w /app -e PYTHONPATH=. appgynsys-backend-1 python scripts/check_duplicates.py
+```
+*Cada doctor debe tener exactamente **76 reglas** (33 Menstrual + 30 Prenatal + 13 Sistema).*
 
 ### 18.2. Manejo de Integridad Referencial (Cascade Deletes)
 
