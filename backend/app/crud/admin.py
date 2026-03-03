@@ -50,7 +50,7 @@ def create_tenant(db: Session, tenant: TenantCreate) -> Doctor:
     
     # Set defaults
     doctor_data['role'] = 'user'
-    doctor_data['status'] = 'approved' # Admin created tenants are approved by default
+    doctor_data['status'] = 'active' # Admin created tenants are active by default
     doctor_data['is_active'] = True
     
     db_tenant = Doctor(**doctor_data)
