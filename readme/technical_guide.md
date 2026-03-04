@@ -11,6 +11,7 @@ Esta guía documenta los componentes críticos, comandos y flujos lógicos del s
 | **Frontend (SaaS)** | [Netlify](https://app.netlify.com/) | Desplegado desde la rama `main` del repo. |
 | **Base de Datos** | Contenedor `appgynsys-db-1` | PostgreSQL 15, base de datos `gynsys`. |
 | **Logs de Celery** | `/opt/appgynsys/logs` | Seguimiento de tareas de email y seedeo. |
+| **VAPID / Push** | `/opt/appgynsys/backend`| Archivos `vapid_private.pem` y `public.pem`. |
 
 ## 🗄️ Base de Datos: Tablas y Relaciones Críticas
 
@@ -71,7 +72,28 @@ docker logs -f appgynsys-backend-1
 
 # Celery (Emails / Tareas persistentes)
 docker logs -f appgynsys-celery_worker-1
+
+# Beat (Programación de tareas)
+docker logs -f appgynsys-celery_beat-1
 ```
+
+## 🧹 Limpieza y Eliminación de Módulos
+
+Para eliminar un módulo completo (ejemplo: `chat`), se debe seguir este orden para evitar inconsistencias:
+
+1. **Base de Datos**: Eliminar tablas y registros en `modules` y `tenant_modules`.
+   ```sql
+   -- Ejemplo para el módulo chat
+   DELETE FROM tenant_modules WHERE module_id = (SELECT id FROM modules WHERE name = 'chat');
+   DELETE FROM modules WHERE name = 'chat';
+   DROP TABLE IF EXISTS chat_messages, chat_participants, chat_rooms;
+   ```
+2. **Backend**: Eliminar el directorio del módulo (`backend/app/chat`) y sus referencias en `backend/app/main.py` o routers.
+3. **Frontend**: Eliminar componentes y hooks asociados (`frontend/src/modules/chat`) y limpiar rutas en `App.jsx`.
+4. **Rebuild**: Forzar reconstrucción para limpiar cachés de Python.
+   ```bash
+   docker compose build backend && docker compose up -d
+   ```
 
 ## ⚠️ Resolución de Problemas Comunes
 

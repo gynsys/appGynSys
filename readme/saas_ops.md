@@ -10,6 +10,12 @@ Para ver el estado actual de todos los inquilinos en la base de datos:
 docker exec appgynsys-db-1 psql -U postgres -d gynsys -c "SELECT id, email, slug_url, role, status, is_active FROM doctors;"
 ```
 
+### Ver Módulos Activos por Tenant
+Para saber qué funciones tiene habilitadas un doctor específico:
+```bash
+docker exec appgynsys-db-1 psql -U postgres -d gynsys -c "SELECT m.name FROM modules m JOIN tenant_modules tm ON m.id = tm.module_id WHERE tm.tenant_id = ID_DEL_DOCTOR;"
+```
+
 ### Estados Cruciales
 - **active**: El inquilino está activo y es contabilizado en las estadísticas del Dashboard.
 - **paused/suspended**: El inquilino no tiene acceso pero sus datos se mantienen.
@@ -26,6 +32,12 @@ Si necesitas eliminar un inquilino (ID X) manualmente por base de datos:
 2. Ejecuta:
 ```bash
 docker exec -i appgynsys-db-1 psql -U postgres -d gynsys < backend/scripts/cleanup_tenants.sql
+```
+
+#### Opción C: Script de Limpieza Rápida (Python)
+Para una limpieza profunda que maneje restricciones complejas:
+```bash
+docker exec -it appgynsys-backend-1 python scripts/cleanup_db_orphans.py
 ```
 
 ### Verificación de Integridad Post-Borrado

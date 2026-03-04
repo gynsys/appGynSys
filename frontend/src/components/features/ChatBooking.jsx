@@ -650,7 +650,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
   // RENDER SUCCESS VIEW
   if (step === STEPS.SUCCESS) {
     return (
-      <div className="flex flex-col h-[500px] max-h-[80vh] items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 rounded-2xl relative">
+      <div className="flex flex-col h-full items-center justify-center p-8 text-center animate-fade-in bg-white dark:bg-gray-800 rounded-2xl relative">
         <MdCheckCircle size={80} style={{ color: primaryColor }} className="mb-6 drop-shadow-md animate-bounce" />
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">¡Solicitud Enviada!</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xs mx-auto">
@@ -662,7 +662,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
   }
 
   return (
-    <div className="flex flex-col h-auto min-h-[300px] max-h-[500px] bg-white dark:bg-gray-800 relative">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800 relative overflow-hidden">
       <ModernLoader isOpen={loading} text="Agendando Cita..." />
 
       {/* Chat History */}
