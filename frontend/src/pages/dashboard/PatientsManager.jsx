@@ -201,19 +201,19 @@ export default function PatientsManager({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "py-4" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"}>
       {!isEmbedded && (
-        <div className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Historias Médicas</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Administra las consultas y reportes generados.</p>
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">Gestión de Historias Médicas</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Administra las consultas y reportes generados.</p>
           </div>
-          <div className="relative w-full sm:w-64">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="relative w-full md:w-80">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <FiSearch className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              placeholder="Buscar paciente..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white transition duration-150 ease-in-out"
+              placeholder="Buscar por nombre o CI..."
+              className="block w-full pl-12 pr-4 py-3 border-2 border-gray-100 dark:border-gray-700 rounded-2xl leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:text-sm text-gray-900 dark:text-white transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -222,115 +222,179 @@ export default function PatientsManager({ isEmbedded = false }) {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
       ) : filteredConsultations.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center border border-gray-200 dark:border-gray-700">
-          <FiUser className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 rounded-[32px] shadow-sm p-12 md:p-20 text-center border border-gray-100 dark:border-gray-700">
+          <FiUser className="mx-auto h-16 w-16 text-gray-200 dark:text-gray-700 mb-6" />
+          <h3 className="text-xl font-black text-gray-900 dark:text-white">
             {searchTerm ? 'No se encontraron resultados' : 'No hay historias registradas'}
           </h3>
-          <p className="mt-2 text-gray-500 dark:text-gray-400">
-            {searchTerm ? 'Intenta con otro término de búsqueda.' : 'Las consultas guardadas aparecerán aquí.'}
+          <p className="mt-2 text-gray-500 dark:text-gray-400 font-medium max-w-xs mx-auto">
+            {searchTerm ? 'Intenta con otro término de búsqueda.' : 'Las consultas guardadas aparecerán de forma organizada aquí.'}
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Paciente
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    N° Historia
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Motivo
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredConsultations.map((consultation) => (
-                  <tr key={consultation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                          <FiUser />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{consultation.patient_name || 'Desconocido'}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">CI: {consultation.patient_ci || 'N/A'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono text-gray-900 dark:text-gray-300">
-                        {consultation.history_number || 'Pendiente'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-gray-300 flex items-center gap-2">
-                        <FiCalendar className="text-gray-400" />
-                        {formatDate(consultation.created_at)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-gray-300 max-w-xs truncate" title={consultation.reason_for_visit}>
-                        {consultation.reason_for_visit || 'No especificado'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-row gap-3 items-center justify-center">
-                        {consultation.id ? (
-                          <>
-                            <button
-                              onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
-                              className="inline-flex justify-center items-center px-3 py-2 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200"
-                            >
-                              <FiFileText className="mr-1" /> Historia
-                            </button>
-                            <button
-                              onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
-                              className="inline-flex justify-center items-center px-3 py-2 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200"
-                            >
-                              <FiFileText className="mr-1" /> Informe
-                            </button>
-                            <button
-                              onClick={() => handleEditClick(consultation)}
-                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full transition-colors"
-                              title="Modificar historia médica"
-                            >
-                              <FiEdit className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(consultation.id)}
-                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-full transition-colors"
-                              title="Eliminar consulta"
-                            >
-                              <FiTrash2 className="w-5 h-5" />
-                            </button>
-                          </>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                            Pendiente
-                          </span>
-                        )}
-                      </div>
-                    </td>
+        <div className="space-y-6">
+          {/* Card View for Mobile/Tablet */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
+            {filteredConsultations.map((consultation) => (
+              <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-[24px] border border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
+                      <FiUser />
+                    </div>
+                    <div className="ml-3">
+                      <h4 className="font-black text-gray-900 dark:text-white leading-tight">{consultation.patient_name || 'Desconocido'}</h4>
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400">CI: {consultation.patient_ci || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="text-[10px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-300">
+                    #{consultation.history_number || 'PEND'}
+                  </div>
+                </div>
 
+                <div className="space-y-3 mb-5">
+                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 font-bold">
+                    <FiCalendar className="mr-2 w-4 h-4 text-indigo-400" />
+                    {formatDate(consultation.created_at)}
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-black mb-1">Motivo</p>
+                    <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">{consultation.reason_for_visit || 'No especificado'}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button
+                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <FiFileText className="mr-1 w-3 h-3" /> HISTORIA
+                  </button>
+                  <button
+                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+                  >
+                    <FiFileText className="mr-1 w-3 h-3" /> INFORME
+                  </button>
+                  <div className="flex gap-2 w-full mt-1">
+                    <button
+                      onClick={() => handleEditClick(consultation)}
+                      className="flex-1 p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex justify-center hover:bg-indigo-100 transition-colors"
+                    >
+                      <FiEdit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(consultation.id)}
+                      className="flex-1 p-2.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex justify-center hover:bg-red-100 transition-colors"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                <thead className="bg-gray-50/50 dark:bg-gray-800/50">
+                  <tr>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      Paciente
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      N° Historia
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      Fecha
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      Motivo
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-center text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                      Acciones
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                  {filteredConsultations.map((consultation) => (
+                    <tr key={consultation.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <FiUser />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{consultation.patient_name || 'Desconocido'}</div>
+                            <div className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider">CI: {consultation.patient_ci || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="inline-block px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] md:text-xs font-black text-gray-600 dark:text-gray-300 tracking-widest">
+                          {consultation.history_number || 'PENDIENTE'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                          <FiCalendar className="text-indigo-400" />
+                          {formatDate(consultation.created_at)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 max-w-xs truncate italic" title={consultation.reason_for_visit}>
+                          {consultation.reason_for_visit || 'No especificado'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-row gap-2 items-center justify-center translate-x-2 opacity-80 group-hover:opacity-100 transition-all">
+                          {consultation.id ? (
+                            <>
+                              <button
+                                onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
+                                className="inline-flex justify-center items-center px-3 py-2 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
+                                <FiFileText className="mr-1" /> HISTORIA
+                              </button>
+                              <button
+                                onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
+                                className="inline-flex justify-center items-center px-3 py-2 rounded-xl text-[10px] font-black bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+                              >
+                                <FiFileText className="mr-1" /> INFORME
+                              </button>
+                              <button
+                                onClick={() => handleEditClick(consultation)}
+                                className="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-colors"
+                                title="Modificar historia médica"
+                              >
+                                <FiEdit className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(consultation.id)}
+                                className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
+                                title="Eliminar consulta"
+                              >
+                                <FiTrash2 className="w-5 h-5" />
+                              </button>
+                            </>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                              PENDIENTE
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
