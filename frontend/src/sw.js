@@ -22,8 +22,8 @@ self.addEventListener('push', (event) => {
         const title = data.title || "GynSys Notification";
         const options = {
             body: data.body || "Tienes una nueva notificación.",
-            icon: data.icon || '/pwa-192x192.png',
-            badge: data.badge || '/pwa-192x192.png', // Ideally a monochrome small icon
+            icon: data.icon || '/pwa-512x512.png',
+            badge: data.badge || '/pwa-192x192.png', // Badge usually needs to be smaller
             image: data.image || null,
             vibrate: [200, 100, 200],
             tag: data.tag || 'gynsys-msg',
