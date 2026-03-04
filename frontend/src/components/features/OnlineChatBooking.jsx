@@ -710,7 +710,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     if (!isOpen && !isVisible) return null;
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -771,7 +771,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         </div>
 
                         {/* Chat History */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 min-h-0">
                             {history.map((msg, idx) => (
                                 <div
                                     key={idx}
