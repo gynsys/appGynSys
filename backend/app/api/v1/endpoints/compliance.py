@@ -1,60 +1,92 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import Union
 from app.db.base import get_db
-from app.api.v1.endpoints.auth import get_current_user
-from app.db.models.patient import Patient
-# Assuming User model exists and is used for auth
-# from app.db.models.user import User 
+from app.api.v1.endpoints.cycle_predictor\
+    import get_current_actor
+from app.db.models.doctor import Doctor
+from app.db.models.cycle_user import CycleUser
+from app.db.models.cycle_predictor import CycleLog, SymptomLog, PregnancyLog, CycleNotificationSettings
+from app.db.models.push_subscription import PushSubscription
 
 router = APIRouter()
 
 @router.get("/download-my-data")
 def download_my_data(
-    current_user = Depends(get_current_user),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor),
     db: Session = Depends(get_db)
 ):
-    """Export all data related to the current user."""
-    # Logic to gather all user data
-    # This assumes the user is a patient or has a linked patient record
-    patient_data = db.query(Patient).filter(Patient.email == current_user.email).first()
+    """Export all data related to the current user (Doctor or CycleUser)."""
     
-    if not patient_data:
-        # If user is a doctor, maybe export their profile?
-        return {
-            "user_info": {
-                "email": current_user.email,
-                "role": "doctor" # Assuming doctor role
-            },
-            "message": "No patient data found for this account."
-        }
-    
-    return {
+    export_data = {
         "user_info": {
-            "email": current_user.email,
-            "name": patient_data.name
-        },
-        "medical_data": {
-            "history": patient_data.medical_history,
-            "phone": patient_data.phone,
-            "dob": patient_data.date_of_birth
+            "email": current_actor.email,
+            "type": "cycle_user" if isinstance(current_actor, CycleUser) else "doctor",
+            "name": getattr(current_actor, 'nombre_completo', None) or getattr(current_actor, 'name', 'User')
         }
     }
 
+    if isinstance(current_actor, CycleUser):
+        # Mi Ciclo User Data
+        uid = current_actor.id
+        export_data["health_data"] = {
+            "cycle_logs": [
+                {"start": str(c.start_date), "end": str(c.end_date), "notes": c.notes}
+                for c in db.query(CycleLog).filter(CycleLog.cycle_user_id == uid).all()
+            ],
+            "symptom_logs": [
+                {"date": str(s.date), "symptoms": s.symptoms, "mood": s.mood, "pain": s.pain_level}
+                for s in db.query(SymptomLog).filter(SymptomLog.cycle_user_id == uid).all()
+            ],
+            "pregnancy_logs": [
+                {"started": str(p.last_period_date), "due": str(p.due_date), "active": p.is_active}
+                for p in db.query(PregnancyLog).filter(PregnancyLog.cycle_user_id == uid).all()
+            ],
+            "settings": {
+                "avg_cycle": current_actor.cycle_avg_length,
+                "avg_period": current_actor.period_avg_length
+            }
+        }
+    else:
+        # Doctor Data (simplified for now)
+        export_data["doctor_profile"] = {
+            "specialty": getattr(current_actor, 'specialty', ''),
+            "slug": current_actor.slug_url
+        }
+    
+    return export_data
+
 @router.delete("/delete-my-account")
 def delete_my_account(
-    current_user = Depends(get_current_user),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor),
     db: Session = Depends(get_db)
 ):
-    """Hard delete user account and related data."""
-    # Cascade delete logic would typically be handled by DB foreign keys
-    # But we can explicitly delete the user record
-    
-    # CAUTION: This is a hard delete.
+    """Permanently delete user account and all associated data."""
     try:
-        db.delete(current_user)
+        if isinstance(current_actor, Doctor):
+            # Guard against accidental deletion of doctors with tenants/patients
+            # This is a high-risk action, maybe require support contact
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Doctor accounts cannot be self-deleted for security. Please contact support."
+            )
+
+        uid = current_actor.id
+        
+        # 1. Delete associated health records (Mi Ciclo)
+        db.query(CycleLog).filter(CycleLog.cycle_user_id == uid).delete()
+        db.query(SymptomLog).filter(SymptomLog.cycle_user_id == uid).delete()
+        db.query(PregnancyLog).filter(PregnancyLog.cycle_user_id == uid).delete()
+        db.query(CycleNotificationSettings).filter(CycleNotificationSettings.cycle_user_id == uid).delete()
+        db.query(PushSubscription).filter(PushSubscription.user_id == uid).delete()
+
+        # 2. Delete the user record itself
+        db.delete(current_actor)
         db.commit()
+        
+        return {"message": "Account and all data permanently deleted."}
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-        
-    return {"message": "Account permanently deleted"}
