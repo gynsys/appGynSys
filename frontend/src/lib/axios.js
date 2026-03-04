@@ -53,9 +53,6 @@ api.interceptors.request.use(
         const token = localStorage.getItem('access_token')
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
-          // console.log('[Axios] Attaching ADMIN token to:', config.url);
-        } else {
-          console.warn('[Axios] No token found in localStorage for:', config.url);
         }
       }
     }

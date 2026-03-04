@@ -55,20 +55,11 @@ export default function NotificationManagerPage() {
         trigger_info: ''
     })
 
-    // Fetch rules on mount (will use cache if available)
     useEffect(() => {
-        console.log('[NotificationManagerPage] 🔵 Component mounted, calling fetchRules');
         fetchRules()
     }, [fetchRules])
 
-    // Debug: Log when rules change
-    useEffect(() => {
-        console.log('[NotificationManagerPage] 📊 Rules state changed:', {
-            count: rules.length,
-            loading,
-            firstRule: rules[0]?.notification_type || 'N/A'
-        });
-    }, [rules, loading])
+
 
     const handleDeleteClick = (rule) => {
         setRuleToDelete(rule)

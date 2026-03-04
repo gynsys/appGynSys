@@ -238,7 +238,6 @@ async def login_google(
             raise ValueError("Could not retrieve email from Google")
             
         email = email.lower().strip()
-        print(f"Google User Verified: {email}")
         
         # 2. Identify User (Priority: CycleUser then Doctor)
         cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
@@ -252,18 +251,15 @@ async def login_google(
             user_type = "cycle_user"
             user_id = cycle_user.id
             doc_id = cycle_user.doctor_id
-            print(f"Logged in as CycleUser: {email}")
         elif doctor:
             user_type = "doctor"
             user_id = doctor.id
             doc_id = doctor.id
-            print(f"Logged in as Doctor: {email}")
         else:
             # 3. Handle Auto-Registration (If whitelisted/applicable)
             # Default to Doctor for now if whitelisted, but ideally we'd know the context
             from app.core.oauth_utils import is_email_whitelisted
             if is_email_whitelisted(email, db):
-                print(f"Whitelisted email {email}, auto-registering as Doctor...")
                 slug = generate_slug_from_name(name)
                 counter = 1
                 original_slug = slug

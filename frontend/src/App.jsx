@@ -70,10 +70,12 @@ function App() {
           useAppointmentStore.getState().fetchAppointments()
         })
 
-        // Preload notification rules
-        import('./stores/notificationStore').then(({ default: useNotificationStore }) => {
-          useNotificationStore.getState().fetchRules()
-        })
+        // Preload notification rules (Admin only)
+        if (useAuthStore.getState().user?.role === 'admin') {
+          import('./stores/notificationStore').then(({ default: useNotificationStore }) => {
+            useNotificationStore.getState().fetchRules()
+          })
+        }
       }
 
       const applyTheme = () => {
