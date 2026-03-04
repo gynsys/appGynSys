@@ -64,8 +64,18 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 )}
               </div>
 
-              {/* Mobile Menu Button - Moved to Top Row */}
-              <div className="md:hidden flex items-center">
+              {/* Mobile Menu & Admin Actions */}
+              <div className="md:hidden flex items-center space-x-2">
+                {isAuthenticated && (user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) && (
+                  <Link
+                    to="/dashboard"
+                    className="p-1.5 rounded-lg text-white shadow-sm"
+                    style={{ backgroundColor: primaryColor }}
+                    title="Panel Admin"
+                  >
+                    <FiBarChart2 className="w-5 h-5" />
+                  </Link>
+                )}
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="text-gray-700 hover:text-gray-900 focus:outline-none dark:text-gray-300 dark:hover:text-white p-1"
@@ -228,24 +238,15 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   FAQ
                 </a>
                 {isAuthenticated ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Panel Admin
-                    </Link>
-                    <button
-                      onClick={() => {
-                        logout()
-                        setIsMenuOpen(false)
-                      }}
-                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-gray-800"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      logout()
+                      setIsMenuOpen(false)
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-gray-800"
+                  >
+                    Cerrar Sesión
+                  </button>
                 ) : (
                   <button
                     onClick={() => {
