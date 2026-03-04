@@ -156,7 +156,7 @@ export default function AdminModulesPage() {
                       // Solo mostramos los módulos "Extra" (de pago) en el panel de Admin.
                       // Los módulos estándar (Galería, Servicios, etc.) se gestionan internamente.
                       // ---------------------------------------------------------------------
-                      .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations', 'chat'].includes(m.code))
+                      .filter(m => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations'].includes(m.code))
                       .map((module) => (
                         <tr key={module.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">

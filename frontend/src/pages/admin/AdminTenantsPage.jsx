@@ -145,7 +145,7 @@ export default function AdminTenantsPage() {
     // ⚠️ IMPORTANTE: SI AGREGAS UN NUEVO MÓDULO (Ej: 'nuevo_modulo')
     // DEBES AGREGARLO A ESTA LISTA DE FILTRO PARA QUE APAREZCA EN ESTE MODAL.
     // -------------------------------------------------------------------------
-    const filteredModules = modules.filter(module => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations', 'chat'].includes(module.code))
+    const filteredModules = modules.filter(module => ['endometriosis_test', 'blog', 'cycle_predictor', 'recommendations'].includes(module.code))
 
     setModuleSelections(filteredModules.map(module => ({
       module_id: module.id,
