@@ -24,7 +24,7 @@ export default function ProfilePage() {
     const handleExportData = async () => {
         setIsExporting(true);
         try {
-            const response = await api.get('/api/v1/compliance/download-my-data');
+            const response = await api.get('/compliance/download-my-data');
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response.data, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
@@ -44,7 +44,7 @@ export default function ProfilePage() {
     const handleDeleteAccount = async () => {
         setIsDeleting(true);
         try {
-            await api.delete('/api/v1/compliance/delete-my-account');
+            await api.delete('/compliance/delete-my-account');
             toast.success('Tu cuenta ha sido eliminada permanentemente');
             logout();
             navigate('/');

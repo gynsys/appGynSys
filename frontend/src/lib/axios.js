@@ -30,7 +30,8 @@ api.interceptors.request.use(
         config.url?.includes('/cycle-predictor') ||
         config.url?.includes('/notifications/vapid-public-key') ||
         config.url?.includes('/notifications/subscribe') ||
-        config.url?.includes('/notifications/unsubscribe')
+        config.url?.includes('/notifications/unsubscribe') ||
+        config.url?.includes('/compliance/')
 
       if (isCycleRequest) {
         // For cycle requests, ONLY use the cycle token
