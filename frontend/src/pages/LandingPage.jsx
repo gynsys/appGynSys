@@ -78,9 +78,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">G</span>
-              </div>
+              <img src="/GynSys.png" alt="GynSys Logo" className="w-10 h-10 object-contain rounded-xl" />
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-500">
                 GynSys
               </span>
@@ -242,9 +240,7 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-gray-500 font-bold text-sm">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-[10px]">G</span>
-            </div>
+            <img src="/GynSys.png" alt="GynSys Logo" className="w-6 h-6 object-contain rounded-lg" />
             <span>© 2024 GynSys SaaS System.</span>
           </div>
           <div className="flex space-x-8">

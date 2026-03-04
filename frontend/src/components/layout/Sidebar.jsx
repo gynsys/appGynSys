@@ -67,9 +67,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
       >
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="h-16 flex items-center justify-center px-4 border-b border-gray-200 dark:border-gray-700 relative">
-            <span className="text-xl font-bold text-gray-800 dark:text-white">Menú</span>
-            <button onClick={toggleSidebar} className="lg:hidden p-2 rounded-md hover:bg-gray-100 absolute right-4">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700 relative">
+            <div className="flex items-center space-x-2">
+              <img src="/GynSys.png" alt="GynSys" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-black text-gray-800 dark:text-white">GynSys</span>
+            </div>
+            <button onClick={toggleSidebar} className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
               <FiChevronLeft className="w-6 h-6" />
             </button>
           </div>
