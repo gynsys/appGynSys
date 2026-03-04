@@ -117,46 +117,46 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Stats Grid - Row 1 */}
-        <div className="flex flex-wrap justify-center gap-x-[90px] gap-y-6 mb-4 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4 max-w-6xl mx-auto w-full px-2">
           {/* Citas del Mes */}
-          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Citas del Mes</h3>
-            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Citas del Mes</h3>
+            <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
           </div>
 
-          {/* Pacientes (Placeholder logic for now, or total appointments) */}
-          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Pacientes</h3>
-            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p> {/* Using same metric for now as proxy */}
+          {/* Pacientes */}
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Pacientes</h3>
+            <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
           </div>
 
           {/* Artículos */}
-          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Artículos</h3>
-            <p className="text-3xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Artículos</h3>
+            <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
           </div>
         </div>
 
         {/* Stats Grid - Row 2 */}
-        <div className="flex flex-wrap justify-center gap-x-[90px] gap-y-6 mb-8 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-w-6xl mx-auto w-full px-2">
           {/* Test Realizados (Conditional) */}
           {hasEndometriosisModule && (
-            <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Test Endo</h3>
-              <p className="text-3xl font-extrabold text-pink-500">{stats.test_count}</p>
+            <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+              <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Test Endo</h3>
+              <p className="text-2xl md:text-3xl font-extrabold text-pink-500">{stats.test_count}</p>
             </div>
           )}
 
           {/* Usuarios Predictor */}
-          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Ciclo</h3>
-            <p className="text-3xl font-extrabold text-purple-500">{stats.cycle_users_count}</p>
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Ciclo</h3>
+            <p className="text-2xl md:text-3xl font-extrabold text-purple-500">{stats.cycle_users_count}</p>
           </div>
 
           {/* Visitantes */}
-          <div className="bg-white rounded-lg shadow p-2 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-[200px] h-[80px]">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Visitantes</h3>
-            <p className="text-3xl font-extrabold text-blue-500">{stats.visitor_count}</p>
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Visitantes</h3>
+            <p className="text-2xl md:text-3xl font-extrabold text-blue-500">{stats.visitor_count}</p>
           </div>
         </div>
 
