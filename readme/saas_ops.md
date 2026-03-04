@@ -16,12 +16,28 @@ docker exec appgynsys-db-1 psql -U postgres -d gynsys -c "SELECT id, email, slug
 - **approved**: Estado legado (evitar). El sistema ahora usa `active` para que se refleje correctamente en el dashboard.
 
 ### Limpieza de Inquilinos Duplicados o de Prueba
-Si necesitas eliminar un inquilino (ID X) manualmente, usa el script de limpieza para manejar las claves foráneas:
+
+#### Opción A: Desde el Panel Admin (Recomendado)
+El Panel de Super Admin ahora maneja el **borrado en cascada**. Al eliminar un inquilino desde la UI, se borran automáticamente sus citas, módulos y registros asociados.
+
+#### Opción B: Manualmente vía SQL
+Si necesitas eliminar un inquilino (ID X) manualmente por base de datos:
 1. Edita `backend/scripts/cleanup_tenants.sql` con los IDs correctos.
 2. Ejecuta:
 ```bash
 docker exec -i appgynsys-db-1 psql -U postgres -d gynsys < backend/scripts/cleanup_tenants.sql
 ```
+
+### Verificación de Integridad Post-Borrado
+Para asegurar que no queden registros "huérfanos" (importante para mantener la DB ligera):
+```sql
+-- Verificar que no haya citas sin doctor válido
+SELECT count(*) FROM appointments WHERE doctor_id NOT IN (SELECT id FROM doctors);
+
+-- Verificar que no haya módulos sin tenant válido
+SELECT count(*) FROM tenant_modules WHERE tenant_id NOT IN (SELECT id FROM doctors);
+```
+
 
 ## 2. Restauración de Acceso Super Admin
 

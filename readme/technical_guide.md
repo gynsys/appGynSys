@@ -48,20 +48,46 @@ SELECT * FROM plans;
 
 ## 🛠️ Comandos SSH Frecuentes
 
-**Reiniciar servicios tras cambios en Backend:**
+**Despliegue estándar (sin cambios locales):**
 ```bash
-cd /opt/appgynsys && docker compose restart backend celery_worker
+cd /opt/appgynsys && git pull origin main && docker compose build backend celery_worker && docker compose up -d
 ```
 
-**Ver logs en tiempo real (Celery):**
+**Despliegue con cambios locales en el servidor (Conflictos):**
+Si `git pull` falla por cambios locales:
 ```bash
+cd /opt/appgynsys
+git stash                  # Guarda cambios locales
+git pull origin main       # Baja la última versión
+git stash pop              # Intenta re-aplicar cambios locales (opcional)
+docker compose build backend
+docker compose up -d
+```
+
+**Ver logs en tiempo real:**
+```bash
+# Backend (Errores de API / 500)
+docker logs -f appgynsys-backend-1
+
+# Celery (Emails / Tareas persistentes)
 docker logs -f appgynsys-celery_worker-1
 ```
 
-**Copiar archivos al contenedor (Debug):**
-```bash
-docker cp /tmp/script.py appgynsys-backend-1:/app/script.py
-```
+## ⚠️ Resolución de Problemas Comunes
+
+### 1. IntegrityError (ForeignKeyViolation)
+**Síntoma**: Error 500 al eliminar un tenant o plan.
+**Causa**: Falta de borrado en cascada en las relaciones de SQLAlchemy o el contenedor no tiene la última lógica.
+**Solución**:
+1. Verificar que el código en el servidor tenga `cascade="all, delete-orphan"` en el modelo.
+2. Forzar reconstrucción: `docker compose build backend`.
+3. Reiniciar: `docker compose up -d`.
+
+### 2. Error de Conexión a DB (psycopg2)
+**Síntoma**: "could not translate host name 'db' to address".
+**Causa**: El script se ejecuta fuera del entorno Docker o la red interna de Docker falló.
+**Solución**: Asegurarse de que el script se ejecute con `docker exec` o que el container `db` esté arriba.
+
 
 ## 🌐 Redirección Inteligente (Frontend)
 
