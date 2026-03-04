@@ -6,11 +6,19 @@ import ChatBooking from './ChatBooking'
 export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, primaryColor = '#4F46E5' }) {
   return (
     <Transition show={isOpen} as={Fragment}>
-      <div className="relative z-50">
-        {/* No backdrop for widget feel, allows interaction with page if needed, or maybe transparent backdrop to catch clicks for close? 
-            User wants "widget", usually no backdrop. But let's keep it simple. 
-            If I don't have a backdrop, clicks outside won't close it automatically unless I use a listener. 
-            For now, manual close button is fine. */}
+      <div className="relative z-[100]">
+        {/* Backdrop logic for mobile feel and depth */}
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" onClick={onClose} />
+        </Transition.Child>
 
         <Transition.Child
           as={Fragment}
@@ -22,7 +30,7 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
           leaveTo="translate-y-10 opacity-0 scale-95"
         >
           <div
-            className="fixed bottom-16 md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[calc(100vh-140px)] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300"
+            className="fixed bottom-16 md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[75vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300"
             style={{ borderColor: `${primaryColor}33` }}
           >
             {/* Header */}

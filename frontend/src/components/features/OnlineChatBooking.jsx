@@ -710,7 +710,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     if (!isOpen && !isVisible) return null;
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-end justify-center md:items-center p-0 md:p-4 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-end justify-center md:items-center p-0 md:p-4 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -718,7 +718,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             ></div>
 
             {/* Modal Content */}
-            <div className={`bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-[380px] h-[calc(100vh-140px)] md:h-[500px] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'} absolute bottom-16 md:bottom-0 md:relative`}>
+            <div className={`bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-[380px] h-[75vh] md:h-[500px] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'} absolute bottom-16 md:bottom-0 md:relative`}>
                 <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
 
                 {/* SUCCESS VIEW */}
