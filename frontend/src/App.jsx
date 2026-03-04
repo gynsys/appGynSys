@@ -65,7 +65,7 @@ function App() {
       }
 
       // Preload appointments if user is authenticated (after loadUser)
-      if (useAuthStore.getState().user) {
+      if (useAuthStore.getState().user && !useAuthStore.getState().user.is_cycle_user) {
         import('./store/appointmentStore').then(({ useAppointmentStore }) => {
           useAppointmentStore.getState().fetchAppointments()
         })

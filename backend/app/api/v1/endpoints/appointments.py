@@ -8,8 +8,10 @@ from typing import Annotated, List
 from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.db.models.appointment import Appointment
-from app.schemas.appointment import AppointmentCreate, AppointmentInDB, AppointmentUpdate
+from app.schemas.appointment import AppointmentInDB, AppointmentUpdate, AppointmentCreate
 from app.api.v1.endpoints.auth import get_current_user
+from app.cycle_predictor.router import get_current_actor
+from app.db.models.cycle_user import CycleUser
 from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification
 from app.services.summary_generator import ClinicalSummaryGenerator
 import json
@@ -92,15 +94,25 @@ async def create_appointment(
 
 @router.get("/", response_model=List[AppointmentInDB])
 async def get_appointments(
-    current_user: Annotated[Doctor, Depends(get_current_user)],
+    current_actor: Annotated[Union[Doctor, CycleUser], Depends(get_current_actor)],
     db: Session = Depends(get_db)
 ):
     """
-    Get all appointments for the current doctor.
+    Get all appointments for the current actor.
+    If Doctor: all appointments for their account.
+    If CycleUser: appointments matching their email or CI.
     """
-    appointments = db.query(Appointment).filter(
-        Appointment.doctor_id == current_user.id
-    ).all()
+    if isinstance(current_actor, Doctor):
+        appointments = db.query(Appointment).filter(
+            Appointment.doctor_id == current_actor.id
+        ).all()
+    else:
+        # For CycleUser, search by email or CI
+        # Usually CycleUser.email is the best link
+        appointments = db.query(Appointment).filter(
+            (Appointment.patient_email == current_actor.email) | 
+            (Appointment.patient_dni == current_actor.ci)
+        ).all()
     
     return appointments
 

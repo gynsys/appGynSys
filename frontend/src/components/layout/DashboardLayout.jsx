@@ -28,7 +28,10 @@ export const DashboardLayout = () => {
   useEffect(() => {
     const initDashboard = async () => {
       try {
-        // Only fetch appointments, user is already in store or handled by auth guard
+        // Only fetch appointments if it's a doctor/admin
+        if (authUser && authUser.is_cycle_user) {
+          return;
+        }
         const appointments = await appointmentService.getAppointments();
 
         // Count 'scheduled' as pending/new appointments
