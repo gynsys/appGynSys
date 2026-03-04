@@ -257,16 +257,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     Iniciar Sesión
                   </button>
                 )}
-                <button
-                  onClick={() => {
-                    onAppointmentClick()
-                    setIsMenuOpen(false)
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Agendar Cita
-                </button>
+
               </div>
             )
           }
