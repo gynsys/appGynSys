@@ -39,7 +39,24 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
+
+    // Attempt to focus an existing window or open a new one
     event.waitUntil(
-        clients.openWindow(event.notification.data.url)
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+            const urlToOpen = event.notification.data.url || '/';
+
+            // Check if there is already a window of this app open
+            for (let client of windowClients) {
+                // If it matches or is part of the same domain, focus it
+                if (client.url.includes(location.origin) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+
+            // If no window is open, open a new one
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
     );
 });

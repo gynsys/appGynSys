@@ -29,7 +29,8 @@ def send_test_to_peta():
         result = send_push_notification(
             user=user,
             title="🔔 Prueba de GynSys",
-            body="Hola Peta, esta es una notificación de prueba para verificar que tu sistema está activo. ¡Todo se ve perfecto! 🚀"
+            body="Hola Peta, esta es una notificación corregida. Al tocarla debería llevarte a tu Dashboard en la PWA. 🚀",
+            data={"url": "/cycle/dashboard"}
         )
 
         if result.get("success"):
