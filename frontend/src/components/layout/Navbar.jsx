@@ -259,27 +259,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 )}
                 <button
                   onClick={() => {
-                    onCycleClick()
-                    setIsMenuOpen(false)
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                >
-                  Mi Ciclo
-                </button>
-
-                {showEndoTest && (
-                  <button
-                    onClick={() => {
-                      onTestClick()
-                      setIsMenuOpen(false)
-                    }}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  >
-                    Test Endometriosis
-                  </button>
-                )}
-                <button
-                  onClick={() => {
                     onAppointmentClick()
                     setIsMenuOpen(false)
                   }}
