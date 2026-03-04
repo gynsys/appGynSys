@@ -11,7 +11,7 @@ const useNotificationStore = create((set, get) => ({
     fetchRules: async (force = false) => {
         const { lastFetch, loading, rules } = get();
 
-        const { lastFetch, loading, rules } = get();
+
 
         // Don't refetch if we already have data and it's less than 5 minutes old
         if (!force && lastFetch && Date.now() - lastFetch < 5 * 60 * 1000) {
