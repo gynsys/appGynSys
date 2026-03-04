@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Union
 from app.db.base import get_db
-from app.api.v1.endpoints.cycle_predictor\
+from app.cycle_predictor.router \
     import get_current_actor
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
