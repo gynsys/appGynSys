@@ -3,7 +3,7 @@ Appointment endpoints for managing appointments.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated, List, Union
 
 from app.db.base import get_db
 from app.db.models.doctor import Doctor
