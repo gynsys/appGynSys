@@ -116,8 +116,8 @@ export default function DashboardOverviewPage() {
 
         </div>
 
-        {/* Stats Grid - Row 1 */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4 max-w-6xl mx-auto w-full px-2">
+        {/* Dashboard Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-w-6xl mx-auto w-full px-2">
           {/* Citas del Mes */}
           <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Citas del Mes</h3>
@@ -135,10 +135,7 @@ export default function DashboardOverviewPage() {
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Artículos</h3>
             <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
           </div>
-        </div>
 
-        {/* Stats Grid - Row 2 */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-w-6xl mx-auto w-full px-2">
           {/* Test Realizados (Conditional) */}
           {hasEndometriosisModule && (
             <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">

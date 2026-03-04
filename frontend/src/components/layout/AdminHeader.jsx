@@ -58,8 +58,8 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <div className="relative cursor-pointer mr-2" onClick={() => navigate('/dashboard/appointments')}>
-              <MdNotifications className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-lg transition-colors" />
+            <div className="relative cursor-pointer mr-2 flex items-center" onClick={() => navigate('/dashboard/appointments')}>
+              <MdNotifications className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-base transition-colors" />
               {notificationCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center animate-pulse">
                   {notificationCount}
