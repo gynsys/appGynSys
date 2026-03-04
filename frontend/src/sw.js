@@ -22,10 +22,14 @@ self.addEventListener('push', (event) => {
         const title = data.title || "GynSys Notification";
         const options = {
             body: data.body || "Tienes una nueva notificación.",
-            icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
+            icon: data.icon || '/pwa-192x192.png',
+            badge: data.badge || '/pwa-192x192.png', // Ideally a monochrome small icon
+            image: data.image || null,
+            vibrate: [200, 100, 200],
+            tag: data.tag || 'gynsys-msg',
+            renotify: true,
             data: {
-                url: data.url || '/'
+                url: data.url || '/cycle/dashboard'
             }
         };
 
@@ -43,12 +47,15 @@ self.addEventListener('notificationclick', (event) => {
     // Attempt to focus an existing window or open a new one
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-            const urlToOpen = event.notification.data.url || '/';
+            const urlToOpen = new URL(event.notification.data.url, self.location.origin).href;
 
             // Check if there is already a window of this app open
             for (let client of windowClients) {
-                // If it matches or is part of the same domain, focus it
-                if (client.url.includes(location.origin) && 'focus' in client) {
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    // Navigate to the specific URL if it's different and focus
+                    if (client.url !== urlToOpen && 'navigate' in client) {
+                        client.navigate(urlToOpen);
+                    }
                     return client.focus();
                 }
             }
