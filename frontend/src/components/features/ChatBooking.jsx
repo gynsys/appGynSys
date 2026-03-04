@@ -662,7 +662,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-800 relative overflow-hidden">
+    <div className="flex flex-col flex-1 bg-white dark:bg-gray-800 relative overflow-hidden min-h-0">
       <ModernLoader isOpen={loading} text="Agendando Cita..." />
 
       {/* Chat History */}
