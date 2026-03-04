@@ -4,7 +4,6 @@ import { useAdminStore } from '../../store/adminStore'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
 import Spinner from '../../components/common/Spinner'
-import ScheduleModal from '../../components/features/ScheduleModal'
 import { useToastStore } from '../../store/toastStore'
 
 export default function AdminTenantsPage() {
@@ -29,7 +28,6 @@ export default function AdminTenantsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showModulesModal, setShowModulesModal] = useState(false)
-  const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedTenant, setSelectedTenant] = useState(null)
   const [tenantToDelete, setTenantToDelete] = useState(null)
@@ -93,21 +91,7 @@ export default function AdminTenantsPage() {
     }
   }
 
-  const handleSaveSchedule = async (tenantId, scheduleData) => {
-    try {
-      await updateTenant(tenantId, scheduleData)
-      setShowScheduleModal(false)
-      setSelectedTenant(null)
-      showToast('Horarios actualizados exitosamente', 'success')
-    } catch (error) {
-      showToast(error.message || 'Error al actualizar horarios', 'error')
-    }
-  }
 
-  const openScheduleModal = (tenant) => {
-    setSelectedTenant(tenant)
-    setShowScheduleModal(true)
-  }
 
   const handleStatusChange = async (tenantId, newStatus) => {
     try {
@@ -348,13 +332,7 @@ export default function AdminTenantsPage() {
                         </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <Button
-                          onClick={() => openScheduleModal(tenant)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          📅 Horarios
-                        </Button>
+
                         <Button
                           onClick={() => openEditModal(tenant)}
                           size="sm"
@@ -383,15 +361,7 @@ export default function AdminTenantsPage() {
           )}
         </div>
 
-        {/* Schedule Modal */}
-        {selectedTenant && (
-          <ScheduleModal
-            isOpen={showScheduleModal}
-            onClose={() => setShowScheduleModal(false)}
-            tenant={selectedTenant}
-            onSave={handleSaveSchedule}
-          />
-        )}
+
 
         {/* Create Tenant Modal */}
         <Modal

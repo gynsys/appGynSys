@@ -46,5 +46,5 @@ class Appointment(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationship
-    doctor = relationship("Doctor", backref="appointments")
+    doctor = relationship("Doctor", back_populates="appointments")
 

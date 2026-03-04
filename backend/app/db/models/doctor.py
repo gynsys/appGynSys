@@ -79,8 +79,9 @@ class Doctor(Base):
     # Relationships
     plan = relationship("Plan", backref="doctors")
     
-    # Many-to-many relationship with modules - MOVED TO TENANT MODEL
-    # tenant_modules = relationship("TenantModule", backref="doctor", cascade="all, delete-orphan")
+    # Relationships with full cascade for tenant deletion
+    tenant_modules = relationship("TenantModule", back_populates="tenant", cascade="all, delete-orphan", foreign_keys="[TenantModule.tenant_id]")
+    appointments = relationship("Appointment", back_populates="doctor", cascade="all, delete-orphan")
 
     # Content # Analytics
     visitor_count = Column(Integer, default=0, nullable=False)
