@@ -26,8 +26,8 @@ export default function LandingPage() {
     },
     {
       icon: <Activity className="w-10 h-10 text-indigo-600" />,
-      title: "Control 'Mi Ciclo'",
-      description: "Sistema integrado para el cálculo de ciclo menstrual y control prenatal para tus pacientes."
+      title: "Control Mi Ciclo",
+      description: "Tus pacientes pueden gestionar su ciclo menstrual y control prenatal directamente desde tu plataforma."
     },
     {
       icon: <Clipboard className="w-10 h-10 text-indigo-600" />,
@@ -195,48 +195,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Mi Ciclo Integration Highlight */}
-      <section className="py-24 bg-gray-900 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-20 opacity-10">
-          <Activity className="w-96 h-96" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1">
-            <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold text-sm">
-              Socio Estratégico: Mi Ciclo
-            </div>
-            <h2 className="text-3xl md:text-5xl font-black mb-8 leading-tight">
-              Calculadora Menstrual y <br />Control Prenatal Integrado
-            </h2>
-            <p className="text-xl text-gray-400 mb-10 leading-relaxed font-medium">
-              Tus pacientes podrán descargar la App "Mi Ciclo" y vincularse directamente con tu consultorio. Recibe alertas de síntomas y haz seguimiento de sus ciclos de forma automática.
-            </p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-              <li className="flex items-center font-bold">
-                <Check className="text-indigo-400 mr-2" /> Seguimiento de Ovulación
-              </li>
-              <li className="flex items-center font-bold">
-                <Check className="text-indigo-400 mr-2" /> Diario de Síntomas
-              </li>
-              <li className="flex items-center font-bold">
-                <Check className="text-indigo-400 mr-2" /> Recordatorios de Medicación
-              </li>
-              <li className="flex items-center font-bold">
-                <Check className="text-indigo-400 mr-2" /> Gráficos Prenatales
-              </li>
-            </ul>
-          </div>
-          <div className="flex-1 flex justify-center">
-            <div className="w-full max-w-sm aspect-[9/16] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-[60px] border border-white/10 p-4 relative shadow-3xl shadow-indigo-500/20">
-              <img
-                src="https://placehold.co/400x800/111827/ffffff?text=Mi+Ciclo+App+UI"
-                alt="App Mi Ciclo"
-                className="w-full h-full object-cover rounded-[50px] border border-white/5"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Final */}
       <section className="py-20 px-4">
