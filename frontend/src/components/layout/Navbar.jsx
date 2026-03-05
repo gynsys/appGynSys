@@ -170,6 +170,17 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               {/* Authentication Logic */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
+                  {(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) && (
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:scale-105"
+                      style={{ backgroundColor: primaryColor }}
+                      title="Panel Admin"
+                    >
+                      <FiBarChart2 className="w-4 h-4" />
+                      <span>Panel Admin</span>
+                    </Link>
+                  )}
                   <button
                     onClick={() => logout()}
                     className="text-sm font-medium text-red-600 hover:text-red-700 transition"
