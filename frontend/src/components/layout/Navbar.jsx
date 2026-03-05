@@ -39,7 +39,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           ...(effectiveBgColor ? { backgroundColor: effectiveBgColor } : {})
         }}
       >
-        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="max-w-[1260px] mx-auto px-2 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center py-2 md:py-0 md:h-16 space-y-2 md:space-y-0">
 
             {/* Top Row: Logo, Name, Mobile Menu Button */}
