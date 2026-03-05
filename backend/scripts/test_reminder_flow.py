@@ -33,7 +33,7 @@ def test_reminder_flow():
             doctor_id=doctor.id,
             patient_name=user.nombre_completo,
             patient_email=user.email,
-            patient_phone=user.telefono or "123456",
+            patient_phone="000-000-000",
             appointment_date=appt_time,
             appointment_type="Prueba de Sistema",
             reason_for_visit="Validación de Notificaciones T-90",
