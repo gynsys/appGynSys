@@ -264,14 +264,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                           <p className="text-xs text-gray-400 mt-0.5">Registros menstruales</p>
                         </div>
                       </Link>
-                      <Link
-                        to="/cycle/profile"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <FiSettings className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        Mi Usuario
-                      </Link>
                     </div>
                     <div className="border-t border-gray-100 dark:border-gray-700 py-1">
                       <button

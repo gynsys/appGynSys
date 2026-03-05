@@ -229,20 +229,6 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
           </div>
         </div>
       </form>
-      {/* Register link — visible only in modal */}
-      {isModal && onRegisterClick && (
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 pb-2">
-          ¿No tienes cuenta?{' '}
-          <button
-            type="button"
-            onClick={onRegisterClick}
-            className="font-semibold hover:underline"
-            style={{ color: primaryColor }}
-          >
-            Regístrate aquí
-          </button>
-        </p>
-      )}
     </div>
   )
 
