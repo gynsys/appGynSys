@@ -3,7 +3,7 @@ import Modal from '../common/Modal';
 import LoginForm from '../../features/auth/LoginForm';
 import ForgotPasswordForm from '../../features/auth/ForgotPasswordForm';
 
-export default function LoginModal({ isOpen, onClose, primaryColor, darkMode }) {
+export default function LoginModal({ isOpen, onClose, primaryColor, darkMode, onRegisterClick }) {
     const [view, setView] = useState('login'); // 'login' | 'forgot-password'
 
     useEffect(() => {
@@ -23,6 +23,7 @@ export default function LoginModal({ isOpen, onClose, primaryColor, darkMode }) 
                     primaryColor={primaryColor}
                     onForgotPasswordClick={() => setView('forgot-password')}
                     onSuccess={onClose}
+                    onRegisterClick={onRegisterClick ? () => { onClose(); onRegisterClick() } : undefined}
                 />
             ) : (
                 <ForgotPasswordForm

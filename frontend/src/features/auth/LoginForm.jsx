@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from './useAuth'
 import { useGoogleLogin } from '@react-oauth/google'
 
-export default function LoginForm({ redirect = '/dashboard', isModal = false, primaryColor = '#4f46e5', onForgotPasswordClick, onSuccess }) {
+export default function LoginForm({ redirect = '/dashboard', isModal = false, primaryColor = '#4f46e5', onForgotPasswordClick, onSuccess, onRegisterClick }) {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const { login, loginWithGoogle } = useAuth()
@@ -229,6 +229,20 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
           </div>
         </div>
       </form>
+      {/* Register link — visible only in modal */}
+      {isModal && onRegisterClick && (
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 pb-2">
+          ¿No tienes cuenta?{' '}
+          <button
+            type="button"
+            onClick={onRegisterClick}
+            className="font-semibold hover:underline"
+            style={{ color: primaryColor }}
+          >
+            Regístrate aquí
+          </button>
+        </p>
+      )}
     </div>
   )
 

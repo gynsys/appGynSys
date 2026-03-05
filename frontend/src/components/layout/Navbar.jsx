@@ -214,10 +214,17 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               >
                 <button
                   onClick={() => {
+                    // Patient (non-doctor) logged in → toggle account dropdown
                     if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
-                      setShowUserMenu(v => !v)  // toggle on click (mobile)
-                    } else if (!isAuthenticated) {
-                      onLoginClick && onLoginClick()  // abrir login, no registro
+                      setShowUserMenu(v => !v)
+                    }
+                    // Doctor logged in → open register dialog (register a new patient)
+                    else if (isAuthenticated && (user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
+                      onRegisterClick && onRegisterClick()
+                    }
+                    // Not authenticated → open login
+                    else {
+                      onLoginClick && onLoginClick()
                     }
                   }}
                   className="p-2 rounded-lg transition-all hover:scale-110"

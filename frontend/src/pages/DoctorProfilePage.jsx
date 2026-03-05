@@ -668,7 +668,7 @@ export default function DoctorProfilePage() {
 
       {/* Cycle Predictor Modal */}
       <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} primaryColor={primaryColor} darkMode={isDarkTheme} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} primaryColor={primaryColor} darkMode={isDarkTheme} onRegisterClick={() => { setIsLoginModalOpen(false); setIsRegisterModalOpen(true) }} />
       <CycleAuthDialog
         open={isRegisterModalOpen}
         onOpenChange={setIsRegisterModalOpen}
