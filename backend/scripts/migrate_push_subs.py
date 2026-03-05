@@ -10,24 +10,31 @@ from sqlalchemy import text
 
 def migrate():
     print("Attempting to migrate 'push_subscriptions' table...")
-    try:
-        with engine.connect() as conn:
-            # --- Push Subscriptions ---
-            print("Migrating 'push_subscriptions'...")
-            conn.execute(text("ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS doctor_id INTEGER"))
-            try:
-                conn.execute(text("ALTER TABLE push_subscriptions ADD CONSTRAINT fk_push_doctor FOREIGN KEY (doctor_id) REFERENCES doctors (id)"))
-            except Exception: pass
-            conn.execute(text("ALTER TABLE push_subscriptions ALTER COLUMN user_id DROP NOT NULL"))
-            
-            # --- Appointments ---
-            print("Migrating 'appointments'...")
-            conn.execute(text("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT FALSE"))
-            
-            conn.commit()
-        print("Success: Migration applied.")
-    except Exception as e:
-        print(f"Error applying migration: {e}")
+def migrate():
+    print("Attempting to migrate tables...")
+    
+    steps = [
+        ("ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS doctor_id INTEGER", "Add doctor_id to push_subscriptions"),
+        ("ALTER TABLE push_subscriptions ADD CONSTRAINT fk_push_doctor FOREIGN KEY (doctor_id) REFERENCES doctors (id)", "Add FK to push_subscriptions"),
+        ("ALTER TABLE push_subscriptions ALTER COLUMN user_id DROP NOT NULL", "Make user_id nullable"),
+        ("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT FALSE", "Add reminder_sent to appointments")
+    ]
+    
+    for sql, desc in steps:
+        print(f"Executing: {desc}...")
+        try:
+            with engine.connect() as conn:
+                conn.execute(text(sql))
+                conn.commit()
+            print(f"  ✅ Success")
+        except Exception as e:
+             # If error is about constraint existing, it's fine
+            if "already exists" in str(e).lower() or "fk_push_doctor" in str(e).lower():
+                print(f"  ℹ️  Note: Constraint/Column might already exist.")
+            else:
+                print(f"  ❌ Error: {e}")
+
+    print("Migration finished.")
 
 if __name__ == "__main__":
     migrate()
