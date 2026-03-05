@@ -213,33 +213,40 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               )}
 
               {/* User icon: dropdown if patient logged in, register if not authenticated */}
-              <div className="relative" ref={userMenuRef}>
+              <div
+                className="relative"
+                ref={userMenuRef}
+                onMouseEnter={() => {
+                  if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
+                    setShowUserMenu(true)
+                  }
+                }}
+                onMouseLeave={() => setShowUserMenu(false)}
+              >
                 <button
                   onClick={() => {
                     if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
-                      setShowUserMenu(v => !v)
+                      setShowUserMenu(v => !v)  // toggle on click (mobile)
                     } else if (!isAuthenticated) {
                       onRegisterClick && onRegisterClick()
                     }
                   }}
                   className="p-2 rounded-lg transition-all hover:scale-110"
-                  style={{ color: isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : undefined }}
-                  onMouseEnter={e => { if (!isAuthenticated) e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = '#fff' }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : '' }}
-                  title={isAuthenticated ? 'Mi cuenta' : 'Crear cuenta'}
+                  style={{ color: isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : '' }}
+                  title={isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? 'Mi cuenta' : 'Crear cuenta'}
                 >
                   {isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)
                     ? <FiUser className="w-5 h-5" />
-                    : <FiUserPlus className="w-5 h-5" />
+                    : <FiUserPlus className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-white" />
                   }
                 </button>
 
                 {/* Patient user dropdown */}
                 {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
                     {/* User header */}
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Cuenta</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta</p>
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{user?.email || user?.nombre_completo}</p>
                     </div>
                     <div className="py-1">
@@ -248,15 +255,29 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                         onClick={() => setShowUserMenu(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
-                        <FiFileText className="w-4 h-4 text-gray-400" />
-                        Mi Historial
+                        <FiFileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium leading-none">Historia Médica</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Citas y consultas</p>
+                        </div>
+                      </Link>
+                      <Link
+                        to="/cycle/logs"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <FiActivity className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium leading-none">Historial Mi Ciclo</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Registros menstruales</p>
+                        </div>
                       </Link>
                       <Link
                         to="/cycle/profile"
                         onClick={() => setShowUserMenu(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
-                        <FiSettings className="w-4 h-4 text-gray-400" />
+                        <FiSettings className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         Mi Usuario
                       </Link>
                     </div>
