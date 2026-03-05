@@ -97,6 +97,17 @@ Ocurre si se intenta correr un script desde el host sin Docker.
 - Revisar `vapid_private.pem` en el backend para Push Notifications.
 - Ver `notification_logs` para ver si falló el canal (Push/Email).
 
+## 💡 Lecciones Aprendidas y Mejores Prácticas
+
+### 1. Manejo de Fechas (Timezones)
+El sistema utiliza fechas "aware" (con zona horaria) para las citas. Al comparar con `datetime.now()`, siempre usar `normalize_to_caracas()` del servicio de notificaciones para evitar errores de comparación entre fechas ingenuas y conscientes.
+
+### 2. Migraciones Robustas en Producción
+Si una migración de SQLAlchemy falla por discrepancias de entorno (Docker vs Host), utilizar comandos directos de PostgreSQL vía `docker exec appgynsys-db-1 psql`. Es el método más seguro para añadir columnas sin bloquear el sistema.
+
+### 3. Notificaciones Multi-Actor
+El procesador de notificaciones ya es agnóstico. Puede enviar mensajes a `CycleUser` o `Doctor`. Al añadir nuevas reglas, asegurar que el `context_generator` maneje el tipo de actor correspondiente.
+
 ---
 > [!TIP]
 > Toda la configuración de Google OAuth y Whitelist de correos se gestiona en `settings.GOOGLE_WHITE_LIST`.
