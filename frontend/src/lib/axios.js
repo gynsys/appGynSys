@@ -22,7 +22,9 @@ api.interceptors.request.use(
       config.url?.includes('/preconsultation/config') || // Allow config to be public
       config.url?.includes('/cycle-users/register') ||
       config.url?.includes('/cycle-users/login') ||
-      config.url?.includes('/cycle-users/password-recovery')
+      config.url?.includes('/cycle-users/password-recovery') ||
+      config.url?.includes('/auth/patient/activation-info') ||
+      config.url?.includes('/auth/patient/activate')
 
     if (!isPublicEndpoint) {
       // Check if it's a cycle-related request

@@ -543,3 +543,127 @@ async def reset_password(
     
     return {"message": "Password updated successfully"}
 
+
+# --- Patient Account Activation ---
+
+class PatientActivationRequest(BaseModel):
+    token: str
+    password: str
+
+
+@router.get("/patient/activation-info")
+async def get_patient_activation_info(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Return email associated with an activation token without consuming it.
+    Used by the frontend to pre-fill the email field in the activation form.
+    """
+    from app.db.models.patient_activation_token import PatientActivationToken
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Token requerido")
+
+    record = db.query(PatientActivationToken).filter(
+        PatientActivationToken.token == token
+    ).first()
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Token inválido o no encontrado")
+
+    if record.used:
+        raise HTTPException(status_code=400, detail="Este enlace ya fue utilizado")
+
+    if record.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="El enlace ha expirado")
+
+    return {"email": record.email, "valid": True}
+
+
+@router.post("/patient/activate")
+async def activate_patient_account(
+    body: PatientActivationRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Activate patient account using a one-time token.
+    Creates or updates a CycleUser with the chosen password and returns a JWT.
+    """
+    from app.db.models.patient_activation_token import PatientActivationToken
+    from app.db.models.cycle_user import CycleUser
+
+    if not body.token or not body.password:
+        raise HTTPException(status_code=400, detail="Token y contraseña son requeridos")
+
+    if len(body.password) < 6:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
+
+    record = db.query(PatientActivationToken).filter(
+        PatientActivationToken.token == body.token
+    ).first()
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Token inválido o no encontrado")
+
+    if record.used:
+        raise HTTPException(status_code=400, detail="Este enlace ya fue utilizado")
+
+    if record.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="El enlace ha expirado. Solicite uno nuevo a su doctora")
+
+    # Create or update CycleUser
+    cycle_user = db.query(CycleUser).filter(CycleUser.email == record.email).first()
+
+    if cycle_user:
+        # Patient already exists — update password only
+        cycle_user.password_hash = hash_password(body.password)
+        cycle_user.is_active = True
+    else:
+        # Recover name from appointment if possible
+        from app.db.models.appointment import Appointment
+        patient_name = record.email.split("@")[0]
+        if record.appointment_id:
+            appt = db.query(Appointment).filter(
+                Appointment.id == record.appointment_id
+            ).first()
+            if appt and appt.patient_name:
+                patient_name = appt.patient_name
+
+        cycle_user = CycleUser(
+            email=record.email,
+            password_hash=hash_password(body.password),
+            nombre_completo=patient_name,
+            doctor_id=record.doctor_id,
+            is_active=True,
+        )
+        db.add(cycle_user)
+
+    db.flush()  # Ensure cycle_user.id is populated before commit
+
+    # Mark token as used
+    record.used = True
+    db.commit()
+    db.refresh(cycle_user)
+
+    # Return JWT for automatic login
+    access_token = create_access_token(
+        data={
+            "sub": cycle_user.email,
+            "user_id": cycle_user.id,
+            "user_type": "cycle_user",
+            "doctor_id": cycle_user.doctor_id,
+            "is_cycle_user": True,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": cycle_user.id,
+            "email": cycle_user.email,
+            "nombre_completo": cycle_user.nombre_completo,
+            "is_cycle_user": True,
+        }
+    }

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Union
 
+from app.core.config import settings
 from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.db.models.appointment import Appointment
@@ -14,7 +15,11 @@ from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
 from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification
 from app.services.summary_generator import ClinicalSummaryGenerator
+from datetime import datetime, timedelta
+import logging
 import json
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -203,8 +208,29 @@ async def update_appointment(
         # Generate preconsulta link ONLY if NOT recurrent
         preconsulta_link = None
         if not is_recurrent:
-            preconsulta_link = f"http://localhost:5173/dr/{current_user.slug_url}/preconsulta?appointment_id={appointment.id}"
+            preconsulta_link = f"{settings.FRONTEND_URL}/dr/{current_user.slug_url}/preconsulta?appointment_id={appointment.id}"
         
+        # Generate activation token for the patient (if confirmed and patient has email)
+        activation_link = None
+        if appointment.status == "confirmed" and appointment.patient_email:
+            try:
+                import secrets
+                from datetime import timezone
+                from app.db.models.patient_activation_token import PatientActivationToken
+                activation_token = secrets.token_urlsafe(48)
+                token_record = PatientActivationToken(
+                    email=appointment.patient_email,
+                    token=activation_token,
+                    doctor_id=appointment.doctor_id,
+                    appointment_id=appointment.id,
+                    expires_at=datetime.now(timezone.utc) + timedelta(hours=48),
+                )
+                db.add(token_record)
+                db.commit()
+                activation_link = f"{settings.FRONTEND_URL}/activar-cuenta?token={activation_token}"
+            except Exception as e:
+                logger.error(f"Error generating activation token for appointment {appointment_id}: {e}", exc_info=True)
+
         # Format date safely
         date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
 
@@ -214,10 +240,12 @@ async def update_appointment(
             status=appointment.status,
             appointment_date=date_str,
             doctor_name=current_user.nombre_completo,
-            preconsulta_link=preconsulta_link
+            preconsulta_link=preconsulta_link,
+            activation_link=activation_link,
         )
 
     return appointment
+
 
 
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)

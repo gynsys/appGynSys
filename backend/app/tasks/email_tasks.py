@@ -304,7 +304,8 @@ def send_appointment_status_update(
     status: str,
     appointment_date: str,
     doctor_name: str,
-    preconsulta_link: str = None
+    preconsulta_link: str = None,
+    activation_link: str = None,
 ):
     """
     Send email to patient when appointment status changes (Approved/Rejected).
@@ -313,12 +314,27 @@ def send_appointment_status_update(
         subject = "Cita Confirmada - GynSys"
         action_html = ""
         if preconsulta_link:
-            action_html = f"""
+            action_html += f"""
             <p><strong>IMPORTANTE:</strong> Para agilizar su atención, por favor complete su historia médica previa a la consulta en el siguiente enlace:</p>
             <p><a href="{preconsulta_link}" style="background-color: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Llenar Preconsulta</a></p>
             <p>O copie y pegue este enlace: {preconsulta_link}</p>
             """
-            
+
+        if activation_link:
+            action_html += f"""
+            <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-radius: 10px; border-left: 4px solid #7c3aed;">
+                <p style="margin: 0 0 8px; font-weight: bold; color: #5b21b6;">🌸 Activa tu cuenta Mi Ciclo</p>
+                <p style="margin: 0 0 14px; font-size: 14px; color: #4c1d95;">
+                    Con tu cuenta gratuita podrás ver tus citas, seguir tu ciclo menstrual y recibir recordatorios personalizados de tu doctora.
+                </p>
+                <a href="{activation_link}"
+                   style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; padding: 11px 22px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                    Activar mi cuenta →
+                </a>
+                <p style="margin: 10px 0 0; font-size: 12px; color: #7c3aed;">Este enlace es válido por 48 horas.</p>
+            </div>
+            """
+
         content = f"""
         <h2>Su cita ha sido confirmada</h2>
         <p>Hola {patient_name},</p>
@@ -338,7 +354,6 @@ def send_appointment_status_update(
     else:
         return # Ignore other statuses for now
 
-    pass
     _send_integrated_email(patient_email, subject, content)
     return {"status": "sent", "recipient": patient_email}
 

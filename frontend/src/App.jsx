@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import ActivateAccountPage from './pages/ActivateAccountPage'
 import DoctorProfilePage from './pages/DoctorProfilePage'
 import DashboardOverviewPage from './pages/DashboardOverviewPage'
 import ProfileEditorPage from './pages/ProfileEditorPage'
@@ -142,6 +143,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
 
 
 
