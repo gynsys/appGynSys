@@ -176,7 +176,7 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
                     <DialogDescription className="dark:text-gray-400">
                         {authMode === 'login' && 'Accede a tu cuenta para ver tu historial.'}
                         {authMode === 'forgot-password' && 'Te ayudaremos a recuperar el acceso a tu cuenta.'}
-                        {authMode === 'register' && 'Crea una cuenta para recibir alertas sobre tu ciclo y guardar tu historial.'}
+                        {authMode === 'register' && 'Regístrate para llevar siempre contigo tu historial médico, recibir notificaciones útiles y alertas sobre tu ciclo menstrual. Configura tus datos en la app \'Mi Ciclo\' y comienza a disfrutar de todos los beneficios.'}
                     </DialogDescription>
                 </DialogHeader>
 

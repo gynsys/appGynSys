@@ -189,27 +189,26 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => onLoginClick ? onLoginClick() : null}
-                    className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md group"
-                    title="Iniciar sesión"
-                  >
-                    <FiLogIn className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium">Login</span>
-                  </button>
-                  <button
-                    onClick={() => onRegisterClick ? onRegisterClick() : null}
-                    className="p-2 rounded-lg text-gray-500 hover:text-white dark:text-gray-400 transition-all hover:scale-110"
-                    style={{ '--hover-bg': primaryColor }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = primaryColor}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                    title="Crear cuenta"
-                  >
-                    <FiUserPlus className="w-5 h-5" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => onLoginClick ? onLoginClick() : null}
+                  className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md group"
+                  title="Iniciar sesión"
+                >
+                  <FiLogIn className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-medium">Login</span>
+                </button>
               )}
+
+              {/* Register icon — always visible */}
+              <button
+                onClick={() => onRegisterClick ? onRegisterClick() : null}
+                className="p-2 rounded-lg text-gray-500 hover:text-white dark:text-gray-400 transition-all hover:scale-110"
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = primaryColor}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="Crear cuenta"
+              >
+                <FiUserPlus className="w-5 h-5" />
+              </button>
             </div >
 
             {/* Desktop Mobile Menu Button Placeholer (Removed from here, moved up) */}
