@@ -1,3 +1,10 @@
+import sys
+import os
+
+# Essential for identifying the 'app' module correctly inside Docker
+sys.path.insert(0, "/app")
+os.environ["PYTHONPATH"] = "/app"
+
 from app.db.base import engine
 from sqlalchemy import text
 
