@@ -2,7 +2,9 @@ from typing import Tuple, Optional, Union
 from sqlalchemy.orm import Session
 from app.db.models.notification import PendingNotification, NotificationRule
 from app.db.models.cycle_user import CycleUser
-from app.tasks.email_tasks import _send_integrated_email, _send_web_push
+from app.db.models.doctor import Doctor
+from app.tasks.email_tasks import _send_integrated_email
+from app.services.push_service import send_push_to_actor
 from .base import logger, push_circuit, log_notification_event
 from .registry import NOTIFICATION_MAP
 
@@ -43,10 +45,20 @@ def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dic
         return None
 
 def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tuple[bool, Optional[str], Optional[str]]:
-    """Envia por Push + Email si el canal es 'dual'."""
-    user = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
-    if not user:
-        return False, None, "User not found"
+    """Envia por Push + Email si el canal es 'dual' (Soporta Usuaria o Doctora)."""
+    # Identificar el actor (Prioridad: recipient_id -> doctor_id)
+    actor = None
+    email_address = None
+    
+    if item.recipient_id:
+        actor = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
+        if actor: email_address = actor.email
+    elif item.doctor_id:
+        actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
+        if actor: email_address = actor.email
+        
+    if not actor:
+        return False, None, "Actor not found"
     
     channel_pref = item.channel or "dual"
     push_success = False
@@ -58,23 +70,35 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
     if channel_pref in ("dual", "push"):
         if push_circuit.can_execute():
             try:
-                push_body = item.message_text or item.subject
-                _send_web_push(user.id, item.subject, push_body, "/cycle/dashboard", db)
-                push_success = True
-                push_circuit.record_success()
-                channels_sent.append("push")
+                # Si es para doctora, el link debe ser al dash de admin
+                url = "/admin/dashboard" if hasattr(actor, "slug_url") else "/cycle/dashboard"
+                
+                result = send_push_to_actor(
+                    actor=actor, 
+                    title=item.subject, 
+                    body=item.message_text or item.subject,
+                    data={"url": url}
+                )
+                
+                if result.get("success"):
+                    push_success = True
+                    push_circuit.record_success()
+                    channels_sent.append("push")
+                else:
+                    errors.append(f"Push failed: {result.get('error')}")
+                    # No marcamos como fallo crítico del circuit breaker si es error de 'no subs'
             except Exception as e:
                 push_circuit.record_failure()
                 errors.append(f"Push error: {str(e)}")
-                log_notification_event("push_failure", user.id, item.rule.notification_type if item.rule else "unknown", {"error": str(e)})
+                log_notification_event("push_failure", actor.id, item.rule.notification_type if item.rule else "unknown", {"error": str(e)})
         else:
             errors.append("Push circuit breaker OPEN")
     
     # 2. INTENTAR EMAIL
     if channel_pref in ("dual", "email"):
-        if user.email:
+        if email_address:
             try:
-                _send_integrated_email(user.email, item.subject, item.body)
+                _send_integrated_email(email_address, item.subject, item.body)
                 email_success = True
                 channels_sent.append("email")
             except Exception as e:
