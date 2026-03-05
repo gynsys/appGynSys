@@ -51,6 +51,7 @@ export default function DoctorProfilePage() {
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [isNavbarRegisterOpen, setIsNavbarRegisterOpen] = useState(false)
   const [historyPdfUrl, setHistoryPdfUrl] = useState(null)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
 
@@ -375,7 +376,7 @@ export default function DoctorProfilePage() {
         onTestClick={handleOpenTest}
         onCycleClick={handleOpenCycle}
         onLoginClick={() => setIsLoginModalOpen(true)}
-        onRegisterClick={() => setIsRegisterModalOpen(true)}
+        onRegisterClick={() => setIsNavbarRegisterOpen(true)}
         onMedicalHistoryClick={handleMedicalHistoryClick}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
@@ -672,6 +673,13 @@ export default function DoctorProfilePage() {
       <CycleAuthDialog
         open={isRegisterModalOpen}
         onOpenChange={setIsRegisterModalOpen}
+        initialView="register"
+        slug={slug}
+      />
+      {/* Separate register dialog for navbar user icon — independent state to avoid conflicts */}
+      <CycleAuthDialog
+        open={isNavbarRegisterOpen}
+        onOpenChange={setIsNavbarRegisterOpen}
         initialView="register"
         slug={slug}
       />

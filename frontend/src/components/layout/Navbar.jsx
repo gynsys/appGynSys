@@ -218,13 +218,9 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
                       setShowUserMenu(v => !v)
                     }
-                    // Doctor logged in → open register dialog (register a new patient)
-                    else if (isAuthenticated && (user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
-                      onRegisterClick && onRegisterClick()
-                    }
-                    // Not authenticated → open login
+                    // Doctor logged in OR not authenticated → open register form (CycleAuthDialog)
                     else {
-                      onLoginClick && onLoginClick()
+                      onRegisterClick && onRegisterClick()
                     }
                   }}
                   className="p-2 rounded-lg transition-all hover:scale-110"
