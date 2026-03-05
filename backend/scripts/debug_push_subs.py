@@ -27,6 +27,13 @@ def debug_subs():
         subs = db.query(PushSubscription).filter(PushSubscription.doctor_id == 1).all()
         for s in subs:
             print(f"  - Sub ID: {s.id}, Created: {s.created_at}, Endpoint: {s.endpoint[:50]}...")
+            
+        # Try sending a test push to doctor
+        if subs:
+            print(f"🚀 Enviando Push de prueba a Doctora (Total dispositivos: {len(subs)})")
+            from app.services.push_service import send_push_to_actor
+            res = send_push_to_actor(d1, "🧪 Prueba de GynSys", "¡Hola! Si recibes esto, tu móvil está correctamente vinculado.")
+            print(f"  Result: {res}")
     
     db.close()
 
