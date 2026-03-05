@@ -13,6 +13,7 @@ import { dashboardService } from '../services/dashboardService'
 import DashboardCalendar from '../components/dashboard/DashboardCalendar'
 import { useAppointmentStore } from '../store/appointmentStore'
 import WelcomeTourModal from '../components/dashboard/WelcomeTourModal'
+import PushSubscriptionWidget from '../components/dashboard/PushSubscriptionWidget'
 
 export default function DashboardOverviewPage() {
   const navigate = useNavigate()
@@ -114,6 +115,11 @@ export default function DashboardOverviewPage() {
             Panel de Administración
           </h2>
 
+        </div>
+
+        {/* Push Subscription Alert (Dra. Mariel/Inquilina) */}
+        <div className="mb-6 max-w-6xl mx-auto w-full px-2">
+          <PushSubscriptionWidget primaryColor={primaryColor} />
         </div>
 
         {/* Dashboard Stats Grid */}
