@@ -11,6 +11,7 @@ Esta guía documenta los componentes críticos, comandos y flujos lógicos del s
 | **Frontend (SaaS)** | [Netlify](https://app.netlify.com/) | Desplegado desde la rama `main` del repo. |
 | **Base de Datos** | Contenedor `appgynsys-db-1` | PostgreSQL 15, base de datos `gynsys`. |
 | **Logs de Celery** | `/opt/appgynsys/logs` | Seguimiento de tareas de email y seedeo. |
+| **Recordatorios** | `check_appointment_reminders` | Tarea Celery (cada 15m) que envía Push/Email 1h 30m antes. |
 | **VAPID / Push** | `/opt/appgynsys/backend`| Archivos `vapid_private.pem` y `public.pem`. |
 
 ## 🗄️ Base de Datos: Tablas y Relaciones Críticas

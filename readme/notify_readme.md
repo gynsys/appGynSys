@@ -14,9 +14,9 @@ El sistema de notificaciones es un **pipeline asíncrono** que:
 ### Canales disponibles
 | Canal | Descripción |
 |-------|-------------|
-| `push` | Web Push API (VAPID). Funciona en PWA y navegadores modernos |
+| `push` | Web Push API (VAPID). Funciona en PWA y navegadores modernos (iOS/Android/Desktop) |
 | `email` | Correo transaccional via Resend (`resend` Python SDK) |
-| `dual` | Intenta push primero, si falla intenta email (ambos si tienen subscripción) |
+| `dual` | Intenta push primero a TODOS los dispositivos. Si no tiene móviles registrados, envía email (para ahorrar costos) |
 
 ### Arquitectura de alto nivel
 
@@ -37,6 +37,12 @@ CELERY BEAT (scheduler)
     │                        │    ├── push_service (Web Push)
     │                        │    └── email (Resend)
     │                        └── UPDATE status → 'sent' | 'retrying' | 'failed'
+    │
+    ├── Cada 15 min → check_and_send_appointment_reminders() ✨ NUEVO
+    │                   └── service.check_and_send_appointment_reminders()
+    │                        ├── SELECT citas donde (hora_cita - now) == 90 min
+    │                        ├── Para cada cita: Intenta PUSH a Paciente + Doctor
+    │                        └── Si PUSH exitoso → CANCELA EMAIL (ahorro Resend)
     │
     └── Cada 10 min → recover_stale_processing()  ✨ NUEVO
                         └── service.recover_stale_processing_notifications()
@@ -165,13 +171,13 @@ frontend/src/
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
 | `id` | int PK | Identificador |
-| `user_id` | int FK→cycle_users | ⚠️ Campo real es `user_id`, NO `cycle_user_id` |
-| `endpoint` | varchar | URL del servidor push del navegador |
+| `user_id` | int FK→cycle_users (null) | Paciente asociada (si aplica) |
+| `doctor_id`| int FK→doctors (null) | Doctora asociada (si aplica) |
+| `endpoint` | varchar | URL del servidor push del navegador (Unique) |
 | `p256dh` | varchar | Clave pública del cliente |
 | `auth` | varchar | Clave de autenticación |
 | `user_agent` | varchar | Identificador del dispositivo |
-| `created_at` | timestamptz | Registro |
-| `updated_at` | timestamptz | Última actualización |
+| `updated_at` | timestamptz | Última señal de vida |
 
 #### Tablas relacionadas (contexto)
 - `cycle_users` — Usuarias del sistema de ciclo
@@ -316,6 +322,7 @@ Se llama cuando el usuario cambia sus configuraciones, registra un ciclo, etc.:
 | Tarea | Schedule | Función invocada |
 |-------|----------|-----------------|
 | `run-daily-notification-check` | `04:00 AM` (VE) | `run_daily_evaluation()` |
+| `check-appointment-reminders` | Cada **15 minutos** | `check_and_send_appointment_reminders()` |
 | `process-notification-queue` | Cada **1 minuto** | `deliver_pending_notifications()` |
 | `recover-stale-processing` | Cada **10 minutos** | `recover_stale_processing_notifications()` |
 
@@ -353,8 +360,8 @@ Se llama cuando el usuario cambia sus configuraciones, registra un ciclo, etc.:
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | `GET` | `/vapid-public-key` | CycleUser | Obtener clave pública VAPID |
-| `POST` | `/subscribe` | CycleUser | Registrar suscripción push del navegador |
-| `POST` | `/unsubscribe` | CycleUser | Cancelar suscripción push |
+| `POST` | `/subscribe` | Actor Auth | Registro inteligente (detecta si es CycleUser o Doctor) |
+| `POST` | `/unsubscribe` | Actor Auth | Cancelar suscripción push del dispositivo actual |
 
 ### Diagnóstico y Debug (SuperAdmin Only) — ✨ NUEVO
 | Método | Ruta | Descripción |
