@@ -12,17 +12,17 @@ def migrate():
     print("Attempting to migrate 'push_subscriptions' table...")
     try:
         with engine.connect() as conn:
-            # 1. Add doctor_id column
+            # --- Push Subscriptions ---
+            print("Migrating 'push_subscriptions'...")
             conn.execute(text("ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS doctor_id INTEGER"))
-            
-            # 2. Add foreign key constraint (if not already exists - slightly harder in PG without a check, but we try)
             try:
                 conn.execute(text("ALTER TABLE push_subscriptions ADD CONSTRAINT fk_push_doctor FOREIGN KEY (doctor_id) REFERENCES doctors (id)"))
-            except Exception as e:
-                print(f"Note (Constraint might exist): {e}")
-            
-            # 3. Make user_id nullable
+            except Exception: pass
             conn.execute(text("ALTER TABLE push_subscriptions ALTER COLUMN user_id DROP NOT NULL"))
+            
+            # --- Appointments ---
+            print("Migrating 'appointments'...")
+            conn.execute(text("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT FALSE"))
             
             conn.commit()
         print("Success: Migration applied.")

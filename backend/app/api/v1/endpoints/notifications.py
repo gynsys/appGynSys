@@ -1,8 +1,9 @@
-from typing import List, Any
+from typing import List, Any, Union, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.api.v1.endpoints.auth import get_current_user
+from app.cycle_predictor.router import get_current_actor
 from app.api.v1.endpoints.cycle_users import get_current_cycle_user
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
@@ -57,14 +58,13 @@ def update_notification_rule(
     
     return service.update_rule(db, rule, rule_in)
 
-# --- Patient Endpoints (Push Subscription) ---
+# --- Public Subscription Endpoints (Unified) ---
 
 @router.get("/vapid-public-key", response_model=VapidKeyResponse)
 def get_vapid_public_key(
-    current_user: CycleUser = Depends(get_current_cycle_user)
+    current_actor: Union[CycleUser, Doctor] = Depends(get_current_actor)
 ):
-    """Get VAPID Public Key for Push Subscription."""
-    # Assuming VAPID_PUBLIC_KEY is in settings, fallback to None or error if not set
+    """Get VAPID Public Key for Push Subscription (Supports any authenticated actor)."""
     key = getattr(settings, "VAPID_PUBLIC_KEY", None)
     if not key:
         raise HTTPException(status_code=500, detail="VAPID keys not configured on server")
@@ -74,20 +74,25 @@ def get_vapid_public_key(
 def subscribe_push(
     subscription: PushSubscriptionSchema,
     db: Session = Depends(get_db),
-    current_user: CycleUser = Depends(get_current_cycle_user)
+    current_actor: Union[CycleUser, Doctor] = Depends(get_current_actor)
 ):
-    """Subscribe current user to Push Notifications."""
-    import logging
-    _log = logging.getLogger(__name__)
-    _log.debug(f"Receiving subscription for user {current_user.id}: endpoint={subscription.endpoint[:40]}")
-    service.create_or_update_subscription(db, subscription, current_user.id)
+    """Subscribe current actor (Doctor or CycleUser) to Push Notifications."""
+    user_id = current_actor.id if isinstance(current_actor, CycleUser) else None
+    doctor_id = current_actor.id if isinstance(current_actor, Doctor) else None
+    
+    service.create_or_update_subscription(
+        db=db, 
+        sub_in=subscription, 
+        user_id=user_id, 
+        doctor_id=doctor_id
+    )
     return {"message": "Subscribed successfully"}
 
 @router.post("/unsubscribe")
 def unsubscribe_push(
     endpoint: str = Body(..., embed=True),
     db: Session = Depends(get_db),
-    current_user: CycleUser = Depends(get_current_cycle_user)
+    current_actor: Union[CycleUser, Doctor] = Depends(get_current_actor)
 ):
     """Unsubscribe specific device from Push Notifications."""
     service.delete_subscription_by_endpoint(db, endpoint)

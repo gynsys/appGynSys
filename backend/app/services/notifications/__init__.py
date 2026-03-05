@@ -73,22 +73,31 @@ from app.schemas.notification import PushSubscriptionSchema
 from app.db.models.push_subscription import PushSubscription
 from sqlalchemy.dialects.postgresql import insert
 
-def create_or_update_subscription(db: Session, sub_in: PushSubscriptionSchema, user_id: int) -> PushSubscription:
-    """UPSERT atómico para suscripciones push."""
-    stmt = insert(PushSubscription).values(
-        user_id=user_id,
-        endpoint=sub_in.endpoint,
-        p256dh=sub_in.keys.p256dh,
-        auth=sub_in.keys.auth,
-        updated_at=normalize_to_caracas()
-    ).on_conflict_do_update(
+def create_or_update_subscription(
+    db: Session, 
+    sub_in: PushSubscriptionSchema, 
+    user_id: Optional[int] = None,
+    doctor_id: Optional[int] = None
+) -> PushSubscription:
+    """UPSERT atómico para suscripciones push. Soporta CycleUser y Doctor."""
+    values = {
+        "endpoint": sub_in.endpoint,
+        "p256dh": sub_in.keys.p256dh,
+        "auth": sub_in.keys.auth,
+        "updated_at": normalize_to_caracas(),
+        "user_id": user_id,
+        "doctor_id": doctor_id
+    }
+    
+    stmt = insert(PushSubscription).values(**values).on_conflict_do_update(
         index_elements=['endpoint'],
-        set_=dict(
-            user_id=user_id, 
-            p256dh=sub_in.keys.p256dh, 
-            auth=sub_in.keys.auth,
-            updated_at=normalize_to_caracas()
-        )
+        set_={
+            "user_id": user_id, 
+            "doctor_id": doctor_id,
+            "p256dh": sub_in.keys.p256dh, 
+            "auth": sub_in.keys.auth,
+            "updated_at": normalize_to_caracas()
+        }
     )
     db.execute(stmt)
     db.commit()

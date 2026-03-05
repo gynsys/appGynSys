@@ -35,8 +35,9 @@ class Appointment(Base):
     reason_for_visit = Column(String, nullable=True)  # e.g., "Control Ginecológico", "Dolor pélvico"
     notes = Column(Text, nullable=True)
     
-    # Status
+    # Status & Reminders
     status = Column(String, default="scheduled")  # scheduled, confirmed, cancelled, completed
+    reminder_sent = Column(Boolean, default=False)
     
     # Pre-consultation Data
     preconsulta_answers = Column(Text, nullable=True)  # JSON string of answers
