@@ -103,7 +103,33 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
 
     # ===== CONTRACEPTIVE =====
     { "type": "contraceptive_daily", "category": "contraceptive", "priority": 10, "title": "💊 Recordatorio Anticonceptivo", "message": "Hola {patient_name}, es hora de tomar tu pastilla anticonceptiva.", "logic": lambda c: c.get("type") == "contraceptive" and c.get("subtype") == "active_pill" },
-    { "type": "contraceptive_rest_start", "category": "contraceptive", "priority": 11, "title": "💊 Inicio de Descanso", "message": "Hoy comienzas tus días de descanso o placebo.", "logic": lambda c: c.get("type") == "contraceptive" and c.get("subtype") == "placebo" }
+    { "type": "contraceptive_rest_start", "category": "contraceptive", "priority": 11, "title": "💊 Inicio de Descanso", "message": "Hoy comienzas tus días de descanso o placebo.", "logic": lambda c: c.get("type") == "contraceptive" and c.get("subtype") == "placebo" },
+
+    # ===== DOCTOR ADMINISTRATIVE (Asistente Virtual) =====
+    {
+        "type": "doctor_daily_agenda",
+        "category": "doctor",
+        "priority": 50,
+        "title": "🌅 Resumen Matutino",
+        "message": "¡Buenos días, Dra! Hoy tienes {appointment_count} citas programadas. La primera es a las {first_appointment_time}.",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("appointment_count", 0) > 0
+    },
+    {
+        "type": "doctor_pending_stories",
+        "category": "doctor",
+        "priority": 51,
+        "title": "📝 Historias Pendientes",
+        "message": "Tienes {pending_count} historias clínicas del día de hoy esperando por tus notas finales.",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("pending_count", 0) > 0
+    },
+    {
+        "type": "doctor_low_agenda",
+        "category": "doctor",
+        "priority": 52,
+        "title": "⚠️ Alerta de Agenda",
+        "message": "Tu agenda de la próxima semana está al {occupancy_percent}%. ¿Deseas enviar recordatorios de chequeo anual?",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("occupancy_percent", 100) < 40 and c.get("day_of_week") == 5 # Viernes
+    }
 ]
 
 NOTIFICATION_MAP = { n["type"]: n for n in NOTIFICATION_REGISTRY }
@@ -145,6 +171,11 @@ def evaluate_registry_rule(rule_def: dict, context: dict, user_settings: CycleNo
         return False
     if category == "rhythm" and not getattr(user_settings, 'rhythm_method_enabled', False):
         return False
+    
+    # Las notificaciones de doctor por ahora se asumen activas si el doctor está aprobado
+    # (En el futuro añadiremos DoctorNotificationSettings)
+    if category == "doctor":
+        return True
             
     return True
 

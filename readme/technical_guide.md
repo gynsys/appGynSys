@@ -2,122 +2,101 @@
 
 Esta guía documenta los componentes críticos, comandos y flujos lógicos del sistema para facilitar el mantenimiento futuro y el escalado de la plataforma.
 
-## 🏗️ Arquitectura y Ubicaciones (Producción)
+## 🚀 Infraestructura y Servidores (Producción)
 
-| Componente | Ubicación en Servidor | Detalles |
+GynSys opera sobre una arquitectura de contenedores orquestada por Docker Compose en DigitalOcean.
+
+- **Servidor Primario:** `167.172.115.154` (Ubuntu 22.04)
+- **Usuario SSH:** `root`
+- **Ruta del Proyecto:** `/opt/appgynsys`
+- **Frontend (SaaS):** [Netlify](https://app.netlify.com/) (Desplegado desde `main`)
+
+### 📦 Mapa de Servicios y Contenedores
+| Servicio | Contenedor | Propósito | Puerto |
+| :--- | :--- | :--- | :--- |
+| **API Backend** | `appgynsys-backend-1` | FastAPI & Logic | 8000 |
+| **Base de Datos** | `appgynsys-db-1` | PostgreSQL 15 | 5432 |
+| **Cache & Broker** | `appgynsys-redis-1` | Autenticación & Celery | 6379 |
+| **Worker** | `appgynsys-celery_worker-1` | Tareas de Email/Push | N/A |
+| **Scheduler** | `appgynsys-celery_beat-1` | Tareas Programadas | N/A |
+| **Object Storage**| `appgynsys-minio-1` | Imágenes y Documentos | 9001 |
+
+## 🗄️ Base de Datos: Estructura y Mantenimiento
+
+- **Motor:** PostgreSQL 15 (Base: `gynsys`)
+- **Archivos de Modelos:** `backend/app/db/models/`
+- **Configuración Global:** [config.py](./backend/app/core/config.py)
+- **Entornos Externos:** [backend/.env](./backend/.env)
+
+### 📊 Tablas y Relaciones Críticas
+| Tabla | Categoría | Propósito / Notas |
 | :--- | :--- | :--- |
-| **Raíz del Proyecto** | `/opt/appgynsys` | Directorio base de Docker Compose. |
-| **Backend (API)** | `/opt/appgynsys/backend` | FastAPI ejecutado en contenedor `appgynsys-backend-1`. |
-| **Frontend (SaaS)** | [Netlify](https://app.netlify.com/) | Desplegado desde la rama `main` del repo. |
-| **Base de Datos** | Contenedor `appgynsys-db-1` | PostgreSQL 15, base de datos `gynsys`. |
-| **Logs de Celery** | `/opt/appgynsys/logs` | Seguimiento de tareas de email y seedeo. |
-| **Recordatorios** | `check_appointment_reminders` | Tarea Celery (cada 15m) que envía Push/Email 1h 30m antes. |
-| **VAPID / Push** | `/opt/appgynsys/backend`| Archivos `vapid_private.pem` y `public.pem`. |
+| `doctors` | Identidad | Inquilinos (Tenants). Columna `is_active` controla login. |
+| `patients` | Clínica | Datos maestros del paciente. |
+| `appointments` | Clínica | Citas. Columna `appointment_date` (DateTime aware). |
+| `cycle_users` | Mi Ciclo | Usuarias finales de la APP de seguimiento. |
+| `notification_logs`| Sistema | Histórico de mensajes enviados (`doctor_id` opcional). |
 
-## 🗄️ Base de Datos: Tablas y Relaciones Críticas
+---
 
-| Tabla | Propósito | Notas de Mantenimiento |
+## 🤖 Asistente Virtual (Notificaciones Inteligentes)
+
+El sistema cuenta con un motor de evaluación diaria que analiza el contexto de cada doctora y paciente para enviar recordatorios automáticos.
+
+### 👩‍⚕️ Notificaciones para Doctoras (Administrativas)
+Definidas en `backend/app/services/notifications/registry.py`:
+
+| Tipo | Hora | Lógica / Condición |
 | :--- | :--- | :--- |
-| `doctors` | Inquilinos (Tenants) | Columna `status`: `pending`, `active`, `paused`. |
-| `plans` | Planes SaaS | IDs fijos: 1 (Básico), 2 (Pro), 3 (Premium). |
-| `cycle_users` | Pacientes | Relacionados a un `doctor_id`. |
-| `tenant_modules`| Módulos activos | Define qué funciones ve cada doctor. |
+| **Resumen Matutino** | 07:30 AM | Envía el conteo de citas de hoy y la hora de la 1era cita. |
+| **Historias Pendientes** | 08:00 PM | Alerta si hay citas pasadas hoy marcadas como `confirmed`. |
+| **Agenda Baja** | Viernes 5:00 PM | Alerta si la ocupación de la próxima semana es < 30%. |
 
-### Comandos de Emergencia (PostgreSQL)
+### 🤰 Notificaciones para Pacientes (Recordatorios)
+| Tipo | Tiempo | Detalles |
+| :--- | :--- | :--- |
+| **Cita T-90** | 1h 30m antes | Recordatorio push/email de cita inminente. |
+| **Control Menstrual** | Diario | Basado en el `cycle_day` de la paciente. |
 
-Para entrar a la consola desde el host:
+---
+
+## 🛠️ Comandos SSH de Mantenimiento
+
+### Despliegue y Reinicio
 ```bash
-docker exec -it appgynsys-db-1 psql -U postgres -d gynsys
-```
-
-**Consultar tenants y estados:**
-```sql
-SELECT id, nombre_completo, slug_url, status FROM doctors ORDER BY id;
-```
-
-**Restaurar planes (Si ForeignKeyViolation en registro):**
-```sql
--- Verificar que existan IDs 1, 2, 3
-SELECT * FROM plans;
-```
-
-## 🚀 Flujo de Onboarding SaaS (Lógica de Negocio)
-
-1. **Registro**: El formulario en `gynsys.net/register?type=doctor` crea el registro en `doctors` con `status='pending'` e `is_active=False`.
-2. **Notificación**: Se encola una tarea de Celery (`send_new_tenant_notification`) hacia `dramarielh@gmail.com`.
-3. **Seedeo**: Se activa `apply_doctor_template_async` que copia la estructura de la "Dra. Mariel Herrera" al nuevo inquilino.
-4. **Aprobación**: El Admin activa al médico en el panel. Esto cambia `status='approved'`, `is_active=True` y auto-habilita su email en la whitelist de Google OAuth.
-
-## 🛠️ Comandos SSH Frecuentes
-
-**Despliegue estándar (sin cambios locales):**
-```bash
+# Actualizar y reconstruir (Uso estándar)
 cd /opt/appgynsys && git pull origin main && docker compose build backend celery_worker && docker compose up -d
 ```
 
-**Despliegue con cambios locales en el servidor (Conflictos):**
-Si `git pull` falla por cambios locales:
+### Gestión de Base de Datos (PostgreSQL)
 ```bash
-cd /opt/appgynsys
-git stash                  # Guarda cambios locales
-git pull origin main       # Baja la última versión
-git stash pop              # Intenta re-aplicar cambios locales (opcional)
-docker compose build backend
-docker compose up -d
+# Entrar a consola SQL
+docker exec -it appgynsys-db-1 psql -U postgres -d gynsys
+
+# Limpieza total de datos de prueba (Mi Ciclo)
+docker exec appgynsys-db-1 psql -U postgres -d gynsys -c 'TRUNCATE cycle_logs, symptom_logs, pregnancy_logs, cycle_notification_settings, push_subscriptions, notification_logs CASCADE; DELETE FROM cycle_users; DELETE FROM patients;'
 ```
 
-**Ver logs en tiempo real:**
+### Diagnóstico de Logs
 ```bash
-# Backend (Errores de API / 500)
+# Ver errores de la API en vivo
 docker logs -f appgynsys-backend-1
 
-# Celery (Emails / Tareas persistentes)
+# Ver envío de correos y tareas Celery
 docker logs -f appgynsys-celery_worker-1
-
-# Beat (Programación de tareas)
-docker logs -f appgynsys-celery_beat-1
 ```
 
-## 🧹 Limpieza y Eliminación de Módulos
+## ⚠️ Resolución de Problemas (Troubleshooting)
 
-Para eliminar un módulo completo (ejemplo: `chat`), se debe seguir este orden para evitar inconsistencias:
+### 1. Error de Conexión a DB ("db" not found)
+Ocurre si se intenta correr un script desde el host sin Docker. 
+**Solución:** Ejecutar siempre dentro del contenedor: `docker exec -it appgynsys-backend-1 python scripts/tuscript.py`.
 
-1. **Base de Datos**: Eliminar tablas y registros en `modules` y `tenant_modules`.
-   ```sql
-   -- Ejemplo para el módulo chat
-   DELETE FROM tenant_modules WHERE module_id = (SELECT id FROM modules WHERE name = 'chat');
-   DELETE FROM modules WHERE name = 'chat';
-   DROP TABLE IF EXISTS chat_messages, chat_participants, chat_rooms;
-   ```
-2. **Backend**: Eliminar el directorio del módulo (`backend/app/chat`) y sus referencias en `backend/app/main.py` o routers.
-3. **Frontend**: Eliminar componentes y hooks asociados (`frontend/src/modules/chat`) y limpiar rutas en `App.jsx`.
-4. **Rebuild**: Forzar reconstrucción para limpiar cachés de Python.
-   ```bash
-   docker compose build backend && docker compose up -d
-   ```
+### 2. Notificaciones no se envían
+- Verificar `celery_beat` (esta tarea programa las alertas).
+- Revisar `vapid_private.pem` en el backend para Push Notifications.
+- Ver `notification_logs` para ver si falló el canal (Push/Email).
 
-## ⚠️ Resolución de Problemas Comunes
-
-### 1. IntegrityError (ForeignKeyViolation)
-**Síntoma**: Error 500 al eliminar un tenant o plan.
-**Causa**: Falta de borrado en cascada en las relaciones de SQLAlchemy o el contenedor no tiene la última lógica.
-**Solución**:
-1. Verificar que el código en el servidor tenga `cascade="all, delete-orphan"` en el modelo.
-2. Forzar reconstrucción: `docker compose build backend`.
-3. Reiniciar: `docker compose up -d`.
-
-### 2. Error de Conexión a DB (psycopg2)
-**Síntoma**: "could not translate host name 'db' to address".
-**Causa**: El script se ejecuta fuera del entorno Docker o la red interna de Docker falló.
-**Solución**: Asegurarse de que el script se ejecute con `docker exec` o que el container `db` esté arriba.
-
-
-## 🌐 Redirección Inteligente (Frontend)
-
-Ubicación: `frontend/src/App.jsx`
-- Si el dominio es `gynsys.net` -> Muestra Landing Page.
-- Si el dominio es `*.gynsys.net` (o tiene slug en URL) -> Redirige al perfil del médico.
-- **Typo Fix Histórico**: La ruta de dashboard de pacientes es `/cycle/dashboard` (no `/cycles/`).
-
-> [!IMPORTANT]
-> Los nuevos registros de doctores **NO** pueden loguearse hasta ser aprobados. Verán el mensaje "Cuenta pendiente de aprobación".
+---
+> [!TIP]
+> Toda la configuración de Google OAuth y Whitelist de correos se gestiona en `settings.GOOGLE_WHITE_LIST`.

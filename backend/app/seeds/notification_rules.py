@@ -799,6 +799,37 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "channel": "dual",
             "send_time": "20:00"
         },
+        # ===== DOCTOR ADMINISTRATIVE (Asistente Virtual) (3 rules) =====
+        {
+            "notification_type": "doctor_daily_agenda",
+            "trigger_condition": {"role": "doctor"},
+            "priority": 50,
+            "title_template": "🌅 Resumen Matutino",
+            "message_template": "¡Buenos días, Dra! Hoy tienes {appointment_count} citas programadas. La primera es a las {first_appointment_time}.",
+            "message_text_template": "Resumen Matutino: {appointment_count} citas hoy.",
+            "channel": "push",
+            "send_time": "07:30"
+        },
+        {
+            "notification_type": "doctor_pending_stories",
+            "trigger_condition": {"role": "doctor"},
+            "priority": 51,
+            "title_template": "📝 Historias Pendientes",
+            "message_template": "Tienes {pending_count} historias clínicas del día de hoy esperando por tus notas finales.",
+            "message_text_template": "Recordatorio: {pending_count} historias pendientes.",
+            "channel": "push",
+            "send_time": "20:00"
+        },
+        {
+            "notification_type": "doctor_low_agenda",
+            "trigger_condition": {"role": "doctor"},
+            "priority": 52,
+            "title_template": "⚠️ Alerta de Agenda",
+            "message_template": "Tu agenda de la próxima semana está al {occupancy_percent}%. ¿Deseas enviar recordatorios de chequeo anual?",
+            "message_text_template": "Baja ocupación próxima semana ({occupancy_percent}%).",
+            "channel": "push",
+            "send_time": "17:00"
+        },
     ]
 
     for rule_data in standard_rules:

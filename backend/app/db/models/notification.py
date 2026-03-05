@@ -54,6 +54,9 @@ VALID_NOTIFICATION_TYPES = {
     
     # Contraceptivos (4)
     "contraceptive_daily", "contraceptive_rest_start", "contraceptive_rest_end", "contraceptive_missed",
+
+    # Administrativas Doctora (Asistente Virtual)
+    "doctor_daily_agenda", "doctor_pending_stories", "doctor_low_agenda",
 }
 
 
@@ -138,7 +141,8 @@ class NotificationLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=True)
-    recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
+    recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True, index=True)
     
     # What was sent
     notification_type = Column(String(50), nullable=False)
@@ -156,6 +160,7 @@ class NotificationLog(Base):
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser", backref="notification_logs")
+    doctor = relationship("Doctor", backref="notification_logs")
 
 
 class PendingNotification(Base):
@@ -164,7 +169,8 @@ class PendingNotification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     notification_rule_id = Column(Integer, ForeignKey("notification_rules.id"), nullable=True)
-    recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=False, index=True)
+    recipient_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True, index=True)
     
     # Content to send
     subject = Column(String(255), nullable=False)
@@ -188,12 +194,11 @@ class PendingNotification(Base):
     locked_at = Column(DateTime(timezone=True), nullable=True)
     
     __table_args__ = (
-        # NOTA: Restricción UNIQUE eliminada para facilitar pruebas de desarrollo.
-        # La guardia de duplicados se maneja en código (services/notifications.py)
-        # controlada por la variable NOTIFICATIONS_DEBUG_MODE en .env
         Index('ix_pending_user_rule_date', 'recipient_id', 'notification_rule_id'),
+        Index('ix_pending_doctor_rule_date', 'doctor_id', 'notification_rule_id'),
     )
 
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser")
+    doctor = relationship("Doctor")

@@ -26,9 +26,10 @@ CELERY BEAT (scheduler)
     ├── 04:00 AM → run_daily_notification_check()
     │                  └── service.run_daily_evaluation()
     │                       └── _process_single_user() × N usuarios
-    │                            ├── calculate_smart_context()
-    │                            ├── evaluate_registry_rule() × 108 reglas
-    │                            └── PendingNotification → INSERT BD
+    │                       └── _process_single_doctor() × N doctores ✨ NUEVO
+    │                            ├── calculate_smart_context() (Doctor actor)
+    │                            ├── evaluate_registry_rule() (Logic lambda)
+    │                            └── PendingNotification → INSERT (doctor_id)
     │
     ├── Cada 1 min → process_notification_queue()
     │                   └── service.deliver_pending_notifications()

@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.models.notification import NotificationRule, NotificationLog, PendingNotification
 from app.db.models.cycle_user import CycleUser
+from app.db.models.doctor import Doctor
 from app.db.models.cycle_predictor import CycleLog, PregnancyLog, CycleNotificationSettings
 from app.cycle_predictor.logic import calculate_predictions
 
@@ -143,6 +144,96 @@ def _process_single_user(user_id: int, global_rules: Dict[str, _RuleData], now: 
                 db.rollback()
                 continue
 
+def _process_single_doctor(doctor_id: int, global_rules: Dict[str, _RuleData], now: datetime, today_date: date):
+    """Procesa una única doctora."""
+    with session_scope() as db:
+        doctor = db.query(Doctor).filter(Doctor.id == doctor_id, Doctor.is_active == True).first()
+        if not doctor:
+            return
+            
+        smart_ctx = calculate_smart_context(doctor, db)
+        is_valid, error = validate_smart_context(smart_ctx)
+        if not is_valid:
+            logger.error(f"Invalid context for doctor {doctor.id}: {error}")
+            return
+
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+
+        # Buscar si ya se enviaron/encolaron hoy
+        sent_rule_ids = {log.notification_rule_id for log in db.query(NotificationLog).filter(
+            NotificationLog.doctor_id == doctor.id,
+            NotificationLog.sent_at >= today_start,
+            NotificationLog.sent_at < today_end
+        )}
+        pending_rule_ids = {pend.notification_rule_id for pend in db.query(PendingNotification).filter(
+            PendingNotification.doctor_id == doctor.id,
+            PendingNotification.status.in_(["pending", "retrying", "processing"]),
+            PendingNotification.scheduled_for >= today_start,
+            PendingNotification.scheduled_for < today_end
+        )}
+
+        for rule_def in NOTIFICATION_REGISTRY:
+            rtype = rule_def["type"]
+            if rule_def.get("category") != "doctor":
+                continue
+            
+            # evaluate_registry_rule ya maneja la categoría 'doctor' retornando True
+            if not evaluate_registry_rule(rule_def, None, None): 
+                # Pasamos None porque para doctores no hay settings específicos (por ahora)
+                # y la lógica lambda ya está en el registro
+                pass
+            
+            # Evaluación manual de la lambda para doctores
+            try:
+                if not rule_def["logic"](smart_ctx):
+                    continue
+            except Exception as e:
+                logger.error(f"Error evaluating doctor rule {rtype}: {e}")
+                continue
+
+            template_rule = global_rules.get(rtype)
+            if not template_rule:
+                continue
+            
+            if template_rule.id in pending_rule_ids:
+                continue
+
+            # Determinación de hora de envío
+            hour, minute = map(int, template_rule.send_time.split(':'))
+            target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+            if template_rule.id in sent_rule_ids and target_time <= now:
+                continue
+            
+            render_vars = {"patient_name": "Colega", "doctor_name": doctor.nombre_completo}
+            render_vars.update(smart_ctx)
+            rendered = safe_render_content(template_rule, render_vars)
+            if not rendered:
+                continue
+            
+            if target_time < now:
+                target_time = now + timedelta(minutes=1) # Envío casi inmediato si ya pasó la hora
+            
+            pending = PendingNotification(
+                notification_rule_id=template_rule.id,
+                doctor_id=doctor.id,
+                subject=rendered["title"],
+                body=rendered["message_html"],
+                message_text=rendered["message_text"],
+                scheduled_for=target_time,
+                channel=template_rule.channel,
+                status="pending"
+            )
+            db.add(pending)
+            try:
+                db.flush()
+                pending_rule_ids.add(template_rule.id)
+                log_notification_event("RULE_QUEUED_DOCTOR", doctor.id, rtype, {"rule_id": template_rule.id})
+            except IntegrityError:
+                db.rollback()
+                continue
+
 def run_daily_evaluation():
     """Tarea diaria principal."""
     try:
@@ -156,12 +247,21 @@ def run_daily_evaluation():
         
         with session_scope() as db:
             user_ids = [row[0] for row in db.query(CycleUser.id).filter(CycleUser.is_active == True).yield_per(BATCH_SIZE_USERS)]
+            doctor_ids = [row[0] for row in db.query(Doctor.id).filter(Doctor.is_active == True).all()]
         
+        # Procesar usuarias
         for user_id in user_ids:
             try:
                 _process_single_user(user_id, global_rules, now, today_date)
             except Exception as e:
                 logger.error(f"Error processing user {user_id}: {e}")
+
+        # Procesar doctores
+        for doc_id in doctor_ids:
+            try:
+                _process_single_doctor(doc_id, global_rules, now, today_date)
+            except Exception as e:
+                logger.error(f"Error processing doctor {doc_id}: {e}")
     except Exception as e:
         logger.error(f"Critical error in run_daily_evaluation: {e}")
 
@@ -198,6 +298,7 @@ def deliver_pending_notifications():
                         db.add(NotificationLog(
                             notification_rule_id=item.notification_rule_id,
                             recipient_id=item.recipient_id,
+                            doctor_id=item.doctor_id,
                             notification_type=item.rule.notification_type if item.rule else "unknown",
                             title_sent=item.subject, status="sent", channel_used=channel, sent_at=now
                         ))
