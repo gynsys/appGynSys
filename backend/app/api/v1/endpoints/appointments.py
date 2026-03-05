@@ -13,7 +13,7 @@ from app.schemas.appointment import AppointmentInDB, AppointmentUpdate, Appointm
 from app.api.v1.endpoints.auth import get_current_user
 from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
-from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification
+from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification, send_platform_registration_invitation
 from app.services.summary_generator import ClinicalSummaryGenerator
 from datetime import datetime, timedelta
 import logging
@@ -210,27 +210,6 @@ async def update_appointment(
         if not is_recurrent:
             preconsulta_link = f"{settings.FRONTEND_URL}/dr/{current_user.slug_url}/preconsulta?appointment_id={appointment.id}"
         
-        # Generate activation token for the patient (if confirmed and patient has email)
-        activation_link = None
-        if appointment.status == "confirmed" and appointment.patient_email:
-            try:
-                import secrets
-                from datetime import timezone
-                from app.db.models.patient_activation_token import PatientActivationToken
-                activation_token = secrets.token_urlsafe(48)
-                token_record = PatientActivationToken(
-                    email=appointment.patient_email,
-                    token=activation_token,
-                    doctor_id=appointment.doctor_id,
-                    appointment_id=appointment.id,
-                    expires_at=datetime.now(timezone.utc) + timedelta(hours=48),
-                )
-                db.add(token_record)
-                db.commit()
-                activation_link = f"{settings.FRONTEND_URL}/activar-cuenta?token={activation_token}"
-            except Exception as e:
-                logger.error(f"Error generating activation token for appointment {appointment_id}: {e}", exc_info=True)
-
         # Format date safely
         date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
 
@@ -241,7 +220,6 @@ async def update_appointment(
             appointment_date=date_str,
             doctor_name=current_user.nombre_completo,
             preconsulta_link=preconsulta_link,
-            activation_link=activation_link,
         )
 
     return appointment
@@ -400,6 +378,43 @@ async def submit_preconsulta(
                 primary_color=doctor.theme_primary_color or '#4F46E5',
                 summary_html=summary_html
             )
+
+            # Correo 2: Invitar a la paciente a registrarse en la plataforma
+            # Solo si la paciente tiene email y aún no tiene una cuenta registrada
+            if appointment.patient_email:
+                try:
+                    import secrets
+                    from datetime import timezone
+                    from app.db.models.patient_activation_token import PatientActivationToken
+                    from app.db.models.cycle_user import CycleUser as CycleUserModel
+
+                    # Check if the patient already has an account
+                    already_registered = db.query(CycleUserModel).filter(
+                        CycleUserModel.email == appointment.patient_email
+                    ).first()
+
+                    if not already_registered:
+                        # Generate a new 48-hour registration token
+                        reg_token = secrets.token_urlsafe(48)
+                        reg_token_record = PatientActivationToken(
+                            email=appointment.patient_email,
+                            token=reg_token,
+                            doctor_id=appointment.doctor_id,
+                            appointment_id=appointment.id,
+                            expires_at=datetime.now(timezone.utc) + timedelta(hours=48),
+                        )
+                        db.add(reg_token_record)
+                        db.commit()
+                        registration_link = f"{settings.FRONTEND_URL}/activar-cuenta?token={reg_token}"
+
+                        send_platform_registration_invitation.delay(
+                            patient_email=appointment.patient_email,
+                            patient_name=appointment.patient_name,
+                            doctor_name=doctor.nombre_completo,
+                            registration_link=registration_link,
+                        )
+                except Exception as reg_err:
+                    logger.error(f"Error sending registration invitation for appointment {appointment_id}: {reg_err}", exc_info=True)
     except Exception as e:
         pass
     

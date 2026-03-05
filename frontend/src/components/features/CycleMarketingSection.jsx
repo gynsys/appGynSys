@@ -72,36 +72,22 @@ export default function CycleMarketingSection({ primaryColor, theme, containerBg
                             ))}
                         </div>
 
-                        {/* CTA Buttons */}
-                        <div className="pt-4 flex flex-col sm:flex-row items-center gap-3 flex-wrap">
+                        {/* CTA Button */}
+                        <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
                             <button
                                 id="mi-ciclo-open-btn"
                                 onClick={() => navigate('/cycle/dashboard')}
-                                className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
+                                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
                                 style={{ backgroundColor: primaryColor }}
                             >
                                 <FiActivity className="w-4 h-4" />
                                 Abrir Mi Ciclo
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
-
-                            <button
-                                id="mi-ciclo-register-btn"
-                                onClick={() => setShowRegister(true)}
-                                className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group border-2"
-                                style={{
-                                    borderColor: primaryColor,
-                                    color: primaryColor,
-                                    background: 'transparent',
-                                }}
-                            >
-                                <UserPlus className="w-4 h-4" />
-                                Registrarse gratis
-                            </button>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                * Acceso gratuito e inmediato para pacientes.
+                            </p>
                         </div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium pt-1">
-                            * Acceso gratuito e inmediato · Sin tarjeta de crédito
-                        </p>
                     </div>
 
                     {/* Right: Mockup / Visual (Simulated Dashboard) */}

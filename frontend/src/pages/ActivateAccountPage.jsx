@@ -246,18 +246,18 @@ export default function ActivateAccountPage() {
                         <CheckCircleIcon color={primaryColor} size={60} />
                     </div>
                     <h2 style={{ fontSize: '22px', fontWeight: '800', color: textMain, marginBottom: '6px' }}>
-                        ¡Bienvenida a Mi Ciclo! 🌸
+                        ¡Cuenta creada!
                     </h2>
                     <p style={{ color: textSub, fontSize: '14px', marginBottom: '28px' }}>
-                        Tu cuenta fue activada con éxito.
+                        Ahora tienes acceso a tu historial médico y a todas las funciones de la plataforma.
                     </p>
 
                     {/* Features */}
                     {[
-                        { emoji: '📅', title: 'Seguimiento menstrual', desc: 'Registra y predice tu ciclo con precisión.' },
-                        { emoji: '🔔', title: 'Recordatorios inteligentes', desc: 'Notificaciones de tus citas y ciclo directamente en tu móvil.' },
-                        { emoji: '📲', title: 'Instala la app', desc: 'Úsala desde tu pantalla de inicio, sin Play Store ni App Store.' },
-                        { emoji: '📖', title: 'Blog de salud', desc: 'Artículos actualizados de tu doctora sobre salud femenina.' },
+                        { emoji: '🏥', title: 'Historial médico', desc: 'Accede a tus consultas y resultados de forma segura.' },
+                        { emoji: '📅', title: 'Gestión de citas', desc: 'Revisa tus citas confirmadas y próximas consultas.' },
+                        { emoji: '🌸', title: 'Mi Ciclo (mismo acceso)', desc: 'Usa tus mismas credenciales para el seguimiento menstrual.' },
+                        { emoji: '📲', title: 'Instala la app', desc: 'Disponible en tu móvil sin Play Store ni App Store.' },
                     ].map((f, i) => (
                         <div key={i} style={{
                             display: 'flex', alignItems: 'flex-start', gap: '12px',
@@ -305,7 +305,7 @@ export default function ActivateAccountPage() {
                     🌸
                 </div>
                 <h1 style={{ fontSize: '20px', fontWeight: '800', color: textMain, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                    Activa tu cuenta Mi Ciclo
+                    Crea tu cuenta en la plataforma
                 </h1>
                 {tokenData?.doctor_name && (
                     <p style={{ fontSize: '13px', color: textSub, margin: 0 }}>

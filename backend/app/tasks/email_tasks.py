@@ -305,34 +305,20 @@ def send_appointment_status_update(
     appointment_date: str,
     doctor_name: str,
     preconsulta_link: str = None,
-    activation_link: str = None,
 ):
     """
     Send email to patient when appointment status changes (Approved/Rejected).
+    Correo 1 del flujo: solo confirmación + link de preconsulta.
+    El correo de invitación al registro se envía por separado tras llenar la preconsulta.
     """
     if status == "confirmed":
         subject = "Cita Confirmada - GynSys"
         action_html = ""
         if preconsulta_link:
-            action_html += f"""
+            action_html = f"""
             <p><strong>IMPORTANTE:</strong> Para agilizar su atención, por favor complete su historia médica previa a la consulta en el siguiente enlace:</p>
             <p><a href="{preconsulta_link}" style="background-color: #7c3aed; color: #fff; padding: 11px 22px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block;">Llenar Preconsulta</a></p>
             <p style="font-size: 13px; color: #6b7280;">O copie y pegue este enlace: {preconsulta_link}</p>
-            """
-
-        if activation_link:
-            action_html += f"""
-            <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-radius: 10px; border-left: 4px solid #7c3aed;">
-                <p style="margin: 0 0 8px; font-weight: bold; color: #5b21b6;">🌸 Activa tu cuenta Mi Ciclo</p>
-                <p style="margin: 0 0 14px; font-size: 14px; color: #4c1d95;">
-                    Con tu cuenta gratuita podrás ver tus citas, seguir tu ciclo menstrual y recibir recordatorios personalizados de tu doctora.
-                </p>
-                <a href="{activation_link}"
-                   style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; padding: 11px 22px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
-                    Activar mi cuenta →
-                </a>
-                <p style="margin: 10px 0 0; font-size: 12px; color: #7c3aed;">Este enlace es válido por 48 horas.</p>
-            </div>
             """
 
         content = f"""
@@ -352,10 +338,63 @@ def send_appointment_status_update(
         <p>Por favor contacte al consultorio para reagendar.</p>
         """
     else:
-        return # Ignore other statuses for now
+        return  # Ignore other statuses for now
 
     _send_integrated_email(patient_email, subject, content)
     return {"status": "sent", "recipient": patient_email}
+
+
+@celery_app.task
+def send_platform_registration_invitation(
+    patient_email: str,
+    patient_name: str,
+    doctor_name: str,
+    registration_link: str,
+):
+    """
+    Correo 2 del flujo: invitación a registrarse en la plataforma.
+    Se envía DESPUÉS de que la paciente completa su preconsulta.
+    El registro en la plataforma también activa Mi Ciclo con las mismas credenciales.
+    """
+    subject = "Completa tu registro en la plataforma - GynSys"
+
+    content = f"""
+    <h2>Bienvenida a la plataforma, {patient_name}</h2>
+    <p>Hola {patient_name},</p>
+    <p>Gracias por completar tu historia clínica previa a la consulta con el Dr/a. {doctor_name}.</p>
+    <p>
+        Como siguiente paso, te invitamos a crear tu cuenta en la plataforma para poder
+        acceder a tu <strong>historial médico</strong>, revisar los resultados de tus
+        consultas y mucho más.
+    </p>
+
+    <div style="margin-top: 24px; padding: 24px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-radius: 12px; border-left: 4px solid #7c3aed;">
+        <p style="margin: 0 0 6px; font-weight: bold; color: #5b21b6; font-size: 16px;">🏥 Tu cuenta en GynSys</p>
+        <p style="margin: 0 0 16px; font-size: 14px; color: #4c1d95;">
+            Con tu cuenta podrás:
+        </p>
+        <ul style="margin: 0 0 16px; padding-left: 20px; font-size: 14px; color: #4c1d95; line-height: 1.8;">
+            <li>Acceder a tu historial médico de forma segura</li>
+            <li>Seguimiento de tu ciclo menstrual (Mi Ciclo)</li>
+            <li>Recibir notificaciones de recordatorio de citas</li>
+            <li>Instalar la app en tu teléfono sin Play Store ni App Store</li>
+        </ul>
+        <a href="{registration_link}"
+           style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; padding: 13px 26px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px;">
+            Crear mi cuenta →
+        </a>
+        <p style="margin: 12px 0 0; font-size: 12px; color: #7c3aed;">Este enlace es válido por 48 horas. Si venció, puedes registrarte directamente en el sitio web.</p>
+    </div>
+
+    <p style="margin-top: 24px; color: #6b7280; font-size: 14px;">
+        Si ya tienes una cuenta, puedes iniciar sesión normalmente.
+    </p>
+    """
+
+
+    _send_integrated_email(patient_email, subject, content)
+    return {"status": "sent", "recipient": patient_email}
+
 
 
 @celery_app.task
