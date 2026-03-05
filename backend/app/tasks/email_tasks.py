@@ -316,8 +316,8 @@ def send_appointment_status_update(
         if preconsulta_link:
             action_html += f"""
             <p><strong>IMPORTANTE:</strong> Para agilizar su atención, por favor complete su historia médica previa a la consulta en el siguiente enlace:</p>
-            <p><a href="{preconsulta_link}" style="background-color: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Llenar Preconsulta</a></p>
-            <p>O copie y pegue este enlace: {preconsulta_link}</p>
+            <p><a href="{preconsulta_link}" style="background-color: #7c3aed; color: #fff; padding: 11px 22px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block;">Llenar Preconsulta</a></p>
+            <p style="font-size: 13px; color: #6b7280;">O copie y pegue este enlace: {preconsulta_link}</p>
             """
 
         if activation_link:

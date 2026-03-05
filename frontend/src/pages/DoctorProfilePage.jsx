@@ -491,6 +491,7 @@ export default function DoctorProfilePage() {
             primaryColor={primaryColor}
             containerBgColor={containerBgColor}
             theme={theme}
+            doctorSlug={slug}
           />
         )}
 

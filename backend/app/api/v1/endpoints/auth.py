@@ -578,7 +578,17 @@ async def get_patient_activation_info(
     if record.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="El enlace ha expirado")
 
-    return {"email": record.email, "valid": True}
+    # Fetch doctor theme info to help the frontend adapt the UI
+    doctor = db.query(Doctor).filter(Doctor.id == record.doctor_id).first()
+
+    return {
+        "email": record.email,
+        "valid": True,
+        "doctor_name": doctor.nombre_completo if doctor else "",
+        "doctor_slug": doctor.slug_url if doctor else "",
+        "primary_color": doctor.theme_primary_color if doctor else "#7c3aed",
+        "design_template": doctor.design_template if doctor else "glass",
+    }
 
 
 @router.post("/patient/activate")

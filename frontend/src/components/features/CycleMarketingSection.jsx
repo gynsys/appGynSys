@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Heart, Baby, Bell, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Calendar, Heart, Baby, Bell, ArrowRight, ShieldCheck, UserPlus } from 'lucide-react';
+import { FiActivity } from 'react-icons/fi';
+import { User } from 'lucide-react';
 import SectionCard from '../common/SectionCard';
 import ScrollReveal from '../common/ScrollReveal';
+import CycleAuthDialog from '../cycle-predictor/CycleAuthDialog';
 
-export default function CycleMarketingSection({ primaryColor, theme, containerBgColor }) {
+export default function CycleMarketingSection({ primaryColor, theme, containerBgColor, doctorSlug }) {
     const navigate = useNavigate();
+    const [showRegister, setShowRegister] = useState(false);
 
     const features = [
         {
@@ -67,21 +72,36 @@ export default function CycleMarketingSection({ primaryColor, theme, containerBg
                             ))}
                         </div>
 
-                        {/* CTA Button */}
-                        <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
+                        {/* CTA Buttons */}
+                        <div className="pt-4 flex flex-col sm:flex-row items-center gap-3 flex-wrap">
                             <button
+                                id="mi-ciclo-open-btn"
                                 onClick={() => navigate('/cycle/dashboard')}
-                                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
+                                className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
                                 style={{ backgroundColor: primaryColor }}
                             >
-                                <FiActivity className="w-5 h-5" />
+                                <FiActivity className="w-4 h-4" />
                                 Abrir Mi Ciclo
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                                * Acceso gratuito e inmediato para pacientes.
-                            </p>
+
+                            <button
+                                id="mi-ciclo-register-btn"
+                                onClick={() => setShowRegister(true)}
+                                className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group border-2"
+                                style={{
+                                    borderColor: primaryColor,
+                                    color: primaryColor,
+                                    background: 'transparent',
+                                }}
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                Registrarse gratis
+                            </button>
                         </div>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium pt-1">
+                            * Acceso gratuito e inmediato · Sin tarjeta de crédito
+                        </p>
                     </div>
 
                     {/* Right: Mockup / Visual (Simulated Dashboard) */}
@@ -151,10 +171,14 @@ export default function CycleMarketingSection({ primaryColor, theme, containerBg
                     </div>
                 </div>
             </SectionCard>
+
+            {/* Registration modal */}
+            <CycleAuthDialog
+                open={showRegister}
+                onOpenChange={setShowRegister}
+                initialView="register"
+                slug={doctorSlug}
+            />
         </ScrollReveal>
     );
 }
-
-// Sub-component for mock UI
-import { FiActivity } from 'react-icons/fi';
-import { User } from 'lucide-react';
