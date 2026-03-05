@@ -29,6 +29,7 @@ import { BottomNav, NavIcons } from '../components/common/BottomNav'
 import { getImageUrl } from '../lib/imageUtils'
 
 import LoginModal from '../components/features/LoginModal'
+import Modal from '../components/common/Modal'
 import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
 import PWAInstallButton from '../components/common/PWAInstallButton'
@@ -50,6 +51,36 @@ export default function DoctorProfilePage() {
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [historyPdfUrl, setHistoryPdfUrl] = useState(null)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+
+  const handleMedicalHistoryClick = async () => {
+    if (!user?.email) return
+    try {
+      const token = localStorage.getItem('cycle_access_token') || localStorage.getItem('access_token')
+      const res = await fetch(`${API_BASE}/consultations/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const all = await res.json()
+        // Find the consultation matching this user's email
+        const match = all.find(c =>
+          c.patient_email?.toLowerCase() === user.email?.toLowerCase()
+        )
+        if (match) {
+          setHistoryPdfUrl(`${API_BASE}/consultations/${match.id}/history_pdf`)
+          setShowHistoryModal(true)
+        } else {
+          // No consultation found — navigate to cycle dashboard as fallback
+          window.location.href = '/cycle/dashboard'
+        }
+      }
+    } catch (e) {
+      window.location.href = '/cycle/dashboard'
+    }
+  }
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
@@ -345,6 +376,7 @@ export default function DoctorProfilePage() {
         onCycleClick={handleOpenCycle}
         onLoginClick={() => setIsLoginModalOpen(true)}
         onRegisterClick={() => setIsRegisterModalOpen(true)}
+        onMedicalHistoryClick={handleMedicalHistoryClick}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
@@ -643,6 +675,32 @@ export default function DoctorProfilePage() {
         initialView="register"
         slug={slug}
       />
+
+      {/* Historia Médica PDF Modal */}
+      <Modal
+        isOpen={showHistoryModal}
+        onClose={() => { setShowHistoryModal(false); setHistoryPdfUrl(null) }}
+        title="Vista Previa — Historia Médica"
+        size="4xl"
+      >
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden" style={{ height: '80vh' }}>
+          {historyPdfUrl && (
+            <iframe
+              src={historyPdfUrl}
+              className="w-full h-full border-0"
+              title="Historia Médica PDF"
+            />
+          )}
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => { setShowHistoryModal(false); setHistoryPdfUrl(null) }}
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            Cerrar
+          </button>
+        </div>
+      </Modal>
 
       {/* Online Consultation Modal (triggered from hero section) */}
       <OnlineChatBooking

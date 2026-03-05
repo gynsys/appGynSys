@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import usePWAStore from '../../store/pwaStore'
 import PWAInstallButton from '../common/PWAInstallButton'
 
-export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, onLoginClick, onRegisterClick, containerShadow = true, containerBgColor }) {
+export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, onLoginClick, onRegisterClick, onMedicalHistoryClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef(null)
@@ -217,7 +217,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
                       setShowUserMenu(v => !v)  // toggle on click (mobile)
                     } else if (!isAuthenticated) {
-                      onRegisterClick && onRegisterClick()
+                      onLoginClick && onLoginClick()  // abrir login, no registro
                     }
                   }}
                   className="p-2 rounded-lg transition-all hover:scale-110"
@@ -240,8 +240,8 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     </div>
                     <div className="py-1">
                       <Link
-                        to="/cycle/dashboard"
-                        onClick={() => setShowUserMenu(false)}
+                        to="#"
+                        onClick={(e) => { e.preventDefault(); setShowUserMenu(false); onMedicalHistoryClick && onMedicalHistoryClick() }}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <FiFileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -251,7 +251,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                         </div>
                       </Link>
                       <Link
-                        to="/cycle/logs"
+                        to="/cycle-report"
                         onClick={() => setShowUserMenu(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
