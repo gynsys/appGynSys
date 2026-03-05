@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.insert(0, "/app")
+os.environ["PYTHONPATH"] = "/app"
+
 from app.db.base import SessionLocal
 from app.db.models.push_subscription import PushSubscription
 from app.db.models.cycle_user import CycleUser
