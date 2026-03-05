@@ -181,14 +181,19 @@ async def update_appointment(
     if "status" in update_data and update_data["status"] != old_status:
         # Check for recurrence logic (If patient has previous history, don't send preconsulta link)
         is_recurrent = False
-        if appointment.patient_dni:
+
+        # Check 0: Current appointment already has answers (pre-filled by chatbot)
+        if appointment.preconsulta_answers is not None:
+            is_recurrent = True
+
+        if not is_recurrent and appointment.patient_dni:
             # Strict Recurrence Check:
             # A patient is "Recurrent" (No Link Needed) ONLY if:
             # 1. They have a past Consultation (Medical History exists).
             # 2. OR They have a past Appointment with 'preconsulta_answers' (Form already filled).
-            
+
             # Check 1: Consultations (Scoped to THIS doctor)
-            from app.db.models.consultation import Consultation # Import strictly here
+            from app.db.models.consultation import Consultation  # Import strictly here
             has_consultation = db.query(Consultation).filter(
                 Consultation.patient_ci == appointment.patient_dni,
                 Consultation.doctor_id == appointment.doctor_id
@@ -201,7 +206,7 @@ async def update_appointment(
                 Appointment.id != appointment.id,
                 Appointment.preconsulta_answers.isnot(None)
             ).count() > 0
-            
+
             if has_consultation or has_answers:
                 is_recurrent = True
 

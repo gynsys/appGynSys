@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { getImageUrl } from '../../lib/imageUtils'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity, FiUserPlus } from 'react-icons/fi'
+import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity, FiUserPlus, FiUser, FiFileText, FiLogOut, FiSettings } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import { useAuthStore } from '../../store/authStore'
 import usePWAStore from '../../store/pwaStore'
@@ -9,6 +9,19 @@ import PWAInstallButton from '../common/PWAInstallButton'
 
 export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, onLoginClick, onRegisterClick, containerShadow = true, containerBgColor }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef(null)
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const { isAuthenticated, user, logout } = useAuthStore()
   const { isStandalone } = usePWAStore()
@@ -199,16 +212,66 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 </button>
               )}
 
-              {/* Register icon — always visible */}
-              <button
-                onClick={() => onRegisterClick ? onRegisterClick() : null}
-                className="p-2 rounded-lg text-gray-500 hover:text-white dark:text-gray-400 transition-all hover:scale-110"
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = primaryColor}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                title="Crear cuenta"
-              >
-                <FiUserPlus className="w-5 h-5" />
-              </button>
+              {/* User icon: dropdown if patient logged in, register if not authenticated */}
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => {
+                    if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
+                      setShowUserMenu(v => !v)
+                    } else if (!isAuthenticated) {
+                      onRegisterClick && onRegisterClick()
+                    }
+                  }}
+                  className="p-2 rounded-lg transition-all hover:scale-110"
+                  style={{ color: isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : undefined }}
+                  onMouseEnter={e => { if (!isAuthenticated) e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = '#fff' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : '' }}
+                  title={isAuthenticated ? 'Mi cuenta' : 'Crear cuenta'}
+                >
+                  {isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)
+                    ? <FiUser className="w-5 h-5" />
+                    : <FiUserPlus className="w-5 h-5" />
+                  }
+                </button>
+
+                {/* Patient user dropdown */}
+                {showUserMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                    {/* User header */}
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Cuenta</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{user?.email || user?.nombre_completo}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        to="/cycle/dashboard"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <FiFileText className="w-4 h-4 text-gray-400" />
+                        Mi Historial
+                      </Link>
+                      <Link
+                        to="/cycle/profile"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <FiSettings className="w-4 h-4 text-gray-400" />
+                        Mi Usuario
+                      </Link>
+                    </div>
+                    <div className="border-t border-gray-100 dark:border-gray-700 py-1">
+                      <button
+                        onClick={() => { logout(); setShowUserMenu(false) }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <FiLogOut className="w-4 h-4" />
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div >
 
             {/* Desktop Mobile Menu Button Placeholer (Removed from here, moved up) */}
