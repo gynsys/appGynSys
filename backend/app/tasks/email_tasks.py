@@ -256,7 +256,12 @@ def send_appointment_notification_email(
 ):
     """
     Send notification email to doctor about a new appointment.
+    Also sends a Push notification if doctor has active subscriptions.
     """
+    from app.db.base import SessionLocal
+    from app.db.models.doctor import Doctor
+    from app.services.push_service import send_push_to_actor
+    
     subject = f"Nueva Solicitud de Cita - {patient_name}"
     content = f"""
     <h2>Nueva Solicitud de Cita</h2>
@@ -271,8 +276,23 @@ def send_appointment_notification_email(
     <p>Por favor ingrese al panel administrativo para confirmar o rechazar esta solicitud.</p>
     """
     
-    pass
     _send_integrated_email(doctor_email, subject, content)
+    
+    # Send Push Notification to Doctor
+    db = SessionLocal()
+    try:
+        doctor = db.query(Doctor).filter(Doctor.email == doctor_email).first()
+        if doctor and doctor.push_subscriptions:
+            send_push_to_actor(
+                actor=doctor,
+                title="🆕 Nueva Cita Solicitada",
+                body=f"Paciente: {patient_name}\nFecha: {appointment_date}",
+                data={"url": "/admin/appointments", "tag": "new-appointment"}
+            )
+    except Exception as e:
+        logger.error(f"Error sending push notification for new appointment: {e}")
+    finally:
+        db.close()
     
     return {"status": "sent", "recipient": doctor_email}
 
@@ -942,6 +962,27 @@ def send_preconsulta_completed_notification(
     """
     
     _send_integrated_email(doctor_email, subject, html_content)
+    
+    # Notify doctor via Push (Instant)
+    from app.db.base import SessionLocal
+    from app.db.models.doctor import Doctor
+    from app.services.push_service import send_push_to_actor
+    
+    db = SessionLocal()
+    try:
+        doctor = db.query(Doctor).filter(Doctor.email == doctor_email).first()
+        if doctor and doctor.push_subscriptions:
+            send_push_to_actor(
+                actor=doctor,
+                title="📑 Preconsulta Finalizada",
+                body=f"La paciente {patient_name} ha completado su historia clínica.",
+                data={"url": "/dashboard/appointments", "tag": "preconsulta-completed"}
+            )
+    except Exception as e:
+        logger.error(f"Error sending push notification for completed preconsulta: {e}")
+    finally:
+        db.close()
+
     return {"status": "sent", "recipient": doctor_email}
 
 
