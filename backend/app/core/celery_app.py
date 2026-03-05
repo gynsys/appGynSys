@@ -27,6 +27,10 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.notifications.recover_stale_processing",
         "schedule": crontab(minute='*/10'),
     },
+    "check-appointment-reminders": {
+        "task": "app.tasks.email_tasks.check_and_send_appointment_reminders",
+        "schedule": crontab(minute='*/15'),
+    },
 }
 # Auto-discover tasks and ensure modules are loaded
 celery_app.autodiscover_tasks(['app'])

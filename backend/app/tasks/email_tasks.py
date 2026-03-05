@@ -1021,5 +1021,107 @@ def send_settings_updated_email(cycle_user_id: int):
         db.close()
 
 
+@celery_app.task(name="app.tasks.email_tasks.check_and_send_appointment_reminders")
+def check_and_send_appointment_reminders():
+    """
+    Periodic task to send appointment reminders 1h 30m before the appointment.
+    Prioritizes Push notifications to save email limits.
+    """
+    from datetime import datetime, timedelta
+    from app.db.base import SessionLocal
+    from app.db.models.appointment import Appointment
+    from app.db.models.cycle_user import CycleUser
+    from app.db.models.doctor import Doctor
+    from app.services.push_service import send_push_to_actor
+    from app.tasks.email_tasks import _send_integrated_email
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    db = SessionLocal()
+    try:
+        # 1. Calculate the time window (90 minutes from now +/- 10 mins buffer)
+        now = datetime.utcnow()
+        target_time = now + timedelta(minutes=90)
+        window_start = target_time - timedelta(minutes=10)
+        window_end = target_time + timedelta(minutes=10)
+        
+        logger.info(f"Checking for appointments between {window_start} and {window_end}")
+        
+        # 2. Find appointments in that window that haven't been reminded yet
+        appointments = db.query(Appointment).filter(
+            Appointment.appointment_date >= window_start,
+            Appointment.appointment_date <= window_end,
+            Appointment.reminder_sent == False,
+            Appointment.status == "scheduled"
+        ).all()
+        
+        for appt in appointments:
+            try:
+                logger.info(f"Sending reminders for appointment {appt.id} (Date: {appt.appointment_date})")
+                
+                # --- A. NOTIFY PATIENT ---
+                patient_user = db.query(CycleUser).filter(CycleUser.email == appt.patient_email).first()
+                
+                patient_notified_via_push = False
+                if patient_user and patient_user.push_subscriptions:
+                    push_res = send_push_to_actor(
+                        actor=patient_user,
+                        title="🌸 Recordatorio de Cita",
+                        body=f"Hola {appt.patient_name}, te recordamos tu cita hoy a las {appt.appointment_date.strftime('%I:%M %p')}.",
+                        data={"url": "/cycle/dashboard", "tag": "appointment-reminder"}
+                    )
+                    patient_notified_via_push = push_res.get("success", False)
+                
+                if not patient_notified_via_push:
+                    # Fallback to email if no PWA device
+                    from app.core.config import settings
+                    subject = f"Recordatorio de Cita - {appt.appointment_date.strftime('%I:%M %p')}"
+                    content = f"""
+                    <div style="font-family: sans-serif; color: #374151;">
+                        <h2 style="color: {appt.doctor.theme_primary_color or '#4f46e5'};">Recordatorio de Cita</h2>
+                        <p>Hola <strong>{appt.patient_name}</strong>, le recordamos su cita con el Dr/a. {appt.doctor.nombre_completo}.</p>
+                        <p><strong>Fecha y Hora:</strong> {appt.appointment_date.strftime("%d/%m/%Y %I:%M %p")}</p>
+                        <p>¡Le esperamos!</p>
+                        <hr style="margin-top: 32px; border: 0; border-top: 1px solid #eee;">
+                        <p style="font-size: 12px; color: #9ca3af;">GynSys &copy; 2026</p>
+                    </div>
+                    """
+                    _send_integrated_email(appt.patient_email, subject, content)
+
+                # --- B. NOTIFY DOCTOR ---
+                doctor = appt.doctor
+                doctor_notified_via_push = False
+                if doctor.push_subscriptions:
+                    push_res = send_push_to_actor(
+                        actor=doctor,
+                        title="📅 Cita Próxima",
+                        body=f"Paciente {appt.patient_name} a las {appt.appointment_date.strftime('%I:%M %p')}.",
+                        data={"url": "/admin/appointments", "tag": "doctor-reminder"}
+                    )
+                    doctor_notified_via_push = push_res.get("success", False)
+                
+                if not doctor_notified_via_push:
+                    # Fallback to simple email for doctor
+                    _send_integrated_email(
+                        doctor.email, 
+                        f"Recordatorio: Cita {appt.appointment_date.strftime('%I:%M %p')}",
+                        f"<p>Doctor {doctor.nombre_completo}, le recordamos su cita con <b>{appt.patient_name}</b> hoy a las {appt.appointment_date.strftime('%I:%M %p')}.</p>"
+                    )
+
+                # 3. Mark as sent
+                appt.reminder_sent = True
+                db.commit()
+                logger.info(f"✅ Reminders sent for appt {appt.id}")
+                
+            except Exception as e:
+                logger.error(f"Error processing reminder for appointment {appt.id}: {e}", exc_info=True)
+                db.rollback()
+                
+    except Exception as e:
+        logger.error(f"Error in check_and_send_appointment_reminders: {e}", exc_info=True)
+    finally:
+        db.close()
+
+
 
 
