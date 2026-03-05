@@ -33,6 +33,7 @@ import OnlineChatBooking from '../components/features/OnlineChatBooking'
 import OnlineConsultationSection from '../components/features/OnlineConsultationSection'
 import PWAInstallButton from '../components/common/PWAInstallButton'
 import CycleMarketingSection from '../components/features/CycleMarketingSection'
+import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog'
 
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
@@ -48,6 +49,7 @@ export default function DoctorProfilePage() {
   const [error, setError] = useState(null)
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
@@ -342,6 +344,7 @@ export default function DoctorProfilePage() {
         onTestClick={handleOpenTest}
         onCycleClick={handleOpenCycle}
         onLoginClick={() => setIsLoginModalOpen(true)}
+        onRegisterClick={() => setIsRegisterModalOpen(true)}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
@@ -618,6 +621,12 @@ export default function DoctorProfilePage() {
       {/* Cycle Predictor Modal */}
       <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} primaryColor={primaryColor} darkMode={isDarkTheme} />
+      <CycleAuthDialog
+        open={isRegisterModalOpen}
+        onOpenChange={setIsRegisterModalOpen}
+        initialView="register"
+        slug={slug}
+      />
 
       {/* Online Consultation Modal (triggered from hero section) */}
       <OnlineChatBooking
