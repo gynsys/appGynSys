@@ -185,7 +185,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     onClick={() => logout()}
                     className="text-sm font-medium text-red-500 hover:text-red-600 transition"
                   >
-                    Cerrar Sesión (Doctor)
+                    Cerrar Sesión
                   </button>
                 </div>
               ) : (
@@ -232,9 +232,9 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
 
                 {/* Patient user dropdown */}
                 {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
                     {/* User header */}
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div className="px-4 py-3">
                       <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta Paciente</p>
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{cycleUser?.email || cycleUser?.nombre_completo}</p>
                     </div>
@@ -251,7 +251,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                         </div>
                       </Link>
                     </div>
-                    <div className="border-t border-gray-100 dark:border-gray-700 py-1">
+                    <div className="py-1">
                       <button
                         onClick={() => { logoutPatient(); setShowUserMenu(false) }}
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 transition-colors"
