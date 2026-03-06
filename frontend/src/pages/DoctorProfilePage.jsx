@@ -371,11 +371,9 @@ export default function DoctorProfilePage() {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (doctor?.design_template === 'dark') {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme_preference', 'dark')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#111827') // gray-950
     } else {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme_preference', 'light')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#ffffff')
     }
   }, [doctor])
