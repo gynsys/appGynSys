@@ -803,13 +803,13 @@ export default function DoctorProfilePage() {
       >
         <div className="flex flex-col h-full">
           {/* Mobile vs Desktop View Toggle */}
-          <div className="flex-1 overflow-hidden min-h-[60vh] md:min-h-0">
-            {/* Native HTML view for mobile or data enthusiasts */}
-            <div className="block md:hidden">
+          <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
+            {/* Native HTML view for mobile - Always render if data exists, CSS handles visibility but React prevents iframe on mobile */}
+            <div className="md:hidden">
               <HistoryHtmlView data={historyData} />
             </div>
 
-            {/* Iframe for desktop (classic PDF look) */}
+            {/* Iframe for desktop (classic PDF look) - Hidden on mobile via CSS and NOT rendered to avoid background PDF loading/triggering */}
             <div className="hidden md:block h-[70vh] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
               {historyPdfUrl && (
                 <iframe
