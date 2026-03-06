@@ -11,11 +11,13 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef(null)
+  const userMenuMobileRef = useRef(null)
 
   // Close user menu when clicking outside
   useEffect(() => {
     const handler = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target) &&
+        userMenuMobileRef.current && !userMenuMobileRef.current.contains(e.target)) {
         setShowUserMenu(false)
       }
     }
@@ -77,6 +79,58 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
 
               {/* Mobile Menu & Admin Actions */}
               <div className="md:hidden flex items-center space-x-2">
+                {/* Patient User Icon (Mobile) */}
+                <div className="relative" ref={userMenuMobileRef}>
+                  <button
+                    onClick={() => {
+                      if (isCycleAuthenticated) {
+                        setShowUserMenu(v => !v)
+                      } else {
+                        onRegisterClick && onRegisterClick()
+                      }
+                    }}
+                    className="p-1.5 rounded-lg transition-all"
+                    style={{ color: isCycleAuthenticated ? primaryColor : '' }}
+                  >
+                    {isCycleAuthenticated
+                      ? <FiUser className="w-6 h-6" />
+                      : <FiUserPlus className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    }
+                  </button>
+
+                  {/* Mobile Dropdown */}
+                  {isCycleAuthenticated && showUserMenu && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-[60] overflow-hidden">
+                      <div className="px-4 py-3">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta Paciente</p>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{cycleUser?.email || cycleUser?.nombre_completo}</p>
+                      </div>
+                      <div className="py-1">
+                        <Link
+                          to="#"
+                          onClick={(e) => { e.preventDefault(); setShowUserMenu(false); onMedicalHistoryClick && onMedicalHistoryClick() }}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <FiFileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium leading-none">Historia Médica</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Citas y consultas</p>
+                          </div>
+                        </Link>
+                      </div>
+                      <div className="py-1">
+                        <button
+                          onClick={() => { logoutPatient(); setShowUserMenu(false) }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <FiLogOut className="w-4 h-4" />
+                          Cerrar Sesión Paciente
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {isAuthenticated && (
                   <Link
                     to="/dashboard"
