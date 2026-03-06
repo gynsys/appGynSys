@@ -2,7 +2,112 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiHome, FiGrid, FiEdit, FiSearch, FiX } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiHome, FiGrid, FiEdit, FiSearch, FiX, FiClipboard } from 'react-icons/fi';
+
+const HistoryHtmlView = ({ data }) => {
+  if (!data) return null;
+
+  return (
+    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
+      {/* Patient Header */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Información del Paciente</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-gray-500">Nombre Completo</p>
+            <p className="font-semibold">{data.full_name}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Identificación (CI)</p>
+            <p className="font-semibold">{data.ci}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Edad</p>
+            <p className="font-semibold">{data.age} años</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Teléfono</p>
+            <p className="font-semibold">{data.phone}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Antecedentes Section */}
+      <div className="space-y-4">
+        <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
+            <p className="text-sm italic">{data.summary_gyn_obstetric || 'No registrados'}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
+            <p className="text-sm italic">{data.summary_habits || 'No registrados'}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personales / Suplementos</p>
+            <p className="text-sm italic">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Quirúrgicos</p>
+            <p className="text-sm italic">{data.surgical_history || 'Ninguno'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Consultations Timeline */}
+      <div className="space-y-4 pt-4">
+        <h4 className="text-lg font-bold border-b pb-2">Evolución Médica (Consultas)</h4>
+        <div className="space-y-8 relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
+          {(data.all_consultations || []).slice().reverse().map((c, idx) => (
+            <div key={idx} className="relative pl-10">
+              <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 z-10 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-start mb-3">
+                  <p className="text-indigo-600 font-bold">{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                  <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Consulta</span>
+                </div>
+
+                <div className="space-y-4">
+                  {c.diagnosis && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Diagnóstico</p>
+                      <p className="text-sm font-medium">{c.diagnosis}</p>
+                    </div>
+                  )}
+                  {c.plan && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
+                      <p className="text-sm">{c.plan}</p>
+                    </div>
+                  )}
+                  {(c.physical_exam || c.ultrasound) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50 dark:border-gray-700">
+                      {c.physical_exam && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.physical_exam}</p>
+                        </div>
+                      )}
+                      {c.ultrasound && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
 export default function PatientsManager({ isEmbedded = false }) {
@@ -20,6 +125,8 @@ export default function PatientsManager({ isEmbedded = false }) {
   // PDF Preview State
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -187,8 +294,28 @@ export default function PatientsManager({ isEmbedded = false }) {
     });
   };
 
-  const handleViewPdf = (url) => {
+  const handleViewPdf = async (url) => {
     setCurrentPdfUrl(url);
+
+    // If it's a history PDF, let's also fetch the JSON for native mobile viewing
+    if (url.includes('history_pdf')) {
+      const consultationId = url.split('/consultations/')[1].split('/')[0];
+      setLoadingHistory(true);
+      try {
+        const response = await fetch(`${API_BASE}/consultations/${consultationId}/history_data`);
+        if (response.ok) {
+          const data = await response.json();
+          setHistoryData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching history data:", error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    } else {
+      setHistoryData(null);
+    }
+
     setPdfModalOpen(true);
   };
 
@@ -399,30 +526,62 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      {/* PDF Viewer Modal */}
+      {/* PDF Viewer Modal - Dual View (HTML for Mobile, Iframe for Desktop) */}
       <Modal
         isOpen={pdfModalOpen}
-        onClose={() => setPdfModalOpen(false)}
+        onClose={() => { setPdfModalOpen(false); setHistoryData(null); }}
         title="Vista Previa del Documento"
         size="4xl"
       >
-        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden h-[80vh]">
-          {currentPdfUrl && (
-            <iframe
-              src={currentPdfUrl}
-              className="w-full h-full border-0"
-              title="Visor PDF"
-            />
-          )}
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            className="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            onClick={() => setPdfModalOpen(false)}
-          >
-            Cerrar
-          </button>
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
+            {/* Native HTML view for mobile */}
+            {historyData ? (
+              <div className="md:hidden">
+                <HistoryHtmlView data={historyData} />
+              </div>
+            ) : (
+              /* Default PDF message for non-history docs on mobile if needed */
+              <div className="md:hidden flex flex-col items-center justify-center p-10 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <FiFileText className="w-12 h-12 text-gray-300 mb-4" />
+                <p className="text-gray-500 text-center font-medium">Usa un dispositivo de escritorio para previsualizar este informe detallado o descárgalo a continuación.</p>
+              </div>
+            )}
+
+            {/* Iframe for desktop */}
+            <div className="hidden md:block h-[70vh] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+              {currentPdfUrl && (
+                <iframe
+                  src={currentPdfUrl}
+                  className="w-full h-full border-0"
+                  title="Visor PDF"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[10px] text-gray-400 italic">Documento médico generado digitalmente.</p>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {currentPdfUrl && (
+                <a
+                  href={currentPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 md:flex-none text-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition shadow-md"
+                >
+                  Descargar PDF
+                </a>
+              )}
+              <button
+                type="button"
+                className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                onClick={() => { setPdfModalOpen(false); setHistoryData(null); }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       </Modal>
 

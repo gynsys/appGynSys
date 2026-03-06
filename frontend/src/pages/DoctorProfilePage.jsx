@@ -804,29 +804,9 @@ export default function DoctorProfilePage() {
         <div className="flex flex-col h-full">
           {/* Mobile vs Desktop View Toggle */}
           <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
-            {/* Native PREVIEW for mobile - Image from PDF */}
-            <div className="md:hidden flex flex-col items-center">
-              <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-inner overflow-hidden border border-gray-100 dark:border-gray-700">
-                <p className="text-[10px] text-primary-600 font-bold uppercase tracking-wider p-3 bg-primary-50 dark:bg-primary-900/30 text-center">Vista Rápida (Página 1)</p>
-                <div className="relative min-h-[400px] flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
-                  {historyPdfUrl && (
-                    <img
-                      src={historyPdfUrl.replace('history_pdf', 'history_image')}
-                      alt="Historia Médica Previsualización"
-                      className="w-full h-auto"
-                      loading="lazy"
-                      onLoad={(e) => e.target.style.opacity = 1}
-                      style={{ opacity: 0, transition: 'opacity 0.3s' }}
-                    />
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-                    <FiClipboard className="w-20 h-20 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 w-full">
-                <HistoryHtmlView data={historyData} />
-              </div>
+            {/* Native HTML view for mobile - Always render if data exists, CSS handles visibility but React prevents iframe on mobile */}
+            <div className="md:hidden">
+              <HistoryHtmlView data={historyData} />
             </div>
 
             {/* Iframe for desktop (classic PDF look) - Hidden on mobile via CSS and NOT rendered to avoid background PDF loading/triggering */}
