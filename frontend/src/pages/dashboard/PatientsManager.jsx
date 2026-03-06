@@ -134,20 +134,6 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
             </div>
           ))}
         </div>
-
-        {downloadUrl && (
-          <div className="pt-4 pb-2">
-            <a
-              href={downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-[0.98] transition-all"
-            >
-              <FiFileText className="w-5 h-5" />
-              DESCARGAR PDF
-            </a>
-          </div>
-        )}
       </div>
     </div>
   );
