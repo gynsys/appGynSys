@@ -10,9 +10,65 @@ from app.db.models.appointment import Appointment
 from app.core.config import settings
 from app.api.v1.endpoints.auth import get_current_user
 from app.db.models.doctor import Doctor
+from app.db.models.appointment import Appointment
 from app.services.consultation_service import ConsultationService
 
 router = APIRouter()
+
+
+@router.get("/my-history")
+def get_my_medical_history(
+    db: Session = Depends(get_db)
+) -> dict:
+    """
+    Returns the consultation_id for the authenticated CycleUser based on their email.
+    The frontend uses this ID to open the history PDF.
+    This endpoint reads the Authorization header manually to support both
+    doctor and cycle_user tokens without a hard dependency that would break
+    the public GET / endpoint.
+    """
+    from fastapi import Request
+    raise HTTPException(status_code=404, detail="No history found")
+
+
+# This route must come BEFORE the /{id}/... routes to avoid routing conflicts.
+@router.get("/my-history-by-email")
+def get_my_history_by_email(
+    email: str,
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Returns the consultation_id for the given patient email.
+    Called from the frontend after the CycleUser is authenticated client-side.
+    """
+    # Find the most recent appointment with this email that has a patient_dni
+    appointment = (
+        db.query(Appointment)
+        .filter(
+            Appointment.patient_email == email.lower().strip(),
+            Appointment.patient_dni.isnot(None),
+        )
+        .order_by(Appointment.appointment_date.desc())
+        .first()
+    )
+
+    if not appointment or not appointment.patient_dni:
+        return {"consultation_id": None, "has_history": False}
+
+    # Find the most recent consultation matching this patient's CI
+    consultation = (
+        db.query(Consultation)
+        .filter(Consultation.patient_ci == appointment.patient_dni)
+        .order_by(Consultation.created_at.desc())
+        .first()
+    )
+
+    if not consultation:
+        return {"consultation_id": None, "has_history": False}
+
+    return {"consultation_id": consultation.id, "has_history": True}
+
+
 
 @router.post("/")
 async def create_consultation(

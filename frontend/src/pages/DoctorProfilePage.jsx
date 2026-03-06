@@ -60,26 +60,21 @@ export default function DoctorProfilePage() {
   const handleMedicalHistoryClick = async () => {
     if (!user?.email) return
     try {
-      const token = localStorage.getItem('cycle_access_token') || localStorage.getItem('access_token')
-      const res = await fetch(`${API_BASE}/consultations/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      // Use the new by-email endpoint to find the patient's consultation
+      const res = await fetch(`${API_BASE}/consultations/my-history-by-email?email=${encodeURIComponent(user.email)}`)
       if (res.ok) {
-        const all = await res.json()
-        // Find the consultation matching this user's email
-        const match = all.find(c =>
-          c.patient_email?.toLowerCase() === user.email?.toLowerCase()
-        )
-        if (match) {
-          setHistoryPdfUrl(`${API_BASE}/consultations/${match.id}/history_pdf`)
+        const data = await res.json()
+        if (data.has_history && data.consultation_id) {
+          setHistoryPdfUrl(`${API_BASE}/consultations/${data.consultation_id}/history_pdf`)
           setShowHistoryModal(true)
         } else {
-          // No consultation found — navigate to cycle dashboard as fallback
-          window.location.href = '/cycle/dashboard'
+          // No consultation found yet
+          setShowHistoryModal(false)
+          window.alert('Aún no tienes una historia médica registrada con esta doctora.')
         }
       }
     } catch (e) {
-      window.location.href = '/cycle/dashboard'
+      window.alert('Error al obtener tu historia médica. Intenta nuevamente.')
     }
   }
 
