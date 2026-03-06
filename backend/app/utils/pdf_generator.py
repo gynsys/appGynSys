@@ -1,5 +1,6 @@
 import os
 import io
+import fitz  # PyMuPDF
 import json
 import logging
 from datetime import datetime
@@ -516,3 +517,31 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     doc.build(story)
     buffer.seek(0)
     return buffer
+
+def convert_pdf_to_image(pdf_buffer: io.BytesIO) -> io.BytesIO:
+    """
+    Convierte la primera página de un PDF en una imagen PNG.
+    Útil para previsualizaciones rápidas en móviles.
+    """
+    pdf_buffer.seek(0)
+    # Abrir el PDF desde el stream de bytes
+    import fitz
+    doc = fitz.open(stream=pdf_buffer.read(), filetype="pdf")
+    
+    if len(doc) == 0:
+        raise ValueError("El PDF no tiene páginas.")
+
+    # Cargar la primera página
+    page = doc.load_page(0)
+    
+    # Renderizar la página a una imagen (pixmap)
+    # Por defecto es 72 DPI, aumentamos a 150 para mejor legibilidad
+    zoom = 150 / 72
+    mat = fitz.Matrix(zoom, zoom)
+    pix = page.get_pixmap(matrix=mat, colorspace=fitz.csRGB)
+    
+    # Guardar en un buffer de bytes como PNG
+    img_buffer = io.BytesIO(pix.tobytes("png"))
+    doc.close()
+    img_buffer.seek(0)
+    return img_buffer

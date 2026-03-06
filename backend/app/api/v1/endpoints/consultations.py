@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.schemas.consultation import ConsultationCreate, ConsultationUpdate
-from app.utils.pdf_generator import generate_medical_report, generate_summary_report
+from app.utils.pdf_generator import generate_medical_report, generate_summary_report, convert_pdf_to_image
 from app.db.base import get_db
 from app.db.models.consultation import Consultation
 from app.db.models.appointment import Appointment
@@ -281,6 +281,28 @@ def get_consultation_history_pdf(
     pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db)
     
     return Response(content=pdf_buffer.getvalue(), media_type="application/pdf")
+
+@router.get("/{id}/history_image")
+def get_consultation_history_image(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    # Use the service to get the data
+    data = ConsultationService.get_history_data(db, id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    # Generate PDF (Medical History with ALL consultations)
+    pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db)
+    
+    # Convert PDF to Image
+    try:
+        img_buffer = convert_pdf_to_image(pdf_buffer)
+        return Response(content=img_buffer.getvalue(), media_type="image/png")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error generating image: {str(e)}")
 
 from pydantic import BaseModel, EmailStr
 
