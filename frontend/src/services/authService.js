@@ -55,10 +55,11 @@ export const authService = {
     return response.data
   },
 
-  async loginGoogle(token) {
+  async loginGoogle(token, isCycle = false) {
     const response = await api.post('/auth/login/google', { token })
     if (response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token)
+      const tokenKey = isCycle ? 'cycle_access_token' : 'access_token'
+      localStorage.setItem(tokenKey, response.data.access_token)
     }
     return response.data
   },

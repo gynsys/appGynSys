@@ -42,7 +42,7 @@ import whatsappLogo from '../assets/whatsapp-logo.png'
 export default function DoctorProfilePage() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user, isCycleAuthenticated, cycleUser } = useAuthStore()
   const { logout } = useAuth()
   const toast = useToastStore()
   const [doctor, setDoctor] = useState(null)
@@ -58,10 +58,10 @@ export default function DoctorProfilePage() {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
   const handleMedicalHistoryClick = async () => {
-    if (!user?.email) return
+    if (!cycleUser?.email) return
     try {
       // Use the new by-email endpoint to find the patient's consultation
-      const res = await fetch(`${API_BASE}/consultations/my-history-by-email?email=${encodeURIComponent(user.email)}`)
+      const res = await fetch(`${API_BASE}/consultations/my-history-by-email?email=${encodeURIComponent(cycleUser.email)}`)
       if (res.ok) {
         const data = await res.json()
         if (data.has_history && data.consultation_id) {
@@ -143,7 +143,7 @@ export default function DoctorProfilePage() {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        // Optimistic UI: If we are logged in and looking at our own profile, load immediately
+        // Optimistic UI: If we are logged in as a doctor and looking at our own profile
         const isSelfProfile = isAuthenticated && user && (user.slug_url === slug || user.id === slug)
 
         if (isSelfProfile) {

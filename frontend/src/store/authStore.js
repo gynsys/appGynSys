@@ -3,16 +3,26 @@ import { create } from 'zustand'
 import { authService } from '../services/authService'
 
 export const useAuthStore = create((set, get) => {
-  // Initialize from localStorage if token exists
+  // Initialize flags based on existing tokens
   const token = localStorage.getItem('access_token')
-  const initialAuth = !!token
+  const cycleToken = localStorage.getItem('cycle_access_token')
 
   return {
+    // 1. Doctor/Admin State
     user: null,
-    isAuthenticated: initialAuth,
+    isAuthenticated: !!token,
+
+    // 2. Patient/CycleUser State
+    cycleUser: null,
+    isCycleAuthenticated: !!cycleToken,
+
     loading: false,
 
+    // Doctor Setters
     setUser: (user) => set({ user, isAuthenticated: !!user }),
+
+    // Patient Setters
+    setCycleUser: (cycleUser) => set({ cycleUser, isCycleAuthenticated: !!cycleUser }),
 
     login: async (email, password) => {
       set({ loading: true })
@@ -45,7 +55,20 @@ export const useAuthStore = create((set, get) => {
       try {
         const data = await authService.loginCycleUser(email, password)
         const user = await authService.getCycleUser()
-        set({ user, isAuthenticated: true, loading: false })
+        set({ cycleUser: user, isCycleAuthenticated: true, loading: false })
+        return data
+      } catch (error) {
+        set({ loading: false })
+        throw error
+      }
+    },
+
+    loginCycleUserWithGoogle: async (token) => {
+      set({ loading: true })
+      try {
+        const data = await authService.loginGoogle(token, true) // Pass true for isCycle
+        const user = await authService.getCycleUser()
+        set({ cycleUser: user, isCycleAuthenticated: true, loading: false })
         return data
       } catch (error) {
         set({ loading: false })
@@ -57,18 +80,14 @@ export const useAuthStore = create((set, get) => {
       set({ loading: true })
       try {
         const data = await authService.register(userData)
-        // After registration, try to login automatically
         if (userData.email && userData.password) {
           try {
             await get().login(userData.email, userData.password)
           } catch (loginError) {
-            // If 403, it means account is pending approval, which is success for the registration phase
             if (loginError.response?.status === 403) {
-              console.log("Registration successful, account pending approval.")
               set({ loading: false })
               return data
             }
-            // For other login errors, we might still want to throw if it's not a pending account issue
             throw loginError
           }
         }
@@ -83,9 +102,8 @@ export const useAuthStore = create((set, get) => {
       set({ loading: true })
       try {
         const data = await authService.registerCycleUser(userData)
-        // Token is already set by authService
         const user = await authService.getCycleUser()
-        set({ user, isAuthenticated: true, loading: false })
+        set({ cycleUser: user, isCycleAuthenticated: true, loading: false })
         return data
       } catch (error) {
         set({ loading: false })
@@ -106,17 +124,13 @@ export const useAuthStore = create((set, get) => {
     },
 
     updateCycleUser: async (userData) => {
-      // Don't set global loading state for updates to avoid full page interactions blocking unless needed
-      // set({ loading: true }) 
       try {
         const data = await authService.updateCycleUser(userData)
-        // Update local user state
         set(state => ({
-          user: { ...state.user, ...data }
+          cycleUser: { ...state.cycleUser, ...data }
         }))
         return data
       } catch (error) {
-        // set({ loading: false })
         throw error
       }
     },
@@ -126,52 +140,64 @@ export const useAuthStore = create((set, get) => {
       const cycleToken = localStorage.getItem('cycle_access_token')
 
       if (!token && !cycleToken) {
-        set({ user: null, isAuthenticated: false, loading: false })
+        set({
+          user: null, isAuthenticated: false,
+          cycleUser: null, isCycleAuthenticated: false,
+          loading: false
+        })
         return
       }
 
       if (!silent) set({ loading: true })
 
       try {
+        // Load Doctor if token exists
         if (token) {
-          // First try standard user
           try {
             const user = await authService.getCurrentUser()
-            set({ user, isAuthenticated: true, loading: false })
-            return
+            set({ user, isAuthenticated: true })
           } catch (err) {
-            // If admin token fails (expired), try cycle? Or just fail? 
-            // Usually if token exists but invalid, we clear it.
-            console.warn("Admin token invalid", err)
             localStorage.removeItem('access_token')
-            // Continue to check cycle token below...
+            set({ user: null, isAuthenticated: false })
           }
         }
 
+        // Load Patient if cycleToken exists (Independently!)
         if (cycleToken) {
-          // Try cycle user
-          const user = await authService.getCycleUser()
-          set({ user, isAuthenticated: true, loading: false })
-        } else {
-          // No valid session found after checks
-          set({ user: null, isAuthenticated: false, loading: false })
+          try {
+            const user = await authService.getCycleUser()
+            set({ cycleUser: user, isCycleAuthenticated: true })
+          } catch (err) {
+            localStorage.removeItem('cycle_access_token')
+            set({ cycleUser: null, isCycleAuthenticated: false })
+          }
         }
-
-      } catch (error) {
-        // Token might be invalid, clear it
-        console.error("Auth load failed:", error)
-        // We might have removed access_token above, remove cycle too if it failed
-        if (localStorage.getItem('cycle_access_token')) localStorage.removeItem('cycle_access_token')
-
-        set({ user: null, isAuthenticated: false, loading: false })
+      } finally {
+        set({ loading: false })
       }
     },
 
     logout: () => {
       localStorage.removeItem('access_token')
       localStorage.removeItem('cycle_access_token')
-      set({ user: null, isAuthenticated: false, loading: false })
+      set({
+        user: null, isAuthenticated: false,
+        cycleUser: null, isCycleAuthenticated: false,
+        loading: false
+      })
     },
+
+    // Optional: Individual logouts if needed
+    logoutDoctor: () => {
+      localStorage.removeItem('access_token')
+      set({ user: null, isAuthenticated: false })
+    },
+
+    logoutPatient: () => {
+      localStorage.removeItem('cycle_access_token')
+      set({ cycleUser: null, isCycleAuthenticated: false })
+    }
   }
 })
+
 

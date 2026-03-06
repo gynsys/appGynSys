@@ -23,12 +23,11 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const { isAuthenticated, user, logout } = useAuthStore()
+  const { isAuthenticated, user, logout, isCycleAuthenticated, cycleUser, logoutPatient } = useAuthStore()
   const { isStandalone } = usePWAStore()
   const navigate = useNavigate()
 
   // Usage: if containerBgColor is explicitly passed (even null), use it. Only fallback to doctor.theme... if undefined.
-  // In Dark Mode, parent passes 'null', so effectiveBgColor becomes 'null', preventing the legacy color override.
   const effectiveBgColor = containerBgColor !== undefined ? containerBgColor : doctor?.theme_container_bg_color
 
   // Check if Endometriosis Test module is enabled
@@ -37,7 +36,6 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
   const showBlog = doctor?.enabled_modules?.includes('blog')
 
   // Calculate Dark Mode based on doctor's template
-  // This allows passing the explicit theme to modals instead of relying on system preference
   const isDarkTheme = doctor?.design_template === 'dark'
 
   return (
@@ -79,7 +77,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
 
               {/* Mobile Menu & Admin Actions */}
               <div className="md:hidden flex items-center space-x-2">
-                {isAuthenticated && (user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) && (
+                {isAuthenticated && (
                   <Link
                     to="/dashboard"
                     className="p-1.5 rounded-lg text-white shadow-sm"
@@ -180,33 +178,33 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 )
               }
 
-              {/* Authentication Logic */}
+              {/* Doctor Authentication Logic */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => logout()}
                     className="text-sm font-medium text-red-500 hover:text-red-600 transition"
                   >
-                    Cerrar Sesión
+                    Cerrar Sesión (Doctor)
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => onLoginClick ? onLoginClick() : null}
                   className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md group"
-                  title="Iniciar sesión"
+                  title="Iniciar sesión (Doctor)"
                 >
                   <FiLogIn className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-medium">Login</span>
                 </button>
               )}
 
-              {/* User icon: dropdown if patient logged in, register if not authenticated */}
+              {/* Patient icon: dropdown if patient logged in, register/login dialog if not authenticated */}
               <div
                 className="relative"
                 ref={userMenuRef}
                 onMouseEnter={() => {
-                  if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
+                  if (isCycleAuthenticated) {
                     setShowUserMenu(true)
                   }
                 }}
@@ -214,32 +212,31 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               >
                 <button
                   onClick={() => {
-                    // Patient (non-doctor) logged in → toggle account dropdown
-                    if (isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)) {
+                    if (isCycleAuthenticated) {
                       setShowUserMenu(v => !v)
                     }
-                    // Doctor logged in OR not authenticated → open register form (CycleAuthDialog)
                     else {
                       onRegisterClick && onRegisterClick()
                     }
                   }}
                   className="p-2 rounded-lg transition-all hover:scale-110"
-                  style={{ color: isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? primaryColor : '' }}
-                  title={isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id) ? 'Mi cuenta' : 'Crear cuenta'}
+                  style={{ color: isCycleAuthenticated ? primaryColor : '' }}
+                  title={isCycleAuthenticated ? 'Mi cuenta' : 'Crear cuenta'}
                 >
-                  {isAuthenticated && !(user?.slug_url === doctor?.slug_url || user?.id === doctor?.id)
+                  {isCycleAuthenticated
                     ? <FiUser className="w-5 h-5" />
-                    : <FiUserPlus className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-white" />
+                    : <FiUserPlus className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:scale-110" />
                   }
                 </button>
+
 
                 {/* Patient user dropdown */}
                 {showUserMenu && (
                   <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
                     {/* User header */}
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta</p>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{user?.email || user?.nombre_completo}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta Paciente</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{cycleUser?.email || cycleUser?.nombre_completo}</p>
                     </div>
                     <div className="py-1">
                       <Link
@@ -256,16 +253,17 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     </div>
                     <div className="border-t border-gray-100 dark:border-gray-700 py-1">
                       <button
-                        onClick={() => { logout(); setShowUserMenu(false) }}
+                        onClick={() => { logoutPatient(); setShowUserMenu(false) }}
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <FiLogOut className="w-4 h-4" />
-                        Cerrar Sesión
+                        Cerrar Sesión Paciente
                       </button>
                     </div>
                   </div>
                 )}
               </div>
+
             </div >
 
             {/* Desktop Mobile Menu Button Placeholer (Removed from here, moved up) */}
