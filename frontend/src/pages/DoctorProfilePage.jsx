@@ -380,7 +380,7 @@ export default function DoctorProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${document.documentElement.classList.contains('dark') ? 'bg-gray-950' : 'bg-white'}`}>
         <style>
           {`
             @keyframes heartbeat {
@@ -408,7 +408,7 @@ export default function DoctorProfilePage() {
 
   if (error || !doctor) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className={`min-h-screen flex items-center justify-center ${document.documentElement.classList.contains('dark') ? 'bg-gray-950 text-white' : 'bg-gray-50'}`}>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Perfil no encontrado</h1>
           <p className="text-gray-600">{error || 'El perfil que buscas no existe'}</p>
