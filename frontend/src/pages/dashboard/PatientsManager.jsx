@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiHome, FiGrid, FiEdit, FiSearch, FiX, FiClipboard } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch } from 'react-icons/fi';
 
-const HistoryHtmlView = ({ data }) => {
+const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
 
-  // Si es un informe individual, usamos los datos raíz de la consulta
-  // Si es una historia, usamos el array all_consultations
   const consultations = data.is_single_report
     ? [{
       created_at: data.created_at,
@@ -22,32 +20,30 @@ const HistoryHtmlView = ({ data }) => {
 
   return (
     <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
-      {/* Patient Header */}
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
         <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
           {data.is_single_report ? 'Informe Médico' : 'Información del Paciente'}
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Nombre Completo</p>
-            <p className="font-semibold">{data.full_name}</p>
+            <p className="font-semibold text-right">{data.full_name}</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Identificación (CI)</p>
-            <p className="font-semibold">{data.ci}</p>
+            <p className="font-semibold text-right">{data.ci}</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Edad</p>
-            <p className="font-semibold">{data.age} años</p>
+            <p className="font-semibold text-right">{data.age} años</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center">
             <p className="text-gray-500">Teléfono</p>
-            <p className="font-semibold">{data.phone}</p>
+            <p className="font-semibold text-right">{data.phone}</p>
           </div>
         </div>
       </div>
 
-      {/* Antecedentes Section - Solo mostrar si hay datos relevantes o es una historia completa */}
       {(data.summary_gyn_obstetric || data.personal_history || !data.is_single_report) && (
         <div className="space-y-4">
           <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
@@ -78,7 +74,6 @@ const HistoryHtmlView = ({ data }) => {
         </div>
       )}
 
-      {/* Consultations Timeline / Single Consultation Detail */}
       <div className="space-y-4 pt-4">
         <h4 className="text-lg font-bold border-b pb-2">
           {data.is_single_report ? 'Detalles de la Consulta' : 'Evolución Médica (Consultas)'}
@@ -139,14 +134,26 @@ const HistoryHtmlView = ({ data }) => {
             </div>
           ))}
         </div>
+
+        {downloadUrl && (
+          <div className="pt-4 pb-2">
+            <a
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-[0.98] transition-all"
+            >
+              <FiFileText className="w-5 h-5" />
+              DESCARGAR PDF
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-
 export default function PatientsManager({ isEmbedded = false }) {
-  // Define API Base URL dynamically
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
   const navigate = useNavigate();
   const [consultations, setConsultations] = useState([]);
@@ -179,8 +186,6 @@ export default function PatientsManager({ isEmbedded = false }) {
       const response = await fetch(`${API_BASE}/consultations/`);
       if (response.ok) {
         const data = await response.json();
-
-        // Group by patient_ci and keep only the most recent consultation per patient
         const grouped = {};
         data.forEach(consultation => {
           const ci = consultation.patient_ci;
@@ -188,12 +193,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             grouped[ci] = consultation;
           }
         });
-
-        // Convert back to array
-        const uniquePatients = Object.values(grouped);
-        setConsultations(uniquePatients);
-      } else {
-        // Handle error silently or log
+        setConsultations(Object.values(grouped));
       }
     } catch (error) {
       console.error('Error fetching consultations:', error);
@@ -215,8 +215,6 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const handleEditClick = (consultation) => {
     setConsultationToEdit(consultation);
-
-    // Map DB fields to Schema fields for the form
     setEditFormData({
       full_name: consultation.patient_name,
       ci: consultation.patient_ci,
@@ -233,7 +231,6 @@ export default function PatientsManager({ isEmbedded = false }) {
       summary_gyn_obstetric: consultation.obstetric_history_summary || '',
       summary_functional_exam: consultation.functional_exam_summary || '',
       summary_habits: consultation.habits_summary || '',
-      // Backend returns WITHOUT admin_ prefix, but form uses WITH prefix
       admin_physical_exam: consultation.physical_exam || '',
       admin_ultrasound: consultation.ultrasound || '',
       admin_diagnosis: formatPlanWithBullets(consultation.diagnosis || ''),
@@ -246,10 +243,7 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const addBullet = (fieldName) => {
@@ -262,27 +256,16 @@ export default function PatientsManager({ isEmbedded = false }) {
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!consultationToEdit) return;
-
     try {
-      // Ensure plan and treatment are sent separately
-      const payload = {
-        ...editFormData,
-        // The schema expects keys like 'admin_plan', which are already in editFormData
-      };
       const response = await fetch(`${API_BASE}/consultations/${consultationToEdit.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData),
       });
-
       if (response.ok) {
         showToast('Historia actualizada exitosamente', 'success');
-        // Refresh list
         fetchConsultations();
         setEditModalOpen(false);
-        setConsultationToEdit(null);
       } else {
         showToast('Error al actualizar la historia', 'error');
       }
@@ -298,17 +281,13 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const confirmDelete = async () => {
     if (!consultationToDelete) return;
-
     try {
       const response = await fetch(`${API_BASE}/consultations/${consultationToDelete}`, {
         method: 'DELETE',
       });
-
       if (response.ok) {
         showToast('Consulta eliminada exitosamente', 'success');
         setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
-      } else {
-        showToast('Error al eliminar la consulta', 'error');
       }
     } catch (error) {
       showToast('Error de conexión', 'error');
@@ -321,35 +300,27 @@ export default function PatientsManager({ isEmbedded = false }) {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('es-VE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
   };
 
   const handleViewPdf = async (url) => {
     setCurrentPdfUrl(url);
-    setHistoryData(null); // Reset before loading
-
-    // Check if it's a history PDF OR a single report PDF
+    setHistoryData(null);
     const isHistory = url.includes('history_pdf');
     const isReport = url.includes('/pdf') && !url.includes('history');
 
     if (isHistory || isReport) {
-      // Robust ID extraction for both patterns
       const match = url.match(/\/consultations\/(\d+)\//);
       const consultationId = match ? match[1] : null;
-
       if (consultationId) {
         setLoadingHistory(true);
         try {
           const dataEndpoint = isHistory ? 'history_data' : 'data';
           const response = await fetch(`${API_BASE}/consultations/${consultationId}/${dataEndpoint}`);
           if (response.ok) {
-            const data = await response.json();
-            setHistoryData(data);
+            setHistoryData(await response.json());
           }
         } catch (error) {
           console.error("Error fetching native data:", error);
@@ -358,11 +329,9 @@ export default function PatientsManager({ isEmbedded = false }) {
         }
       }
     }
-
     setPdfModalOpen(true);
   };
 
-  // Helper filter function
   const filteredConsultations = consultations.filter(consultation =>
     consultation.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     consultation.patient_ci?.includes(searchTerm)
@@ -402,12 +371,12 @@ export default function PatientsManager({ isEmbedded = false }) {
             {searchTerm ? 'No se encontraron resultados' : 'No hay historias registradas'}
           </h3>
           <p className="mt-2 text-gray-500 dark:text-gray-400 font-medium max-w-xs mx-auto">
-            {searchTerm ? 'Intenta con otro término de búsqueda.' : 'Las consultas guardadas aparecerán de forma organizada aquí.'}
+            Las consultas guardadas aparecerán de forma organizada aquí.
           </p>
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Card View for Mobile/Tablet */}
+          {/* Card View for Mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
             {filteredConsultations.map((consultation) => (
               <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-[24px] border border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -425,375 +394,97 @@ export default function PatientsManager({ isEmbedded = false }) {
                     #{consultation.history_number || 'PEND'}
                   </div>
                 </div>
-
-                <div className="space-y-3 mb-5">
-                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 font-bold">
-                    <FiCalendar className="mr-2 w-4 h-4 text-indigo-400" />
-                    {formatDate(consultation.created_at)}
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-black mb-1">Motivo</p>
-                    <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">{consultation.reason_for_visit || 'No especificado'}</p>
-                  </div>
-                </div>
-
                 <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button
-                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-                  >
-                    <FiFileText className="mr-1 w-3 h-3" /> HISTORIA
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700">
+                    HISTORIA
                   </button>
-                  <button
-                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-                  >
-                    <FiFileText className="mr-1 w-3 h-3" /> INFORME
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700">
+                    INFORME
                   </button>
-                  <div className="flex gap-2 w-full mt-1">
-                    <button
-                      onClick={() => handleEditClick(consultation)}
-                      className="flex-1 p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex justify-center hover:bg-indigo-100 transition-colors"
-                    >
-                      <FiEdit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(consultation.id)}
-                      className="flex-1 p-2.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex justify-center hover:bg-red-100 transition-colors"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Desktop Table View */}
+          {/* Table View for Desktop */}
           <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="overflow-x-auto no-scrollbar">
-              <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                <thead className="bg-gray-50/50 dark:bg-gray-800/50">
-                  <tr>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                      Paciente
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                      N° Historia
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                      Fecha
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                      Motivo
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-center text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                      Acciones
-                    </th>
+            <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">Paciente</th>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">N° Historia</th>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">Fecha</th>
+                  <th className="px-6 py-4 text-center text-xs font-black uppercase tracking-widest text-gray-400">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {filteredConsultations.map((consultation) => (
+                  <tr key={consultation.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><FiUser /></div>
+                        <div className="ml-4 font-black uppercase text-sm">{consultation.patient_name}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">{consultation.history_number}</td>
+                    <td className="px-6 py-4 text-xs font-bold">{formatDate(consultation.created_at)}</td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex gap-2 justify-center">
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
+                        <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl"><FiEdit /></button>
+                        <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl"><FiTrash2 /></button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-                  {filteredConsultations.map((consultation) => (
-                    <tr key={consultation.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                            <FiUser />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{consultation.patient_name || 'Desconocido'}</div>
-                            <div className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider">CI: {consultation.patient_ci || 'N/A'}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="inline-block px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] md:text-xs font-black text-gray-600 dark:text-gray-300 tracking-widest">
-                          {consultation.history_number || 'PENDIENTE'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                          <FiCalendar className="text-indigo-400" />
-                          {formatDate(consultation.created_at)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 max-w-xs truncate italic" title={consultation.reason_for_visit}>
-                          {consultation.reason_for_visit || 'No especificado'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-row gap-2 items-center justify-center translate-x-2 opacity-80 group-hover:opacity-100 transition-all">
-                          {consultation.id ? (
-                            <>
-                              <button
-                                onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
-                                className="inline-flex justify-center items-center px-3 py-2 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-                              >
-                                <FiFileText className="mr-1" /> HISTORIA
-                              </button>
-                              <button
-                                onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
-                                className="inline-flex justify-center items-center px-3 py-2 rounded-xl text-[10px] font-black bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-                              >
-                                <FiFileText className="mr-1" /> INFORME
-                              </button>
-                              <button
-                                onClick={() => handleEditClick(consultation)}
-                                className="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-colors"
-                                title="Modificar historia médica"
-                              >
-                                <FiEdit className="w-5 h-5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteClick(consultation.id)}
-                                className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
-                                title="Eliminar consulta"
-                              >
-                                <FiTrash2 className="w-5 h-5" />
-                              </button>
-                            </>
-                          ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                              PENDIENTE
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* PDF Viewer Modal - Dual View (HTML for Mobile, Iframe for Desktop) */}
-      <Modal
-        isOpen={pdfModalOpen}
-        onClose={() => { setPdfModalOpen(false); setHistoryData(null); }}
-        title="Vista Previa del Documento"
-        size="4xl"
-      >
+      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); }} title="Vista Previa" size="4xl">
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
-            {/* Native HTML view for mobile */}
             {loadingHistory ? (
-              <div className="md:hidden flex flex-col items-center justify-center p-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                <p className="text-gray-500 font-medium italic">Obteniendo historia clínica...</p>
-              </div>
+              <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse">Cargando...</div>
             ) : historyData ? (
-              <div className="md:hidden">
-                <HistoryHtmlView data={historyData} />
-              </div>
-            ) : (
-              /* Default PDF message for non-history docs on mobile if needed */
-              <div className="md:hidden flex flex-col items-center justify-center p-10 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                <FiFileText className="w-12 h-12 text-gray-300 mb-4" />
-                <p className="text-gray-500 text-center font-medium">Usa un dispositivo de escritorio para previsualizar este informe detallado o descárgalo a continuación.</p>
-              </div>
-            )}
-
-            {/* Iframe for desktop */}
-            <div className="hidden md:block h-[70vh] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
-              {currentPdfUrl && (
-                <iframe
-                  src={currentPdfUrl}
-                  className="w-full h-full border-0"
-                  title="Visor PDF"
-                />
-              )}
+              <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={currentPdfUrl} /></div>
+            ) : null}
+            <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden">
+              {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="PDF" />}
             </div>
           </div>
-
-          <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-[10px] text-gray-400 italic">Documento médico generado digitalmente.</p>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              {currentPdfUrl && (
-                <a
-                  href={currentPdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 md:flex-none text-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition shadow-md"
-                >
-                  Descargar PDF
-                </a>
-              )}
-              <button
-                type="button"
-                className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                onClick={() => { setPdfModalOpen(false); setHistoryData(null); }}
-              >
-                Cerrar
-              </button>
-            </div>
+          <div className="mt-4 flex justify-between items-center">
+            {currentPdfUrl && <a href={currentPdfUrl} target="_blank" rel="noreferrer" className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Descargar PDF</a>}
+            <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-4 py-2 border rounded-lg text-sm font-medium">Cerrar</button>
           </div>
         </div>
       </Modal>
 
-      {/* Edit Modal */}
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Editar Historia Médica"
-        size="lg"
-      >
-        <form onSubmit={handleUpdate} className="mt-4 space-y-6 max-h-[70vh] overflow-y-auto px-2">
-
-          {/* Patient Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Datos del Paciente</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Nombre Completo</label>
-                <input type="text" name="full_name" value={editFormData.full_name || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-600 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Cédula</label>
-                <input type="text" name="ci" value={editFormData.ci || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-600 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Edad</label>
-                <input type="text" name="age" value={editFormData.age || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-600 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
-                <input type="text" name="phone" value={editFormData.phone || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-600 dark:text-white" />
-              </div>
-            </div>
+      {/* Edit Modal Refactored */}
+      <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} title="Editar Historia" size="lg">
+        <form onSubmit={handleUpdate} className="mt-4 space-y-4 max-h-[70vh] overflow-y-auto px-2">
+          <div className="grid grid-cols-2 gap-4">
+            <input name="full_name" value={editFormData.full_name || ''} onChange={handleEditChange} placeholder="Nombre" className="p-2 border rounded" />
+            <input name="ci" value={editFormData.ci || ''} onChange={handleEditChange} placeholder="CI" className="p-2 border rounded" />
           </div>
-
-          {/* Clinical Data */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600 pb-2">Datos Clínicos</h3>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Motivo de Consulta</label>
-              <textarea name="reason_for_visit" rows={2} value={editFormData.reason_for_visit || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Antecedentes Familiares (Madre)</label>
-                <textarea name="family_history_mother" rows={2} value={editFormData.family_history_mother || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Antecedentes Familiares (Padre)</label>
-                <textarea name="family_history_father" rows={2} value={editFormData.family_history_father || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Antecedentes Personales</label>
-                <textarea name="personal_history" rows={2} value={editFormData.personal_history || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Suplementos</label>
-                <textarea name="supplements" rows={2} value={editFormData.supplements || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Resumen Gineco-Obstétrico</label>
-              <textarea name="summary_gyn_obstetric" rows={3} value={editFormData.summary_gyn_obstetric || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-          </div>
-
-          {/* Medical Report Data */}
-          <div className="space-y-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200 border-b border-blue-200 dark:border-blue-800 pb-2">Datos del Informe Médico</h3>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Examen Físico</label>
-              <textarea name="admin_physical_exam" rows={3} value={editFormData.admin_physical_exam || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Ultrasonido Transvaginal</label>
-              <textarea name="admin_ultrasound" rows={3} value={editFormData.admin_ultrasound || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Diagnóstico</label>
-                <button
-                  type="button"
-                  onClick={() => addBullet('admin_diagnosis')}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 underline"
-                >
-                  Agregar Item
-                </button>
-              </div>
-              <textarea name="admin_diagnosis" rows={2} value={editFormData.admin_diagnosis || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Plan</label>
-                <button
-                  type="button"
-                  onClick={() => addBullet('admin_plan')}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 underline"
-                >
-                  Agregar Item
-                </button>
-              </div>
-              <textarea name="admin_plan" rows={4} value={editFormData.admin_plan || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Observaciones</label>
-              <textarea name="admin_observations" rows={2} value={editFormData.admin_observations || ''} onChange={handleEditChange} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-4 bg-white dark:bg-gray-700 dark:text-white" />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              className="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              onClick={() => setEditModalOpen(false)}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Guardar Cambios
-            </button>
+          <textarea name="reason_for_visit" value={editFormData.reason_for_visit || ''} onChange={handleEditChange} placeholder="Motivo" className="w-full p-2 border rounded" />
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setEditModalOpen(false)} className="p-2 border rounded">Cancelar</button>
+            <button type="submit" className="p-2 bg-indigo-600 text-white rounded">Guardar</button>
           </div>
         </form>
       </Modal>
 
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Confirmar Eliminación"
-      >
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            ¿Estás seguro de que deseas eliminar esta historia médica? Esta acción no se puede deshacer y se perderán todos los datos asociados.
-          </p>
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            className="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            onClick={() => setDeleteModalOpen(false)}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            onClick={confirmDelete}
-          >
-            Eliminar
-          </button>
+      <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirmar">
+        <div className="p-4 text-center">
+          <p>¿Seguro de eliminar?</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <button onClick={() => setDeleteModalOpen(false)} className="px-4 py-2 border rounded">No</button>
+            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded">Sí, eliminar</button>
+          </div>
         </div>
       </Modal>
     </div>

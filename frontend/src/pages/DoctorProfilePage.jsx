@@ -39,7 +39,7 @@ import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog'
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
 
-const HistoryHtmlView = ({ data }) => {
+const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
 
   // Si es un informe individual, usamos los datos raíz de la consulta
@@ -62,22 +62,22 @@ const HistoryHtmlView = ({ data }) => {
         <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
           {data.is_single_report ? 'Informe Médico' : 'Información del Paciente'}
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Nombre Completo</p>
-            <p className="font-semibold">{data.full_name}</p>
+            <p className="font-semibold text-right">{data.full_name}</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Identificación (CI)</p>
-            <p className="font-semibold">{data.ci}</p>
+            <p className="font-semibold text-right">{data.ci}</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Edad</p>
-            <p className="font-semibold">{data.age} años</p>
+            <p className="font-semibold text-right">{data.age} años</p>
           </div>
-          <div>
+          <div className="flex justify-between items-center">
             <p className="text-gray-500">Teléfono</p>
-            <p className="font-semibold">{data.phone}</p>
+            <p className="font-semibold text-right">{data.phone}</p>
           </div>
         </div>
       </div>
@@ -175,6 +175,20 @@ const HistoryHtmlView = ({ data }) => {
           ))}
         </div>
       </div>
+      {/* Download Button for Mobile */}
+      {downloadUrl && (
+        <div className="pt-4 pb-2">
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-primary-600 text-white font-bold shadow-lg shadow-primary-200 dark:shadow-none hover:bg-primary-700 active:scale-[0.98] transition-all"
+          >
+            <FiFileText className="w-5 h-5" />
+            DESCARGAR PDF
+          </a>
+        </div>
+      )}
     </div>
   );
 };
@@ -846,7 +860,7 @@ export default function DoctorProfilePage() {
               </div>
             ) : historyData ? (
               <div className="md:hidden">
-                <HistoryHtmlView data={historyData} />
+                <HistoryHtmlView data={historyData} downloadUrl={historyPdfUrl} />
               </div>
             ) : (
               <div className="md:hidden flex flex-col items-center justify-center p-10 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
