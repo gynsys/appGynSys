@@ -68,3 +68,54 @@ class ConsultationService:
                 # but in a strict transaction, we might want to.
                 
         return db_consultation
+
+    @staticmethod
+    def get_history_data(db: Session, consultation_id: int) -> dict:
+        """
+        Fetches all consultation data for a patient to reconstruct their medical history.
+        Used by both PDF generators and HTML/JSON views.
+        """
+        # 1. Get the target consultation
+        consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+        if not consultation:
+            return None
+
+        # 2. Fetch ALL consultations for this patient (same CI and doctor)
+        all_consultations = db.query(Consultation).filter(
+            Consultation.patient_ci == consultation.patient_ci,
+            Consultation.doctor_id == consultation.doctor_id
+        ).order_by(Consultation.created_at.asc()).all()
+
+        # 3. Use the most recent one for demographics
+        latest = all_consultations[-1] if all_consultations else consultation
+        
+        return {
+            "full_name": latest.patient_name,
+            "ci": latest.patient_ci,
+            "age": latest.patient_age,
+            "phone": latest.patient_phone,
+            "reason_for_visit": latest.reason_for_visit,
+            "family_history_mother": latest.family_history_mother,
+            "family_history_father": latest.family_history_father,
+            "personal_history": latest.personal_history,
+            "supplements": latest.supplements,
+            "surgical_history": latest.surgical_history,
+            "summary_gyn_obstetric": latest.obstetric_history_summary,
+            "summary_functional_exam": latest.functional_exam_summary,
+            "summary_habits": latest.habits_summary,
+            "history_number": latest.history_number,
+            "address": "", 
+            "occupation": "",
+            "doctor_id": latest.doctor_id,
+            "all_consultations": [
+                {
+                    "created_at": c.created_at,
+                    "physical_exam": c.physical_exam,
+                    "ultrasound": c.ultrasound,
+                    "diagnosis": c.diagnosis,
+                    "plan": c.plan,
+                    "observations": c.observations,
+                }
+                for c in all_consultations
+            ]
+        }

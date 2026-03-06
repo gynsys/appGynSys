@@ -17,6 +17,11 @@ export const consultationService = {
     return `/consultations/${id}/history_pdf`;
   },
 
+  getHistoryData: async (id) => {
+    const response = await api.get(`/consultations/${id}/history_data`);
+    return response.data;
+  },
+
   sendReport: async (id, email) => {
     const response = await api.post(`/consultations/${id}/send-email`, { email });
     return response.data;

@@ -257,60 +257,28 @@ def get_consultation_pdf(
     
     return Response(content=pdf_buffer.getvalue(), media_type="application/pdf")
 
+@router.get("/{id}/history_data")
+def get_consultation_history_data(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    data = ConsultationService.get_history_data(db, id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    return data
+
 @router.get("/{id}/history_pdf")
 def get_consultation_history_pdf(
     id: int,
     db: Session = Depends(get_db)
 ):
-    # Get the requested consultation to extract patient info
-    consultation = db.query(Consultation).filter(Consultation.id == id).first()
-    if not consultation:
+    # Use the service to get the data
+    data = ConsultationService.get_history_data(db, id)
+    if not data:
         raise HTTPException(status_code=404, detail="Consultation not found")
 
-    # Fetch ALL consultations for this patient (same CI and doctor)
-    all_consultations = db.query(Consultation).filter(
-        Consultation.patient_ci == consultation.patient_ci,
-        Consultation.doctor_id == consultation.doctor_id
-    ).order_by(Consultation.created_at.asc()).all()  # ASC = oldest first
-
-    # Use the MOST RECENT consultation for preconsultation data (demographics)
-    latest = all_consultations[-1] if all_consultations else consultation
-    
-    # Map preconsultation data from latest consultation
-    data = {
-        "full_name": latest.patient_name,
-        "ci": latest.patient_ci,
-        "age": latest.patient_age,
-        "phone": latest.patient_phone,
-        "reason_for_visit": latest.reason_for_visit,
-        "family_history_mother": latest.family_history_mother,
-        "family_history_father": latest.family_history_father,
-        "personal_history": latest.personal_history,
-        "supplements": latest.supplements,
-        "surgical_history": latest.surgical_history,
-        "summary_gyn_obstetric": latest.obstetric_history_summary,
-        "summary_functional_exam": latest.functional_exam_summary,
-        "summary_habits": latest.habits_summary,
-        "history_number": latest.history_number,
-        "address": "", 
-        "occupation": "",
-        
-        # Add ALL consultations for cumulative display
-        "all_consultations": [
-            {
-                "created_at": c.created_at,
-                "physical_exam": c.physical_exam,
-                "ultrasound": c.ultrasound,
-                "diagnosis": c.diagnosis,
-                "plan": c.plan,
-                "observations": c.observations,
-            }
-            for c in all_consultations
-        ]
-    }
-
     # Generate PDF (Medical History with ALL consultations)
-    pdf_buffer = generate_medical_report(data, consultation.doctor_id, db)
+    pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db)
     
     return Response(content=pdf_buffer.getvalue(), media_type="application/pdf")
 

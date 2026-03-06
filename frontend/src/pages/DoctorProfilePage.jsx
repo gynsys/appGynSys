@@ -39,6 +39,111 @@ import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog'
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
 
+const HistoryHtmlView = ({ data }) => {
+  if (!data) return null;
+
+  return (
+    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
+      {/* Patient Header */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Información del Paciente</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-gray-500">Nombre Completo</p>
+            <p className="font-semibold">{data.full_name}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Identificación (CI)</p>
+            <p className="font-semibold">{data.ci}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Edad</p>
+            <p className="font-semibold">{data.age} años</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Teléfono</p>
+            <p className="font-semibold">{data.phone}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Antecedentes Section */}
+      <div className="space-y-4">
+        <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
+            <p className="text-sm italic">{data.summary_gyn_obstetric || 'No registrados'}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
+            <p className="text-sm italic">{data.summary_habits || 'No registrados'}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personales / Suplementos</p>
+            <p className="text-sm italic">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Quirúrgicos</p>
+            <p className="text-sm italic">{data.surgical_history || 'Ninguno'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Consultations Timeline */}
+      <div className="space-y-4 pt-4">
+        <h4 className="text-lg font-bold border-b pb-2">Evolución Médica (Consultas)</h4>
+        <div className="space-y-8 relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
+          {data.all_consultations?.slice().reverse().map((c, idx) => (
+            <div key={idx} className="relative pl-10">
+              <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-primary-500 z-10 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-primary-500"></div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-start mb-3">
+                  <p className="text-primary-600 font-bold">{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                  <span className="bg-primary-50 text-primary-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Consulta</span>
+                </div>
+
+                <div className="space-y-4">
+                  {c.diagnosis && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Diagnóstico</p>
+                      <p className="text-sm font-medium">{c.diagnosis}</p>
+                    </div>
+                  )}
+                  {c.plan && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
+                      <p className="text-sm">{c.plan}</p>
+                    </div>
+                  )}
+                  {(c.physical_exam || c.ultrasound) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50 dark:border-gray-700">
+                      {c.physical_exam && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.physical_exam}</p>
+                        </div>
+                      )}
+                      {c.ultrasound && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DoctorProfilePage() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -53,28 +158,38 @@ export default function DoctorProfilePage() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [isNavbarRegisterOpen, setIsNavbarRegisterOpen] = useState(false)
   const [historyPdfUrl, setHistoryPdfUrl] = useState(null)
+  const [historyData, setHistoryData] = useState(null)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [loadingHistory, setLoadingHistory] = useState(false)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
   const handleMedicalHistoryClick = async () => {
     if (!cycleUser?.email) return
+    setLoadingHistory(true)
     try {
-      // Use the new by-email endpoint to find the patient's consultation
       const res = await fetch(`${API_BASE}/consultations/my-history-by-email?email=${encodeURIComponent(cycleUser.email)}`)
       if (res.ok) {
         const data = await res.json()
         if (data.has_history && data.consultation_id) {
+          // Fetch full data for HTML rendering
+          const historyRes = await fetch(`${API_BASE}/consultations/${data.consultation_id}/history_data`)
+          if (historyRes.ok) {
+            const hData = await historyRes.json()
+            setHistoryData(hData)
+          }
+
           setHistoryPdfUrl(`${API_BASE}/consultations/${data.consultation_id}/history_pdf`)
           setShowHistoryModal(true)
         } else {
-          // No consultation found yet
-          setShowHistoryModal(false)
           window.alert('Aún no tienes una historia médica registrada con esta doctora.')
         }
       }
     } catch (e) {
+      console.error("Error fetching history:", e)
       window.alert('Error al obtener tu historia médica. Intenta nuevamente.')
+    } finally {
+      setLoadingHistory(false)
     }
   }
 
@@ -679,29 +794,54 @@ export default function DoctorProfilePage() {
         slug={slug}
       />
 
-      {/* Historia Médica PDF Modal */}
+      {/* Historia Médica PDF/HTML Modal */}
       <Modal
         isOpen={showHistoryModal}
-        onClose={() => { setShowHistoryModal(false); setHistoryPdfUrl(null) }}
-        title="Vista Previa — Historia Médica"
+        onClose={() => { setShowHistoryModal(false); setHistoryPdfUrl(null); setHistoryData(null) }}
+        title="Mi Historia Médica"
         size="4xl"
       >
-        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden" style={{ height: '80vh' }}>
-          {historyPdfUrl && (
-            <iframe
-              src={historyPdfUrl}
-              className="w-full h-full border-0"
-              title="Historia Médica PDF"
-            />
-          )}
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => { setShowHistoryModal(false); setHistoryPdfUrl(null) }}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-          >
-            Cerrar
-          </button>
+        <div className="flex flex-col h-full">
+          {/* Mobile vs Desktop View Toggle */}
+          <div className="flex-1 overflow-hidden min-h-[60vh] md:min-h-0">
+            {/* Native HTML view for mobile or data enthusiasts */}
+            <div className="block md:hidden">
+              <HistoryHtmlView data={historyData} />
+            </div>
+
+            {/* Iframe for desktop (classic PDF look) */}
+            <div className="hidden md:block h-[70vh] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+              {historyPdfUrl && (
+                <iframe
+                  src={historyPdfUrl}
+                  className="w-full h-full border-0"
+                  title="Historia Médica PDF"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[10px] text-gray-400 italic">Esta información es confidencial y solo para tu uso personal.</p>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {historyPdfUrl && (
+                <a
+                  href={historyPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 md:flex-none text-center px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition shadow-md"
+                >
+                  Descargar PDF
+                </a>
+              )}
+              <button
+                onClick={() => { setShowHistoryModal(false); setHistoryPdfUrl(null); setHistoryData(null) }}
+                className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       </Modal>
 
