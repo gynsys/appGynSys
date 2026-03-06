@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
-import { FiClipboard, FiCalendar, FiActivity, FiArrowUp } from 'react-icons/fi'
+import { FiClipboard, FiCalendar, FiActivity, FiArrowUp, FiFileText } from 'react-icons/fi'
 import { Phone, Mail, MapPin, Calendar, Award, Building2, Clock, ExternalLink, Star, MessageCircle, Heart, Share2, ChevronDown, Loader2 } from 'lucide-react'
 import ScrollReveal from '../components/common/ScrollReveal'
 import { doctorService } from '../services/doctorService'
