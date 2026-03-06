@@ -119,3 +119,40 @@ class ConsultationService:
                 for c in all_consultations
             ]
         }
+
+    @staticmethod
+    def get_consultation_data(db: Session, consultation_id: int) -> dict:
+        """
+        Fetches data for a SINGLE consultation (Medical Report).
+        Used for HTML/JSON views of individual reports.
+        """
+        consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+        if not consultation:
+            return None
+
+        return {
+            "full_name": consultation.patient_name,
+            "ci": consultation.patient_ci,
+            "age": consultation.patient_age,
+            "phone": consultation.patient_phone,
+            "reason_for_visit": consultation.reason_for_visit,
+            "family_history_mother": consultation.family_history_mother,
+            "family_history_father": consultation.family_history_father,
+            "personal_history": consultation.personal_history,
+            "supplements": consultation.supplements,
+            "surgical_history": consultation.surgical_history,
+            "summary_gyn_obstetric": consultation.obstetric_history_summary,
+            "summary_functional_exam": consultation.functional_exam_summary,
+            "summary_habits": consultation.habits_summary,
+            "history_number": consultation.history_number,
+            "address": "", 
+            "occupation": "",
+            "doctor_id": consultation.doctor_id,
+            "physical_exam": consultation.physical_exam,
+            "ultrasound": consultation.ultrasound,
+            "diagnosis": consultation.diagnosis,
+            "plan": consultation.plan,
+            "observations": consultation.observations,
+            "created_at": consultation.created_at,
+            "is_single_report": True
+        }

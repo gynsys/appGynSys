@@ -42,11 +42,26 @@ import whatsappLogo from '../assets/whatsapp-logo.png'
 const HistoryHtmlView = ({ data }) => {
   if (!data) return null;
 
+  // Si es un informe individual, usamos los datos raíz de la consulta
+  // Si es una historia, usamos el array all_consultations
+  const consultations = data.is_single_report
+    ? [{
+      created_at: data.created_at,
+      diagnosis: data.diagnosis,
+      plan: data.plan,
+      physical_exam: data.physical_exam,
+      ultrasound: data.ultrasound,
+      observations: data.observations
+    }]
+    : (data.all_consultations || []).slice().reverse();
+
   return (
     <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
       {/* Patient Header */}
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Información del Paciente</h4>
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+          {data.is_single_report ? 'Informe Médico' : 'Información del Paciente'}
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-gray-500">Nombre Completo</p>
@@ -67,42 +82,56 @@ const HistoryHtmlView = ({ data }) => {
         </div>
       </div>
 
-      {/* Antecedentes Section */}
-      <div className="space-y-4">
-        <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
-            <p className="text-sm italic">{data.summary_gyn_obstetric || 'No registrados'}</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
-            <p className="text-sm italic">{data.summary_habits || 'No registrados'}</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personales / Suplementos</p>
-            <p className="text-sm italic">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Quirúrgicos</p>
-            <p className="text-sm italic">{data.surgical_history || 'Ninguno'}</p>
+      {/* Antecedentes Section - Solo mostrar si hay datos relevantes o es una historia completa */}
+      {(data.summary_gyn_obstetric || data.personal_history || !data.is_single_report) && (
+        <div className="space-y-4">
+          <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {data.summary_gyn_obstetric && (
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
+                <p className="text-sm italic">{data.summary_gyn_obstetric}</p>
+              </div>
+            )}
+            {data.summary_habits && (
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
+                <p className="text-sm italic">{data.summary_habits}</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personales / Suplementos</p>
+              <p className="text-sm italic">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
+            </div>
+            {data.surgical_history && (
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Quirúrgicos</p>
+                <p className="text-sm italic">{data.surgical_history}</p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Consultations Timeline */}
+      {/* Consultations Timeline / Single Consultation Detail */}
       <div className="space-y-4 pt-4">
-        <h4 className="text-lg font-bold border-b pb-2">Evolución Médica (Consultas)</h4>
-        <div className="space-y-8 relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
-          {data.all_consultations?.slice().reverse().map((c, idx) => (
-            <div key={idx} className="relative pl-10">
-              <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-primary-500 z-10 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-primary-500"></div>
-              </div>
+        <h4 className="text-lg font-bold border-b pb-2">
+          {data.is_single_report ? 'Detalles de la Consulta' : 'Evolución Médica (Consultas)'}
+        </h4>
+        <div className={`space-y-8 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700" : ""}`}>
+          {consultations.map((c, idx) => (
+            <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
+              {!data.is_single_report && (
+                <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-primary-500 z-10 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-primary-500"></div>
+                </div>
+              )}
               <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div className="flex justify-between items-start mb-3">
                   <p className="text-primary-600 font-bold">{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                  <span className="bg-primary-50 text-primary-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Consulta</span>
+                  <span className="bg-primary-50 text-primary-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+                    {data.is_single_report ? 'Reporte Actual' : 'Consulta'}
+                  </span>
                 </div>
 
                 <div className="space-y-4">
@@ -115,7 +144,7 @@ const HistoryHtmlView = ({ data }) => {
                   {c.plan && (
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
-                      <p className="text-sm">{c.plan}</p>
+                      <p className="text-sm whitespace-pre-line">{c.plan}</p>
                     </div>
                   )}
                   {(c.physical_exam || c.ultrasound) && (
@@ -132,6 +161,12 @@ const HistoryHtmlView = ({ data }) => {
                           <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
                         </div>
                       )}
+                    </div>
+                  )}
+                  {c.observations && (
+                    <div className="pt-2 border-t border-gray-50 dark:border-gray-700">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Observaciones</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{c.observations}</p>
                     </div>
                   )}
                 </div>
@@ -804,10 +839,21 @@ export default function DoctorProfilePage() {
         <div className="flex flex-col h-full">
           {/* Mobile vs Desktop View Toggle */}
           <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
-            {/* Native HTML view for mobile - Always render if data exists, CSS handles visibility but React prevents iframe on mobile */}
-            <div className="md:hidden">
-              <HistoryHtmlView data={historyData} />
-            </div>
+            {loadingHistory ? (
+              <div className="md:hidden flex flex-col items-center justify-center p-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+                <p className="text-gray-500 font-medium italic">Cargando información médica...</p>
+              </div>
+            ) : historyData ? (
+              <div className="md:hidden">
+                <HistoryHtmlView data={historyData} />
+              </div>
+            ) : (
+              <div className="md:hidden flex flex-col items-center justify-center p-10 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <FiFileText className="w-12 h-12 text-gray-300 mb-4" />
+                <p className="text-gray-500 text-center font-medium">No se pudo cargar la vista nativa. Por favor, asegúrate de refrescar la página o descarga el PDF a continuación.</p>
+              </div>
+            )}
 
             {/* Iframe for desktop (classic PDF look) - Hidden on mobile via CSS and NOT rendered to avoid background PDF loading/triggering */}
             <div className="hidden md:block h-[70vh] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">

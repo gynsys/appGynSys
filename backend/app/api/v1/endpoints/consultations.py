@@ -267,6 +267,16 @@ def get_consultation_history_data(
         raise HTTPException(status_code=404, detail="Consultation not found")
     return data
 
+@router.get("/{id}/data")
+def get_consultation_report_data(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    data = ConsultationService.get_consultation_data(db, id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    return data
+
 @router.get("/{id}/history_pdf")
 def get_consultation_history_pdf(
     id: int,
