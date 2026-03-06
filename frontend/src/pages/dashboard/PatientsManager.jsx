@@ -296,24 +296,28 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const handleViewPdf = async (url) => {
     setCurrentPdfUrl(url);
+    setHistoryData(null); // Reset before loading
 
     // If it's a history PDF, let's also fetch the JSON for native mobile viewing
     if (url.includes('history_pdf')) {
-      const consultationId = url.split('/consultations/')[1].split('/')[0];
-      setLoadingHistory(true);
-      try {
-        const response = await fetch(`${API_BASE}/consultations/${consultationId}/history_data`);
-        if (response.ok) {
-          const data = await response.json();
-          setHistoryData(data);
+      // More robust ID extraction
+      const match = url.match(/\/consultations\/(\d+)\/history_pdf/);
+      const consultationId = match ? match[1] : null;
+
+      if (consultationId) {
+        setLoadingHistory(true);
+        try {
+          const response = await fetch(`${API_BASE}/consultations/${consultationId}/history_data`);
+          if (response.ok) {
+            const data = await response.json();
+            setHistoryData(data);
+          }
+        } catch (error) {
+          console.error("Error fetching history data:", error);
+        } finally {
+          setLoadingHistory(false);
         }
-      } catch (error) {
-        console.error("Error fetching history data:", error);
-      } finally {
-        setLoadingHistory(false);
       }
-    } else {
-      setHistoryData(null);
     }
 
     setPdfModalOpen(true);
@@ -536,7 +540,12 @@ export default function PatientsManager({ isEmbedded = false }) {
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
             {/* Native HTML view for mobile */}
-            {historyData ? (
+            {loadingHistory ? (
+              <div className="md:hidden flex flex-col items-center justify-center p-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                <p className="text-gray-500 font-medium italic">Obteniendo historia clínica...</p>
+              </div>
+            ) : historyData ? (
               <div className="md:hidden">
                 <HistoryHtmlView data={historyData} />
               </div>
