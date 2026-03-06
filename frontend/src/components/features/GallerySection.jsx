@@ -110,7 +110,7 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
       >
         <div className="flex justify-center py-8">
           {/* Height placeholder to prevent layout shift */}
-          <div className="w-full h-[80vw] md:h-[40vw] lg:h-[30vw] max-h-[720px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+          <div className="w-[302px] h-[302px] md:w-full md:h-[40vw] lg:h-[30vw] max-h-[720px] bg-gray-100 animate-pulse rounded-lg flex items-center justify-center mx-auto">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
           </div>
         </div>
@@ -138,8 +138,8 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
         <div>
           <div className="flex justify-center">
             <div
-              className="relative h-[80vw] md:h-[40vw] lg:h-[30vw] max-h-[720px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
-              style={{ width: galleryWidth, maxWidth: '100%', boxSizing: 'border-box' }}
+              className="relative w-[302px] h-[302px] md:w-full md:h-[40vw] lg:h-[30vw] max-h-[720px] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700 mx-auto"
+              style={{ width: images.length > 0 ? (window.innerWidth < 768 ? '302px' : galleryWidth) : '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               onTouchStart={onTouchStart}
               onTouchEnd={onTouchEnd}
               onMouseDown={onTouchStart}

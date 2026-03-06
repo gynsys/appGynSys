@@ -432,7 +432,7 @@ export default function PatientsManager({ isEmbedded = false }) {
 
       <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); }} title="Vista Previa" size="4xl">
         <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
+          <div className="flex-1 overflow-auto min-h-[50vh] md:min-h-0">
             {loadingHistory ? (
               <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse">Cargando...</div>
             ) : historyData ? (

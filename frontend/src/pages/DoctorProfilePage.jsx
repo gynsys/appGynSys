@@ -838,7 +838,7 @@ export default function DoctorProfilePage() {
       >
         <div className="flex flex-col h-full">
           {/* Mobile vs Desktop View Toggle */}
-          <div className="flex-1 overflow-auto min-h-[60vh] md:min-h-0">
+          <div className="flex-1 overflow-auto min-h-[50vh] md:min-h-0">
             {loadingHistory ? (
               <div className="md:hidden flex flex-col items-center justify-center p-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
