@@ -867,7 +867,7 @@ export default function DoctorProfilePage() {
             </div>
           </div>
 
-          <div className="mt-3 mb-[35px] flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+          <div className="mt-3 mb-[45px] flex flex-col md:flex-row justify-between items-center gap-4 px-2">
             <p className="text-[10px] text-gray-400 italic">Esta información es confidencial y solo para tu uso personal.</p>
             <div className="flex items-center gap-3 w-full md:w-auto">
               {historyPdfUrl && (
