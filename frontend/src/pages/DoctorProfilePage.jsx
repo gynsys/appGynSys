@@ -867,7 +867,7 @@ export default function DoctorProfilePage() {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="mt-3 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-[10px] text-gray-400 italic">Esta información es confidencial y solo para tu uso personal.</p>
             <div className="flex items-center gap-3 w-full md:w-auto">
               {historyPdfUrl && (
@@ -875,14 +875,14 @@ export default function DoctorProfilePage() {
                   href={historyPdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 md:flex-none text-center px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition shadow-md"
+                  className="flex-1 md:flex-none text-center px-4 py-1.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition shadow-md"
                 >
                   Descargar PDF
                 </a>
               )}
               <button
                 onClick={() => { setShowHistoryModal(false); setHistoryPdfUrl(null); setHistoryData(null) }}
-                className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="flex-1 md:flex-none px-4 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 Cerrar
               </button>
