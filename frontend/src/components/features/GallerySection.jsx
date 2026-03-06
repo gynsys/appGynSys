@@ -148,7 +148,7 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
               <button
                 onClick={prev}
                 aria-label="Anterior"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-2 md:p-3"
+                className="absolute left-[5px] top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-2 md:p-3"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -158,7 +158,7 @@ export default function GallerySection({ doctorSlug, primaryColor = '#4F46E5', c
               <button
                 onClick={next}
                 aria-label="Siguiente"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-2 md:p-3"
+                className="absolute right-[5px] top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-2 md:p-3"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
