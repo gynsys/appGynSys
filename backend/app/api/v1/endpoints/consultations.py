@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.schemas.consultation import ConsultationCreate, ConsultationUpdate
-from app.utils.pdf_generator import generate_medical_report, generate_summary_report, convert_pdf_to_image
+from app.utils.pdf_generator import generate_medical_report, generate_summary_report
 from app.db.base import get_db
 from app.db.models.consultation import Consultation
 from app.db.models.appointment import Appointment
