@@ -369,8 +369,12 @@ Se llama cuando el usuario cambia sus configuraciones, registra un ciclo, etc.:
 |--------|------|-------------|
 | `GET` | `/health` | Estado global: cola, fallos, enviadas 24h, circuit breaker |
 | `GET` | `/debug/user/{id}` | Cola + historial de notificaciones de una usuaria |
-| `POST` | `/debug/user/{id}/retry` | Resetea `failed` → `pending` (con `retry_count=0`) para re-intento inmediato |
-| `POST` | `/debug/user/{id}/evaluate` | Fuerza re-evaluación inmediata via `trigger_immediate_evaluation()` |
+| `POST` | `/debug/user/{id}/retry` | Resetea `failed` → `pending` para re-intento inmediato |
+| `POST` | `/debug/user/{id}/evaluate` | Fuerza re-evaluación inmediata para un usuario |
+| `POST` | `/reset-circuit` | Reinicia manualmente el circuit breaker de notificaciones push |
+| `POST` | `/trigger-evaluation` | Fuerza la evaluación diaria (evaluar reglas para todos) |
+| `POST` | `/trigger-delivery` | Fuerza el procesamiento inmediato de la cola pendiente |
+| `POST` | `/cleanup-subscriptions` | Limpia suscripciones inválidas (403/410) |
 
 #### Ejemplo de uso
 ```bash

@@ -240,7 +240,7 @@ def force_user_evaluation(
 # ENDPOINTS DE OPERACIONES (SuperAdmin Only)
 # =============================================================================
 
-@router.post("/operations/reset-circuit")
+@router.post("/reset-circuit")
 def reset_notification_circuit(
     current_admin: Doctor = Depends(get_current_admin_user)
 ) -> Any:
@@ -250,7 +250,7 @@ def reset_notification_circuit(
     return {"message": "Circuit breaker reset successfully"}
 
 
-@router.post("/operations/trigger-evaluation")
+@router.post("/trigger-evaluation")
 def trigger_system_evaluation(
     db: Session = Depends(get_db),
     current_admin: Doctor = Depends(get_current_admin_user)
@@ -260,7 +260,7 @@ def trigger_system_evaluation(
     return {"message": "Notification evaluation triggered"}
 
 
-@router.post("/operations/trigger-delivery")
+@router.post("/trigger-delivery")
 def trigger_system_delivery(
     current_admin: Doctor = Depends(get_current_admin_user)
 ) -> Any:
@@ -269,7 +269,7 @@ def trigger_system_delivery(
     return {"message": "Notification delivery triggered"}
 
 
-@router.post("/operations/cleanup-subscriptions")
+@router.post("/cleanup-subscriptions")
 def cleanup_stale_subscriptions(
     db: Session = Depends(get_db),
     current_admin: Doctor = Depends(get_current_admin_user)

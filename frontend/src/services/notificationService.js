@@ -38,22 +38,22 @@ const notificationService = {
 
     // Operations
     resetCircuit: async () => {
-        const response = await api.post('/notifications/operations/reset-circuit');
+        const response = await api.post('/notifications/reset-circuit');
         return response.data;
     },
 
     triggerEvaluation: async () => {
-        const response = await api.post('/notifications/operations/trigger-evaluation');
+        const response = await api.post('/notifications/trigger-evaluation');
         return response.data;
     },
 
     triggerDelivery: async () => {
-        const response = await api.post('/notifications/operations/trigger-delivery');
+        const response = await api.post('/notifications/trigger-delivery');
         return response.data;
     },
 
     cleanupSubscriptions: async () => {
-        const response = await api.post('/notifications/operations/cleanup-subscriptions');
+        const response = await api.post('/notifications/cleanup-subscriptions');
         return response.data;
     }
 };
