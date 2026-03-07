@@ -178,6 +178,7 @@ export const useAuthStore = create((set, get) => {
     },
 
     logout: () => {
+      // Full logout of everything
       localStorage.removeItem('access_token')
       localStorage.removeItem('cycle_access_token')
       set({
@@ -187,7 +188,6 @@ export const useAuthStore = create((set, get) => {
       })
     },
 
-    // Optional: Individual logouts if needed
     logoutDoctor: () => {
       localStorage.removeItem('access_token')
       set({ user: null, isAuthenticated: false })

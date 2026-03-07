@@ -95,14 +95,20 @@ function App() {
       window.addEventListener('storage', applyTheme);
 
       // Listen for auth logout events from axios interceptor
-      const handleAuthLogout = () => {
-        useAuthStore.getState().logout();
+      const handleDoctorLogout = () => {
+        useAuthStore.getState().logoutDoctor();
       };
-      window.addEventListener('auth:logout', handleAuthLogout);
+      const handlePatientLogout = () => {
+        useAuthStore.getState().logoutPatient();
+      };
+
+      window.addEventListener('auth:logout:doctor', handleDoctorLogout);
+      window.addEventListener('auth:logout:patient', handlePatientLogout);
 
       return () => {
         window.removeEventListener('storage', applyTheme);
-        window.removeEventListener('auth:logout', handleAuthLogout);
+        window.removeEventListener('auth:logout:doctor', handleDoctorLogout);
+        window.removeEventListener('auth:logout:patient', handlePatientLogout);
       };
     };
 

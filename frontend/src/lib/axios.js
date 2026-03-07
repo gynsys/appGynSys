@@ -78,15 +78,26 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !isPublicEndpoint) {
       // Token expired or invalid
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('cycle_access_token') // Clear cycle token too for safety
 
-      // Dispatch event to notify React components/Store
-      window.dispatchEvent(new Event('auth:logout'))
+      // Determine if it was a cycle request based on URL or previous logic
+      const isCycleRequest = error.config?.url?.includes('/cycle-users') ||
+        error.config?.url?.includes('/cycle-predictor') ||
+        error.config?.url?.includes('/notifications/vapid-public-key') ||
+        error.config?.url?.includes('/notifications/subscribe') ||
+        error.config?.url?.includes('/notifications/unsubscribe') ||
+        error.config?.url?.includes('/compliance/')
 
-      // Solo redirigir si estamos en una ruta protegida
-      if (window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/admin')) {
-        window.location.href = '/login'
+      if (isCycleRequest) {
+        localStorage.removeItem('cycle_access_token')
+        window.dispatchEvent(new Event('auth:logout:patient'))
+      } else {
+        localStorage.removeItem('access_token')
+        window.dispatchEvent(new Event('auth:logout:doctor'))
+
+        // Solo redirigir doctor si estamos en una ruta protegida de admin/dashboard
+        if (window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/admin')) {
+          window.location.href = '/login'
+        }
       }
     }
     return Promise.reject(error)
