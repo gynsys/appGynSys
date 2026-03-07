@@ -95,6 +95,10 @@ class CircuitBreaker:
         self.recovery_timeout = recovery_timeout
         self._reset()
 
+    def reset(self):
+        self._reset()
+        logger.info("Circuit breaker manually RESET")
+
     def _reset(self):
         self.failure_count = 0
         self.last_failure_time = None

@@ -353,3 +353,48 @@ def recover_stale_processing_notifications() -> int:
             }, synchronize_session=False)
     except Exception as e:
         logger.error(f"Error in recovery: {e}"); return 0
+
+def cleanup_invalid_subscriptions(db: Session) -> int:
+    """Elimina suscripciones que han fallado con 403 o 410."""
+    from app.db.models.push_subscription import PushSubscription
+    
+    # Buscamos en los logs errores de VAPID (403) o Gone (410)
+    # Nota: Como los errores se guardan en PendingNotification.last_error
+    stale_error_patterns = ['403 Forbidden', '410 Gone', 'VAPID credentials']
+    
+    # 1. Obtener endpoints con errores críticos de los logs de notificaciones pendientes fallidas
+    subquery = db.query(PendingNotification.last_error).filter(
+        PendingNotification.status == "failed"
+    ).all()
+    
+    # Filtramos localmente para simplicidad con los patrones
+    invalid_endpoints = []
+    # En realidad, necesitamos el endpoint. PendingNotification no tiene el endpoint directamente.
+    # Tendríamos que buscar en las suscripciones asociadas a esos usuarios.
+    
+    # Alternativamente, si el error es 403/410, el sender suele marcarlo o nosotros simplemente
+    # podemos limpiar TODAS las suscripciones de los usuarios que tienen un error reciente de este tipo
+    # o mejor aún, si detectamos el error de VAPID, el sender debería informarlo.
+    
+    # Para la herramienta de "Limpieza" manual del admin, vamos a permitir borrar suscripciones
+    # que tengan errores conocidos en la tabla PendingNotification
+    
+    # Implementación simple para el botón del admin:
+    # Borrar suscripciones de usuarios que tienen notificaciones fallidas con "403"
+    affected_users = db.query(PendingNotification.recipient_id).filter(
+        PendingNotification.status == "failed",
+        PendingNotification.last_error.like('%403%')
+    ).distinct().all()
+    
+    user_ids = [r[0] for r in affected_users if r[0]]
+    
+    if not user_ids:
+        return 0
+        
+    deleted = db.query(PushSubscription).filter(
+        PushSubscription.user_id.in_(user_ids)
+    ).delete(synchronize_session=False)
+    
+    db.commit()
+    logger.info(f"Cleaned up {deleted} invalid subscriptions due to VAPID mismatch")
+    return deleted

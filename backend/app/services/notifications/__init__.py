@@ -29,6 +29,7 @@ from .processor import (
     deliver_pending_notifications,
     trigger_immediate_evaluation,
     recover_stale_processing_notifications,
+    cleanup_invalid_subscriptions,
 )
 from .health import (
     get_notification_system_health,

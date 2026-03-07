@@ -34,6 +34,27 @@ const notificationService = {
     retryFailed: async (userId) => {
         const response = await api.post(`/notifications/debug/user/${userId}/retry`);
         return response.data;
+    },
+
+    // Operations
+    resetCircuit: async () => {
+        const response = await api.post('/notifications/operations/reset-circuit');
+        return response.data;
+    },
+
+    triggerEvaluation: async () => {
+        const response = await api.post('/notifications/operations/trigger-evaluation');
+        return response.data;
+    },
+
+    triggerDelivery: async () => {
+        const response = await api.post('/notifications/operations/trigger-delivery');
+        return response.data;
+    },
+
+    cleanupSubscriptions: async () => {
+        const response = await api.post('/notifications/operations/cleanup-subscriptions');
+        return response.data;
     }
 };
 

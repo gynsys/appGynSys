@@ -124,3 +124,18 @@ Si se detecta pérdida de datos o discrepancias tras cambios de roles:
 ### Monitoreo de Backups
 - Ver logs: `docker logs appgynsys-backend-1 | grep backup`
 - El servicio corre en el startup del backend (`backend/app/main.py`) y usa `PGPASSWORD` del `.env`.
+
+## 6. Sistema de Notificaciones Push
+
+El sistema incluye un tablero de salud en el Super Admin y endpoints de recuperación.
+
+### Operaciones de Recuperación
+- **Reiniciar Circuito**: Si el sistema detecta fallos masivos (Ej: VAPID Mismatch), el Circuit Breaker se abre para evitar spam de errores. Use `/operations/reset-circuit` para reabrirlo tras corregir las llaves.
+- **Limpieza de Suscripciones**: Útil cuando se cambian las llaves VAPID en el `.env`. Elimina suscripciones antiguas que dan error 403, forzando a los navegadores a pedir una llave nueva al próximo login.
+- **Forzar Evaluación**: Adelanta la generación de tareas de notificación del día.
+
+### Comandos de Diagnóstico (Worker)
+Para ver si el sender está procesando:
+```bash
+docker logs -f appgynsys-celery-1 | grep "RULE_QUEUED"
+```

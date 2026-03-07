@@ -31,7 +31,11 @@ const TABS = [
 ]
 
 export default function NotificationManagerPage() {
-    const { rules, loading, fetchRules, updateRule } = useNotificationStore()
+    const {
+        rules, loading, fetchRules, updateRule,
+        health, loadingHealth, fetchHealth,
+        resetCircuit, triggerEvaluation, triggerDelivery, cleanupSubscriptions
+    } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [editingType, setEditingType] = useState(null)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -43,8 +47,7 @@ export default function NotificationManagerPage() {
     const [availableUsers, setAvailableUsers] = useState([])
     const [loadingUsers, setLoadingUsers] = useState(false)
     const [isSendingTest, setIsSendingTest] = useState(false)
-
-
+    const [isOperating, setIsOperating] = useState(false)
 
     // Form State
     const [formData, setFormData] = useState({
@@ -57,9 +60,25 @@ export default function NotificationManagerPage() {
 
     useEffect(() => {
         fetchRules()
-    }, [fetchRules])
+        fetchHealth()
 
+        // Refresh health every minute
+        const interval = setInterval(fetchHealth, 60000)
+        return () => clearInterval(interval)
+    }, [fetchRules, fetchHealth])
 
+    const handleOperation = async (action, name) => {
+        try {
+            setIsOperating(true)
+            await action()
+            toast.success(`${name} ejecutado con éxito`)
+        } catch (error) {
+            console.error(`Error in ${name}:`, error)
+            toast.error(`Fallo al ejecutar ${name}`)
+        } finally {
+            setIsOperating(false)
+        }
+    }
 
     const handleDeleteClick = (rule) => {
         setRuleToDelete(rule)
@@ -243,15 +262,155 @@ export default function NotificationManagerPage() {
         return type.replace(/_/g, ' ').toUpperCase()
     }
 
-    return (
-        <div className="space-y-6 max-w-[900px] mx-auto">
-            {/* Header Blueprint */}
-            <div className="flex items-center justify-between mb-8 px-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notificaciones</h1>
-                <div className="flex gap-2">
-                    {/* Actions if any */}
+    const renderHealthStats = () => {
+        if (!health) return null
+
+        const statusColors = {
+            healthy: 'text-green-600 bg-green-50 dark:bg-green-900/20',
+            degraded: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+            critical: 'text-red-600 bg-red-50 dark:bg-red-900/20',
+            unhealthy: 'text-red-600 bg-red-50 dark:bg-red-900/20'
+        }
+
+        const circuitStateColors = {
+            closed: 'text-green-600 font-bold',
+            open: 'text-red-600 font-bold',
+            half_open: 'text-yellow-600 font-bold'
+        }
+
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-8 transition-all duration-300">
+                <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                            <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                Salud del Sistema de Notificaciones
+                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${statusColors[health.status] || 'text-gray-600 bg-gray-100'}`}>
+                                    ● {health.status === 'healthy' ? 'Saludable' : health.status.toUpperCase()}
+                                </span>
+                            </h2>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Métricas en tiempo real del pipeline de entrega</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-400 font-medium hidden sm:inline">
+                            Act. {new Date(health.timestamp).toLocaleTimeString()}
+                        </span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={fetchHealth}
+                            disabled={loadingHealth}
+                            className="h-8 text-primary hover:bg-primary/5"
+                        >
+                            <svg className={`w-3.5 h-3.5 mr-1.5 ${loadingHealth ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            {loadingHealth ? 'Actualizando...' : 'Actualizar'}
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                        {[
+                            { label: 'EN COLA', value: health.pending_queue, sub: 'pending', color: 'blue' },
+                            { label: 'PROCESANDO', value: health.processing, sub: 'processing', color: 'amber' },
+                            { label: 'REINTENTANDO', value: health.retrying, sub: 'retrying', color: 'indigo' },
+                            { label: 'FALLIDAS', value: health.failed_total, sub: 'acumulado', color: 'red' },
+                            { label: 'ENVIADAS 24H', value: health.sent_last_24h, sub: 'últimas 24h', color: 'green' },
+                            { label: 'FALLIDAS 24H', value: health.failed_last_24h, sub: 'últimas 24h', color: 'red' }
+                        ].map((stat, idx) => (
+                            <div key={idx} className="bg-gray-50 dark:bg-gray-900/40 rounded-xl p-4 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all group">
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                                    {stat.label}
+                                </p>
+                                <p className={`text-2xl font-black text-${stat.color}-600 dark:text-${stat.color}-400`}>
+                                    {stat.value}
+                                </p>
+                                <p className="text-[9px] font-medium text-gray-400 mt-1 uppercase">
+                                    {stat.sub}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-6 p-4 bg-gray-50/50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-800">
+                        <div className="flex flex-wrap items-center gap-6">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">Circuit Breaker (Push):</span>
+                                <span className={`text-sm ${circuitStateColors[health.circuit_breaker.state] || 'text-gray-400'}`}>
+                                    {health.circuit_breaker.state === 'closed' ? 'Cerrado (OK)' : health.circuit_breaker.state.toUpperCase()}
+                                </span>
+                                <span className="text-[10px] text-gray-400 ml-1">Fallos: {health.circuit_breaker.failures} / {health.circuit_breaker.threshold}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-[11px] font-bold border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-900/10"
+                                onClick={() => handleOperation(resetCircuit, 'Reiniciar Circuito')}
+                                disabled={isOperating}
+                            >
+                                Reiniciar Circuito
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-[11px] font-bold"
+                                onClick={() => handleOperation(triggerEvaluation, 'Evaluar Sistema')}
+                                disabled={isOperating}
+                            >
+                                Evaluar Sistema
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-[11px] font-bold"
+                                onClick={() => handleOperation(triggerDelivery, 'Procesar Cola')}
+                                disabled={isOperating}
+                            >
+                                Procesar Cola
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-[11px] font-bold border-amber-200 text-amber-600 hover:bg-amber-50"
+                                onClick={async () => {
+                                    if (window.confirm('¿Deseas limpiar suscripciones con error 403? Esto forzará una re-suscripción automática de las usuarias.')) {
+                                        const res = await handleOperation(cleanupSubscriptions, 'Limpieza de Suscripciones')
+                                        if (res?.deleted_count) toast.info(`Se eliminaron ${res.deleted_count} suscripciones inválidas`)
+                                    }
+                                }}
+                                disabled={isOperating}
+                            >
+                                Limpiar de Suscripciones
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
+        )
+    }
+
+    return (
+        <div className="space-y-6 max-w-[1200px] mx-auto px-4 py-8">
+            {/* Header section as blueprint */}
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Gestión de Notificaciones</h1>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">Configuración y monitoreo centralizado del sistema SaaS</p>
+                </div>
+            </div>
+
+            {/* Metrics Dashboard */}
+            {renderHealthStats()}
 
             {/* Card Blueprint */}
             <div className="bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200 overflow-hidden">

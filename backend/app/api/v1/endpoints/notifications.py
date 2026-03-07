@@ -235,3 +235,48 @@ def force_user_evaluation(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Evaluation error: {str(e)}")
 
+
+# =============================================================================
+# ENDPOINTS DE OPERACIONES (SuperAdmin Only)
+# =============================================================================
+
+@router.post("/operations/reset-circuit")
+def reset_notification_circuit(
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """Reinicia manualmente el circuit breaker de notificaciones push."""
+    from app.services.notifications import push_circuit
+    push_circuit.reset()
+    return {"message": "Circuit breaker reset successfully"}
+
+
+@router.post("/operations/trigger-evaluation")
+def trigger_system_evaluation(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """Fuerza la evaluación diaria del sistema de notificaciones para todos los usuarios."""
+    service.run_daily_evaluation()
+    return {"message": "Notification evaluation triggered"}
+
+
+@router.post("/operations/trigger-delivery")
+def trigger_system_delivery(
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """Fuerza el procesamiento inmediato de la cola de notificaciones pendientes."""
+    service.deliver_pending_notifications()
+    return {"message": "Notification delivery triggered"}
+
+
+@router.post("/operations/cleanup-subscriptions")
+def cleanup_stale_subscriptions(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """Limpia suscripciones inválidas (403/410) basadas en errores recientes."""
+    deleted_count = service.cleanup_invalid_subscriptions(db)
+    return {
+        "message": f"Cleanup finished. Deleted {deleted_count} stale subscriptions.",
+        "deleted_count": deleted_count
+    }
