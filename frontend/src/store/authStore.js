@@ -178,6 +178,17 @@ export const useAuthStore = create((set, get) => {
     },
 
     logout: () => {
+      // General logout (defaults to Doctor to avoid breaking existing code)
+      // but we should favor logoutDoctor/logoutPatient for specific cases
+      localStorage.removeItem('access_token')
+      set({
+        user: null,
+        isAuthenticated: false,
+        loading: false
+      })
+    },
+
+    logoutAll: () => {
       // Full logout of everything
       localStorage.removeItem('access_token')
       localStorage.removeItem('cycle_access_token')

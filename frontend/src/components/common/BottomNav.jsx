@@ -13,7 +13,7 @@ export const BottomNav = ({ items, theme = '#C75B7A', className = '' }) => {
     return (
         <nav
             className={`fixed bottom-0 left-0 right-0 z-50 
-                       bg-white/90 dark:bg-gray-900/90 backdrop-blur-md
+                       bg-white/90 dark:bg-[#030712]/90 backdrop-blur-md
                        border-t border-gray-200 dark:border-gray-800
                        ${className} transition-all duration-300`}
             style={{

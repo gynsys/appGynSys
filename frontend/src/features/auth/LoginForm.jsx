@@ -229,6 +229,20 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
           </div>
         </div>
       </form>
+
+      {!isModal && (
+        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            ¿Eres paciente?{' '}
+            <Link
+              to="/cycle"
+              className="font-bold text-pink-600 hover:text-pink-500 transition-colors"
+            >
+              Ir a Mi Ciclo
+            </Link>
+          </p>
+        </div>
+      )}
     </div>
   )
 

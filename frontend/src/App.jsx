@@ -139,7 +139,9 @@ function App() {
         </Route>
 
         <Route path="/" element={
-          localStorage.getItem('last_doctor_slug') ? (
+          localStorage.getItem('cycle_access_token') ? (
+            <Navigate to="/cycle/dashboard" replace />
+          ) : localStorage.getItem('last_doctor_slug') ? (
             <Navigate to={`/dr/${localStorage.getItem('last_doctor_slug')}`} replace />
           ) : (
             <LandingPage />

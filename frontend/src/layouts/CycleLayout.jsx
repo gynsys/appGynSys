@@ -73,11 +73,11 @@ export default function CycleLayout() {
 
     return (
         <div
-            className="min-h-screen bg-gray-50 dark:bg-gray-950"
+            className="min-h-screen bg-gray-50 dark:bg-[#030712]"
             style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
         >
             {/* Header - Visible on all screens */}
-            <header className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+            <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#030712]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
                 <div className="flex items-center justify-between px-4 h-14">
                     {/* Back Button */}
                     <button
