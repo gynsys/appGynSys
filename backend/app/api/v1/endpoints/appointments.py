@@ -187,12 +187,14 @@ async def update_appointment(
             is_recurrent = True
 
         if not is_recurrent and appointment.patient_dni:
+            from app.db.models.consultation import Consultation  # Import strictly here
+            
             # Check for Previous Answers (Scoped to THIS doctor)
             has_answers = db.query(Appointment).filter(
                 Appointment.patient_dni == appointment.patient_dni,
                 Appointment.doctor_id == appointment.doctor_id,
                 Appointment.id != appointment.id,
-                Appointment.preconsulta_answers.isnot(None)
+                Appointment.preconsulta_answers.is_not(None)
             ).count() > 0
 
             if has_answers:
