@@ -54,3 +54,4 @@ cryptography<43  # Pin to <43 for pywebpush compatibility
 resend==0.8.0
 
 numpy
+pymupdf==1.23.5
