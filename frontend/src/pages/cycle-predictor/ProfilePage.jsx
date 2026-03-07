@@ -10,15 +10,16 @@ import { toast } from 'react-hot-toast';
  * ProfilePage - User profile, cycle configuration, and account settings
  */
 export default function ProfilePage() {
-    const { user, logout } = useAuthStore();
+    const { cycleUser, logoutPatient } = useAuthStore();
     const navigate = useNavigate();
     const [isExporting, setIsExporting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleLogout = () => {
-        logout();
-        navigate('/');
+        logoutPatient();
+        // Stay on the same page or go to dashboard, but within /cycle
+        navigate('/cycle/dashboard');
     };
 
     const handleExportData = async () => {
@@ -46,8 +47,8 @@ export default function ProfilePage() {
         try {
             await api.delete('/compliance/delete-my-account');
             toast.success('Tu cuenta ha sido eliminada permanentemente');
-            logout();
-            navigate('/');
+            logoutPatient();
+            navigate('/cycle/dashboard');
         } catch (error) {
             console.error('Delete error:', error);
             toast.error(error.response?.data?.detail || 'Error al eliminar la cuenta');
@@ -69,7 +70,7 @@ export default function ProfilePage() {
             </div>
 
             {/* User Info Card - Only for Authenticated Users */}
-            {user && (
+            {cycleUser && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center">
@@ -77,10 +78,10 @@ export default function ProfilePage() {
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {user.name || 'Usuario'}
+                                {cycleUser.nombre_completo || cycleUser.name || 'Usuario'}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {user.email}
+                                {cycleUser.email}
                             </p>
                         </div>
                     </div>

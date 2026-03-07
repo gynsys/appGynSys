@@ -11,21 +11,21 @@ import PregnancyDashboard from '../../components/cycle-predictor/PregnancyDashbo
  * Shows pregnancy dashboard if active, otherwise shows cycle dashboard
  */
 export default function CycleDashboard() {
-    const { user, isAuthenticated } = useAuthStore();
+    const { cycleUser, isCycleAuthenticated } = useAuthStore();
     const navigate = useNavigate();
     const [activePregnancy, setActivePregnancy] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isCycleAuthenticated) {
             checkPregnancyStatus();
         } else {
             setLoading(false);
         }
-    }, [isAuthenticated]);
+    }, [isCycleAuthenticated]);
 
     const checkPregnancyStatus = async () => {
-        if (!isAuthenticated) return;
+        if (!isCycleAuthenticated) return;
         try {
             const preg = await cycleService.getActivePregnancy();
             setActivePregnancy(preg);
@@ -52,7 +52,7 @@ export default function CycleDashboard() {
                     {activePregnancy ? '🤰 Mi Embarazo' : '💗 Mi Ciclo'}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Hola'}
+                    {cycleUser?.nombre_completo || cycleUser?.name ? `Hola, ${(cycleUser.nombre_completo || cycleUser.name).split(' ')[0]}` : 'Hola'}
                 </p>
             </div>
 

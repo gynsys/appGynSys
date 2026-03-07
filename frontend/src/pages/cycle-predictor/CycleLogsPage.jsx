@@ -14,15 +14,15 @@ import { useAuthStore } from '../../store/authStore';
 export default function CycleLogsPage() {
     const [activeTab, setActiveTab] = useState('symptoms');
     const [activePregnancy, setActivePregnancy] = useState(null);
-    const { isAuthenticated } = useAuthStore();
+    const { isCycleAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isCycleAuthenticated) {
             cycleService.getActivePregnancy()
                 .then(preg => setActivePregnancy(preg))
                 .catch(e => console.error(e));
         }
-    }, [isAuthenticated]);
+    }, [isCycleAuthenticated]);
 
     return (
         <div className="p-4 md:p-6">

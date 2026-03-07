@@ -11,7 +11,7 @@ import cycleService from '../services/cycleService';
  * Provides header, bottom navigation, and authentication guard
  */
 export default function CycleLayout() {
-    const { isAuthenticated, user } = useAuthStore();
+    const { isCycleAuthenticated, cycleUser } = useAuthStore();
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [activePregnancy, setActivePregnancy] = useState(null);
     const navigate = useNavigate();
@@ -19,12 +19,12 @@ export default function CycleLayout() {
 
     // Fetch pregnancy status to adapt header
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isCycleAuthenticated) {
             cycleService.getActivePregnancy()
                 .then(preg => setActivePregnancy(preg))
                 .catch(e => console.error("Error fetching pregnancy status text", e));
         }
-    }, [isAuthenticated, location.pathname]);
+    }, [isCycleAuthenticated, location.pathname]);
 
     // Authentication Guard
     // Authentication Guard REMOVED to allow guest access
@@ -97,12 +97,12 @@ export default function CycleLayout() {
 
                     {/* User Avatar */}
                     <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
-                        onClick={() => !isAuthenticated && setIsLoginModalOpen(true)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isCycleAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
+                        onClick={() => !isCycleAuthenticated && setIsLoginModalOpen(true)}
                     >
-                        {isAuthenticated ? (
+                        {isCycleAuthenticated ? (
                             <span className="text-sm font-medium text-pink-600 dark:text-pink-300">
-                                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                {cycleUser?.name?.charAt(0).toUpperCase() || cycleUser?.nombre_completo?.charAt(0).toUpperCase() || 'U'}
                             </span>
                         ) : (
                             <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
