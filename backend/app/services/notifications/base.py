@@ -24,7 +24,8 @@ NOTIFICATION_CATEGORIES = (
     "prenatal_test", 
     "prenatal_ultrasound", 
     "contraceptive", 
-    "system"
+    "system",
+    "doctor"
 )
 BATCH_SIZE_USERS = 100
 BATCH_SIZE_DELIVERY = 50
