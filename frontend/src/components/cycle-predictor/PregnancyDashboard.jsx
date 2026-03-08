@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale'
 import { Calendar, AlertCircle, Baby, Stethoscope, FileText, Heart, Settings, ChevronRight, Camera, User, Loader2 } from 'lucide-react'
 import cycleService from '../../services/cycleService'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
+import { useAuthStore } from '../../store/authStore'
 
 export default function PregnancyDashboard({ activePregnancy, onStatusChange }) {
     const { cycleUser, setPhotoUrl } = useAuthStore()
