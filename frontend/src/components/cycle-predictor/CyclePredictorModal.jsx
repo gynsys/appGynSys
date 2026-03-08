@@ -18,7 +18,7 @@ import { cn } from '../../lib/utils'
 
 export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: propIsDarkMode }) {
     const [activeTab, setActiveTab] = useState('dashboard')
-    const { user, logout, isAuthenticated } = useAuthStore()
+    const { cycleUser, logoutPatient, isCycleAuthenticated } = useAuthStore()
     const [showLoginDialog, setShowLoginDialog] = useState(false)
 
     // New State
@@ -32,10 +32,10 @@ export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: pr
     const isDarkMode = typeof propIsDarkMode === 'boolean' ? propIsDarkMode : hookIsDarkMode
 
     useEffect(() => {
-        if (open && isAuthenticated) {
+        if (open && isCycleAuthenticated) {
             checkPregnancyatus()
         }
-    }, [open, isAuthenticated])
+    }, [open, isCycleAuthenticated])
 
     const checkPregnancyatus = async () => {
         try {
@@ -94,7 +94,7 @@ export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: pr
                                     <History className="w-4 h-4 mr-2" />
                                     <span className="hidden sm:inline">Historial</span>
                                 </TabsTrigger>
-                                {isAuthenticated && user && (
+                                {isCycleAuthenticated && cycleUser && (
                                     <TabsTrigger
                                         value="settings"
                                         className="data-[state=active]:bg-transparent data-[state=active]:text-pink-600 dark:data-[state=active]:text-pink-400 md:data-[state=active]:bg-gray-100 md:dark:data-[state=active]:bg-gray-800 font-medium text-sm px-2 md:px-4 py-2 rounded-full transition-all hover:text-pink-500"
@@ -108,9 +108,9 @@ export default function CyclePredictorModal({ open, onOpenChange, isDarkMode: pr
 
                         {/* 2. Profile / Login (Right Aligned in Header) */}
                         <div className="flex-none z-20">
-                            {isAuthenticated && user ? (
+                            {isCycleAuthenticated && cycleUser ? (
                                 <button
-                                    onClick={logout}
+                                    onClick={logoutPatient}
                                     className="flex items-center gap-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1.5 rounded-full transition-colors text-red-600 dark:text-red-400 border border-transparent hover:border-red-200 dark:hover:border-red-900"
                                 >
                                     <LogOut className="w-4 h-4" />

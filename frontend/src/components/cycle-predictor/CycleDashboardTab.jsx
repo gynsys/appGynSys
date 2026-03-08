@@ -12,7 +12,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 export default function CycleDashboardTab({ onPregnancyChange }) {
-    const { isAuthenticated, user } = useAuthStore()
+    const { isCycleAuthenticated, cycleUser } = useAuthStore()
     const [mode, setMode] = useState(() => localStorage.getItem('cycle_dashboard_mode') || 'calculator')
     const [showStartDialog, setShowStartDialog] = useState(false) // For pregnancy start
 

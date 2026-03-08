@@ -70,7 +70,7 @@ const ThemeBadge = ({ item, isSelected, onClick, themeColor }) => {
 }
 
 export default function CycleSymptomsTab({ activePregnancy }) {
-    const { user, isAuthenticated } = useAuthStore()
+    const { cycleUser, isCycleAuthenticated } = useAuthStore()
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [mood, setMood] = useState(null)
     const [flowIntensity, setFlowIntensity] = useState(null)
@@ -83,7 +83,7 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     const [loadingHistory, setLoadingHistory] = useState(true)
 
     // Fallback color if theme is missing (Guest Mode support)
-    const themeColor = user?.theme_primary_color || localStorage.getItem('tenant_theme_primary')
+    const themeColor = cycleUser?.theme_primary_color || localStorage.getItem('tenant_theme_primary')
 
     const moods = [
         { id: 'happy', label: 'Feliz', icon: '😄' },
@@ -133,7 +133,7 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     }, [])
 
     const loadSymptomsHistory = async () => {
-        if (!isAuthenticated) return
+        if (!isCycleAuthenticated) return
 
         try {
             setLoadingHistory(true)
@@ -155,7 +155,7 @@ export default function CycleSymptomsTab({ activePregnancy }) {
     }
 
     const handleSave = async () => {
-        if (!isAuthenticated) {
+        if (!isCycleAuthenticated) {
             toast.error('Inicia sesión para guardar tus síntomas', {
                 action: {
                     label: 'Ingresar',

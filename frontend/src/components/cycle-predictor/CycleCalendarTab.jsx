@@ -136,7 +136,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
     })
 
     // Auth & Registration
-    const { isAuthenticated, user, updateCycleUser } = useAuthStore()
+    const { isCycleAuthenticated, cycleUser, updateCycleUser } = useAuthStore()
     const params = useParams()
     // Fallback to 'mariel-herrera' if no slug provided (for /cycles route testing)
     const slug = params.slug || 'mariel-herrera'
@@ -144,7 +144,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
     // Sync only on mount/auth change to fetch data
     useEffect(() => {
         const fetchCycleData = async () => {
-            if (isAuthenticated) {
+            if (isCycleAuthenticated) {
                 try {
 
                     const [cyclesData, predictionsData, settingsData] = await Promise.all([
@@ -198,14 +198,14 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
             }
         }
         fetchCycleData()
-    }, [isAuthenticated])
+    }, [isCycleAuthenticated])
 
     // Fill config when dialog opens if user is logged in
     const handleStartPeriod = () => {
-        if (user) {
+        if (cycleUser) {
             setCycleConfig({
-                cycle_avg_length: user.cycle_avg_length || 28,
-                period_avg_length: user.period_avg_length || 5
+                cycle_avg_length: cycleUser.cycle_avg_length || 28,
+                period_avg_length: cycleUser.period_avg_length || 5
             })
         }
         setShowStartDialog(true)
@@ -216,7 +216,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
         if (!isValidDate(dateToUse)) return
 
         try {
-            if (!isAuthenticated) {
+            if (!isCycleAuthenticated) {
                 toast.error('Inicia sesión para guardar tu ciclo', {
                     action: {
                         label: 'Ingresar',
@@ -227,7 +227,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
             }
 
             // 1. Save config if user is logged in (only if not a quick action from double click)
-            if (isAuthenticated && user && !dateOverride) {
+            if (isCycleAuthenticated && cycleUser && !dateOverride) {
                 await updateCycleUser(cycleConfig).catch(console.error)
             }
 
@@ -337,7 +337,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
         }
 
         try {
-            if (!isAuthenticated) {
+            if (!isCycleAuthenticated) {
                 toast.error('Inicia sesión para gestionar tus ciclos', {
                     action: {
                         label: 'Ingresar',

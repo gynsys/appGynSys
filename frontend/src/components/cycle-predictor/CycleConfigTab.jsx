@@ -9,7 +9,7 @@ import { authService } from '../../services/authService'
 import { toast } from 'sonner'
 
 export default function CycleConfigTab() {
-    const { user, setUser } = useAuthStore()
+    const { cycleUser, setCycleUser } = useAuthStore()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         cycle_avg_length: 28,
@@ -17,20 +17,20 @@ export default function CycleConfigTab() {
     })
 
     useEffect(() => {
-        if (user) {
+        if (cycleUser) {
             setFormData({
-                cycle_avg_length: user.cycle_avg_length || 28,
-                period_avg_length: user.period_avg_length || 5
+                cycle_avg_length: cycleUser.cycle_avg_length || 28,
+                period_avg_length: cycleUser.period_avg_length || 5
             })
         }
-    }, [user])
+    }, [cycleUser])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
         try {
             const updatedUser = await authService.updateCycleUser(formData)
-            setUser(updatedUser) // Update store with new data
+            setCycleUser(updatedUser) // Update store with new data
             toast.success("Configuración actualizada correctamente")
         } catch (error) {
             console.error("Error updating settings:", error)
