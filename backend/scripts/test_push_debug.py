@@ -11,7 +11,9 @@ from pywebpush import webpush, WebPushException
 
 from app.db.models.cycle_user import CycleUser
 
-def test_push_actor(actor_id, is_doctor=True):
+from app.services import notifications as service
+
+def test_push_actor(actor_id, is_doctor=True, trigger_eval=False):
     db = SessionLocal()
     try:
         if is_doctor:
@@ -24,6 +26,13 @@ def test_push_actor(actor_id, is_doctor=True):
         if not actor:
             print(f"{label} {actor_id} not found")
             return
+        
+        if trigger_eval:
+            print(f"Triggering evaluation for {label} {actor_id}...")
+            # Note: For doctors, we don't have a direct 'immediate_evaluation' but we can check their pending
+            if not is_doctor:
+                service.trigger_immediate_evaluation(actor_id, db)
+            print("Evaluation triggered.")
         
         print(f"Testing push for {label}: {actor.nombre_completo}")
         print(f"Subscriptions: {len(actor.push_subscriptions)}")
@@ -45,10 +54,13 @@ def test_push_actor(actor_id, is_doctor=True):
 
 if __name__ == "__main__":
     is_doc = "--user" not in sys.argv
+    trigger_eval = "--eval" in sys.argv
     # Get ID from args (last arg if it's a number)
     try:
-        target_id = int(sys.argv[-1])
-    except ValueError:
+        # Extract ID from args, ignoring flags
+        args = [a for a in sys.argv[1:] if not a.startswith("--")]
+        target_id = int(args[0]) if args else 1
+    except (ValueError, IndexError):
         target_id = 1
     
-    test_push_actor(target_id, is_doctor=is_doc)
+    test_push_actor(target_id, is_doctor=is_doc, trigger_eval=trigger_eval)
