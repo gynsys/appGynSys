@@ -138,15 +138,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/" element={
-          localStorage.getItem('cycle_access_token') ? (
-            <Navigate to="/cycle/dashboard" replace />
-          ) : localStorage.getItem('last_doctor_slug') ? (
-            <Navigate to={`/dr/${localStorage.getItem('last_doctor_slug')}`} replace />
-          ) : (
-            <LandingPage />
-          )
-        } />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
