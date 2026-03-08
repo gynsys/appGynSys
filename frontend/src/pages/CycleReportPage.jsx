@@ -504,7 +504,6 @@ export default function CycleReportPage() {
                                             src={`${baseUrl}${asset.url}`}
                                             alt={`Ecografía / Estudio del ${safeFormat(asset.date)}`}
                                             className="max-w-full max-h-full object-contain"
-                                            crossOrigin="anonymous"
                                         />
                                     </div>
                                     <div className="p-3">
