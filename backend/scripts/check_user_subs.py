@@ -52,7 +52,7 @@ def check_user_subscriptions(email):
             subs = db.query(PushSubscription).filter(PushSubscription.user_id == user.id).all()
             print(f"Push Subscriptions for CycleUser: {len(subs)}")
             for s in subs:
-                print(f"  - ID: {s.id}, Endpoint: {s.endpoint[:50]}...")
+                print(f"  - ID: {s.id}, Created: {s.created_at}, Endpoint: {s.endpoint[:50]}...")
             
             # Check Logs
             logs = db.query(NotificationLog).filter(NotificationLog.recipient_id == user.id).order_by(NotificationLog.sent_at.desc()).limit(5).all()
