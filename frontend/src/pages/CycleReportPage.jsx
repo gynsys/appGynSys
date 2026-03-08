@@ -233,7 +233,7 @@ export default function CycleReportPage() {
             {/* Header */}
             <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">
+                    <h1 className="text-xl font-black uppercase tracking-tight mb-0.5">
                         {activePregnancy ? 'Reporte de Control Prenatal' : 'Reporte de Control Ginecológico'}
                     </h1>
                     <p className="text-sm text-gray-600">
@@ -267,8 +267,8 @@ export default function CycleReportPage() {
                 </div>
             )}
 
-            {/* Stats Overview */}
-            {stats && (
+            {/* Stats Overview - Only for menstrual cycle mode */}
+            {!activePregnancy && stats && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg print:border-none print:bg-transparent print:p-0">
                     <h2 className="text-lg font-bold mb-4 border-b border-gray-300 pb-1">Resumen Estadístico</h2>
                     <div className="grid grid-cols-4 gap-4 text-center">
