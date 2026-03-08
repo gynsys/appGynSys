@@ -323,7 +323,7 @@ export default function CycleHistoryTab({ activePregnancy }) {
                                                             />
                                                             <button
                                                                 onClick={() => handleDeleteClick(item.id, 'asset')}
-                                                                className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/50 text-gray-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all"
+                                                                className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/50 text-gray-500 rounded-full shadow-md transition-all"
                                                                 title="Eliminar foto"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
