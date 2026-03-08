@@ -83,5 +83,12 @@ def check_user_subscriptions(email):
         db.close()
 
 if __name__ == "__main__":
-    email = sys.argv[1] if len(sys.argv) > 1 else "dramarielh@gmail.com"
-    check_user_subscriptions(email)
+    if len(sys.argv) < 2:
+        print("Usage: python check_user_subs.py <email> OR --recent")
+        sys.exit(1)
+    
+    if sys.argv[1] == "--recent":
+        check_recent()
+    else:
+        email = sys.argv[1]
+        check_user_subscriptions(email)
