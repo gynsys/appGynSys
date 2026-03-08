@@ -19,6 +19,8 @@ def check_user_subscriptions(email):
     db = SessionLocal()
     try:
         print(f"--- Checking for email: {email} ---")
+        print(f"VAPID_PUBLIC_KEY: [{settings.VAPID_PUBLIC_KEY}]")
+        print(f"VAPID_PRIVATE_KEY: [{settings.VAPID_PRIVATE_KEY}]")
         
         # Check Doctors
         doctor = db.query(Doctor).filter(Doctor.email == email).first()
