@@ -75,7 +75,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
             <div className="relative flex flex-col items-center">
                 {/* Profile Picture / Avatar */}
                 <div className="relative group mb-3">
-                    <div className="w-20 h-20 rounded-full border-4 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg" style={{ borderColor: themeColor }}>
+                    <div className="w-20 h-20 rounded-full border-2 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg" style={{ borderColor: themeColor }}>
                         {cycleUser?.photo_url ? (
                             <img
                                 src={`${baseUrl}${cycleUser.photo_url}`}
