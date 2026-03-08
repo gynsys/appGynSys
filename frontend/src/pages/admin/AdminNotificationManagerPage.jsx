@@ -255,6 +255,7 @@ export default function NotificationManagerPage() {
 
     // Count by category
     const getCategoryCount = (tabId) => {
+        if (tabId === 'devices') return auditData.length
         const tab = TABS.find(t => t.id === tabId)
         return rules.filter(r => tab.filter(r)).length
     }
