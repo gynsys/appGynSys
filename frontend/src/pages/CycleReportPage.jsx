@@ -66,10 +66,29 @@ const translations = {
 
 const translateKey = (key) => translations[key] || key;
 
+const alarmSignsKeys = ['bleeding', 'fluid_loss', 'headache_severe', 'contractions'];
+
+// Extractor para separar síntomas de signos de alarma
+const categorizeSymptoms = (symptomsList) => {
+    if (!Array.isArray(symptomsList)) return { alarm: [], regular: [] };
+    const alarm = [];
+    const regular = [];
+
+    symptomsList.forEach((s) => {
+        if (alarmSignsKeys.includes(s)) {
+            alarm.push(s);
+        } else {
+            regular.push(s);
+        }
+    });
+    return { alarm, regular };
+};
+
 export default function CycleReportPage() {
     const { cycleUser, isCycleAuthenticated, loading: isAuthLoading } = useAuthStore();
     const [history, setHistory] = useState([]);
     const [symptoms, setSymptoms] = useState([]);
+    const [assets, setAssets] = useState([]);
     const [stats, setStats] = useState(null);
     const [activePregnancy, setActivePregnancy] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -143,8 +162,9 @@ export default function CycleReportPage() {
                     cycleService.getStats(),
                     cycleService.getSymptoms(),
                     cycleService.getActivePregnancy(),
+                    cycleService.getAssets(),
                 ]);
-                const [cyclesResult, statsResult, symptomsResult, pregnancyResult] = results;
+                const [cyclesResult, statsResult, symptomsResult, pregnancyResult, assetsResult] = results;
 
                 // --- Procesar ciclos ---
                 let cyclesData = [];
@@ -208,11 +228,18 @@ export default function CycleReportPage() {
                     pregnancyData = pregnancyResult.value;
                 }
 
+                // --- Procesar assets (imágenes) ---
+                let assetsData = [];
+                if (assetsResult?.status === 'fulfilled') {
+                    assetsData = Array.isArray(assetsResult.value) ? assetsResult.value : [];
+                }
+
                 if (isMounted.current) {
                     setHistory(uniqueCycles);
                     setStats(statsData);
                     setSymptoms(symptomsData);
                     setActivePregnancy(pregnancyData);
+                    setAssets(assetsData);
                 }
             } catch (err) {
                 // Este catch solo atraparía errores inesperados en el bloque try (no los de allSettled)
@@ -389,10 +416,11 @@ export default function CycleReportPage() {
                 <table className="w-full text-sm text-left">
                     <thead>
                         <tr className="border-b border-black bg-gray-50">
-                            <th className="py-2 px-2">Fecha</th>
-                            <th className="py-2 px-2 w-32">Estado</th>
-                            <th className="py-2 px-2">Síntomas</th>
-                            <th className="py-2 px-2">Notas</th>
+                            <th className="py-2 px-2 w-24">Fecha</th>
+                            <th className="py-2 px-2 w-28 text-center">Estado de Ánimo</th>
+                            <th className="py-2 px-2 text-red-700 w-32">Signos de Alarma</th>
+                            <th className="py-2 px-2">Síntomas y Flujo</th>
+                            <th className="py-2 px-2 w-48">Notas</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -402,26 +430,49 @@ export default function CycleReportPage() {
                                 const key =
                                     item.id ||
                                     `${item.date}-${item.symptoms ? item.symptoms.join('-') : 'nosymptoms'}`;
+
+                                const { alarm, regular } = categorizeSymptoms(item.symptoms);
+
                                 return (
                                     <tr key={key} className="hover:bg-gray-50/50">
-                                        <td className="py-2 px-2 w-24 align-top">{safeFormat(item.date)}</td>
-                                        <td className="py-2 px-2 align-top">
-                                            <div className="flex flex-col gap-0.5 text-[10px] text-gray-600">
-                                                {item.pain_level > 0 && <span>Dolor: {item.pain_level}/10</span>}
-                                                {item.flow_intensity && (
-                                                    <span>
-                                                        Flujo: {translateKey(item.flow_intensity)}
-                                                    </span>
+                                        <td className="py-2 px-2 align-top text-xs whitespace-nowrap">{safeFormat(item.date)}</td>
+
+                                        {/* Columna: Estado de Ánimo */}
+                                        <td className="py-2 px-2 align-top text-center text-xs">
+                                            {item.mood ? (
+                                                <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full capitalize">
+                                                    {translateKey(item.mood)}
+                                                </span>
+                                            ) : '-'}
+                                        </td>
+
+                                        {/* Columna: Signos de Alarma */}
+                                        <td className="py-2 px-2 align-top text-xs">
+                                            {alarm.length > 0 ? (
+                                                <ul className="list-disc list-inside text-red-600 font-medium">
+                                                    {alarm.map(a => <li key={a}>{translateKey(a)}</li>)}
+                                                </ul>
+                                            ) : '-'}
+                                        </td>
+
+                                        {/* Columna: Síntomas y Flujo */}
+                                        <td className="py-2 px-2 align-top text-xs">
+                                            <div className="flex flex-col gap-1">
+                                                {regular.length > 0 && (
+                                                    <span>{regular.map(translateKey).join(', ')}</span>
                                                 )}
-                                                {item.mood && <span className="capitalize">Ánimo: {translateKey(item.mood)}</span>}
+                                                {(item.flow_intensity || item.pain_level > 0) && (
+                                                    <div className="text-[10px] text-gray-500 mt-1 space-x-2">
+                                                        {item.pain_level > 0 && <span>Dolor: {item.pain_level}/10</span>}
+                                                        {item.flow_intensity && <span>Flujo: {translateKey(item.flow_intensity)}</span>}
+                                                    </div>
+                                                )}
+                                                {regular.length === 0 && !item.flow_intensity && !(item.pain_level > 0) && '-'}
                                             </div>
                                         </td>
-                                        <td className="py-2 px-2 align-top text-xs">
-                                            {item.symptoms && item.symptoms.length > 0
-                                                ? item.symptoms.map(translateKey).join(', ')
-                                                : '-'}
-                                        </td>
-                                        <td className="py-2 px-2 text-gray-600 italic max-w-xs align-top text-xs">
+
+                                        {/* Columna: Notas */}
+                                        <td className="py-2 px-2 text-gray-600 italic align-top text-xs">
                                             {item.notes || '-'}
                                         </td>
                                     </tr>
@@ -437,6 +488,37 @@ export default function CycleReportPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Assets/Images Section */}
+            {assets.length > 0 && (
+                <div className="mb-8 print:break-before-page">
+                    <h2 className="text-lg font-bold mb-4 border-b border-gray-300 pb-1">Imágenes y Estudios Médicos</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                        {assets.map((asset, index) => {
+                            const baseUrl = import.meta.env.VITE_API_BASE_URL?.split('/api/v1')[0] || '';
+                            const key = asset.id || `asset-${index}`;
+                            return (
+                                <div key={key} className="flex flex-col border border-gray-200 rounded-lg overflow-hidden bg-gray-50 print:border-gray-400 print:break-inside-avoid">
+                                    <div className="h-40 bg-white flex items-center justify-center border-b border-gray-200">
+                                        <img
+                                            src={`${baseUrl}${asset.url}`}
+                                            alt={`Ecografía / Estudio del ${safeFormat(asset.date)}`}
+                                            className="max-w-full max-h-full object-contain"
+                                            crossOrigin="anonymous"
+                                        />
+                                    </div>
+                                    <div className="p-3">
+                                        <p className="text-xs font-bold text-gray-700 mb-1">{safeFormat(asset.date)}</p>
+                                        <p className="text-[10px] text-gray-500 italic line-clamp-2">
+                                            {asset.notes || 'Sin descripción'}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Disclaimer */}
             <div className="mt-12 text-xs text-gray-400 text-center border-t pt-2 mb-20 print:mb-0">
