@@ -31,6 +31,41 @@ const safeFormat = (dateInput, fmt = 'dd/MM/yyyy') => {
     }
 };
 
+// --- Helper para diccionarios (Traducciones) ---
+const translations = {
+    // Moods
+    happy: 'Feliz',
+    calm: 'Tranquila',
+    sad: 'Triste',
+    anxious: 'Ansiosa',
+    irritable: 'Irritable',
+    // Flow intensity
+    light: 'Ligero',
+    medium: 'Medio',
+    heavy: 'Abundante',
+    // Cycle Symptoms
+    cramps: 'Cólicos',
+    headache: 'Migraña',
+    bloating: 'Hinchazón',
+    tenderness: 'Sensibilidad',
+    // Pregnancy Symptoms
+    nausea: 'Náuseas',
+    heartburn: 'Acidez',
+    backpain: 'Dolor espalda',
+    swelling: 'Hinchazón',
+    fatigue: 'Cansancio',
+    frequency: 'Orina frec.',
+    dizziness: 'Mareos',
+    cravings: 'Antojos',
+    // Alarm Signs
+    bleeding: 'Sangrado',
+    fluid_loss: 'Pérdida líquido',
+    headache_severe: 'Dolor cabeza severo',
+    contractions: 'Contracciones'
+};
+
+const translateKey = (key) => translations[key] || key;
+
 export default function CycleReportPage() {
     const { cycleUser, isCycleAuthenticated, loading: isAuthLoading } = useAuthStore();
     const [history, setHistory] = useState([]);
@@ -233,11 +268,8 @@ export default function CycleReportPage() {
             {/* Header */}
             <div className="border-b-2 border-black pb-2 mb-8 flex items-start justify-between">
                 <div className="flex-1">
-                    <h1 className="text-xl font-black uppercase tracking-tight leading-tight">
-                        {activePregnancy ? 'Reporte de Control' : 'Reporte de Control'}
-                    </h1>
                     <h1 className="text-xl font-black uppercase tracking-tight leading-tight mb-2">
-                        {activePregnancy ? 'Prenatal' : 'Ginecológico'}
+                        {activePregnancy ? 'Reporte de Control Prenatal' : 'Reporte de Control Ginecológico'}
                     </h1>
                     <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
                         <span>Generado el: {safeFormat(new Date(), "d 'de' MMMM, yyyy")}</span>
@@ -378,22 +410,15 @@ export default function CycleReportPage() {
                                                 {item.pain_level > 0 && <span>Dolor: {item.pain_level}/10</span>}
                                                 {item.flow_intensity && (
                                                     <span>
-                                                        Flujo:{' '}
-                                                        {item.flow_intensity === 'heavy'
-                                                            ? 'Abundante'
-                                                            : item.flow_intensity === 'medium'
-                                                                ? 'Medio'
-                                                                : item.flow_intensity === 'light'
-                                                                    ? 'Ligero'
-                                                                    : item.flow_intensity}
+                                                        Flujo: {translateKey(item.flow_intensity)}
                                                     </span>
                                                 )}
-                                                {item.mood && <span className="capitalize">Ánimo: {item.mood}</span>}
+                                                {item.mood && <span className="capitalize">Ánimo: {translateKey(item.mood)}</span>}
                                             </div>
                                         </td>
                                         <td className="py-2 px-2 align-top text-xs">
                                             {item.symptoms && item.symptoms.length > 0
-                                                ? item.symptoms.join(', ')
+                                                ? item.symptoms.map(translateKey).join(', ')
                                                 : '-'}
                                         </td>
                                         <td className="py-2 px-2 text-gray-600 italic max-w-xs align-top text-xs">
