@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.db.models.doctor import Doctor
 from app.db.models.cycle_user import CycleUser
 from app.db.models.push_subscription import PushSubscription
+from app.db.models.notification import NotificationLog, PendingNotification
 
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -38,6 +39,18 @@ def check_user_subscriptions(email):
             print(f"Push Subscriptions for CycleUser: {len(subs)}")
             for s in subs:
                 print(f"  - ID: {s.id}, Endpoint: {s.endpoint[:50]}...")
+            
+            # Check Logs
+            logs = db.query(NotificationLog).filter(NotificationLog.recipient_id == user.id).order_by(NotificationLog.sent_at.desc()).limit(5).all()
+            print(f"Recent Notification Logs (last 5): {len(logs)}")
+            for l in logs:
+                print(f"  - Sent at: {l.sent_at}, Type: {l.notification_type}, Channel: {l.channel_used}, Status: {l.status}")
+
+            # Check Pending
+            pending = db.query(PendingNotification).filter(PendingNotification.recipient_id == user.id).all()
+            print(f"Pending Notifications: {len(pending)}")
+            for p in pending:
+                print(f"  - Scheduled: {p.scheduled_for}, Type: {p.status}, Channel: {p.channel}")
         else:
             print("CycleUser not found with this email.")
 
