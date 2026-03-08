@@ -64,7 +64,7 @@ def _process_single_user(user_id: int, global_rules: Dict[str, _RuleData], now: 
             except Exception as e:
                 logger.error(f"Error calculating predictions for user {user.id}: {e}")
 
-        smart_ctx = calculate_smart_context(user, predictions, pregnancy, db)
+        smart_ctx = calculate_smart_context(user, db, predictions, pregnancy)
         is_valid, error = validate_smart_context(smart_ctx)
         if not is_valid:
             logger.error(f"Invalid context for user {user.id}: {error}")
