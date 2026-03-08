@@ -75,7 +75,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
             <div className="relative flex flex-col items-center">
                 {/* Profile Picture / Avatar */}
                 <div className="relative group mb-3">
-                    <div className="w-24 h-24 rounded-full border-4 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg" style={{ borderColor: themeColor }}>
+                    <div className="w-20 h-20 rounded-full border-4 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg" style={{ borderColor: themeColor }}>
                         {cycleUser?.photo_url ? (
                             <img
                                 src={`${baseUrl}${cycleUser.photo_url}`}
@@ -83,7 +83,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
                                 className="w-full h-full object-cover rounded-full"
                             />
                         ) : (
-                            <User className="w-12 h-12 text-gray-300" />
+                            <User className="w-10 h-10 text-gray-300" />
                         )}
                         {uploadingAvatar && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
@@ -91,8 +91,8 @@ export default function PregnancyDashboard({ activePregnancy }) {
                             </div>
                         )}
                     </div>
-                    <label className="absolute bottom-0 right-0 p-2 rounded-full cursor-pointer shadow-md transform hover:scale-110 transition-transform" style={{ backgroundColor: themeColor }}>
-                        <Camera className="w-4 h-4 text-white" />
+                    <label className="absolute bottom-0 right-0 p-1.5 rounded-full cursor-pointer shadow-md transform hover:scale-110 transition-transform" style={{ backgroundColor: themeColor }}>
+                        <Camera className="w-3.5 h-3.5 text-white" />
                         <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                     </label>
                 </div>
