@@ -24,6 +24,11 @@ docker exec -it appgynsys-db-1 psql -U postgres -d gynsys
 - **Ver errores de notificaciones**: `SELECT * FROM notification_logs WHERE status = 'failed' ORDER BY sent_at DESC LIMIT 10;`
 - **Resetear password admin**: `UPDATE doctors SET password_hash = 'HASH' WHERE email = 'admin@appgynsys.com';`
 
+### 🔍 Diagnóstico de Notificaciones (Python Scripts)
+- **Ver estado de un usuario**: `docker exec appgynsys-backend-1 python scripts/check_user_subs.py <email>`
+- **Prueba de Push + Eval**: `docker exec appgynsys-backend-1 python scripts/test_push_debug.py --user <id> --eval`
+- **Ver fallos en cola**: `docker exec appgynsys-backend-1 python scripts/check_failed_notifs.py`
+
 ## 📧 Notificaciones & Celery
 
 ### Purgar tareas encoladas (Si el sistema se satura):
