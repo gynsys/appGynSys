@@ -49,9 +49,6 @@ def check_user_subscriptions(email):
         user = db.query(CycleUser).filter(CycleUser.email == email).first()
         if user:
             print(f"Found CycleUser: ID={user.id}, Name={user.nombre_completo}")
-            print(f"  - Is Pregnant: {user.is_pregnant}")
-            print(f"  - Last Period: {user.last_period_date}")
-            print(f"  - Conception Date: {user.conception_date}")
             subs = db.query(PushSubscription).filter(PushSubscription.user_id == user.id).all()
             print(f"Push Subscriptions for CycleUser: {len(subs)}")
             for s in subs:
