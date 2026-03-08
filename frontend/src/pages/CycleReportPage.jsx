@@ -32,7 +32,7 @@ const safeFormat = (dateInput, fmt = 'dd/MM/yyyy') => {
 };
 
 export default function CycleReportPage() {
-    const { user, isAuthenticated, loading: isAuthLoading } = useAuthStore();
+    const { cycleUser, isCycleAuthenticated, loading: isAuthLoading } = useAuthStore();
     const [history, setHistory] = useState([]);
     const [symptoms, setSymptoms] = useState([]);
     const [stats, setStats] = useState(null);
@@ -78,10 +78,10 @@ export default function CycleReportPage() {
         // Esperar a que el store de autenticación termine de inicializar
         if (isAuthLoading) return;
 
-        // Si no está autenticado, mostrar estado vacío (no loading infinito)
-        if (!isAuthenticated) {
+        // Si no está autenticado, intentar cargar de nuevo o mostrar error
+        if (!isCycleAuthenticated) {
             setLoading(false);
-            setError('Usuario no autenticado');
+            setError('Usuario no autenticado. Por favor inicie sesión en la calculadora.');
             return;
         }
 
@@ -191,7 +191,7 @@ export default function CycleReportPage() {
         loadData();
 
         // Dependencias: se ejecuta cuando cambia el estado de autenticación
-    }, [isAuthenticated, isAuthLoading]);
+    }, [isCycleAuthenticated, isAuthLoading]);
 
     // --- Renderizado condicional ---
     if (isAuthLoading || loading) {
@@ -231,8 +231,8 @@ export default function CycleReportPage() {
                     </p>
                 </div>
                 <div className="text-right">
-                    <p className="font-bold text-lg">{user?.nombre_completo || 'Paciente'}</p>
-                    <p className="text-sm">{user?.email || ''}</p>
+                    <p className="font-bold text-lg">{cycleUser?.nombre_completo || cycleUser?.name || 'Paciente'}</p>
+                    <p className="text-sm">{cycleUser?.email || ''}</p>
                 </div>
             </div>
 
@@ -373,16 +373,25 @@ export default function CycleReportPage() {
             </div>
 
             {/* Disclaimer */}
-            <div className="mt-12 text-xs text-gray-400 text-center border-t pt-2">
+            <div className="mt-12 text-xs text-gray-400 text-center border-t pt-2 mb-20 print:mb-0">
                 <p>Este reporte es informativo y no constituye un diagnóstico médico. Por favor consulte a su especialista.</p>
                 <p>AppGynSys - Salud Integral Femenina</p>
             </div>
 
-            {/* Print Button - Hidden when printing */}
-            <div className="fixed bottom-8 right-8 print:hidden">
+            {/* Action Buttons - Hidden when printing */}
+            <div className="fixed bottom-8 left-0 right-0 flex justify-center gap-4 px-4 print:hidden z-50">
+                <button
+                    onClick={() => window.history.back()}
+                    className="bg-white text-gray-800 border-2 border-gray-200 px-6 py-3 rounded-full shadow-lg hover:bg-gray-50 font-bold flex items-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Volver
+                </button>
                 <button
                     onClick={() => window.print()}
-                    className="bg-black text-white px-6 py-3 rounded-full shadow-lg hover:bg-gray-800 font-bold flex items-center gap-2"
+                    className="bg-pink-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-pink-600 font-bold flex items-center gap-2"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -396,7 +405,7 @@ export default function CycleReportPage() {
                             clipRule="evenodd"
                         />
                     </svg>
-                    Imprimir / Guardar PDF
+                    Imprimir / PDF
                 </button>
             </div>
         </div>

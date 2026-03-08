@@ -160,7 +160,7 @@ export default function CycleHistoryTab({ activePregnancy }) {
                     )}
 
                     <button
-                        onClick={() => window.open('/cycle-report', '_blank')}
+                        onClick={() => window.location.href = '/cycle-report'}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-pink-200 text-pink-700 rounded-full hover:bg-pink-50 text-sm font-medium transition-colors dark:bg-gray-800 dark:border-pink-900 dark:text-pink-400 dark:hover:bg-pink-900/20 shadow-sm"
                     >
                         <FileText className="w-4 h-4" />
