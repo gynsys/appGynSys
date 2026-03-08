@@ -51,6 +51,21 @@ import AdminNotificationManagerPage from './pages/admin/AdminNotificationManager
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { useState } from 'react'
 
+const RootRedirector = () => {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const lastSlug = localStorage.getItem('last_doctor_slug');
+  const cycleToken = localStorage.getItem('cycle_access_token');
+
+  // Intelligent Redirect ONLY for PWA standalone mode
+  if (isStandalone) {
+    if (cycleToken) return <Navigate to="/cycle/dashboard" replace />;
+    if (lastSlug) return <Navigate to={`/dr/${lastSlug}`} replace />;
+  }
+
+  // Regular browser users always see the Landing Page (avoids loop)
+  return <LandingPage />;
+};
+
 function App() {
   const [isInitializing, setIsInitializing] = useState(true)
 
@@ -138,7 +153,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RootRedirector />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
