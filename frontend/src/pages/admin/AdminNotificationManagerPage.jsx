@@ -27,6 +27,11 @@ const TABS = [
         id: 'system',
         label: 'Sistema',
         filter: (rule) => rule.notification_type.startsWith('system_') || rule.notification_type.startsWith('symptom_')
+    },
+    {
+        id: 'devices',
+        label: 'Usuarios / Dispositivos',
+        filter: () => false // Special tab, not for rules
     }
 ]
 
@@ -49,6 +54,11 @@ export default function NotificationManagerPage() {
     const [isSendingTest, setIsSendingTest] = useState(false)
     const [isOperating, setIsOperating] = useState(false)
 
+    // Audit State
+    const [auditData, setAuditData] = useState([])
+    const [loadingAudit, setLoadingAudit] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+
     // Form State
     const [formData, setFormData] = useState({
         name: '',
@@ -62,10 +72,36 @@ export default function NotificationManagerPage() {
         fetchRules()
         fetchHealth()
 
+        if (activeTab === 'devices') {
+            fetchAuditData()
+        }
+
         // Refresh health every minute
         const interval = setInterval(fetchHealth, 60000)
         return () => clearInterval(interval)
-    }, [fetchRules, fetchHealth])
+    }, [fetchRules, fetchHealth, activeTab])
+
+    const fetchAuditData = async () => {
+        try {
+            setLoadingAudit(true)
+            const token = localStorage.getItem('access_token')
+            if (!token) return
+
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/detailed-users-devices`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                setAuditData(data.users || [])
+            }
+        } catch (error) {
+            console.error('Failed to load audit data:', error)
+            toast.error('Error al cargar auditoría de dispositivos')
+        } finally {
+            setLoadingAudit(false)
+        }
+    }
 
     const handleOperation = async (action, name) => {
         try {
@@ -399,6 +435,113 @@ export default function NotificationManagerPage() {
         )
     }
 
+    const renderUserDevicesTable = () => {
+        const filteredAudit = auditData.filter(user =>
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+
+        return (
+            <div className="w-full">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30 flex items-center gap-4">
+                    <div className="relative flex-1">
+                        <Input
+                            placeholder="Buscar por nombre o email..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 h-10 w-full max-w-md bg-white dark:bg-gray-800"
+                        />
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={fetchAuditData}
+                        disabled={loadingAudit}
+                        className="text-primary"
+                    >
+                        <svg className={`w-3.5 h-3.5 mr-1.5 ${loadingAudit ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refrescar
+                    </Button>
+                </div>
+
+                <Table>
+                    <TableHeader>
+                        <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
+                            <TableHead className="text-gray-500 dark:text-gray-400 pl-6 h-12">Usuaria</TableHead>
+                            <TableHead className="text-gray-500 dark:text-gray-400 h-12">Dispositivos</TableHead>
+                            <TableHead className="text-gray-500 dark:text-gray-400 h-12">Registro</TableHead>
+                            <TableHead className="text-right text-gray-500 dark:text-gray-400 pr-6 h-12">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loadingAudit ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-12 text-gray-400 italic">
+                                    Cargando datos de auditoría...
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredAudit.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-12 text-gray-400 italic">
+                                    No se encontraron usuarias con los criterios de búsqueda.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredAudit.map(user => (
+                                <TableRow key={user.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                    <TableCell className="pl-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-gray-900 dark:text-gray-100">{user.name}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">{user.email}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block w-fit ${user.devices_count > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'}`}>
+                                                {user.devices_count} {user.devices_count === 1 ? 'dispositivo' : 'dispositivos'}
+                                            </span>
+                                            {user.devices.map((dev, idx) => (
+                                                <span key={idx} className="text-[10px] text-gray-400 font-mono truncate max-w-[200px]" title={dev.endpoint_short}>
+                                                    {dev.endpoint_short}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-xs text-gray-500">
+                                            {new Date(user.created_at).toLocaleDateString()}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                                setTestEmail(user.email)
+                                                setSelectedRule({ name: 'Prueba de Sistema (Directa)', title_template: '🔔 Test de Vinculación', message_template: 'Tu dispositivo está correctamente vinculado al sistema.' })
+                                                setIsTestModalOpen(true)
+                                            }}
+                                            className="h-8 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                            disabled={user.devices_count === 0}
+                                        >
+                                            <Send className="w-3.5 h-3.5 mr-1" />
+                                            Probar
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    }
+
     return (
         <AdminLayout>
             <div className="px-4 py-8 sm:px-6 lg:px-8">
@@ -447,7 +590,9 @@ export default function NotificationManagerPage() {
 
                     {/* Content Area (Card Body) */}
                     <div className="p-0">
-                        {loading && rules.length === 0 ? (
+                        {activeTab === 'devices' ? (
+                            renderUserDevicesTable()
+                        ) : loading && rules.length === 0 ? (
                             <div className="text-center py-12 text-gray-400">
                                 Cargando notificaciones...
                             </div>

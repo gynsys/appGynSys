@@ -36,7 +36,6 @@ async def get_users_with_push(
     Get list of users who have push notifications enabled
     """
     # Query distinct users who have at least one push subscription
-    # We select specific columns to avoid 'distinct' error on JSON fields
     users_data = db.query(CycleUser.id, CycleUser.email, CycleUser.nombre_completo).join(PushSubscription).distinct().all()
     
     return {
@@ -50,6 +49,48 @@ async def get_users_with_push(
             }
             for u in users_data
         ]
+    }
+
+
+@router.get("/detailed-users-devices")
+async def get_detailed_users_devices(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+):
+    """
+    Audit endpoint: List all cycle users and their registered push devices.
+    (SuperAdmin Only)
+    """
+    # Get all users with their subscriptions using joinedload would be better,
+    # but for simplicity and control we can query and map
+    from sqlalchemy.orm import joinedload
+    
+    users = db.query(CycleUser).options(joinedload(CycleUser.push_subscriptions)).all()
+    
+    result = []
+    for user in users:
+        devices = []
+        for sub in user.push_subscriptions:
+            devices.append({
+                "id": sub.id,
+                "endpoint_short": sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint,
+                "created_at": sub.created_at.isoformat() if sub.created_at else None,
+                "updated_at": sub.updated_at.isoformat() if sub.updated_at else None
+            })
+        
+        result.append({
+            "id": user.id,
+            "email": user.email,
+            "name": user.nombre_completo,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+            "devices_count": len(devices),
+            "devices": devices
+        })
+        
+    return {
+        "success": True,
+        "count": len(result),
+        "users": result
     }
 
 
