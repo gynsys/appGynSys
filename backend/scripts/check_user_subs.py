@@ -28,6 +28,18 @@ def check_user_subscriptions(email):
             print(f"Push Subscriptions for Doctor: {len(subs)}")
             for s in subs:
                 print(f"  - ID: {s.id}, Endpoint: {s.endpoint[:50]}...")
+            
+            # Check Logs
+            logs = db.query(NotificationLog).filter(NotificationLog.doctor_id == doctor.id).order_by(NotificationLog.sent_at.desc()).limit(5).all()
+            print(f"Recent Notification Logs for Doctor (last 5): {len(logs)}")
+            for l in logs:
+                print(f"  - Sent at: {l.sent_at}, Type: {l.notification_type}, Channel: {l.channel_used}, Status: {l.status}")
+
+            # Check Pending
+            pending = db.query(PendingNotification).filter(PendingNotification.doctor_id == doctor.id).all()
+            print(f"Pending Notifications for Doctor: {len(pending)}")
+            for p in pending:
+                print(f"  - Scheduled: {p.scheduled_for}, Status: {p.status}, Channel: {p.channel}")
         else:
             print("Doctor not found with this email.")
 
