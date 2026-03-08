@@ -1,6 +1,10 @@
+import sys
+import os
+# Add app directory to sys.path
+sys.path.append(os.getcwd())
+
 from app.db.base import SessionLocal
 from app.db.models.notification import PendingNotification
-import sys
 
 def check_failed():
     db = SessionLocal()
