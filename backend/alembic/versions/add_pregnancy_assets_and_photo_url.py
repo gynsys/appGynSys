@@ -1,6 +1,6 @@
 """Add photo_url to CycleUser and create PregnancyAsset table
 
-Revision ID: add_pregnancy_assets_and_photo_url
+Revision ID: add_preg_assets_photo_url
 Revises: make_cycle_user_doc_nullable
 Create Date: 2026-03-08 14:10:00.000000
 
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = 'add_pregnancy_assets_and_photo_url'
+revision = 'add_preg_assets_photo_url'
 down_revision = 'make_cycle_user_doc_nullable'
 branch_labels = None
 depends_on = None
