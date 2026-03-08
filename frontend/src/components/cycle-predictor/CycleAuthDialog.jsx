@@ -82,10 +82,7 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
             return
         }
 
-        if (!slug) {
-            toast.error("Error crítico: No hay doctor asociado.")
-            return
-        }
+        // slug is now optional for autonomous users
 
         setIsLoading(true)
         try {

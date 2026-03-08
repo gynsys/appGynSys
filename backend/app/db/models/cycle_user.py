@@ -17,13 +17,13 @@ class CycleUser(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     nombre_completo = Column(String(255), nullable=False)
-    doctor_id = Column(Integer, ForeignKey("doctors.id", ondelete="CASCADE"), nullable=False, index=True)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Password Recovery - índice compuesto para búsquedas eficientes
-    reset_password_token = Column(String(255), nullable=True)
+    reset_password_token = Column(String, nullable=True)
     reset_password_expires = Column(DateTime(timezone=True), nullable=True)
     
     # Índice para búsqueda por token (usado en reset-password)

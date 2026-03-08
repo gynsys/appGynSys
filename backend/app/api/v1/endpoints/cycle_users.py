@@ -118,26 +118,23 @@ async def register_cycle_user(
     # Validar fortaleza de contraseña
     validate_password_strength(user_data.password)
     
-    # Buscar doctor por slug
-    doctor = db.query(Doctor).filter(Doctor.slug_url == user_data.doctor_slug).first()
-    if not doctor:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Doctor not found"
-        )
-    
-    # Verificar módulo habilitado - sin try/except que oculte errores
-    if not hasattr(doctor, 'enabled_module_codes'):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Doctor configuration error"
-        )
-    
-    if 'cycle_predictor' not in doctor.enabled_module_codes:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cycle predictor is not available for this doctor"
-        )
+    # Buscar doctor por slug si se proporciona
+    doctor_id = None
+    if user_data.doctor_slug:
+        doctor = db.query(Doctor).filter(Doctor.slug_url == user_data.doctor_slug).first()
+        if not doctor:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Doctor not found"
+            )
+        
+        # Verificar módulo habilitado
+        if not hasattr(doctor, 'enabled_module_codes') or 'cycle_predictor' not in doctor.enabled_module_codes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Cycle predictor is not available for this doctor"
+            )
+        doctor_id = doctor.id
 
     # Verificar email único (Case-Insensitive)
     email_lower = user_data.email.lower().strip()
@@ -155,7 +152,7 @@ async def register_cycle_user(
             email=email_lower,
             password_hash=hashed_password,
             nombre_completo=user_data.nombre_completo,
-            doctor_id=doctor.id,
+            doctor_id=doctor_id,
             is_active=True
         )
         
@@ -164,7 +161,7 @@ async def register_cycle_user(
         db.refresh(db_user)
     except Exception as e:
         db.rollback()
-        print(f"Registration Error: {e}")
+        logger.error(f"Registration Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error creating user. Please try again."
@@ -176,7 +173,7 @@ async def register_cycle_user(
             "sub": db_user.email,
             "user_id": db_user.id,
             "user_type": "cycle_user",
-            "doctor_id": doctor.id
+            "doctor_id": doctor_id
         }
     )
     

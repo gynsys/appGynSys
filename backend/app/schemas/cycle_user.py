@@ -16,7 +16,7 @@ class CycleUserBase(BaseModel):
 
 class CycleUserCreate(CycleUserBase):
     password: str = Field(..., min_length=8, max_length=128, description="User password (min 8 chars)")
-    doctor_slug: str = Field(..., pattern=r'^[a-z0-9]+(-[a-z0-9]+)*$', description="Doctor URL slug (e.g., 'mariel-herrera')")
+    doctor_slug: Optional[str] = Field(None, pattern=r'^[a-z0-9]+(-[a-z0-9]+)*$', description="Doctor URL slug (optional)")
     
     @field_validator('password')
     @classmethod
@@ -30,8 +30,10 @@ class CycleUserCreate(CycleUserBase):
     
     @field_validator('doctor_slug')
     @classmethod
-    def normalize_slug(cls, v: str) -> str:
+    def normalize_slug(cls, v: Optional[str]) -> Optional[str]:
         """Normalize slug to lowercase."""
+        if v is None:
+            return v
         return v.lower().strip()
 
 
@@ -61,7 +63,7 @@ class CycleUserInDB(CycleUserBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
-    doctor_id: int
+    doctor_id: Optional[int] = None
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
