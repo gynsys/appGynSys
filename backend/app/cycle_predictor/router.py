@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, timedelta, timezone
@@ -8,6 +8,10 @@ from app.db.models.cycle_predictor import CycleLog, SymptomLog
 from app.cycle_predictor import schemas
 from app.api.v1.endpoints.auth import get_current_user
 from app.crud.admin import get_enabled_tenant_modules
+import shutil
+import os
+from pathlib import Path
+from app.core.config import settings
 
 router = APIRouter(prefix="/cycle-predictor", tags=["Cycle Predictor"])
 
@@ -537,3 +541,84 @@ def end_pregnancy(
     
     db.commit()
     return {"message": "Pregnancy ended successfully", "ended_at": active_preg.ended_at}
+@router.post("/pregnancy/assets", response_model=schemas.PregnancyAsset, dependencies=[Depends(check_cycle_predictor_enabled)])
+async def upload_pregnancy_asset(
+    file: UploadFile = File(...),
+    date: date = Depends(),
+    notes: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
+):
+    if not isinstance(current_actor, CycleUser):
+        raise HTTPException(status_code=403, detail="Only cycle users can upload assets")
+    
+    # Create directory
+    upload_dir = Path(settings.UPLOAD_DIR) / "cycle_assets"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{current_actor.id}_{timestamp}_{file.filename}"
+    file_path = upload_dir / filename
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    url = f"/uploads/cycle_assets/{filename}"
+    
+    from app.db.models.cycle_predictor import PregnancyAsset
+    
+    asset = PregnancyAsset(
+        cycle_user_id=current_actor.id,
+        type="ecography",
+        url=url,
+        date=date,
+        notes=notes
+    )
+    db.add(asset)
+    db.commit()
+    db.refresh(asset)
+    return asset
+
+@router.get("/pregnancy/assets", response_model=List[schemas.PregnancyAsset], dependencies=[Depends(check_cycle_predictor_enabled)])
+def get_pregnancy_assets(
+    db: Session = Depends(get_db),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
+):
+    if not isinstance(current_actor, CycleUser):
+        filter_kwargs = {"cycle_user_id": None} # Or handle as error
+    else:
+        filter_kwargs = {"cycle_user_id": current_actor.id}
+        
+    from app.db.models.cycle_predictor import PregnancyAsset
+    assets = db.query(PregnancyAsset).filter_by(**filter_kwargs).order_by(PregnancyAsset.date.desc()).all()
+    return assets
+
+@router.post("/profile-image", dependencies=[Depends(check_cycle_predictor_enabled)])
+async def upload_cycle_user_profile_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
+):
+    if not isinstance(current_actor, CycleUser):
+        raise HTTPException(status_code=403, detail="Only cycle users can update their profile image")
+    
+    # Create directory
+    upload_dir = Path(settings.UPLOAD_DIR) / "cycle_profiles"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"profile_{current_actor.id}_{timestamp}_{file.filename}"
+    file_path = upload_dir / filename
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    url = f"/uploads/cycle_profiles/{filename}"
+    
+    current_actor.photo_url = url
+    db.commit()
+    db.refresh(current_actor)
+    
+    return {"photo_url": url}

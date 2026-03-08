@@ -79,6 +79,25 @@ const cycleService = {
     endPregnancy: async () => {
         const response = await api.delete('/cycle-predictor/pregnancy');
         return response.data;
+    },
+
+    uploadAsset: async (formData) => {
+        const response = await api.post('/cycle-predictor/pregnancy/assets', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+
+    getAssets: async () => {
+        const response = await api.get('/cycle-predictor/pregnancy/assets');
+        return response.data;
+    },
+
+    uploadProfileImage: async (formData) => {
+        const response = await api.post('/cycle-predictor/profile-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
     }
 };
 

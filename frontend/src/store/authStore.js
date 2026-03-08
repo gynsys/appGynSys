@@ -24,6 +24,10 @@ export const useAuthStore = create((set, get) => {
     // Patient Setters
     setCycleUser: (cycleUser) => set({ cycleUser, isCycleAuthenticated: !!cycleUser }),
 
+    setPhotoUrl: (photoUrl) => set(state => ({
+      cycleUser: state.cycleUser ? { ...state.cycleUser, photo_url: photoUrl } : null
+    })),
+
     login: async (email, password) => {
       set({ loading: true })
       try {

@@ -3,16 +3,19 @@ import { Card, CardContent } from '../ui/card'
 import Button from '../common/Button'
 import { differenceInDays, addDays, format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Calendar, AlertCircle, Baby, Stethoscope, FileText, Heart, Settings, ChevronRight } from 'lucide-react'
+import { Calendar, AlertCircle, Baby, Stethoscope, FileText, Heart, Settings, ChevronRight, Camera, User, Loader2 } from 'lucide-react'
 import cycleService from '../../services/cycleService'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 
 export default function PregnancyDashboard({ activePregnancy, onStatusChange }) {
+    const { cycleUser, setPhotoUrl } = useAuthStore()
     const [weeks, setWeeks] = useState(0)
     const [days, setDays] = useState(0)
+    const [daysRemaining, setDaysRemaining] = useState(0)
 
     const [showEndDialog, setShowEndDialog] = useState(false)
     const [endLoading, setEndLoading] = useState(false)
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
     useEffect(() => {
         if (activePregnancy?.last_period_date) {
@@ -24,8 +27,33 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
             const d = diffDays % 7
             setWeeks(w)
             setDays(d)
+
+            if (activePregnancy?.due_date) {
+                const due = parseISO(activePregnancy.due_date)
+                const remaining = differenceInDays(due, today)
+                setDaysRemaining(remaining > 0 ? remaining : 0)
+            }
         }
     }, [activePregnancy])
+
+    const handleAvatarUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        try {
+            setUploadingAvatar(true)
+            const formData = new FormData()
+            formData.append('file', file)
+            const res = await cycleService.uploadProfileImage(formData)
+            if (res.photo_url) {
+                setPhotoUrl(res.photo_url)
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error)
+        } finally {
+            setUploadingAvatar(false)
+        }
+    }
 
     const handleConfirmEndPregnancy = async () => {
         try {
@@ -53,38 +81,73 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
     const nextMilestone = milestones.find(m => m.week >= weeks) || milestones[milestones.length - 1]
 
     return (
-        <div className="space-y-3 py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
-            <div className="relative text-center space-y-1 mb-4">
-                {/* End Pregnancy Button - Top Right */}
-                <div className="absolute top-0 right-0">
+        <div className="space-y-2 py-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header / Avatar */}
+            <div className="relative flex flex-col items-center">
+                {/* End Pregnancy Button */}
+                <div className="absolute top-0 right-0 z-10">
                     <Button
                         variant="outline"
                         size="sm"
-                        className="text-[10px] h-7 px-2 text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-900/40"
+                        className="text-[10px] h-6 px-2 text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-900/40"
                         onClick={() => setShowEndDialog(true)}
                     >
-                        Finalizar Embarazo
+                        Finalizar
                     </Button>
                 </div>
 
-                <div className="inline-flex items-center justify-center p-2 bg-purple-100 dark:bg-purple-900/40 rounded-full mb-1">
-                    <Baby className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                {/* Profile Picture / Avatar */}
+                <div className="relative group mb-3 pt-4">
+                    <div className="w-24 h-24 rounded-full border-4 border-purple-500 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg">
+                        {cycleUser?.photo_url ? (
+                            <img src={`${import.meta.env.VITE_API_URL}${cycleUser.photo_url}`} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                            <User className="w-12 h-12 text-gray-300" />
+                        )}
+                        {uploadingAvatar && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
+                                <Loader2 className="w-6 h-6 animate-spin text-white" />
+                            </div>
+                        )}
+                    </div>
+                    <label className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 p-2 rounded-full cursor-pointer shadow-md transform hover:scale-110 transition-transform">
+                        <Camera className="w-4 h-4 text-white" />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                    </label>
                 </div>
-                <h3 className="text-xl font-bold dark:text-white px-4">
-                    ¡Estás en la semana {weeks}!
-                </h3>
-                <p className="text-sm text-muted-foreground dark:text-gray-400 max-w-lg mx-auto leading-tight">
-                    Tu bebé tiene el tamaño aproximado de una fruta esta semana.
-                    <br />
-                    <span className="text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full mt-1 inline-block">
-                        FPP: {activePregnancy?.due_date ? format(parseISO(activePregnancy.due_date), "d 'de' MMM, yyyy", { locale: es }) : '--'}
-                    </span>
-                </p>
+
+                <div className="text-center space-y-0.5">
+                    <div className="inline-flex items-center justify-center p-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-full mb-1">
+                        <Baby className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="text-2xl font-black dark:text-white px-4 leading-none">
+                        ¡Semana {weeks}!
+                    </h3>
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 max-w-lg mx-auto leading-tight">
+                        Tu bebé tiene el tamaño de una fruta esta semana.
+                    </p>
+
+                    {/* FPP Highlight & Countdown */}
+                    <div className="mt-4 flex flex-col items-center gap-1">
+                        <div className="flex flex-col items-center bg-purple-600 dark:bg-purple-700 text-white rounded-2xl px-6 py-3 shadow-xl transform hover:scale-105 transition-transform border-2 border-purple-400">
+                            <span className="text-[10px] uppercase font-bold tracking-widest opacity-80">Fecha Probable Parto</span>
+                            <span className="text-xl font-black">
+                                {activePregnancy?.due_date ? format(parseISO(activePregnancy.due_date), "d 'de' MMMM, yyyy", { locale: es }) : '--'}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 px-4 py-1.5 bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-900 rounded-full shadow-sm">
+                            <Calendar className="w-3.5 h-3.5 text-purple-500" />
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                Faltan <span className="text-purple-600 dark:text-purple-400">{daysRemaining} días</span>
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-medium">({Math.ceil(daysRemaining / 7)} sem)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* 4 Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                 {/* Card 1: Semana / Progreso */}
                 <PregnancyCard
                     icon={<Baby className="w-5 h-5 text-purple-500" />}

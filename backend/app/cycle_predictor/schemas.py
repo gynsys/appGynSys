@@ -128,3 +128,20 @@ class PregnancyLog(PregnancyLogBase):
     ended_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
+
+class PregnancyAssetBase(BaseModel):
+    type: str = "ecography"
+    date: date
+    notes: Optional[str] = None
+
+class PregnancyAssetCreate(PregnancyAssetBase):
+    url: str
+
+class PregnancyAsset(PregnancyAssetBase):
+    id: int
+    cycle_user_id: int
+    url: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+

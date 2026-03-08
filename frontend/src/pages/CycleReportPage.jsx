@@ -300,46 +300,48 @@ export default function CycleReportPage() {
                 </div>
             )}
 
-            {/* Cycle History Table */}
-            <div className="mb-8">
-                <h2 className="text-lg font-bold mb-4 border-b border-gray-300 pb-1">Historial de Ciclos</h2>
-                <table className="w-full text-sm text-left">
-                    <thead>
-                        <tr className="border-b border-black bg-gray-50">
-                            <th className="py-2 px-2">Inicio</th>
-                            <th className="py-2 px-2">Fin</th>
-                            <th className="py-2 px-2">Duración</th>
-                            <th className="py-2 px-2">Notas</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {history.length > 0 ? (
-                            history.map((cycle) => {
-                                // Usamos un key único: primero el id, si no, la fecha de inicio (con hora para evitar colisiones)
-                                const key = cycle.id || `${cycle.start_date}-${Math.random()}`;
-                                return (
-                                    <tr key={key} className="hover:bg-gray-50/50">
-                                        <td className="py-2 px-2">{safeFormat(cycle.start_date)}</td>
-                                        <td className="py-2 px-2">
-                                            {cycle.end_date ? safeFormat(cycle.end_date) : 'En curso'}
-                                        </td>
-                                        <td className="py-2 px-2">{cycle.cycle_length ?? '-'} días</td>
-                                        <td className="py-2 px-2 text-gray-600 italic max-w-xs">
-                                            {cycle.notes || '-'}
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        ) : (
-                            <tr>
-                                <td colSpan="4" className="py-4 text-center text-gray-400 italic">
-                                    No hay ciclos registrados.
-                                </td>
+            {/* Cycle History Table - Only show if NO active pregnancy or specifically needed */}
+            {!activePregnancy && (
+                <div className="mb-8">
+                    <h2 className="text-lg font-bold mb-4 border-b border-gray-300 pb-1">Historial de Ciclos</h2>
+                    <table className="w-full text-sm text-left">
+                        <thead>
+                            <tr className="border-b border-black bg-gray-50">
+                                <th className="py-2 px-2">Inicio</th>
+                                <th className="py-2 px-2">Fin</th>
+                                <th className="py-2 px-2">Duración</th>
+                                <th className="py-2 px-2">Notas</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {history.length > 0 ? (
+                                history.map((cycle) => {
+                                    // Usamos un key único: primero el id, si no, la fecha de inicio (con hora para evitar colisiones)
+                                    const key = cycle.id || `${cycle.start_date}-${Math.random()}`;
+                                    return (
+                                        <tr key={key} className="hover:bg-gray-50/50">
+                                            <td className="py-2 px-2">{safeFormat(cycle.start_date)}</td>
+                                            <td className="py-2 px-2">
+                                                {cycle.end_date ? safeFormat(cycle.end_date) : 'En curso'}
+                                            </td>
+                                            <td className="py-2 px-2">{cycle.cycle_length ?? '-'} días</td>
+                                            <td className="py-2 px-2 text-gray-600 italic max-w-xs">
+                                                {cycle.notes || '-'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="py-4 text-center text-gray-400 italic">
+                                        No hay ciclos registrados.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* Symptoms History Table */}
             <div className="mb-8">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
-import { Droplets, Calendar, Activity, TrendingUp, Loader2, Smile, Heart, Frown, Meh, FileText, Trash2 } from 'lucide-react'
+import { Droplets, Calendar, Activity, TrendingUp, Loader2, Smile, Heart, Frown, Meh, FileText, Trash2, Image, Upload, Plus } from 'lucide-react'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import cycleService from '../../services/cycleService'
@@ -19,6 +19,7 @@ import Button from '../common/Button'
 
 export default function CycleHistoryTab({ activePregnancy }) {
     const [historyData, setHistoryData] = useState({ cycles: [], symptoms: [] })
+    const [pregnancyAssets, setPregnancyAssets] = useState([])
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
         total_cycles: 0,
@@ -33,6 +34,11 @@ export default function CycleHistoryTab({ activePregnancy }) {
     const [itemToDelete, setItemToDelete] = useState(null)
     const [isDeletingAll, setIsDeletingAll] = useState(false)
     const [actionLoading, setActionLoading] = useState(false)
+
+    // Upload State
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+    const [uploadLoading, setUploadLoading] = useState(false)
+    const [uploadForm, setUploadForm] = useState({ date: format(new Date(), 'yyyy-MM-dd'), notes: '', file: null })
 
     const moods = {
         happy: { label: 'Feliz', icon: Smile },
@@ -71,15 +77,18 @@ export default function CycleHistoryTab({ activePregnancy }) {
     const loadHistory = async () => {
         try {
             setLoading(true)
-            const [cyclesData, symptomsData, statsData] = await Promise.all([
+            const [cyclesData, symptomsData, statsData, assetsData] = await Promise.all([
                 cycleService.getCycles().catch(() => []),
                 cycleService.getSymptoms().catch(() => []),
-                cycleService.getStats().catch(() => null)
+                cycleService.getStats().catch(() => null),
+                cycleService.getAssets().catch(() => [])
             ])
 
             if (statsData) {
                 setStats(statsData)
             }
+
+            setPregnancyAssets(assetsData)
 
             setHistoryData({
                 cycles: cyclesData.sort((a, b) => new Date(b.start_date) - new Date(a.start_date)),
@@ -124,11 +133,39 @@ export default function CycleHistoryTab({ activePregnancy }) {
         }
     }
 
+    const handleUploadSubmit = async (e) => {
+        e.preventDefault()
+        if (!uploadForm.file) {
+            toast.error("Selecciona una foto")
+            return
+        }
+
+        try {
+            setUploadLoading(true)
+            const formData = new FormData()
+            formData.append('file', uploadForm.file)
+            formData.append('date', uploadForm.date)
+            formData.append('notes', uploadForm.notes)
+
+            await cycleService.uploadAsset(formData)
+            toast.success("Ecografía guardada")
+            setUploadDialogOpen(false)
+            setUploadForm({ date: format(new Date(), 'yyyy-MM-dd'), notes: '', file: null })
+            loadHistory()
+        } catch (error) {
+            console.error("Error uploading:", error)
+            toast.error("Error al subir")
+        } finally {
+            setUploadLoading(false)
+        }
+    }
+
     // Merge and sort all items for timeline
     // If pregnant, filter out standard cycles as they are not relevant during pregnancy
     const timelineItems = [
         ...(activePregnancy ? [] : historyData.cycles.map(c => ({ ...c, type: 'cycle', date: c.start_date }))),
-        ...historyData.symptoms.map(s => ({ ...s, type: 'symptom', date: s.date }))
+        ...historyData.symptoms.map(s => ({ ...s, type: 'symptom', date: s.date })),
+        ...pregnancyAssets.map(a => ({ ...a, type: 'asset', date: a.date }))
     ].sort((a, b) => new Date(b.date) - new Date(a.date))
 
     if (loading) {
@@ -156,6 +193,16 @@ export default function CycleHistoryTab({ activePregnancy }) {
                         >
                             <Trash2 className="w-4 h-4" />
                             <span className="hidden sm:inline">Limpiar Historial</span>
+                        </button>
+                    )}
+
+                    {activePregnancy && (
+                        <button
+                            onClick={() => setUploadDialogOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 text-sm font-medium transition-colors shadow-md"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>Subir Ecografía</span>
                         </button>
                     )}
 
@@ -212,16 +259,29 @@ export default function CycleHistoryTab({ activePregnancy }) {
                 ) : (
                     timelineItems.map((item, index) => {
                         const isCycle = item.type === 'cycle'
+                        const isAsset = item.type === 'asset'
                         if (!item.date) return null
                         const date = parseISO(item.date)
 
+                        const borderClass = isCycle
+                            ? "border-l-primary"
+                            : isAsset
+                                ? "border-l-purple-500"
+                                : "border-l-orange-400"
+
+                        const iconContainerClass = isCycle
+                            ? "bg-primary/10 text-primary"
+                            : isAsset
+                                ? "bg-purple-100 text-purple-600"
+                                : "bg-orange-100 text-orange-600"
+
                         return (
-                            <Card key={`${item.type}-${item.id || index}`} className={cn("overflow-hidden border-gray-200 dark:border-gray-700", isCycle ? "border-l-4 border-l-primary" : "border-l-4 border-l-orange-400")}>
+                            <Card key={`${item.type}-${item.id || index}`} className={cn("overflow-hidden border-gray-200 dark:border-gray-700 border-l-4", borderClass)}>
                                 <CardContent className="p-4">
                                     <div className="flex items-start justify-between">
                                         <div className="flex gap-4 flex-1">
-                                            <div className={cn("mt-1 p-2 rounded-full flex items-center justify-center shrink-0", isCycle ? "bg-primary/10 text-primary" : "bg-orange-100 text-orange-600")}>
-                                                {isCycle ? <Droplets className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
+                                            <div className={cn("mt-1 p-2 rounded-full flex items-center justify-center shrink-0", iconContainerClass)}>
+                                                {isCycle ? <Droplets className="w-5 h-5" /> : isAsset ? <Image className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
                                             </div>
 
                                             <div className="space-y-1 flex-1">
@@ -232,8 +292,8 @@ export default function CycleHistoryTab({ activePregnancy }) {
                                                     <span className="text-xs text-muted-foreground font-normal">
                                                         {format(date, "yyyy")}
                                                     </span>
-                                                    <Badge variant={isCycle ? "default" : "secondary"} className="text-[10px] h-5">
-                                                        {isCycle ? 'Inicio Periodo' : 'Síntomas'}
+                                                    <Badge variant={isCycle ? "default" : isAsset ? "purple" : "secondary"} className="text-[10px] h-5">
+                                                        {isCycle ? 'Inicio Periodo' : isAsset ? 'Ecografía' : 'Síntomas'}
                                                     </Badge>
                                                 </div>
 
@@ -242,6 +302,22 @@ export default function CycleHistoryTab({ activePregnancy }) {
                                                         <p>Fin: {item.end_date ? format(parseISO(item.end_date), "d 'de' MMMM", { locale: es }) : "En curso"}</p>
                                                         {item.end_date && (
                                                             <p>Duración: {differenceInDays(parseISO(item.end_date), date) + 1} días</p>
+                                                        )}
+                                                    </div>
+                                                ) : isAsset ? (
+                                                    <div className="space-y-3 mt-2">
+                                                        <div className="relative aspect-video max-w-sm rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm bg-gray-50 flex items-center justify-center">
+                                                            <img
+                                                                src={`${import.meta.env.VITE_API_URL}${item.url}`}
+                                                                alt="Ecografía"
+                                                                className="max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                                                onClick={() => window.open(`${import.meta.env.VITE_API_URL}${item.url}`, '_blank')}
+                                                            />
+                                                        </div>
+                                                        {item.notes && (
+                                                            <div className="text-sm text-muted-foreground italic bg-purple-50 dark:bg-purple-900/10 p-2 rounded-md border-l-2 border-purple-400">
+                                                                "{item.notes}"
+                                                            </div>
                                                         )}
                                                     </div>
                                                 ) : (
@@ -306,6 +382,77 @@ export default function CycleHistoryTab({ activePregnancy }) {
                     })
                 )}
             </div>
+
+            {/* Upload Ecography Dialog */}
+            <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Subir Foto de Ecografía</DialogTitle>
+                        <DialogDescription>
+                            Guarda una imagen de tu ecografía o estudio médico para tenerlo organizado en tu historial prenatal.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleUploadSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Fecha del Estudio</label>
+                            <input
+                                type="date"
+                                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                                value={uploadForm.date}
+                                onChange={(e) => setUploadForm({ ...uploadForm, date: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Foto / Imagen</label>
+                            <div className="flex items-center gap-4">
+                                <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                                    <span className="text-sm text-gray-500">
+                                        {uploadForm.file ? uploadForm.file.name : 'Haz clic para seleccionar archivo'}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => setUploadForm({ ...uploadForm, file: e.target.files[0] })}
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Notas (opcional)</label>
+                            <textarea
+                                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                                placeholder="Ej: Ecografía 12 semanas, todo bien..."
+                                value={uploadForm.notes}
+                                onChange={(e) => setUploadForm({ ...uploadForm, notes: e.target.value })}
+                            />
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setUploadDialogOpen(false)}
+                                disabled={uploadLoading}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                isLoading={uploadLoading}
+                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                                Guardar
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             {/* Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

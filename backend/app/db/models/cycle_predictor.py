@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, JSON, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, JSON, Boolean, func
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from app.db.base import Base
 
 class CycleLog(Base):
@@ -88,4 +89,18 @@ class PregnancyLog(Base):
     ended_at = Column(DateTime, nullable=True)
 
     cycle_user = relationship("CycleUser", backref="pregnancy_logs")
+
+
+class PregnancyAsset(Base):
+    __tablename__ = "pregnancy_assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cycle_user_id = Column(Integer, ForeignKey("cycle_users.id"), index=True)
+    type = Column(String, default="ecography")  # e.g., 'ecography', 'lab_result'
+    url = Column(String(255), nullable=False)
+    date = Column(Date, nullable=False)
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    cycle_user = relationship("CycleUser", backref="pregnancy_assets")
 

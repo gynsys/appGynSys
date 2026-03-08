@@ -10,6 +10,7 @@ import re
 class CycleUserBase(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     nombre_completo: str = Field(..., min_length=2, max_length=255, description="User's full name")
+    photo_url: Optional[str] = Field(None, description="URL to user's profile photo")
     cycle_avg_length: int = Field(default=28, ge=21, le=45, description="Average cycle length in days")
     period_avg_length: int = Field(default=5, ge=1, le=15, description="Average period length in days")
 
@@ -76,6 +77,7 @@ class CycleUserResponse(CycleUserBase):
     id: int
     is_active: bool
     created_at: datetime
+    photo_url: Optional[str] = Field(None, description="URL to user's profile photo")
     theme_primary_color: Optional[str] = Field(None, description="Doctor's primary brand color")
 
 
