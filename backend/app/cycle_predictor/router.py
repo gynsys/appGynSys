@@ -594,6 +594,40 @@ def get_pregnancy_assets(
     assets = db.query(PregnancyAsset).filter_by(**filter_kwargs).order_by(PregnancyAsset.date.desc()).all()
     return assets
 
+@router.delete("/pregnancy/assets/{asset_id}", dependencies=[Depends(check_cycle_predictor_enabled)])
+def delete_pregnancy_asset(
+    asset_id: int,
+    db: Session = Depends(get_db),
+    current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
+):
+    from app.db.models.cycle_predictor import PregnancyAsset
+    
+    # Solo el dueño o el doctor de la paciente pueden borrar (asumiremos ciclo del current)
+    if isinstance(current_actor, CycleUser):
+        asset = db.query(PregnancyAsset).filter(PregnancyAsset.id == asset_id, PregnancyAsset.cycle_user_id == current_actor.id).first()
+    else:
+        # El Doctor podría borrar, pero por seguridad la relación más simple es el CycleUser
+        # Podríamos buscar al asset, chequear la usuaria y chequear si su doctor.id coincide, pero para mantenerlo ágil, buscamos directo
+        asset = db.query(PregnancyAsset).join(CycleUser).filter(PregnancyAsset.id == asset_id, CycleUser.doctor_id == current_actor.id).first()
+        
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset no encontrado o no autorizado")
+        
+    # Borrar archivo físico si existe local (rutas relativas a /uploads)
+    try:
+        # url típicamente luce como /uploads/cycle_assets/filename.jpg
+        if asset.url and asset.url.startswith("/uploads/"):
+            file_name = asset.url.replace("/uploads/", "")
+            file_path = Path(settings.UPLOAD_DIR) / file_name
+            if file_path.exists():
+                os.remove(file_path)
+    except Exception as e:
+        print(f"File physical deletion error: {e}")
+        
+    db.delete(asset)
+    db.commit()
+    return {"message": "Asset eliminado exitosamente"}
+
 @router.post("/profile-image", dependencies=[Depends(check_cycle_predictor_enabled)])
 async def upload_cycle_user_profile_image(
     file: UploadFile = File(...),

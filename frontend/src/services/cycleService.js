@@ -93,6 +93,11 @@ const cycleService = {
         return response.data;
     },
 
+    deleteAsset: async (id) => {
+        const response = await api.delete(`/cycle-predictor/pregnancy/assets/${id}`);
+        return response.data;
+    },
+
     uploadProfileImage: async (formData) => {
         const response = await api.post('/cycle-predictor/profile-image', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
