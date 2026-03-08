@@ -81,7 +81,14 @@ export default function CycleLayout() {
                 <div className="flex items-center justify-between px-4 h-14">
                     {/* Back Button */}
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => {
+                            const lastSlug = localStorage.getItem('last_doctor_slug');
+                            if (lastSlug) {
+                                navigate(`/dr/${lastSlug}`);
+                            } else {
+                                navigate('/');
+                            }
+                        }}
                         className="p-2 -ml-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
                         aria-label="Volver al inicio"
                     >
