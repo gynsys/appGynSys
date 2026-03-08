@@ -6,13 +6,13 @@ echo.
 
 REM Activar entorno virtual si existe
 REM Activar entorno virtual si existe
-if exist "venv\Scripts\activate.bat" (
+if exist ".venv\Scripts\activate.bat" (
     echo Activando entorno virtual local...
-    call venv\Scripts\activate.bat
+    call .venv\Scripts\activate.bat
 ) else (
     echo No se encontro entorno virtual. Creando uno nuevo...
-    python -m venv venv
-    call venv\Scripts\activate.bat
+    python -m venv .venv
+    call .venv\Scripts\activate.bat
 )
 
 REM Verificar e instalar dependencias

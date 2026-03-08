@@ -1,6 +1,6 @@
-"""make_cycle_user_doctor_id_nullable
+"""make_cycle_user_doc_nullable
 
-Revision ID: make_cycle_user_doctor_id_nullable
+Revision ID: make_cycle_user_doc_nullable
 Revises: 20260224_drop_pending_unique, c933241a7dfe
 Create Date: 2026-03-08 10:00:00.000000
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'make_cycle_user_doctor_id_nullable'
+revision = 'make_cycle_user_doc_nullable'
 down_revision = ('20260224_drop_pending_unique', 'c933241a7dfe')
 branch_labels = None
 depends_on = None
