@@ -1,22 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '../ui/card'
-import Button from '../common/Button'
-import { differenceInDays, addDays, format, parseISO } from 'date-fns'
+import { differenceInDays, format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Calendar, AlertCircle, Baby, Stethoscope, FileText, Heart, Settings, ChevronRight, Camera, User, Loader2 } from 'lucide-react'
+import { Calendar, AlertCircle, Baby, Stethoscope, FileText, Heart, Settings, Camera, User, Loader2 } from 'lucide-react'
 import cycleService from '../../services/cycleService'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 import { useAuthStore } from '../../store/authStore'
 
-export default function PregnancyDashboard({ activePregnancy, onStatusChange }) {
+export default function PregnancyDashboard({ activePregnancy }) {
     const { cycleUser, setPhotoUrl } = useAuthStore()
     const [weeks, setWeeks] = useState(0)
     const [days, setDays] = useState(0)
     const [daysRemaining, setDaysRemaining] = useState(0)
-
-    const [showEndDialog, setShowEndDialog] = useState(false)
-    const [endLoading, setEndLoading] = useState(false)
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
+    // Calculate base URL for images from API base URL (removing /api/v1)
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.split('/api/v1')[0] || '';
 
     useEffect(() => {
         if (activePregnancy?.last_period_date) {
@@ -56,19 +54,6 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
         }
     }
 
-    const handleConfirmEndPregnancy = async () => {
-        try {
-            setEndLoading(true)
-            await cycleService.endPregnancy()
-            if (onStatusChange) onStatusChange()
-            setShowEndDialog(false)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setEndLoading(false)
-        }
-    }
-
     const milestones = [
         { week: 11, label: 'Ecografía Genética', range: '11-14 sem', icon: Baby },
         { week: 12, label: 'Perfil Prenatal I', range: '12 sem', icon: FileText },
@@ -82,26 +67,18 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
     const nextMilestone = milestones.find(m => m.week >= weeks) || milestones[milestones.length - 1]
 
     return (
-        <div className="space-y-2 py-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-4 py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header / Avatar */}
             <div className="relative flex flex-col items-center">
-                {/* End Pregnancy Button */}
-                <div className="absolute top-0 right-0 z-10">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-[10px] h-6 px-2 text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-900/40"
-                        onClick={() => setShowEndDialog(true)}
-                    >
-                        Finalizar
-                    </Button>
-                </div>
-
                 {/* Profile Picture / Avatar */}
-                <div className="relative group mb-3 pt-4">
+                <div className="relative group mb-3">
                     <div className="w-24 h-24 rounded-full border-4 border-purple-500 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg">
                         {cycleUser?.photo_url ? (
-                            <img src={`${import.meta.env.VITE_API_URL}${cycleUser.photo_url}`} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                            <img
+                                src={`${baseUrl}${cycleUser.photo_url}`}
+                                alt="Avatar"
+                                className="w-full h-full object-cover rounded-full"
+                            />
                         ) : (
                             <User className="w-12 h-12 text-gray-300" />
                         )}
@@ -121,8 +98,8 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
                     <div className="inline-flex items-center justify-center p-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-full mb-1">
                         <Baby className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <h3 className="text-2xl font-black dark:text-white px-4 leading-none">
-                        ¡Semana {weeks}!
+                    <h3 className="text-2xl font-black dark:text-white px-4 leading-none lowercase">
+                        ¡semana {weeks}!
                     </h3>
                     <p className="text-xs text-muted-foreground dark:text-gray-400 max-w-lg mx-auto leading-tight">
                         Tu bebé tiene el tamaño de una fruta esta semana.
@@ -179,35 +156,8 @@ export default function PregnancyDashboard({ activePregnancy, onStatusChange }) 
                     title="Notificaciones"
                     description="Gestiona tus alertas de citas, semanas y consejos."
                     color="bg-gray-500"
-                // Removed direct end pregnancy action
                 />
             </div>
-
-            {/* Confirmation Dialog */}
-            <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Finalizar Embarazo</DialogTitle>
-                        <DialogDescription>
-                            ¿Estás segura de que deseas finalizar el modo embarazo?
-                            <br />
-                            Esto te devolverá al seguimiento de tu ciclo menstrual regular.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowEndDialog(false)} disabled={endLoading}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                            onClick={handleConfirmEndPregnancy}
-                            disabled={endLoading}
-                        >
-                            {endLoading ? 'Finalizando...' : 'Sí, finalizar'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     )
 }

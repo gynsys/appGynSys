@@ -21,6 +21,9 @@ export default function CycleHistoryTab({ activePregnancy }) {
     const [historyData, setHistoryData] = useState({ cycles: [], symptoms: [] })
     const [pregnancyAssets, setPregnancyAssets] = useState([])
     const [loading, setLoading] = useState(true)
+
+    // Calculate base URL for images from API base URL (removing /api/v1)
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.split('/api/v1')[0] || '';
     const [stats, setStats] = useState({
         total_cycles: 0,
         avg_cycle_length: 0,
@@ -308,10 +311,10 @@ export default function CycleHistoryTab({ activePregnancy }) {
                                                     <div className="space-y-3 mt-2">
                                                         <div className="relative aspect-video max-w-sm rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm bg-gray-50 flex items-center justify-center">
                                                             <img
-                                                                src={`${import.meta.env.VITE_API_URL}${item.url}`}
+                                                                src={`${baseUrl}${item.url}`}
                                                                 alt="Ecografía"
                                                                 className="max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                                                                onClick={() => window.open(`${import.meta.env.VITE_API_URL}${item.url}`, '_blank')}
+                                                                onClick={() => window.open(`${baseUrl}${item.url}`, '_blank')}
                                                             />
                                                         </div>
                                                         {item.notes && (
