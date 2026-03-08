@@ -13,6 +13,9 @@ export default function PregnancyDashboard({ activePregnancy }) {
     const [daysRemaining, setDaysRemaining] = useState(0)
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
+    // Dynamic theme color (from user profile or tenant storage)
+    const themeColor = cycleUser?.theme_primary_color || localStorage.getItem('tenant_theme_primary') || '#9333ea' // default purple-600
+
     // Calculate base URL for images from API base URL (removing /api/v1)
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.split('/api/v1')[0] || '';
 
@@ -72,7 +75,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
             <div className="relative flex flex-col items-center">
                 {/* Profile Picture / Avatar */}
                 <div className="relative group mb-3">
-                    <div className="w-24 h-24 rounded-full border-4 border-purple-500 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg">
+                    <div className="w-24 h-24 rounded-full border-4 p-1 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden shadow-lg" style={{ borderColor: themeColor }}>
                         {cycleUser?.photo_url ? (
                             <img
                                 src={`${baseUrl}${cycleUser.photo_url}`}
@@ -88,15 +91,15 @@ export default function PregnancyDashboard({ activePregnancy }) {
                             </div>
                         )}
                     </div>
-                    <label className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 p-2 rounded-full cursor-pointer shadow-md transform hover:scale-110 transition-transform">
+                    <label className="absolute bottom-0 right-0 p-2 rounded-full cursor-pointer shadow-md transform hover:scale-110 transition-transform" style={{ backgroundColor: themeColor }}>
                         <Camera className="w-4 h-4 text-white" />
                         <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                     </label>
                 </div>
 
                 <div className="text-center space-y-0.5">
-                    <div className="inline-flex items-center justify-center p-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-full mb-1">
-                        <Baby className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="inline-flex items-center justify-center p-1.5 rounded-full mb-1" style={{ backgroundColor: `${themeColor}20` }}>
+                        <Baby className="w-5 h-5" style={{ color: themeColor }} />
                     </div>
                     <h3 className="text-2xl font-black dark:text-white px-4 leading-none lowercase">
                         ¡semana {weeks}!
@@ -107,16 +110,16 @@ export default function PregnancyDashboard({ activePregnancy }) {
 
                     {/* FPP Highlight & Countdown */}
                     <div className="mt-4 flex flex-col items-center gap-1">
-                        <div className="flex flex-col items-center bg-purple-600 dark:bg-purple-700 text-white rounded-2xl px-6 py-3 shadow-xl transform hover:scale-105 transition-transform border-2 border-purple-400">
+                        <div className="flex flex-col items-center text-white rounded-2xl px-6 py-3 shadow-xl transform hover:scale-105 transition-transform border-2" style={{ backgroundColor: themeColor, borderColor: `${themeColor}90` }}>
                             <span className="text-[10px] uppercase font-bold tracking-widest opacity-80">Fecha Probable Parto</span>
                             <span className="text-xl font-black">
                                 {activePregnancy?.due_date ? format(parseISO(activePregnancy.due_date), "d 'de' MMMM, yyyy", { locale: es }) : '--'}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-1 px-4 py-1.5 bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-900 rounded-full shadow-sm">
-                            <Calendar className="w-3.5 h-3.5 text-purple-500" />
+                        <div className="flex items-center gap-2 mt-1 px-4 py-1.5 bg-white dark:bg-gray-800 border rounded-full shadow-sm" style={{ borderColor: `${themeColor}40` }}>
+                            <Calendar className="w-3.5 h-3.5" style={{ color: themeColor }} />
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                Faltan <span className="text-purple-600 dark:text-purple-400">{daysRemaining} días</span>
+                                Faltan <span style={{ color: themeColor }}>{daysRemaining} días</span>
                             </span>
                             <span className="text-[10px] text-gray-400 font-medium">({Math.ceil(daysRemaining / 7)} sem)</span>
                         </div>
@@ -128,15 +131,15 @@ export default function PregnancyDashboard({ activePregnancy }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                 {/* Card 1: Semana / Progreso */}
                 <PregnancyCard
-                    icon={<Baby className="w-5 h-5 text-purple-500" />}
+                    icon={<Baby className="w-5 h-5 text-white" />}
                     title={`Semana ${weeks} + ${days}`}
                     description="Sigue el crecimiento y desarrollo de tu bebé día a día."
-                    color="bg-purple-500"
+                    customColor={themeColor}
                 />
 
                 {/* Card 2: Síntomas (Placeholder link) */}
                 <PregnancyCard
-                    icon={<Heart className="w-5 h-5 text-red-500" />}
+                    icon={<Heart className="w-5 h-5 text-white" />}
                     title="Registro de Síntomas"
                     description="Náuseas, antojos o fatiga. Lleva un control de tu salud."
                     color="bg-red-500"
@@ -144,7 +147,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
 
                 {/* Card 3: Próximo Hito */}
                 <PregnancyCard
-                    icon={<Calendar className="w-5 h-5 text-blue-500" />}
+                    icon={<Calendar className="w-5 h-5 text-white" />}
                     title="Próximo Control"
                     description={nextMilestone ? `${nextMilestone.label} (${nextMilestone.range})` : "Controles completados"}
                     color="bg-blue-500"
@@ -152,7 +155,7 @@ export default function PregnancyDashboard({ activePregnancy }) {
 
                 {/* Card 4: Notificaciones */}
                 <PregnancyCard
-                    icon={<Settings className="w-5 h-5 text-gray-500" />}
+                    icon={<Settings className="w-5 h-5 text-white" />}
                     title="Notificaciones"
                     description="Gestiona tus alertas de citas, semanas y consejos."
                     color="bg-gray-500"
@@ -162,14 +165,17 @@ export default function PregnancyDashboard({ activePregnancy }) {
     )
 }
 
-function PregnancyCard({ icon, title, description, onClick }) {
+function PregnancyCard({ icon, title, description, onClick, color, customColor }) {
     return (
         <Card
             className={`border-none shadow-sm bg-gray-50/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-colors ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
             onClick={onClick}
         >
             <CardContent className="flex flex-col items-center text-center p-3 space-y-1">
-                <div className="p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-sm mb-1">
+                <div
+                    className={`p-1.5 rounded-full shadow-sm mb-1 text-white flex items-center justify-center ${color || ''}`}
+                    style={customColor ? { backgroundColor: customColor } : {}}
+                >
                     {icon}
                 </div>
                 <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{title}</h4>
