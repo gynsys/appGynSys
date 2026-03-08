@@ -185,8 +185,13 @@ export default function DoctorProfilePage() {
   const { isAuthenticated, user, isCycleAuthenticated, cycleUser } = useAuthStore()
   const { logout } = useAuth()
   const toast = useToastStore()
-  const [doctor, setDoctor] = useState(null)
-  const [loading, setLoading] = useState(true)
+
+  // Try to load cached doctor synchronously to prevent loading flashes
+  const cachedDoctorStr = sessionStorage.getItem(`doctor_profile_${slug}`)
+  const cachedDoctor = cachedDoctorStr ? JSON.parse(cachedDoctorStr) : null
+
+  const [doctor, setDoctor] = useState(cachedDoctor)
+  const [loading, setLoading] = useState(!cachedDoctor)
   const [error, setError] = useState(null)
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -299,11 +304,16 @@ export default function DoctorProfilePage() {
         if (isSelfProfile) {
           setDoctor(user)
           setLoading(false)
+        } else if (cachedDoctorStr) {
+          setLoading(false)
         } else {
           setLoading(true)
         }
 
         const data = await doctorService.getDoctorProfileBySlug(slug)
+
+        // Cache for next time
+        sessionStorage.setItem(`doctor_profile_${slug}`, JSON.stringify(data))
 
         // Security check: Admins do not have public profiles
         // if (data.role === 'admin') {
