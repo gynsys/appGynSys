@@ -9,20 +9,28 @@ from app.db.models.doctor import Doctor
 from app.services.push_service import send_push_to_actor
 from pywebpush import webpush, WebPushException
 
-def test_push_doctor(doctor_id):
+from app.db.models.cycle_user import CycleUser
+
+def test_push_actor(actor_id, is_doctor=True):
     db = SessionLocal()
     try:
-        doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
-        if not doctor:
-            print(f"Doctor {doctor_id} not found")
+        if is_doctor:
+            actor = db.query(Doctor).filter(Doctor.id == actor_id).first()
+            label = "Doctor"
+        else:
+            actor = db.query(CycleUser).filter(CycleUser.id == actor_id).first()
+            label = "CycleUser"
+
+        if not actor:
+            print(f"{label} {actor_id} not found")
             return
         
-        print(f"Testing push for Doctor: {doctor.nombre_completo}")
-        print(f"Subscriptions: {len(doctor.push_subscriptions)}")
+        print(f"Testing push for {label}: {actor.nombre_completo}")
+        print(f"Subscriptions: {len(actor.push_subscriptions)}")
         
         result = send_push_to_actor(
-            actor=doctor,
-            title="Detección de Error",
+            actor=actor,
+            title=f"Prueba {label}",
             body="Esta es una prueba técnica para capturar el error de envío."
         )
         
@@ -36,5 +44,11 @@ def test_push_doctor(doctor_id):
         db.close()
 
 if __name__ == "__main__":
-    doc_id = int(sys.argv[1]) if len(sys.argv) > 1 else 1
-    test_push_doctor(doc_id)
+    is_doc = "--user" not in sys.argv
+    # Get ID from args (last arg if it's a number)
+    try:
+        target_id = int(sys.argv[-1])
+    except ValueError:
+        target_id = 1
+    
+    test_push_actor(target_id, is_doctor=is_doc)
