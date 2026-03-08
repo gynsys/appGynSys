@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, timedelta, timezone
@@ -544,8 +544,8 @@ def end_pregnancy(
 @router.post("/pregnancy/assets", response_model=schemas.PregnancyAsset, dependencies=[Depends(check_cycle_predictor_enabled)])
 async def upload_pregnancy_asset(
     file: UploadFile = File(...),
-    date: date = Depends(),
-    notes: Optional[str] = None,
+    date: date = Form(...),
+    notes: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_actor: Union[Doctor, CycleUser] = Depends(get_current_actor)
 ):
