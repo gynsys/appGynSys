@@ -15,6 +15,17 @@ from app.db.models.notification import NotificationLog, PendingNotification
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+def check_recent():
+    db = SessionLocal()
+    try:
+        print("--- Last 10 Push Subscriptions in Database ---")
+        subs = db.query(PushSubscription).order_by(PushSubscription.updated_at.desc()).limit(10).all()
+        for s in subs:
+            owner = f"User:{s.user_id}" if s.user_id else (f"Doctor:{s.doctor_id}" if s.doctor_id else "Orphan")
+            print(f"ID: {s.id}, Owner: {owner}, Created: {s.created_at}, Updated: {s.updated_at}, Endpoint: {s.endpoint[:40]}...")
+    finally:
+        db.close()
+
 def check_user_subscriptions(email):
     db = SessionLocal()
     try:
