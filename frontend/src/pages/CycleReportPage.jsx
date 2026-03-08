@@ -36,6 +36,7 @@ export default function CycleReportPage() {
     const [history, setHistory] = useState([]);
     const [symptoms, setSymptoms] = useState([]);
     const [stats, setStats] = useState(null);
+    const [activePregnancy, setActivePregnancy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -106,9 +107,9 @@ export default function CycleReportPage() {
                     cycleService.getCycles(),
                     cycleService.getStats(),
                     cycleService.getSymptoms(),
+                    cycleService.getActivePregnancy(),
                 ]);
-
-                const [cyclesResult, statsResult, symptomsResult] = results;
+                const [cyclesResult, statsResult, symptomsResult, pregnancyResult] = results;
 
                 // --- Procesar ciclos ---
                 let cyclesData = [];
@@ -166,10 +167,17 @@ export default function CycleReportPage() {
                     console.error('Error cargando síntomas:', symptomsResult.reason);
                 }
 
+                // --- Procesar embarazo ---
+                let pregnancyData = null;
+                if (pregnancyResult.status === 'fulfilled') {
+                    pregnancyData = pregnancyResult.value;
+                }
+
                 if (isMounted.current) {
                     setHistory(uniqueCycles);
                     setStats(statsData);
                     setSymptoms(symptomsData);
+                    setActivePregnancy(pregnancyData);
                 }
             } catch (err) {
                 // Este catch solo atraparía errores inesperados en el bloque try (no los de allSettled)
@@ -198,7 +206,7 @@ export default function CycleReportPage() {
         return (
             <div className="p-12 text-center flex flex-col items-center gap-4">
                 <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-600 font-medium">Generando reporte ginecológico...</p>
+                <p className="text-gray-600 font-medium">Generando reporte...</p>
                 <p className="text-xs text-gray-400">Si esto tarda demasiado, verifica tu conexión.</p>
             </div>
         );
@@ -225,7 +233,9 @@ export default function CycleReportPage() {
             {/* Header */}
             <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">Reporte de Control Ginecológico</h1>
+                    <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">
+                        {activePregnancy ? 'Reporte de Control Prenatal' : 'Reporte de Control Ginecológico'}
+                    </h1>
                     <p className="text-sm text-gray-600">
                         Generado el: {safeFormat(new Date(), "d 'de' MMMM, yyyy")}
                     </p>
@@ -235,6 +245,27 @@ export default function CycleReportPage() {
                     <p className="text-sm">{cycleUser?.email || ''}</p>
                 </div>
             </div>
+
+            {/* Pregnancy Specific Info */}
+            {activePregnancy && (
+                <div className="mb-8 p-4 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg print:border-none print:bg-transparent print:p-0">
+                    <h2 className="text-sm font-bold text-purple-900 uppercase tracking-wider mb-3 print:text-black">Información de Gestación</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold">Fecha de Última Regla (FUR)</p>
+                            <p className="text-lg font-bold text-purple-700 print:text-black">
+                                {safeFormat(activePregnancy.last_period_date, "d 'de' MMMM, yyyy")}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold">Fecha Probable de Parto (FPP)</p>
+                            <p className="text-lg font-bold text-purple-700 print:text-black">
+                                {safeFormat(activePregnancy.due_date, "d 'de' MMMM, yyyy")}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Stats Overview */}
             {stats && (
