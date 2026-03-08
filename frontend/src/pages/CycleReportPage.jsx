@@ -231,18 +231,26 @@ export default function CycleReportPage() {
     return (
         <div className="bg-white min-h-screen text-black p-8 max-w-4xl mx-auto print:max-w-none print:p-0">
             {/* Header */}
-            <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
-                <div>
-                    <h1 className="text-xl font-black uppercase tracking-tight mb-0.5">
-                        {activePregnancy ? 'Reporte de Control Prenatal' : 'Reporte de Control Ginecológico'}
+            <div className="border-b-2 border-black pb-2 mb-8 flex items-start justify-between">
+                <div className="flex-1">
+                    <h1 className="text-xl font-black uppercase tracking-tight leading-tight">
+                        {activePregnancy ? 'Reporte de Control' : 'Reporte de Control'}
                     </h1>
-                    <p className="text-sm text-gray-600">
-                        Generado el: {safeFormat(new Date(), "d 'de' MMMM, yyyy")}
-                    </p>
+                    <h1 className="text-xl font-black uppercase tracking-tight leading-tight mb-2">
+                        {activePregnancy ? 'Prenatal' : 'Ginecológico'}
+                    </h1>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                        <span>Generado el: {safeFormat(new Date(), "d 'de' MMMM, yyyy")}</span>
+                    </div>
                 </div>
+
                 <div className="text-right">
-                    <p className="font-bold text-lg">{cycleUser?.nombre_completo || cycleUser?.name || 'Paciente'}</p>
-                    <p className="text-sm">{cycleUser?.email || ''}</p>
+                    <h2 className="font-black text-xl leading-none mb-1 text-gray-900">
+                        {cycleUser?.nombre_completo || cycleUser?.name || 'Paciente'}
+                    </h2>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">
+                        {cycleUser?.email || ''}
+                    </p>
                 </div>
             </div>
 
