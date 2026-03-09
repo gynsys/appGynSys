@@ -474,7 +474,7 @@ export default function PatientsManager({ isEmbedded = false }) {
               {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="PDF" />}
             </div>
           </div>
-          <div className="mt-4 flex justify-between items-center px-2 pb-[30px]">
+          <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
             {currentPdfUrl && <a href={currentPdfUrl} target="_blank" rel="noreferrer" className="px-2 py-[3px] bg-indigo-600 text-white rounded-lg text-sm font-medium">Descargar PDF</a>}
             <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-2 py-[3px] border rounded-lg text-sm font-medium">Cerrar</button>
           </div>
