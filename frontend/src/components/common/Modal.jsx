@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
-                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white px-4 py-4 md:p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700 mt-[32px] max-h-[85vh] flex flex-col`}>
+                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white px-4 py-4 md:p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700 mt-[35px] max-h-[85vh] flex flex-col`}>
                   <div className={`flex ${title ? 'justify-between items-center mb-4' : 'justify-end'}`}>
                     {title && (
                       <Dialog.Title
