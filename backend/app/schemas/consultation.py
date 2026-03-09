@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
+from app.schemas.consultation_asset import ConsultationAsset
 
 class ConsultationCreate(BaseModel):
     # Patient Info
@@ -92,6 +93,8 @@ class ConsultationInDBBase(BaseModel):
     
     history_number: Optional[str] = None
     pdf_path: Optional[str] = None
+    
+    assets: List[ConsultationAsset] = []
 
     class Config:
         orm_mode = True

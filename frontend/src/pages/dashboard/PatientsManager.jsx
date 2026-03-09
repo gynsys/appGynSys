@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
 import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch } from 'react-icons/fi';
+import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 
 const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
@@ -167,6 +168,17 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
           ))}
         </div>
       </div>
+
+      {/* Adjuntos / Soportes */}
+      {data.id && (
+        <div className="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+          <h4 className="text-lg font-bold border-b pb-2 mb-4 text-gray-900 dark:text-gray-100">
+            Soportes y Exámenes Guardados
+          </h4>
+          <ConsultationAssetManager consultationId={data.id} />
+        </div>
+      )}
+
     </div>
   );
 };

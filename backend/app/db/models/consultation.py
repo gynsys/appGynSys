@@ -53,3 +53,4 @@ class Consultation(Base):
     # Relationships
     doctor = relationship("Doctor", back_populates="consultations")
     patient = relationship("Patient", back_populates="consultations")
+    assets = relationship("ConsultationAsset", back_populates="consultation", cascade="all, delete-orphan")

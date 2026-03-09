@@ -34,6 +34,7 @@ import Modal from '../../../components/common/Modal';
 import Button from '../../../components/common/Button';
 import { useToastStore } from '../../../store/toastStore';
 import { useDarkMode } from '../../../hooks/useDarkMode';
+import { ConsultationAssetManager } from '../../../components/common/ConsultationAssetManager';
 
 export const DoctorConsultationPage = () => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export const DoctorConsultationPage = () => {
   const [pdfSettings, setPdfSettings] = useState({});
   const [doctor, setDoctor] = useState(null);
   const [allPreviousConsultations, setAllPreviousConsultations] = useState([]);
+  const [pendingAssets, setPendingAssets] = useState([]);
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -882,6 +884,29 @@ export const DoctorConsultationPage = () => {
 
     try {
       const result = await consultationService.createConsultation(payload);
+      const newConsultationId = result.consultation_id;
+
+      // Handle pending assets
+      if (pendingAssets && pendingAssets.length > 0) {
+        toast.loading("Subiendo soportes adjuntos...", { id: "upload_assets" });
+        try {
+          for (const asset of pendingAssets) {
+            if (asset.rawFile) {
+              const formData = new FormData();
+              formData.append('file', asset.rawFile);
+              formData.append('title', asset.file_name);
+              await api.post(`/consultations/${newConsultationId}/assets`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              });
+            }
+          }
+          toast.success("Soportes subidos", { id: "upload_assets" });
+        } catch (uploadObjError) {
+          toast.error("Algunos soportes fallaron al subir", { id: "upload_assets" });
+          console.error("Error uploading delayed assets:", uploadObjError);
+        }
+      }
+
       setConsultationResult(result); // Store result to get ID
       setModalState('initial');
       setIsSuccessModalOpen(true);
@@ -1083,6 +1108,23 @@ export const DoctorConsultationPage = () => {
               onChange={setObservations}
               placeholder="Agregar observación..."
             />
+          </section>
+
+          {/* 6. Soportes (Imágenes y Videos) */}
+          <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm bg-indigo-500">
+                <FiImage className="w-4 h-4" />
+              </span>
+              Soportes y Exámenes (Imágenes, Resonancias, Videos)
+            </h2>
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <ConsultationAssetManager
+                consultationId={null}
+                initialAssets={pendingAssets}
+                onAssetsChange={setPendingAssets}
+              />
+            </div>
           </section>
 
           <div className="flex justify-end pt-6">

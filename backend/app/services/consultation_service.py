@@ -90,6 +90,7 @@ class ConsultationService:
         latest = all_consultations[-1] if all_consultations else consultation
         
         return {
+            "id": latest.id,
             "full_name": latest.patient_name,
             "ci": latest.patient_ci,
             "age": latest.patient_age,
@@ -131,6 +132,7 @@ class ConsultationService:
             return None
 
         return {
+            "id": consultation.id,
             "full_name": consultation.patient_name,
             "ci": consultation.patient_ci,
             "age": consultation.patient_age,
@@ -148,6 +150,17 @@ class ConsultationService:
             "address": "", 
             "occupation": "",
             "doctor_id": consultation.doctor_id,
+            "assets": [
+                {
+                    "id": a.id,
+                    "file_path": a.file_path,
+                    "file_name": a.file_name,
+                    "file_type": a.file_type,
+                    "file_size_bytes": a.file_size_bytes,
+                    "created_at": a.created_at
+                }
+                for a in consultation.assets
+            ] if consultation.assets else [],
             "physical_exam": consultation.physical_exam,
             "ultrasound": consultation.ultrasound,
             "diagnosis": consultation.diagnosis,
