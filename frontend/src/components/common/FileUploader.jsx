@@ -95,8 +95,8 @@ export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, ac
         <div
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer
             ${isDragging
-              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-400'
-              : 'border-gray-300 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-gray-50 dark:hover:bg-gray-800/80'
+              ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-800 dark:border-gray-500'
+              : 'border-gray-300 dark:border-gray-700 hover:border-indigo-400 hover:bg-gray-50 dark:hover:border-gray-500 dark:hover:bg-gray-800/80'
             }`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -113,7 +113,7 @@ export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, ac
             multiple={multiple}
           />
           <div className="flex flex-col items-center justify-center gap-3">
-            <div className={`p-3 rounded-full ${isDragging ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+            <div className={`p-3 rounded-full ${isDragging ? 'bg-indigo-100 text-indigo-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
               <FiUploadCloud size={32} />
             </div>
             <div>
@@ -136,7 +136,7 @@ export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, ac
       ) : (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <div className="w-12 h-12 bg-indigo-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-indigo-600 dark:text-gray-300">
               <FiFile size={24} />
             </div>
             <div>
