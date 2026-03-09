@@ -36,6 +36,7 @@ import Button from '../../../components/common/Button';
 import { useToastStore } from '../../../store/toastStore';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { ConsultationAssetManager } from '../../../components/common/ConsultationAssetManager';
+import { toast } from 'react-hot-toast';
 
 export const DoctorConsultationPage = () => {
   const navigate = useNavigate();
