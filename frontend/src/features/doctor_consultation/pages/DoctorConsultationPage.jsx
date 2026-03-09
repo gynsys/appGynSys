@@ -13,6 +13,7 @@ import {
   FaMapMarkerAlt,
   FaHistory
 } from 'react-icons/fa';
+import { FiImage } from 'react-icons/fi';
 import { authService } from '../../../services/authService';
 import { appointmentService } from '../../../services/appointmentService';
 import { usePreconsultaEngine } from '../../preconsulta/hooks/usePreconsultaEngine';
