@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
-import api from '../../services/api';
+import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 
 export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange }) => {
