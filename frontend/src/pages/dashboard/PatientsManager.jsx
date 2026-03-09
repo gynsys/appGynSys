@@ -37,27 +37,41 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
             <p className="text-gray-500">Edad</p>
             <p className="font-semibold text-right">{data.age} años</p>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
             <p className="text-gray-500">Teléfono</p>
             <p className="font-semibold text-right">{data.phone}</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Dirección</p>
+            <p className="font-semibold text-right">{data.address || ' '}</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Ocupación</p>
+            <p className="font-semibold text-right">{data.occupation || ' '}</p>
+          </div>
+          <div className="flex justify-between items-center">
+            <p className="text-gray-500">N° Historia</p>
+            <p className="font-semibold text-right text-indigo-600">{data.history_number}</p>
           </div>
         </div>
       </div>
 
-      {(data.summary_gyn_obstetric || data.personal_history || !data.is_single_report) && (
+      {(data.reason_for_visit) && (
+        <div className="space-y-4">
+          <h4 className="text-lg font-bold border-b pb-2">Motivo de consulta</h4>
+          <p className="text-sm italic">{data.reason_for_visit}</p>
+        </div>
+      )}
+
+      {(data.summary_gyn_obstetric || data.personal_history || data.family_history_mother || data.family_history_father || data.summary_functional_exam || data.surgical_history || !data.is_single_report) && (
         <div className="space-y-4">
           <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data.summary_gyn_obstetric && (
-              <div className="space-y-2">
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
-                <p className="text-sm italic">{data.summary_gyn_obstetric}</p>
-              </div>
-            )}
-            {data.summary_habits && (
-              <div className="space-y-2">
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
-                <p className="text-sm italic">{data.summary_habits}</p>
+            {(data.family_history_mother || data.family_history_father) && (
+              <div className="space-y-2 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Antecedentes Familiares</p>
+                {data.family_history_mother && <p className="text-sm italic"><strong>Madre:</strong> {data.family_history_mother}</p>}
+                {data.family_history_father && <p className="text-sm italic"><strong>Padre:</strong> {data.family_history_father}</p>}
               </div>
             )}
             <div className="space-y-2">
@@ -68,6 +82,24 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
               <div className="space-y-2">
                 <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Quirúrgicos</p>
                 <p className="text-sm italic">{data.surgical_history}</p>
+              </div>
+            )}
+            {data.summary_gyn_obstetric && (
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Gineco-Obstétricos</p>
+                <p className="text-sm italic">{data.summary_gyn_obstetric}</p>
+              </div>
+            )}
+            {data.summary_functional_exam && (
+              <div className="space-y-2 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Examen Funcional</p>
+                <p className="text-sm italic">{data.summary_functional_exam}</p>
+              </div>
+            )}
+            {data.summary_habits && (
+              <div className="space-y-2 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hábitos</p>
+                <p className="text-sm italic">{data.summary_habits}</p>
               </div>
             )}
           </div>
