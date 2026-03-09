@@ -1,7 +1,7 @@
 """
 Gallery endpoints for managing doctor's gallery images.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Annotated, List
 from sqlalchemy import asc
@@ -58,8 +58,8 @@ async def get_public_gallery(
 async def upload_gallery_image(
     current_user: Annotated[Doctor, Depends(get_current_user)],
     file: UploadFile = File(...),
-    title: str = None,
-    description: str = None,
+    title: str = Form(None),
+    description: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """
