@@ -32,45 +32,65 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
         }
     };
 
-    const handleFileUpload = async (file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('title', file.name);
-
+    const handleMultipleFilesUpload = async (files) => {
         if (!consultationId) {
-            // Buffer mode (No ID yet)
-            const previewUrl = URL.createObjectURL(file);
-            const tempAsset = {
-                id: `temp_${Date.now()}`,
-                file_name: file.name,
-                file_path: previewUrl,
-                file_type: file.type || 'application/octet-stream',
-                file_size_bytes: file.size,
-                rawFile: file // Keep raw file for later upload
-            };
-            const newAssets = [...assets, tempAsset];
-            setAssets(newAssets);
-            if (onAssetsChange) onAssetsChange(newAssets);
+            // Buffer mode batch process
+            setAssets(prev => {
+                let newAssets = [...prev];
+                files.forEach((file, index) => {
+                    const previewUrl = URL.createObjectURL(file);
+                    const tempAsset = {
+                        id: `temp_${Date.now()}_${index}`,
+                        file_name: file.name,
+                        file_path: previewUrl,
+                        file_type: file.type || 'application/octet-stream',
+                        file_size_bytes: file.size,
+                        rawFile: file // Keep raw file for later upload
+                    };
+                    newAssets.push(tempAsset);
+                });
+                if (onAssetsChange) onAssetsChange(newAssets);
+                return newAssets;
+            });
             return;
         }
 
         setIsUploading(true);
-        try {
-            const response = await api.post(`/consultations/${consultationId}/assets`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+        let successes = 0;
+        let failures = 0;
 
-            const newAssets = [...assets, response.data];
-            setAssets(newAssets);
-            if (onAssetsChange) onAssetsChange(newAssets);
-            toast.success('Archivo subido correctamente');
-        } catch (error) {
-            console.error('Error uploading asset:', error);
-            toast.error('Error al subir el archivo');
-        } finally {
-            setIsUploading(false);
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title', file.name);
+
+            try {
+                const response = await api.post(`/consultations/${consultationId}/assets`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                setAssets(prev => {
+                    const newAssets = [...prev, response.data];
+                    if (onAssetsChange) onAssetsChange(newAssets);
+                    return newAssets;
+                });
+                successes++;
+            } catch (error) {
+                console.error('Error uploading asset:', error);
+                failures++;
+            }
+        }
+
+        setIsUploading(false);
+
+        if (successes > 0 && failures === 0) {
+            toast.success(files.length > 1 ? `${successes} archivos subidos` : 'Archivo subido correctamente');
+        } else if (successes > 0 && failures > 0) {
+            toast.success(`Se subieron ${successes} archivos, pero fallaron ${failures}`);
+        } else if (failures > 0) {
+            toast.error('Error al subir los archivos');
         }
     };
 
@@ -116,7 +136,9 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         </div>
                     )}
                     <FileUploader
-                        onFileSelect={(file) => { if (file) handleFileUpload(file); }}
+                        multiple={true}
+                        onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
+                        onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
                         acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
                     />
                 </div>
