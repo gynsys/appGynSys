@@ -20,6 +20,8 @@ class ConsultationService:
             patient_ci=consultation_in.ci,
             patient_age=consultation_in.age,
             patient_phone=consultation_in.phone,
+            address=consultation_in.address,
+            occupation=consultation_in.occupation,
             
             # Pre-consultation
             reason_for_visit=consultation_in.reason_for_visit,

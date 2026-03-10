@@ -24,6 +24,8 @@ class Consultation(Base):
     patient_ci = Column(String, nullable=True)
     patient_age = Column(String, nullable=True)
     patient_phone = Column(String, nullable=True)
+    address = Column(String, nullable=True)
+    occupation = Column(String, nullable=True)
     
     # Pre-consultation Data
     reason_for_visit = Column(Text, nullable=True)
