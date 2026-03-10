@@ -43,12 +43,13 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
-                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[100dvh] min-h-[100dvh] rounded-none border-0 px-2 pt-12 pb-4 md:h-auto md:min-h-0 md:max-h-[85vh] md:rounded-2xl md:border md:px-6 md:py-6' : 'max-h-[85vh] rounded-2xl border px-4 py-4 md:p-6'}`}>
-                  <div className={`flex ${title ? 'justify-between items-center mb-4' : 'justify-end'}`}>
+                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[100dvh] min-h-[100dvh] rounded-none border-0 px-0 pt-0 pb-0 md:h-auto md:min-h-0 md:max-h-[90vh] md:rounded-2xl md:border' : 'max-h-[90vh] rounded-2xl border'}`}>
+                  {/* Header - Fixed */}
+                  <div className={`flex ${title ? 'justify-between items-center' : 'justify-end'} px-4 py-3 md:px-6 md:py-4 border-b border-gray-100 dark:border-gray-800 shrink-0`}>
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-xl font-bold leading-6 text-gray-900 dark:text-white truncate pr-8"
+                        className="text-lg md:text-xl font-bold leading-6 text-gray-900 dark:text-white truncate pr-8"
                       >
                         {title}
                       </Dialog.Title>
@@ -56,7 +57,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                     <button
                       type="button"
                       onClick={onClose}
-                      className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none absolute top-4 right-4 bg-white/50 dark:bg-black/50 p-1 rounded-full backdrop-blur-sm z-[80]`}
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 z-[80]"
                     >
                       <svg
                         className="h-6 w-6"
@@ -73,7 +74,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                       </svg>
                     </button>
                   </div>
-                  {children}
+
+                  {/* Content - Scrollable */}
+                  <div className={`flex-1 overflow-y-auto custom-scrollbar ${fullScreenOnMobile ? 'px-4 py-4 pt-4 pb-8 md:px-6 md:py-6' : 'px-4 py-4 md:p-6'}`}>
+                    {children}
+                  </div>
                 </Dialog.Panel>
               </div>
             </Transition.Child>
