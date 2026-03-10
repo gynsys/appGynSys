@@ -105,8 +105,8 @@ class ConsultationService:
             "summary_functional_exam": latest.functional_exam_summary,
             "summary_habits": latest.habits_summary,
             "history_number": latest.history_number,
-            "address": "", 
-            "occupation": "",
+            "address": getattr(latest, 'address', "") or "", 
+            "occupation": getattr(latest, 'occupation', "") or "",
             "doctor_id": latest.doctor_id,
             "all_consultations": [
                 {
@@ -147,8 +147,8 @@ class ConsultationService:
             "summary_functional_exam": consultation.functional_exam_summary,
             "summary_habits": consultation.habits_summary,
             "history_number": consultation.history_number,
-            "address": "", 
-            "occupation": "",
+            "address": getattr(consultation, 'address', "") or "", 
+            "occupation": getattr(consultation, 'occupation', "") or "",
             "doctor_id": consultation.doctor_id,
             "assets": [
                 {
