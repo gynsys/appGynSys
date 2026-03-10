@@ -196,50 +196,17 @@ function App() {
           path="/admin"
           element={
             <AdminRoute>
-              <AdminDashboardPage />
+              <AdminLayout />
             </AdminRoute>
           }
-        />
-        <Route
-          path="/admin/tenants"
-          element={
-            <AdminRoute>
-              <AdminTenantsPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/plans"
-          element={
-            <AdminRoute>
-              <AdminPlansPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/modules"
-          element={
-            <AdminRoute>
-              <AdminModulesPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/templates"
-          element={
-            <AdminRoute>
-              <AdminTemplatesPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/notifications"
-          element={
-            <AdminRoute>
-              <AdminNotificationManagerPage />
-            </AdminRoute>
-          }
-        />
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="tenants" element={<AdminTenantsPage />} />
+          <Route path="plans" element={<AdminPlansPage />} />
+          <Route path="modules" element={<AdminModulesPage />} />
+          <Route path="templates" element={<AdminTemplatesPage />} />
+          <Route path="notifications" element={<AdminNotificationManagerPage />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>

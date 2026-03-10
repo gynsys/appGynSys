@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
 const navigation = [
@@ -11,7 +11,7 @@ const navigation = [
   { name: 'Gestion Plantillas', href: '/admin/templates', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
 ]
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
@@ -126,7 +126,7 @@ export default function AdminLayout({ children }) {
 
         {/* Page content */}
         <main className="flex-1">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>
