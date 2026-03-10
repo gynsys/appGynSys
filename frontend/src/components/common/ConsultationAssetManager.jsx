@@ -142,6 +142,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
     const isImage = (fileType) => fileType.startsWith('image/');
     const isVideo = (fileType) => fileType.startsWith('video/');
+    const isPdf = (fileType) => fileType === 'application/pdf';
 
     return (
         <div className="space-y-8">
@@ -186,7 +187,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
                                 {/* Acciones estáticas en la esquina superior derecha, tamaño reducido un ~15% */}
                                 <div className="absolute top-2 right-2 flex space-x-1 bg-white/80 dark:bg-black/60 shadow-sm backdrop-blur-md rounded-lg p-1 opacity-100">
-                                    {(isImage(asset.file_type) || isVideo(asset.file_type)) && (
+                                    {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
                                         <button
                                             onClick={() => setPreviewAsset(asset)}
                                             className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
@@ -288,6 +289,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 src={getFullUrl(previewAsset.file_path)}
                                 alt={previewAsset.file_name}
                                 className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                            />
+                        ) : isPdf(previewAsset.file_type) ? (
+                            <iframe
+                                src={getFullUrl(previewAsset.file_path)}
+                                className="w-full h-full rounded-lg bg-white"
+                                title={previewAsset.file_name}
                             />
                         ) : (
                             <div className="text-white bg-gray-800 p-8 rounded-xl text-center">
