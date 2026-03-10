@@ -124,7 +124,7 @@ export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, ac
                 {subtitle}
               </p>
             </div>
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
               {acceptedFormats.map(ext => (
                 <span key={ext} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-md font-mono">
                   {ext}

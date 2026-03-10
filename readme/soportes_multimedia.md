@@ -87,3 +87,13 @@ docker logs appgynsys-backend-1 --tail 50 -f
 # Filtrar específicamente tráfico del endpoint de Soportes:
 docker logs appgynsys-backend-1 | grep "assets"
 ```
+
+---
+
+## 🔄 5. Flujos de Trabajo (Workflows)
+
+### 5.1 De Preconsulta a Historia Médica
+Es crucial entender el ciclo de vida de un documento multimedia dentro de la aplicación:
+1. **Fase de Preconsulta (`DoctorConsultationPage.jsx`)**: Cuando el paciente está en sala de espera o siendo preparado, se pueden subir Soportes Multimedias iniciales. Dado que todavía no se ha "Guardado la Consulta" en su totalidad (no hay `consultation_id` real), estos archivos se agrupan temporalmente en memoria (estado de React `pendingAssets`).
+2. **Commit de la Consulta**: Al presionar "Guardar Consulta", se crea el registro primario y se obtiene un `consultation_id`. Inmediatamente después, el Frontend itera sobre `pendingAssets` y realiza los POSTs al servidor uno por uno para guardarlos y asociarlos al ID recién creado.
+3. **Visor de Historial (`PatientsManager.jsx`)**: Cualquier archivo que se haya cargado desde la vista de Preconsulta estará disponible automáticamente para su visualización y descarga en el **Panel de Historias Médicas** (Gestor de Pacientes -> Vista Previa). El componente `ConsultationAssetManager` se reutiliza en modo pestaña para renderizar dichos "assets" con su respectivo identificador.
