@@ -276,7 +276,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         </button>
                     </div>
 
-                    <div className="w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center p-4">
+                    <div className={`w-full h-full flex items-center justify-center ${isPdf(previewAsset.file_type) ? 'p-0 pt-16 pb-12 md:pb-4' : 'max-w-5xl max-h-[85vh] p-4'}`}>
                         {isVideo(previewAsset.file_type) ? (
                             <video
                                 src={getFullUrl(previewAsset.file_path)}
@@ -293,7 +293,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         ) : isPdf(previewAsset.file_type) ? (
                             <iframe
                                 src={getFullUrl(previewAsset.file_path)}
-                                className="w-full h-full rounded-lg bg-white"
+                                className="w-full h-full rounded-none md:rounded-lg bg-white border-0"
                                 title={previewAsset.file_name}
                             />
                         ) : (
