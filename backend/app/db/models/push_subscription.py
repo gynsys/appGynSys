@@ -14,7 +14,7 @@ class PushSubscription(Base):
     user_id = Column(Integer, ForeignKey("cycle_users.id"), index=True, nullable=True)
     doctor_id = Column(Integer, ForeignKey("doctors.id"), index=True, nullable=True)
     
-    endpoint = Column(String, nullable=False)
+    endpoint = Column(String, unique=True, index=True, nullable=False)
     p256dh = Column(String, nullable=False)
     auth = Column(String, nullable=False)
     
