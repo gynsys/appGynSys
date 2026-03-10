@@ -37,6 +37,7 @@ import { useToastStore } from '../../../store/toastStore';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { ConsultationAssetManager } from '../../../components/common/ConsultationAssetManager';
 import { toast } from 'react-hot-toast';
+import api from '../../../lib/axios';
 
 export const DoctorConsultationPage = () => {
   const navigate = useNavigate();
