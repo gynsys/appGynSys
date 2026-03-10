@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 
 const HistoryHtmlView = ({ data, downloadUrl }) => {
