@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { createPortal } from 'react-dom';
 import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
