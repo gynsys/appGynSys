@@ -480,7 +480,7 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl">
+      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl" fullScreenOnMobile>
         <div className="flex flex-col h-full">
           {/* Tabs Navigation */}
           {currentConsultationId && (

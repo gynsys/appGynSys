@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { useDarkMode } from '../../hooks/useDarkMode'
 
-export default function Modal({ isOpen, onClose, title, children, size = 'md', darkMode = false }) {
+export default function Modal({ isOpen, onClose, title, children, size = 'md', darkMode = false, fullScreenOnMobile = false }) {
   const [isDarkMode] = useDarkMode()
   const sizeClasses = {
     sm: 'max-w-md',
@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
-                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white px-4 py-4 md:p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700 mt-[56px] max-h-[85vh] flex flex-col`}>
+                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white px-4 py-4 md:p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700 mt-[56px] flex flex-col ${fullScreenOnMobile ? 'h-[calc(100dvh-56px)] md:h-auto md:max-h-[85vh] rounded-t-2xl rounded-b-none border-b-0 md:rounded-2xl md:border-b' : 'max-h-[85vh] rounded-2xl'}`}>
                   <div className={`flex ${title ? 'justify-between items-center mb-4' : 'justify-end'}`}>
                     {title && (
                       <Dialog.Title

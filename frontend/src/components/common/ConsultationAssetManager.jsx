@@ -254,7 +254,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
             {/* Fullscreen Assets Preview Modal (Lightbox) */}
             {previewAsset && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md">
+                <div className="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
                     <div className="absolute top-4 right-4 flex space-x-4">
                         <a
                             href={getFullUrl(previewAsset.file_path)}
