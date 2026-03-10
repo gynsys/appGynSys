@@ -32,7 +32,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className={`flex items-center justify-center text-center ${fullScreenOnMobile ? 'min-h-[calc(100dvh-56px)] mt-[56px] p-0 md:min-h-full md:mt-0 md:p-4' : 'min-h-full p-4'}`}>
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
-                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white px-4 py-4 md:p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700 mt-[56px] flex flex-col ${fullScreenOnMobile ? 'h-[calc(100dvh-56px)] md:h-auto md:max-h-[85vh] rounded-t-2xl rounded-b-none border-b-0 md:rounded-2xl md:border-b' : 'max-h-[85vh] rounded-2xl'}`}>
+                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[calc(100dvh-56px)] min-h-[calc(100dvh-56px)] rounded-none border-0 px-2 py-4 md:h-auto md:min-h-0 md:max-h-[85vh] md:rounded-2xl md:border md:px-6 md:py-6' : 'max-h-[85vh] rounded-2xl border px-4 py-4 md:p-6'}`}>
                   <div className={`flex ${title ? 'justify-between items-center mb-4' : 'justify-end'}`}>
                     {title && (
                       <Dialog.Title
@@ -56,7 +56,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                     <button
                       type="button"
                       onClick={onClose}
-                      className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none ${!title ? 'absolute top-4 right-4' : ''}`}
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none"
                     >
                       <svg
                         className="h-6 w-6"
