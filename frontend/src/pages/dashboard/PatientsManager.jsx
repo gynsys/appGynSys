@@ -199,6 +199,8 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
   const [historyData, setHistoryData] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [activePdfTab, setActivePdfTab] = useState('pdf'); // 'pdf' or 'assets'
+  const [currentConsultationId, setCurrentConsultationId] = useState(null);
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -338,6 +340,9 @@ export default function PatientsManager({ isEmbedded = false }) {
   const handleViewPdf = async (url) => {
     setCurrentPdfUrl(url);
     setHistoryData(null);
+    setActivePdfTab('pdf'); // Modal always opens on PDF view by default
+    setCurrentConsultationId(null);
+
     const isHistory = url.includes('history_pdf');
     const isReport = url.includes('/pdf') && !url.includes('history');
 
@@ -345,6 +350,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       const match = url.match(/\/consultations\/(\d+)\//);
       const consultationId = match ? match[1] : null;
       if (consultationId) {
+        setCurrentConsultationId(consultationId);
         setLoadingHistory(true);
         try {
           const dataEndpoint = isHistory ? 'history_data' : 'data';
@@ -474,17 +480,44 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); }} title="Vista Previa" size="4xl">
+      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl">
         <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-auto min-h-[50vh] md:min-h-0">
-            {loadingHistory ? (
-              <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse">Cargando...</div>
-            ) : historyData ? (
-              <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={currentPdfUrl} /></div>
-            ) : null}
-            <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden">
-              {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="PDF" />}
+          {/* Tabs Navigation */}
+          {currentConsultationId && (
+            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+              <button
+                className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors ${activePdfTab === 'pdf' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                onClick={() => setActivePdfTab('pdf')}
+              >
+                Documento
+              </button>
+              <button
+                className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activePdfTab === 'assets' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                onClick={() => setActivePdfTab('assets')}
+              >
+                <FiImage /> Soportes Multimedias
+              </button>
             </div>
+          )}
+
+          <div className={`flex-1 overflow-auto min-h-[50vh] md:min-h-0 ${activePdfTab === 'assets' ? 'p-4' : ''}`}>
+            {activePdfTab === 'pdf' ? (
+              <>
+                {loadingHistory ? (
+                  <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse text-gray-500">Cargando documento...</div>
+                ) : historyData ? (
+                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={currentPdfUrl} /></div>
+                ) : null}
+                <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                  {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="Visor de PDF" />}
+                </div>
+              </>
+            ) : (
+              // Tab Content: Assets
+              <div className="h-[70vh] overflow-y-auto pr-2">
+                <ConsultationAssetManager consultationId={currentConsultationId} />
+              </div>
+            )}
           </div>
           <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
             {currentPdfUrl && <a href={currentPdfUrl} target="_blank" rel="noreferrer" className="px-2 py-[3px] bg-indigo-600 text-white rounded-lg text-sm font-medium">Descargar PDF</a>}
