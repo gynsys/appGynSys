@@ -119,5 +119,11 @@ class PushSubscriptionSchema(BaseModel):
     keys: PushKeys
 
 
+class NotificationTrackRequest(BaseModel):
+    notification_id: int
+    event: str  # "received" or "clicked"
+    metadata: Optional[Dict[str, Any]] = None
+
+
 class VapidKeyResponse(BaseModel):
     public_key: str

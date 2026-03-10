@@ -98,6 +98,23 @@ def unsubscribe_push(
     service.delete_subscription_by_endpoint(db, endpoint)
     return {"message": "Unsubscribed successfully"}
 
+from app.schemas.notification import NotificationTrackRequest
+
+@router.post("/track")
+def track_notification(
+    track_in: NotificationTrackRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Public endpoint to track notification receipt and clicks.
+    Does not require auth to facilitate background reporting from SW.
+    """
+    log = service.track_notification_event(db, track_in)
+    if not log:
+        # Silently fail or return 404. SW shouldn't care much.
+        return {"status": "not_found"}
+    return {"status": "ok", "event": track_in.event}
+
 
 # =============================================================================
 # ENDPOINTS DE DIAGNÓSTICO (SuperAdmin Only)

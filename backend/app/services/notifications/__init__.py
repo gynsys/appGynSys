@@ -108,3 +108,31 @@ def delete_subscription_by_endpoint(db: Session, endpoint: str) -> bool:
     result = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
     db.commit()
     return result > 0
+
+from app.schemas.notification import NotificationTrackRequest
+from app.db.models.notification import NotificationLog
+
+def track_notification_event(db: Session, track_in: NotificationTrackRequest) -> Optional[NotificationLog]:
+    """Registra eventos de recepción o clic de una notificación."""
+    log = db.query(NotificationLog).filter(NotificationLog.id == track_in.notification_id).first()
+    if not log:
+        return None
+    
+    now = normalize_to_caracas()
+    
+    if track_in.event == "received":
+        if not log.received_at:
+            log.received_at = now
+    elif track_in.event == "clicked":
+        if not log.clicked_at:
+            log.clicked_at = now
+            
+    if track_in.metadata:
+        # Mezclar metadata existente con la nueva
+        current_meta = log.event_metadata or {}
+        current_meta.update(track_in.metadata)
+        log.event_metadata = current_meta
+        
+    db.commit()
+    db.refresh(log)
+    return log

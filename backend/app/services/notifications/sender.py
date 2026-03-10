@@ -44,8 +44,11 @@ def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dic
             }
         return None
 
-def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tuple[bool, Optional[str], Optional[str]]:
-    """Envia por Push + Email si el canal es 'dual' (Soporta Usuaria o Doctora)."""
+def send_dual_notification_logic(db: Session, item: PendingNotification, log_id: Optional[int] = None) -> Tuple[bool, Optional[str], Optional[str]]:
+    """
+    Envia por Push + Email de forma DUAL (Soporta Usuaria o Doctora).
+    Si log_id está presente, se incluye en el payload de Push para tracking.
+    """
     # Identificar el actor (Prioridad: recipient_id -> doctor_id)
     actor = None
     email_address = None
@@ -60,24 +63,34 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
     if not actor:
         return False, None, "Actor not found"
     
-    channel_pref = item.channel or "dual"
+    # Usuario pidió que absolutamente todas sean duales (Email + Push)
+    # Ignoramos la preferencia del item si no es dual, a menos que el canal esté vacío
+    # channel_pref = item.channel or "dual" 
+    # Forzamos dual para máxima confiabilidad según requerimiento
+    channels_to_try = ["push", "email"]
+    
     push_success = False
     email_success = False
     errors = []
     channels_sent = []
     
     # 1. INTENTAR PUSH
-    if channel_pref in ("dual", "push"):
+    if "push" in channels_to_try:
         if push_circuit.can_execute():
             try:
                 # Si es para doctora, el link debe ser al dash de admin
                 url = "/admin/dashboard" if hasattr(actor, "slug_url") else "/cycle/dashboard"
                 
+                # Payload data con tracking ID
+                push_data = {"url": url}
+                if log_id:
+                    push_data["notification_id"] = log_id
+
                 result = send_push_to_actor(
                     actor=actor, 
                     title=item.subject, 
                     body=item.message_text or item.subject,
-                    data={"url": url}
+                    data=push_data
                 )
                 
                 if result.get("success"):
@@ -86,7 +99,6 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
                     channels_sent.append("push")
                 else:
                     errors.append(f"Push failed: {result.get('error')}")
-                    # No marcamos como fallo crítico del circuit breaker si es error de 'no subs'
             except Exception as e:
                 push_circuit.record_failure()
                 errors.append(f"Push error: {str(e)}")
@@ -95,7 +107,7 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
             errors.append("Push circuit breaker OPEN")
     
     # 2. INTENTAR EMAIL
-    if channel_pref in ("dual", "email"):
+    if "email" in channels_to_try:
         if email_address:
             try:
                 _send_integrated_email(email_address, item.subject, item.body)
@@ -106,6 +118,8 @@ def send_dual_notification_logic(db: Session, item: PendingNotification) -> Tupl
         else:
             errors.append("No email address found")
     
+    # El éxito global depende de que al menos uno haya salido bien
+    # Pero el usuario quiere DUAL, así que informamos fallos parciales en final_error
     success = push_success or email_success
     final_channel = "+".join(channels_sent) if channels_sent else None
     final_error = "; ".join(errors) if errors else None
