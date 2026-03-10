@@ -106,12 +106,10 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
               <p className="font-semibold text-right">{data.occupation}</p>
             </div>
           )}
-          {data.email && (
-            <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
-              <p className="text-gray-500">Correo</p>
-              <p className="font-semibold text-right text-indigo-600 truncate max-w-[60%]">{data.email}</p>
-            </div>
-          )}
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Correo</p>
+            <p className="font-semibold text-right text-indigo-600 truncate max-w-[60%]">{data.email || '-'}</p>
+          </div>
         </div>
       </div>
 

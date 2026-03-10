@@ -216,6 +216,7 @@ export const DoctorConsultationPage = () => {
               ci: extractedCi || answers.ci || appointment.patient_dni,
               address: answers.address || appointment.residence || answers.residence,
               occupation: answers.occupation || appointment.occupation,
+              email: answers.email || appointment.patient_email || "",
               reason_for_visit: appointment.reason_for_visit || answers.reason_for_visit || answers.gyn_reason,
 
               // BACKFILL: Generate text summaries if missing
@@ -238,6 +239,7 @@ export const DoctorConsultationPage = () => {
               ci: extractedCi || loadedHistory.patient_ci,
               address: appointment.residence || loadedHistory.address,
               occupation: appointment.occupation || loadedHistory.occupation,
+              email: appointment.patient_email || loadedHistory.email || "",
               reason_for_visit: appointment.reason_for_visit || "Control Recurrente",
 
               // Map History -> Preconsulta Fields (Match Backend Model Keys)
@@ -260,6 +262,7 @@ export const DoctorConsultationPage = () => {
               ci: extractedCi,
               address: appointment.residence,
               occupation: appointment.occupation,
+              email: appointment.patient_email || "",
               reason_for_visit: appointment.reason_for_visit
             };
           }
