@@ -129,6 +129,30 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
         "title": "⚠️ Alerta de Agenda",
         "message": "Tu agenda de la próxima semana está al {occupancy_percent}%. ¿Deseas enviar recordatorios de chequeo anual?",
         "logic": lambda c: c.get("role") == "doctor" and c.get("occupancy_percent", 100) < 40 and c.get("day_of_week") == 5 # Viernes
+    },
+    {
+        "type": "doctor_new_appointment",
+        "category": "doctor",
+        "priority": 53,
+        "title": "📅 Nueva Cita Agendada",
+        "message": "Hola {doctor_name}, tienes una nueva cita de {patient_name} para el {appointment_date}.",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "new_appointment"
+    },
+    {
+        "type": "doctor_preconsulta_completed",
+        "category": "doctor",
+        "priority": 54,
+        "title": "📝 Preconsulta Completada",
+        "message": "{patient_name} ha completado su preconsulta para la cita del {appointment_date}.",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "preconsulta_completed"
+    },
+    {
+        "type": "doctor_new_contact_message",
+        "category": "doctor",
+        "priority": 55,
+        "title": "📨 Nuevo Mensaje de Contacto",
+        "message": "Has recibido un nuevo mensaje de {patient_name}: {message_preview}",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "new_contact_message"
     }
 ]
 

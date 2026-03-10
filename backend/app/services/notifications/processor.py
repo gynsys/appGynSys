@@ -356,6 +356,66 @@ def trigger_immediate_evaluation(user_id: int, db: Session):
     except Exception as e:
         logger.error(f"Error triggering evaluation: {e}")
 
+def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, db: Session):
+    """
+    Dispara una notificación inmediata para un doctor basada en un evento.
+    """
+    try:
+        from .registry import evaluate_registry_rule, NOTIFICATION_MAP
+        from .sender import safe_render_content
+        
+        now = normalize_to_caracas()
+        
+        # 1. Obtener la regla para este doctor
+        rule = db.query(NotificationRule).filter(
+            NotificationRule.tenant_id == doctor_id,
+            NotificationRule.notification_type == notification_type,
+            NotificationRule.is_active == True
+        ).first()
+        
+        if not rule:
+            logger.warning(f"No active rule found for doctor {doctor_id} and type {notification_type}")
+            return False
+
+        # 2. Evaluar lógica (Registry)
+        rule_def = NOTIFICATION_MAP.get(notification_type)
+        if not rule_def:
+            logger.error(f"Rule type {notification_type} not found in registry")
+            return False
+            
+        # Añadir el rol doctor al contexto para que evaluate_registry_rule pase
+        full_context = context.copy()
+        full_context["role"] = "doctor"
+        
+        if not evaluate_registry_rule(rule_def, full_context, None): # No user settings for doctors yet
+            return False
+
+        # 3. Renderizar
+        rendered = safe_render_content(rule, full_context)
+        if not rendered:
+            return False
+
+        # 4. Encolar
+        pending = PendingNotification(
+            notification_rule_id=rule.id,
+            doctor_id=doctor_id,
+            subject=rendered["title"],
+            body=rendered["message_html"],
+            message_text=rendered["message_text"],
+            scheduled_for=now,
+            channel=rule.channel,
+            status="pending"
+        )
+        db.add(pending)
+        db.commit()
+        
+        # 5. Intentar entrega inmediata
+        deliver_pending_notifications()
+        return True
+    except Exception as e:
+        logger.error(f"Error triggering doctor event {notification_type}: {e}", exc_info=True)
+        return False
+
 def recover_stale_processing_notifications() -> int:
     """Rescata notificaciones atascadas."""
     try:

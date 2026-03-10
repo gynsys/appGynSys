@@ -28,6 +28,7 @@ from .processor import (
     run_daily_evaluation,
     deliver_pending_notifications,
     trigger_immediate_evaluation,
+    trigger_doctor_event,
     recover_stale_processing_notifications,
     cleanup_invalid_subscriptions,
 )

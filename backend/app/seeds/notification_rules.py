@@ -799,7 +799,7 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "channel": "dual",
             "send_time": "20:00"
         },
-        # ===== DOCTOR ADMINISTRATIVE (Asistente Virtual) (3 rules) =====
+        # ===== DOCTOR ADMINISTRATIVE (Asistente Virtual) (6 rules) =====
         {
             "notification_type": "doctor_daily_agenda",
             "trigger_condition": {"role": "doctor"},
@@ -807,7 +807,7 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "title_template": "🌅 Resumen Matutino",
             "message_template": "¡Buenos días, Dra! Hoy tienes {appointment_count} citas programadas. La primera es a las {first_appointment_time}.",
             "message_text_template": "Resumen Matutino: {appointment_count} citas hoy.",
-            "channel": "push",
+            "channel": "dual",
             "send_time": "07:30"
         },
         {
@@ -817,7 +817,7 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "title_template": "📝 Historias Pendientes",
             "message_template": "Tienes {pending_count} historias clínicas del día de hoy esperando por tus notas finales.",
             "message_text_template": "Recordatorio: {pending_count} historias pendientes.",
-            "channel": "push",
+            "channel": "dual",
             "send_time": "20:00"
         },
         {
@@ -827,8 +827,38 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "title_template": "⚠️ Alerta de Agenda",
             "message_template": "Tu agenda de la próxima semana está al {occupancy_percent}%. ¿Deseas enviar recordatorios de chequeo anual?",
             "message_text_template": "Baja ocupación próxima semana ({occupancy_percent}%).",
-            "channel": "push",
+            "channel": "dual",
             "send_time": "17:00"
+        },
+        {
+            "notification_type": "doctor_new_appointment",
+            "trigger_condition": {"role": "doctor", "event": "new_appointment"},
+            "priority": 53,
+            "title_template": "📅 Nueva Cita Agendada",
+            "message_template": "Hola {doctor_name}, tienes una nueva cita de {patient_name} para el {appointment_date}.",
+            "message_text_template": "Nueva cita de {patient_name} para el {appointment_date}.",
+            "channel": "dual",
+            "send_time": "08:00"
+        },
+        {
+            "notification_type": "doctor_preconsulta_completed",
+            "trigger_condition": {"role": "doctor", "event": "preconsulta_completed"},
+            "priority": 54,
+            "title_template": "📝 Preconsulta Completada",
+            "message_template": "{patient_name} ha completado su preconsulta para la cita del {appointment_date}.",
+            "message_text_template": "Preconsulta completada por {patient_name}.",
+            "channel": "dual",
+            "send_time": "08:00"
+        },
+        {
+            "notification_type": "doctor_new_contact_message",
+            "trigger_condition": {"role": "doctor", "event": "new_contact_message"},
+            "priority": 55,
+            "title_template": "📨 Nuevo Mensaje de Contacto",
+            "message_template": "Has recibido un nuevo mensaje de {patient_name}: {message_preview}",
+            "message_text_template": "Nuevo mensaje de contacto de {patient_name}.",
+            "channel": "dual",
+            "send_time": "08:00"
         },
     ]
 

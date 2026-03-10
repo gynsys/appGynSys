@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.crud import admin as crud_admin
 from app.tasks.email_tasks import _send_integrated_email
+from app.services.notifications import trigger_doctor_event
 
 router = APIRouter()
 
@@ -33,29 +34,19 @@ def send_contact_email(
     if not recipient_email:
         raise HTTPException(status_code=500, detail="Doctor has no email configured")
 
-    # Construct email content
-    subject = f"Nuevo mensaje de contacto de {contact_data.name}"
-    html_content = f"""
-    <html>
-        <body>
-            <h2>Nuevo mensaje de contacto</h2>
-            <p><strong>Nombre:</strong> {contact_data.name}</p>
-            <p><strong>Email:</strong> {contact_data.email}</p>
-            <p><strong>Teléfono:</strong> {contact_data.phone}</p>
-            <p><strong>Mensaje:</strong></p>
-            <p>{contact_data.message}</p>
-            <br>
-            <p>Este mensaje fue enviado desde tu sitio web GynSys.</p>
-        </body>
-    </html>
-    """
-
-    # Send email (using background task to avoid blocking)
-    background_tasks.add_task(
-        _send_integrated_email,
-        to_email=recipient_email,
-        subject=subject,
-        html_content=html_content
+    # Trigger notification (centralized system)
+    trigger_doctor_event(
+        doctor_id=doctor.id,
+        notification_type="doctor_new_contact_message",
+        context={
+            "doctor_name": doctor.nombre_completo,
+            "patient_name": contact_data.name,
+            "patient_email": contact_data.email,
+            "patient_phone": contact_data.phone,
+            "message_preview": contact_data.message[:100] + ("..." if len(contact_data.message) > 100 else ""),
+            "full_message": contact_data.message
+        },
+        db=db
     )
 
     return {"message": "Email sent successfully"}

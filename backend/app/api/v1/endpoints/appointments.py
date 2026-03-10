@@ -14,6 +14,7 @@ from app.api.v1.endpoints.auth import get_current_user
 from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
 from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification, send_platform_registration_invitation
+from app.services.notifications import trigger_doctor_event
 from app.services.summary_generator import ClinicalSummaryGenerator
 from datetime import datetime, timedelta
 import logging
@@ -52,22 +53,24 @@ async def create_public_appointment(
     db.commit()
     db.refresh(db_appointment)
     
-    # Send notification email to doctor
+    # Send notification to doctor (centralized system)
     try:
-        # Format date safely
         date_str = db_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if db_appointment.appointment_date else "Fecha por definir"
-        
-        send_appointment_notification_email.delay(
-            doctor_email=doctor.email,
-            doctor_name=doctor.nombre_completo,
-            patient_name=db_appointment.patient_name,
-            appointment_date=date_str,
-            appointment_type=db_appointment.appointment_type or "No especificado",
-            reason=db_appointment.reason_for_visit or "No especificado",
-            phone=db_appointment.patient_phone or "No especificado"
+        trigger_doctor_event(
+            doctor_id=doctor.id,
+            notification_type="doctor_new_appointment",
+            context={
+                "doctor_name": doctor.nombre_completo,
+                "patient_name": db_appointment.patient_name,
+                "appointment_date": date_str,
+                "appointment_type": db_appointment.appointment_type or "No especificado",
+                "reason": db_appointment.reason_for_visit or "No especificado",
+                "phone": db_appointment.patient_phone or "No especificado"
+            },
+            db=db
         )
     except Exception as e:
-        pass
+        logger.error(f"Error triggering doctor notification for new appointment: {e}")
     
     return db_appointment
 
@@ -364,14 +367,17 @@ async def submit_preconsulta(
             
             date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
 
-            send_preconsulta_completed_notification.delay(
-                doctor_email=doctor.email,
-                doctor_name=doctor.nombre_completo,
-                patient_name=appointment.patient_name,
-                appointment_date=date_str,
-                patient_data=merged_data,
-                primary_color=doctor.theme_primary_color or '#4F46E5',
-                summary_html=summary_html
+            trigger_doctor_event(
+                doctor_id=doctor.id,
+                notification_type="doctor_preconsulta_completed",
+                context={
+                    "doctor_name": doctor.nombre_completo,
+                    "patient_name": appointment.patient_name,
+                    "appointment_date": date_str,
+                    "patient_data": merged_data,
+                    "summary_html": summary_html
+                },
+                db=db
             )
 
             # Correo 2: Invitar a la paciente a registrarse en la plataforma

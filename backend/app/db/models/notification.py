@@ -57,6 +57,7 @@ VALID_NOTIFICATION_TYPES = {
 
     # Administrativas Doctora (Asistente Virtual)
     "doctor_daily_agenda", "doctor_pending_stories", "doctor_low_agenda",
+    "doctor_new_appointment", "doctor_preconsulta_completed", "doctor_new_contact_message",
 }
 
 
