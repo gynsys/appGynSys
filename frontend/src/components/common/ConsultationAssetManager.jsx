@@ -10,6 +10,18 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const [loading, setLoading] = useState(false);
     const hasFetchedForId = useRef(null);
 
+    // Helper to resolve absolute URL for backend static files
+    const getFullUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('blob:')) return path;
+
+        let backendUrl = '';
+        if (import.meta.env.VITE_API_BASE_URL) {
+            backendUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+        }
+        return `${backendUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     useEffect(() => {
         // Only fetch if we have an ID and haven't fetched for this specific ID yet
         if (consultationId && hasFetchedForId.current !== consultationId) {
@@ -161,7 +173,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
                                     {isImage(asset.file_type) ? (
                                         <img
-                                            src={asset.file_path}
+                                            src={getFullUrl(asset.file_path)}
                                             alt={asset.file_name}
                                             className="w-full h-full object-cover"
                                             onError={(e) => { e.target.src = '/placeholder-image.png'; }}
@@ -183,7 +195,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 {/* Actions overlay */}
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2 backdrop-blur-sm">
                                     <a
-                                        href={asset.file_path}
+                                        href={getFullUrl(asset.file_path)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-2 bg-white text-gray-900 rounded-full hover:bg-indigo-50 transition-colors"
