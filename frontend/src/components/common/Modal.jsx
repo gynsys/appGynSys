@@ -32,7 +32,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className={`flex items-center justify-center text-center ${fullScreenOnMobile ? 'min-h-[calc(100dvh-56px)] mt-[56px] p-0 md:min-h-full md:mt-0 md:p-4' : 'min-h-full p-4'}`}>
+          <div className={`flex items-center justify-center text-center ${fullScreenOnMobile ? 'min-h-[100dvh] p-0 md:min-h-full md:p-4' : 'min-h-full p-4'}`}>
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -43,12 +43,12 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
-                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[calc(100dvh-56px)] min-h-[calc(100dvh-56px)] rounded-none border-0 px-2 py-4 md:h-auto md:min-h-0 md:max-h-[85vh] md:rounded-2xl md:border md:px-6 md:py-6' : 'max-h-[85vh] rounded-2xl border px-4 py-4 md:p-6'}`}>
+                <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[100dvh] min-h-[100dvh] rounded-none border-0 px-2 pt-12 pb-4 md:h-auto md:min-h-0 md:max-h-[85vh] md:rounded-2xl md:border md:px-6 md:py-6' : 'max-h-[85vh] rounded-2xl border px-4 py-4 md:p-6'}`}>
                   <div className={`flex ${title ? 'justify-between items-center mb-4' : 'justify-end'}`}>
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-2xl font-bold leading-6 text-gray-900 dark:text-white"
+                        className="text-xl font-bold leading-6 text-gray-900 dark:text-white truncate pr-8"
                       >
                         {title}
                       </Dialog.Title>
@@ -56,7 +56,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                     <button
                       type="button"
                       onClick={onClose}
-                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none"
+                      className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition outline-none border-none focus:outline-none absolute top-4 right-4 bg-white/50 dark:bg-black/50 p-1 rounded-full backdrop-blur-sm z-[80]`}
                     >
                       <svg
                         className="h-6 w-6"

@@ -276,7 +276,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         </button>
                     </div>
 
-                    <div className={`w-full h-full flex items-center justify-center ${isPdf(previewAsset.file_type) ? 'p-0' : 'max-w-5xl max-h-[85vh] p-4'}`}>
+                    <div className="w-full h-full flex items-center justify-center p-0 md:p-4">
                         {isVideo(previewAsset.file_type) ? (
                             <video
                                 src={getFullUrl(previewAsset.file_path)}
