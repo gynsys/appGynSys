@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload } from 'react-icons/fi';
+import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
@@ -8,6 +8,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const [assets, setAssets] = useState(initialAssets);
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [previewAsset, setPreviewAsset] = useState(null);
     const hasFetchedForId = useRef(null);
 
     // Helper to resolve absolute URL for backend static files
@@ -210,12 +211,22 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
                                 {/* Actions overlay */}
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2 backdrop-blur-sm">
+                                    {(isImage(asset.file_type) || isVideo(asset.file_type)) && (
+                                        <button
+                                            onClick={() => setPreviewAsset(asset)}
+                                            className="p-2 bg-white text-gray-900 rounded-full hover:bg-indigo-50 transition-colors"
+                                            title="Ver archivo"
+                                        >
+                                            <FiEye className="w-4 h-4" />
+                                        </button>
+                                    )}
                                     <a
                                         href={getFullUrl(asset.file_path)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-2 bg-white text-gray-900 rounded-full hover:bg-indigo-50 transition-colors"
-                                        title="Ver / Descargar"
+                                        title="Descargar"
+                                        download
                                     >
                                         <FiDownload className="w-4 h-4" />
                                     </a>
@@ -234,6 +245,57 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
             ) : (
                 <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-200 dark:border-gray-700">
                     No hay imágenes ni soportes multimedia guardados en esta consulta.
+                </div>
+            )}
+
+            {/* Fullscreen Assets Preview Modal (Lightbox) */}
+            {previewAsset && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md">
+                    <div className="absolute top-4 right-4 flex space-x-4">
+                        <a
+                            href={getFullUrl(previewAsset.file_path)}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-indigo-400 transition-colors flex items-center space-x-2 bg-black/40 px-4 py-2 rounded-full"
+                        >
+                            <FiDownload className="w-5 h-5" />
+                            <span className="text-sm font-medium">Descargar original</span>
+                        </a>
+                        <button
+                            onClick={() => setPreviewAsset(null)}
+                            className="text-white/70 hover:text-white bg-black/40 p-2 rounded-full transition-colors"
+                            title="Cerrar"
+                        >
+                            <FiX className="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    <div className="w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center p-4">
+                        {isVideo(previewAsset.file_type) ? (
+                            <video
+                                src={getFullUrl(previewAsset.file_path)}
+                                controls
+                                autoPlay
+                                className="max-w-full max-h-full rounded-lg shadow-2xl bg-black"
+                            />
+                        ) : isImage(previewAsset.file_type) ? (
+                            <img
+                                src={getFullUrl(previewAsset.file_path)}
+                                alt={previewAsset.file_name}
+                                className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                            />
+                        ) : (
+                            <div className="text-white bg-gray-800 p-8 rounded-xl text-center">
+                                <FiFile className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                <p>Vista previa no disponible para este formato.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm">
+                        {previewAsset.file_name}
+                    </div>
                 </div>
             )}
         </div>
