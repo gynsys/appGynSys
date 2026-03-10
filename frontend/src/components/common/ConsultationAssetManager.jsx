@@ -255,8 +255,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
             {/* Fullscreen Assets Preview Modal (Lightbox) */}
             {previewAsset && (
-                <div className="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
-                    <div className="absolute top-4 right-4 flex space-x-4">
+                <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
+                    <div className="absolute top-4 right-4 flex space-x-4 z-10">
                         <a
                             href={getFullUrl(previewAsset.file_path)}
                             download
@@ -276,7 +276,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         </button>
                     </div>
 
-                    <div className={`w-full h-full flex items-center justify-center ${isPdf(previewAsset.file_type) ? 'p-0 pt-16 pb-12 md:pb-4' : 'max-w-5xl max-h-[85vh] p-4'}`}>
+                    <div className={`w-full h-full flex items-center justify-center ${isPdf(previewAsset.file_type) ? 'p-0' : 'max-w-5xl max-h-[85vh] p-4'}`}>
                         {isVideo(previewAsset.file_type) ? (
                             <video
                                 src={getFullUrl(previewAsset.file_path)}
