@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
