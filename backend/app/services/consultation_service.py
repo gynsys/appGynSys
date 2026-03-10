@@ -110,7 +110,15 @@ class ConsultationService:
             "history_number": latest.history_number,
             "address": getattr(latest, 'address', "") or "", 
             "occupation": getattr(latest, 'occupation', "") or "",
-            "email": getattr(latest, 'patient_email', "") or "",
+            "email": (getattr(latest, 'patient_email', "") or "") or (
+                db.query(Appointment.patient_email)
+                .filter(Appointment.patient_dni == latest.patient_ci)
+                .filter(Appointment.patient_email.is_not(None))
+                .order_by(Appointment.created_at.desc())
+                .first()[0] if db.query(Appointment.patient_email)
+                .filter(Appointment.patient_dni == latest.patient_ci)
+                .filter(Appointment.patient_email.is_not(None)).first() else ""
+            ),
             "doctor_id": latest.doctor_id,
             "all_consultations": [
                 {
@@ -153,7 +161,15 @@ class ConsultationService:
             "history_number": consultation.history_number,
             "address": getattr(consultation, 'address', "") or "", 
             "occupation": getattr(consultation, 'occupation', "") or "",
-            "email": getattr(consultation, 'patient_email', "") or "",
+            "email": (getattr(consultation, 'patient_email', "") or "") or (
+                db.query(Appointment.patient_email)
+                .filter(Appointment.patient_dni == consultation.patient_ci)
+                .filter(Appointment.patient_email.is_not(None))
+                .order_by(Appointment.created_at.desc())
+                .first()[0] if db.query(Appointment.patient_email)
+                .filter(Appointment.patient_dni == consultation.patient_ci)
+                .filter(Appointment.patient_email.is_not(None)).first() else ""
+            ),
             "doctor_id": consultation.doctor_id,
             "assets": [
                 {
