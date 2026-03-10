@@ -535,7 +535,7 @@ export default function DoctorProfilePage() {
     },
     {
       icon: <NavIcons.Calendar />,
-      label: 'Agendar',
+      label: 'Citas',
       action: navigateToBooking,
       isActive: isAppointmentModalOpen
     },

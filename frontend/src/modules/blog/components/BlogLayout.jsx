@@ -192,7 +192,7 @@ export default function BlogLayout({ children }) {
           },
           {
             icon: <NavIcons.Calendar />,
-            label: 'Agendar',
+            label: 'Citas',
             action: () => setIsAppointmentModalOpen(true),
             isActive: isAppointmentModalOpen
           },
