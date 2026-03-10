@@ -11,6 +11,7 @@ class ConsultationCreate(BaseModel):
     phone: str
     address: str
     occupation: str
+    email: Optional[str] = None
     
     # Pre-consultation
     reason_for_visit: str

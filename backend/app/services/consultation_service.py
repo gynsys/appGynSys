@@ -22,6 +22,7 @@ class ConsultationService:
             patient_phone=consultation_in.phone,
             address=consultation_in.address,
             occupation=consultation_in.occupation,
+            patient_email=getattr(consultation_in, 'email', None),
             
             # Pre-consultation
             reason_for_visit=consultation_in.reason_for_visit,
@@ -109,6 +110,7 @@ class ConsultationService:
             "history_number": latest.history_number,
             "address": getattr(latest, 'address', "") or "", 
             "occupation": getattr(latest, 'occupation', "") or "",
+            "email": getattr(latest, 'patient_email', "") or "",
             "doctor_id": latest.doctor_id,
             "all_consultations": [
                 {
@@ -151,6 +153,7 @@ class ConsultationService:
             "history_number": consultation.history_number,
             "address": getattr(consultation, 'address', "") or "", 
             "occupation": getattr(consultation, 'occupation', "") or "",
+            "email": getattr(consultation, 'patient_email', "") or "",
             "doctor_id": consultation.doctor_id,
             "assets": [
                 {

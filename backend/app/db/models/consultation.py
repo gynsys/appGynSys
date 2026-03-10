@@ -24,6 +24,7 @@ class Consultation(Base):
     patient_ci = Column(String, nullable=True)
     patient_age = Column(String, nullable=True)
     patient_phone = Column(String, nullable=True)
+    patient_email = Column(String, nullable=True)
     address = Column(String, nullable=True)
     occupation = Column(String, nullable=True)
     

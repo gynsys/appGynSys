@@ -867,6 +867,7 @@ export const DoctorConsultationPage = () => {
       phone: patientData.phone || "N/A",
       address: patientData.address || "N/A",
       occupation: patientData.occupation || "N/A",
+      email: patientData.email || "",
 
       // Pre-consultation
       reason_for_visit: patientData.reason_for_visit || "",
