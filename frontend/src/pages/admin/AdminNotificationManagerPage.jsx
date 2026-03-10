@@ -379,10 +379,10 @@ export default function NotificationManagerPage() {
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">Circuit Breaker (Push):</span>
-                                <span className={`text-sm ${circuitStateColors[health.circuit_breaker.state] || 'text-gray-400'}`}>
-                                    {health.circuit_breaker.state === 'closed' ? 'Cerrado (OK)' : health.circuit_breaker.state.toUpperCase()}
+                                <span className={`text-sm ${circuitStateColors[health.circuit_breaker?.state] || 'text-gray-400'}`}>
+                                    {health.circuit_breaker?.state === 'closed' ? 'Cerrado (OK)' : (health.circuit_breaker?.state?.toUpperCase() || 'DESCONOCIDO')}
                                 </span>
-                                <span className="text-[10px] text-gray-400 ml-1">Fallos: {health.circuit_breaker.failures} / {health.circuit_breaker.threshold}</span>
+                                <span className="text-[10px] text-gray-400 ml-1">Fallos: {health.circuit_breaker?.failures || 0} / {health.circuit_breaker?.threshold || 0}</span>
                             </div>
                         </div>
 
