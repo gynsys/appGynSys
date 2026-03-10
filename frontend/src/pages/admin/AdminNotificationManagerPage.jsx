@@ -127,8 +127,9 @@ export default function NotificationManagerPage() {
         setRuleToDelete(null)
     }
 
-    const handleSendTest = async (rule) => {
+    const handleSendTest = async (rule, preselectedEmail = '') => {
         setSelectedRule(rule)
+        setTestEmail(preselectedEmail)
         setIsTestModalOpen(true)
 
         // Load users with push enabled
@@ -522,12 +523,16 @@ export default function NotificationManagerPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
-                                                setTestEmail(user.email)
-                                                setSelectedRule({ name: 'Prueba de Sistema (Directa)', title_template: '🔔 Test de Vinculación', message_template: 'Tu dispositivo está correctamente vinculado al sistema.' })
-                                                setIsTestModalOpen(true)
+                                                const testRule = {
+                                                    name: 'Prueba de Sistema (Directa)',
+                                                    notification_type: 'system_test',
+                                                    title_template: '🔔 Test de Vinculación',
+                                                    message_template: 'Tu dispositivo está correctamente vinculado al sistema.'
+                                                }
+                                                handleSendTest(testRule, user.email)
                                             }}
                                             className="h-8 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                            disabled={user.devices_count === 0}
+                                            disabled={user.devices_count === 0 || isOperating}
                                         >
                                             <Send className="w-3.5 h-3.5 mr-1" />
                                             Probar
@@ -776,16 +781,26 @@ export default function NotificationManagerPage() {
                                 <div className="text-sm text-gray-500 dark:text-gray-400 py-2">
                                     Cargando usuarios...
                                 </div>
+                            ) : testEmail && !availableUsers.some(u => u.email === testEmail) && !loadingUsers ? (
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+                                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                                        Destinatario Seleccionado:
+                                    </p>
+                                    <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5 font-mono">
+                                        {testEmail}
+                                    </p>
+                                </div>
                             ) : availableUsers.length === 0 ? (
-                                <div className="text-sm text-orange-600 dark:text-orange-400 py-2">
-                                    ⚠️ No hay usuarios con push activado
+                                <div className="text-sm text-orange-600 dark:text-orange-400 py-2 flex items-center gap-2">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    No hay otros usuarios con push activado
                                 </div>
                             ) : (
                                 <select
                                     id="test-user"
                                     value={testEmail}
                                     onChange={(e) => setTestEmail(e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
                                 >
                                     <option value="">Selecciona un usuario...</option>
                                     {availableUsers.map(user => (
@@ -795,8 +810,8 @@ export default function NotificationManagerPage() {
                                     ))}
                                 </select>
                             )}
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {availableUsers.length} usuario(s) con notificaciones activas
+                            <p className="text-[10px] text-gray-400 mt-1 italic">
+                                {availableUsers.length} usuario(s) disponibles en el sistema con suscripciones activas.
                             </p>
                         </div>
                     </div>
