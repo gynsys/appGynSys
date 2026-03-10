@@ -176,6 +176,85 @@ def get_latest_consultation_by_patient(
         "habits_summary": consultation.habits_summary
     }
 
+@router.post("/{consultation_id}/assets", response_model=ConsultationAssetSchema)
+async def upload_consultation_asset(
+    consultation_id: int,
+    file: UploadFile = File(...),
+    title: str = Form(None),
+    description: str = Form(None),
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    # Limit by size if needed, assuming valid file
+    upload_dir = Path(settings.UPLOAD_DIR) / "consultations" / str(consultation_id)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Generate unique filename
+    ext = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{ext}"
+    file_path = upload_dir / unique_filename
+
+    # Save physical file
+    try:
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        file_size = os.path.getsize(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+        
+    # Relative path for the URL
+    relative_path = f"/uploads/consultations/{consultation_id}/{unique_filename}"
+
+    # Database
+    db_asset = ConsultationAsset(
+        consultation_id=consultation_id,
+        file_path=relative_path,
+        file_name=file.filename,
+        file_type=file.content_type or "application/octet-stream",
+        file_size_bytes=file_size,
+        title=title,
+        description=description
+    )
+    
+    db.add(db_asset)
+    db.commit()
+    db.refresh(db_asset)
+    
+    return db_asset
+
+@router.delete("/assets/{asset_id}")
+def delete_consultation_asset(
+    asset_id: int,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    asset = db.query(ConsultationAsset).filter(ConsultationAsset.id == asset_id).first()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+        
+    # Build absolute path from relative stored
+    base_upload_dir = Path(settings.UPLOAD_DIR).parent # Settings returns `app/static/uploads` so parent is `app/static` depending on config. Let's fix resolution.
+    
+    # Safest way to delete without guessing path roots is using the standard structure:
+    # `relative_path` is usually `/uploads/...` 
+    file_path = Path(settings.UPLOAD_DIR).resolve().parent / asset.file_path.lstrip("/")
+    
+    try:
+        if file_path.exists():
+            os.remove(file_path)
+    except Exception as e:
+        print(f"File physical delete failed: {e}") # Non fatal log
+        
+    db.delete(asset)
+    db.commit()
+    
+    return {"status": "success", "message": "Asset deleted successfully"}
+
 @router.put("/{consultation_id}")
 def update_consultation(
     consultation_id: int,
@@ -271,85 +350,6 @@ def get_consultation_history_data(
     if not data:
         raise HTTPException(status_code=404, detail="Consultation not found")
     return data
-
-@router.post("/{consultation_id}/assets", response_model=ConsultationAssetSchema)
-async def upload_consultation_asset(
-    consultation_id: int,
-    file: UploadFile = File(...),
-    title: str = Form(None),
-    description: str = Form(None),
-    db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
-):
-    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
-    if not consultation:
-        raise HTTPException(status_code=404, detail="Consultation not found")
-
-    # Limit by size if needed, assuming valid file
-    upload_dir = Path(settings.UPLOAD_DIR) / "consultations" / str(consultation_id)
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Generate unique filename
-    ext = os.path.splitext(file.filename)[1]
-    unique_filename = f"{uuid.uuid4()}{ext}"
-    file_path = upload_dir / unique_filename
-
-    # Save physical file
-    try:
-        with file_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
-        file_size = os.path.getsize(file_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
-        
-    # Relative path for the URL
-    relative_path = f"/uploads/consultations/{consultation_id}/{unique_filename}"
-
-    # Database
-    db_asset = ConsultationAsset(
-        consultation_id=consultation_id,
-        file_path=relative_path,
-        file_name=file.filename,
-        file_type=file.content_type or "application/octet-stream",
-        file_size_bytes=file_size,
-        title=title,
-        description=description
-    )
-    
-    db.add(db_asset)
-    db.commit()
-    db.refresh(db_asset)
-    
-    return db_asset
-
-@router.delete("/assets/{asset_id}")
-def delete_consultation_asset(
-    asset_id: int,
-    db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
-):
-    asset = db.query(ConsultationAsset).filter(ConsultationAsset.id == asset_id).first()
-    if not asset:
-        raise HTTPException(status_code=404, detail="Asset not found")
-        
-    # Build absolute path from relative stored
-    base_upload_dir = Path(settings.UPLOAD_DIR).parent # Settings returns `app/static/uploads` so parent is `app/static` depending on config. Let's fix resolution.
-    
-    # Safest way to delete without guessing path roots is using the standard structure:
-    # `relative_path` is usually `/uploads/...` 
-    file_path = Path(settings.UPLOAD_DIR).resolve().parent / asset.file_path.lstrip("/")
-    
-    try:
-        if file_path.exists():
-            os.remove(file_path)
-    except Exception as e:
-        print(f"File physical delete failed: {e}") # Non fatal log
-        
-    db.delete(asset)
-    db.commit()
-    
-    return {"status": "success", "message": "Asset deleted successfully"}
 
 @router.get("/{id}/data")
 def get_consultation_report_data(
