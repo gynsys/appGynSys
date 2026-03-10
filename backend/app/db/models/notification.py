@@ -154,8 +154,10 @@ class NotificationLog(Base):
     status = Column(String(20), default="sent")  # sent, failed, skipped
     error_message = Column(Text, nullable=True)
     
-    # Context snapshot for debugging (Disabled until migration)
-    # context_snapshot = Column(JSON, default=dict)
+    # Tracking
+    received_at = Column(DateTime(timezone=True), nullable=True)
+    clicked_at = Column(DateTime(timezone=True), nullable=True)
+    event_metadata = Column(JSON, nullable=True, default={})
 
     # Relationships
     rule = relationship("NotificationRule")

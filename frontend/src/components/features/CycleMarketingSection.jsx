@@ -142,18 +142,7 @@ export default function CycleMarketingSection({ primaryColor, theme, containerBg
                             </div>
                         </div>
 
-                        {/* Floating Badges */}
-                        <div className="absolute -top-4 -right-4 md:-right-8 animate-bounce-slow">
-                            <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex items-center gap-3 border dark:border-gray-700">
-                                <div className="bg-green-100 p-2 rounded-full">
-                                    <ShieldCheck className="w-4 h-4 text-green-600" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Validado por</p>
-                                    <p className="text-xs font-black text-gray-800 dark:text-gray-200 leading-none">Especialistas</p>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </SectionCard>
