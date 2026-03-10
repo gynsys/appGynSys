@@ -257,17 +257,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
             {/* Fullscreen Assets Preview Modal (Lightbox) via Portal */}
             {previewAsset && createPortal(
                 <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
-                    <div className="absolute top-4 right-4 flex space-x-4 z-10">
-                        <a
-                            href={getFullUrl(previewAsset.file_path)}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-white hover:text-indigo-400 transition-colors flex items-center space-x-2 bg-black/40 px-4 py-2 rounded-full"
-                        >
-                            <FiDownload className="w-5 h-5" />
-                            <span className="text-sm font-medium">Descargar original</span>
-                        </a>
+                    <div className="absolute top-4 right-4 flex z-10">
                         <button
                             onClick={() => setPreviewAsset(null)}
                             className="text-white/70 hover:text-white bg-black/40 p-2 rounded-full transition-colors"
@@ -303,6 +293,19 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 <p>Vista previa no disponible para este formato.</p>
                             </div>
                         )}
+                    </div>
+
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-10">
+                        <a
+                            href={getFullUrl(previewAsset.file_path)}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-indigo-400 transition-colors flex items-center space-x-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
+                        >
+                            <FiDownload className="w-5 h-5" />
+                            <span className="text-sm font-medium">Descargar original</span>
+                        </a>
                     </div>
 
                     <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm z-10 bg-black/40 py-1">
