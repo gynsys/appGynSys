@@ -53,21 +53,21 @@ class CycleNotificationSettings(Base):
     
     # Phase 1 Enhancements
     rhythm_abstinence_alerts = Column(Boolean, default=False)  # Alerts 5 days before/after period
-    period_confirmation_reminder = Column(Boolean, default=True)  # Remind to register period
+    period_confirmation_reminder = Column(Boolean, default=False)  # Remind to register period
     last_period_reminder_sent = Column(Date, nullable=True)  # Track reminders to avoid duplicates
 
     # Encapsulated Preferences (Usability 2.0 - Master Switches)
     # Prenatal
-    prenatal_ultrasounds = Column(Boolean, default=True)
-    prenatal_lab_results = Column(Boolean, default=True)
-    prenatal_milestones = Column(Boolean, default=True)
-    prenatal_daily_tips = Column(Boolean, default=True)
-    prenatal_symptom_alerts = Column(Boolean, default=True)
+    prenatal_ultrasounds = Column(Boolean, default=False)
+    prenatal_lab_results = Column(Boolean, default=False)
+    prenatal_milestones = Column(Boolean, default=False)
+    prenatal_daily_tips = Column(Boolean, default=False)
+    prenatal_symptom_alerts = Column(Boolean, default=False)
     
     # Cycle
-    cycle_period_predictions = Column(Boolean, default=True)
-    cycle_fertile_window = Column(Boolean, default=True) # Unified fertile + ovulation
-    cycle_pms_symptoms = Column(Boolean, default=True)
+    cycle_period_predictions = Column(Boolean, default=False)
+    cycle_fertile_window = Column(Boolean, default=False) # Unified fertile + ovulation
+    cycle_pms_symptoms = Column(Boolean, default=False)
     
     # Custom Rules Preferences (Map of rule_id -> boolean)
     custom_preferences = Column(JSON, default={}, nullable=True)
@@ -83,7 +83,7 @@ class PregnancyLog(Base):
     is_active = Column(Boolean, default=True)
     last_period_date = Column(Date, nullable=False)
     due_date = Column(Date, nullable=True)
-    notifications_enabled = Column(Boolean, default=True)
+    notifications_enabled = Column(Boolean, default=False)
     
     created_at = Column(DateTime, nullable=True)
     ended_at = Column(DateTime, nullable=True)

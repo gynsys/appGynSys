@@ -21,20 +21,20 @@ export default function CycleSettingsTab({ onPregnancyChange }) {
         contraceptive_time: '20:00',
         contraceptive_frequency: 'daily',
 
-        cycle_period_predictions: true,
-        cycle_fertile_window: true,
-        cycle_pms_symptoms: true,
+        cycle_period_predictions: false,
+        cycle_fertile_window: false,
+        cycle_pms_symptoms: false,
         cycle_rhythm_method: false,
 
         // Prenatal
-        prenatal_ultrasounds: true,
-        prenatal_lab_results: true,
-        prenatal_milestones: true,
-        prenatal_daily_tips: true,
-        prenatal_symptom_alerts: true,
+        prenatal_ultrasounds: false,
+        prenatal_lab_results: false,
+        prenatal_milestones: false,
+        prenatal_daily_tips: false,
+        prenatal_symptom_alerts: false,
 
         // Legacy/Compat keys (kept for backend compatibility if needed)
-        period_confirmation_reminder: true,
+        period_confirmation_reminder: false,
         rhythm_method_enabled: false // Mapped to cycle_rhythm_method
     })
 
