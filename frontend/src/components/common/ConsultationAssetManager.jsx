@@ -144,34 +144,18 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const isVideo = (fileType) => fileType.startsWith('video/');
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
+            {/* 1. Soportes Subidos (Mostrados Primero) */}
             <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Adjuntar Nuevos Archivos</h4>
-                <div className="relative">
-                    {isUploading && (
-                        <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 z-10 flex items-center justify-center rounded-xl">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                        </div>
-                    )}
-                    <FileUploader
-                        title="Arrastra y suelta tus imágenes o videos aquí"
-                        subtitle="o haz clic para buscar Soportes Multimedias"
-                        multiple={true}
-                        onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
-                        onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
-                        acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
-                    />
-                </div>
-            </div>
-
-            {loading ? (
-                <div className="text-center py-4 text-sm text-gray-500">Cargando archivos...</div>
-            ) : assets.length > 0 ? (
-                <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Soportes Subidos ({assets.length})</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-between">
+                    <span>Soportes Subidos ({assets.length})</span>
+                </h4>
+                {loading ? (
+                    <div className="text-center py-4 text-sm text-gray-500">Cargando archivos...</div>
+                ) : assets.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {assets.map((asset) => (
-                            <div key={asset.id} className="relative group bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 transition-colors">
+                            <div key={asset.id} className="relative bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 transition-colors shadow-sm">
                                 <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
                                     {isImage(asset.file_type) ? (
                                         <img
@@ -200,7 +184,37 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                     )}
                                 </div>
 
-                                <div className="p-3">
+                                {/* Acciones estáticas en la esquina superior derecha, tamaño reducido un ~15% */}
+                                <div className="absolute top-2 right-2 flex space-x-1 bg-white/80 dark:bg-black/60 shadow-sm backdrop-blur-md rounded-lg p-1 opacity-100">
+                                    {(isImage(asset.file_type) || isVideo(asset.file_type)) && (
+                                        <button
+                                            onClick={() => setPreviewAsset(asset)}
+                                            className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
+                                            title="Ver archivo"
+                                        >
+                                            <FiEye className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    <a
+                                        href={getFullUrl(asset.file_path)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
+                                        title="Descargar"
+                                        download
+                                    >
+                                        <FiDownload className="w-3.5 h-3.5" />
+                                    </a>
+                                    <button
+                                        onClick={() => handleDelete(asset.id)}
+                                        className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                        title="Eliminar"
+                                    >
+                                        <FiTrash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+
+                                <div className="p-3 bg-white dark:bg-gray-800">
                                     <p className="text-xs font-medium text-gray-900 dark:text-white truncate" title={asset.file_name}>
                                         {asset.file_name}
                                     </p>
@@ -208,45 +222,35 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                         {asset.file_size_bytes ? `${(asset.file_size_bytes / 1024 / 1024).toFixed(2)} MB` : 'Desconocido'}
                                     </p>
                                 </div>
-
-                                {/* Actions overlay */}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2 backdrop-blur-sm">
-                                    {(isImage(asset.file_type) || isVideo(asset.file_type)) && (
-                                        <button
-                                            onClick={() => setPreviewAsset(asset)}
-                                            className="p-2 bg-white text-gray-900 rounded-full hover:bg-indigo-50 transition-colors"
-                                            title="Ver archivo"
-                                        >
-                                            <FiEye className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                    <a
-                                        href={getFullUrl(asset.file_path)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-white text-gray-900 rounded-full hover:bg-indigo-50 transition-colors"
-                                        title="Descargar"
-                                        download
-                                    >
-                                        <FiDownload className="w-4 h-4" />
-                                    </a>
-                                    <button
-                                        onClick={() => handleDelete(asset.id)}
-                                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                        title="Eliminar"
-                                    >
-                                        <FiTrash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
                             </div>
                         ))}
                     </div>
+                ) : (
+                    <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-200 dark:border-gray-700">
+                        No hay imágenes ni soportes multimedia previamente guardados.
+                    </div>
+                )}
+            </div>
+
+            {/* 2. Área de Subida de Nuevos Archivos (Mostrada al Final) */}
+            <div>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Adjuntar Nuevos Archivos</h4>
+                <div className="relative">
+                    {isUploading && (
+                        <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 z-10 flex items-center justify-center rounded-xl">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                        </div>
+                    )}
+                    <FileUploader
+                        title="Arrastra y suelta tus imágenes o videos aquí"
+                        subtitle="o haz clic para buscar Soportes Multimedias"
+                        multiple={true}
+                        onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
+                        onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
+                        acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
+                    />
                 </div>
-            ) : (
-                <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-200 dark:border-gray-700">
-                    No hay imágenes ni soportes multimedia guardados en esta consulta.
-                </div>
-            )}
+            </div>
 
             {/* Fullscreen Assets Preview Modal (Lightbox) */}
             {previewAsset && (
