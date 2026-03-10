@@ -140,6 +140,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     };
 
     const isImage = (fileType) => fileType.startsWith('image/');
+    const isVideo = (fileType) => fileType.startsWith('video/');
 
     return (
         <div className="space-y-6">
@@ -178,6 +179,21 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                             className="w-full h-full object-cover"
                                             onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                                         />
+                                    ) : isVideo(asset.file_type) ? (
+                                        <div className="relative w-full h-full">
+                                            <video
+                                                src={getFullUrl(asset.file_path)}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                preload="metadata"
+                                                playsInline
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                <div className="bg-black/50 p-2 rounded-full backdrop-blur-sm">
+                                                    <FiVideo className="w-5 h-5 text-white" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     ) : (
                                         renderIcon(asset.file_type)
                                     )}
