@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom';
 import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
@@ -253,8 +255,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                 </div>
             </div>
 
-            {/* Fullscreen Assets Preview Modal (Lightbox) */}
-            {previewAsset && (
+            {/* Fullscreen Assets Preview Modal (Lightbox) via Portal */}
+            {previewAsset && createPortal(
                 <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
                     <div className="absolute top-4 right-4 flex space-x-4 z-10">
                         <a
@@ -282,13 +284,13 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 src={getFullUrl(previewAsset.file_path)}
                                 controls
                                 autoPlay
-                                className="max-w-full max-h-full rounded-lg shadow-2xl bg-black"
+                                className="max-w-full max-h-full rounded-none md:rounded-lg shadow-2xl bg-black"
                             />
                         ) : isImage(previewAsset.file_type) ? (
                             <img
                                 src={getFullUrl(previewAsset.file_path)}
                                 alt={previewAsset.file_name}
-                                className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                                className="w-full h-full md:max-w-full md:max-h-full rounded-none md:rounded-lg shadow-2xl object-contain bg-black"
                             />
                         ) : isPdf(previewAsset.file_type) ? (
                             <iframe
@@ -297,17 +299,18 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                 title={previewAsset.file_name}
                             />
                         ) : (
-                            <div className="text-white bg-gray-800 p-8 rounded-xl text-center">
-                                <FiFile className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                            <div className="text-white bg-gray-800 p-8 rounded-xl text-center flex flex-col items-center justify-center w-full h-full">
+                                <FiFile className="w-16 h-16 mb-4 opacity-50 mx-auto" />
                                 <p>Vista previa no disponible para este formato.</p>
                             </div>
                         )}
                     </div>
 
-                    <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm">
+                    <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm z-10 bg-black/40 py-1">
                         {previewAsset.file_name}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
