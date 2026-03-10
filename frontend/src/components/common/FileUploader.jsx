@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { FiUploadCloud, FiFile, FiX, FiCheckCircle } from 'react-icons/fi';
 
-export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, acceptedFormats = ['.pdf', '.xlsx', '.xls', '.doc', '.docx'] }) => {
+export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, acceptedFormats = ['.pdf', '.xlsx', '.xls', '.doc', '.docx'], title = "Arrastra y suelta tu formato de historia médica aquí", subtitle = "o haz clic para seleccionar (PDF, Excel, Word)" }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -118,10 +118,10 @@ export const FileUploader = ({ onFileSelect, onFilesSelect, multiple = false, ac
             </div>
             <div>
               <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
-                Arrastra y suelta tu formato de historia médica aquí
+                {title}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                o haz clic para seleccionar (PDF, Excel, Word)
+                {subtitle}
               </p>
             </div>
             <div className="flex gap-2 mt-2">

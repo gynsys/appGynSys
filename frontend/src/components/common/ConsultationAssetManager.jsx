@@ -8,11 +8,15 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const [assets, setAssets] = useState(initialAssets);
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
+    const hasFetchedForId = useRef(null);
 
     useEffect(() => {
-        if (consultationId && initialAssets.length === 0) {
+        // Only fetch if we have an ID and haven't fetched for this specific ID yet
+        if (consultationId && hasFetchedForId.current !== consultationId) {
+            hasFetchedForId.current = consultationId;
             fetchAssets();
-        } else if (initialAssets.length > 0) {
+        } else if (!consultationId && initialAssets.length > 0) {
+            // Buffer mode initialization
             setAssets(initialAssets);
         }
     }, [consultationId, initialAssets]);
@@ -136,6 +140,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         </div>
                     )}
                     <FileUploader
+                        title="Arrastra y suelta tus imágenes o videos aquí"
+                        subtitle="o haz clic para buscar Soportes Multimedias"
                         multiple={true}
                         onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
                         onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
@@ -198,8 +204,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-300 dark:border-gray-700">
-                    No hay imágenes ni documentos adjuntos aún.
+                <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-200 dark:border-gray-700">
+                    No hay imágenes ni soportes multimedia guardados en esta consulta.
                 </div>
             )}
         </div>
