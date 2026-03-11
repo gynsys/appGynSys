@@ -1,62 +1,36 @@
-# 🔍 Diagnóstico de Notificaciones (Lecciones Aprendidas)
+# Diagnóstico de Notificaciones (Persistente)
 
-Este documento resume los hallazgos tras la investigación de fallos en la entrega de notificaciones PWA y proporciona una guía rápida para resolverlos en el futuro.
+Este documento centraliza el proceso de depuración del sistema de notificaciones para evitar repetir investigaciones desde cero.
 
----
+## 🛠 Herramientas de Diagnóstico
+El script principal se encuentra en `readme/diagnose_appointments.py` (Local) y en `/app/diagnose_appointments.py` (Docker).
 
-## 🛑 Problemas Críticos Identificados
-
-### 1. Inconsistencia de VAPID (Error 403 Forbidden)
-**Síntoma:** Los logs muestran `403 Forbidden` al intentar enviar notificaciones push.
-- **Causa:** Las llaves VAPID en el servidor (`.env`) cambiaron o se regeneraron, pero las usuarias tienen suscripciones generadas con las llaves anteriores.
-- **Solución:** Las usuarias deben **re-instalar la PWA** o simplemente cerrar sesión e iniciar sesión de nuevo para que el frontend genere una nueva suscripción con la llave actual.
-- **Prevención:** **NUNCA** cambiar las llaves VAPID en producción sin un plan de migración. Si se cambian, todas las notificaciones push fallarán hasta que el usuario actualice su suscripción.
-
-### 2. Bug de Argumentos en `processor.py`
-**Síntoma:** Las notificaciones no se programan (la tabla `pending_notifications` está vacía o estancada) para usuarias embarazadas.
-- **Causa:** Un error de orden de argumentos posicionales en la llamada a `calculate_smart_context`. Se pasaba `(user, predictions, pregnancy, db)` cuando la función esperaba `(actor, db_session, predictions, pregnancy)`.
-- **Efecto:** El objeto `Session` de SQLAlchemy se trataba como datos de predicción, causando errores como `'Session' object has no attribute 'last_period_date'`.
-- **Solución:** Mantener siempre el orden: `(actor, db, predictions, pregnancy)`.
-
----
-
-## 🛠️ Herramientas de Diagnóstico (Scripts)
-
-Hemos creado scripts en `backend/scripts/` para acelerar el diagnóstico:
-
-### 1. `check_user_subs.py`
-Verifica el estado completo de un usuario por su email.
+**Comando para ejecutar el diagnóstico (SaaS Multi-inquilino):**
 ```bash
-docker exec appgynsys-backend-1 python scripts/check_user_subs.py <email>
-```
-**Qué muestra:**
-- ID del Doctor o CycleUser.
-- Llaves VAPID cargadas en la memoria del proceso (para detectar si el `.env` se leyó bien).
-- Cantidad de suscripciones push y sus fechas de creación.
-- Últimos 5 logs de notificaciones enviadas.
-- Lista de notificaciones actualmente programadas (pendientes).
-
-### 2. `test_push_debug.py`
-Envía un push de prueba y/o fuerza la evaluación de reglas de negocio.
-```bash
-# Enviar push de prueba a un Doctor (ID 1 por defecto)
-docker exec appgynsys-backend-1 python scripts/test_push_debug.py 1
-
-# Enviar push de prueba a una Usuaria + Forzar evaluación de sus reglas
-docker exec appgynsys-backend-1 python scripts/test_push_debug.py --user 30 --eval
+python ssh_runner.py "docker exec appgynsys-backend-1 bash -c 'PYTHONPATH=/app python /app/diagnose_appointments.py <doctor_id> <tipo_notificacion>'"
 ```
 
-### 3. `check_failed_notifs.py`
-Muestra el error detallado de por qué fallaron las notificaciones en la cola de pendientes.
-```bash
-docker exec appgynsys-backend-1 python scripts/check_failed_notifs.py
-```
+**Ejemplos de tipos:**
+- `doctor_new_appointment`
+- `doctor_preconsulta_completed`
+- `doctor_new_contact_message`
+- `doctor_new_online_consultation`
+- `doctor_daily_agenda`
 
----
+**Lo que hace el script:**
+1. Verifica si la regla existe y está activa en la base de datos para ese inquilino.
+2. Verifica si la regla está definida en el nuevo `doctor_registry.py`.
+3. Prueba la evaluación de la lógica técnica.
+4. Intenta un disparo real y verifica si se crea la entrada en `pending_notifications`.
 
-## 🚀 Flujo de Resolución Rápida
-Si una usuaria reporta que no recibe notificaciones:
-1. Corre `check_user_subs.py <email>`.
-2. Si tiene suscripciones viejas (creadas antes de un cambio de config), pedir que **reinstale la PWA**.
-3. Si no tiene notificaciones pendientes, corre `test_push_debug.py --user <id> --eval`.
-4. Revisa los logs de error en la consola: `docker logs -f appgynsys-backend-1`.
+## 🔍 Puntos de Verificación Comunes
+
+1.  **Reglas del Inquilino**: Cada doctor debe tener sus propias reglas (`tenant_id`). Si el doctor es nuevo o se resetearon las reglas, puede que falten las de tipo `doctor_new_appointment`.
+2.  **Estado de Celery**: Las notificaciones se procesan de forma asíncrona. Si el worker está caído o Redis lleno, no saldrán.
+3.  **Caché de Reglas**: El sistema cachea las reglas globales. Cambios manuales en la DB requieren:
+    ```bash
+    docker compose restart backend celery_worker celery_beat
+    ```
+
+## 📋 Historial de Problemas Detectados
+- **2026-03-11**: Investigando falla de notificación de cita para inquilino.

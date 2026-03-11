@@ -66,6 +66,7 @@ async def create_public_appointment(
             doctor_id=doctor.id,
             notification_type=notif_type,
             context={
+                "event": notif_type.replace("doctor_", ""),
                 "doctor_name": doctor.nombre_completo,
                 "patient_name": db_appointment.patient_name,
                 "appointment_date": date_str,
@@ -377,6 +378,7 @@ async def submit_preconsulta(
                 doctor_id=doctor.id,
                 notification_type="doctor_preconsulta_completed",
                 context={
+                    "event": "preconsulta_completed",
                     "doctor_name": doctor.nombre_completo,
                     "patient_name": appointment.patient_name,
                     "appointment_date": date_str,

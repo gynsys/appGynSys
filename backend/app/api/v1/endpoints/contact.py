@@ -39,6 +39,7 @@ def send_contact_email(
         doctor_id=doctor.id,
         notification_type="doctor_new_contact_message",
         context={
+            "event": "new_contact_message",
             "doctor_name": doctor.nombre_completo,
             "patient_name": contact_data.name,
             "patient_email": contact_data.email,

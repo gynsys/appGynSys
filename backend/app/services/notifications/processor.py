@@ -20,6 +20,9 @@ from .base import (
 from .registry import (
     NOTIFICATION_REGISTRY, NOTIFICATION_MAP, _RuleData, evaluate_registry_rule
 )
+from .doctor_registry import (
+    DOCTOR_NOTIFICATION_REGISTRY, DOCTOR_NOTIFICATION_MAP, evaluate_doctor_rule
+)
 from .context import calculate_smart_context, validate_smart_context
 from .sender import safe_render_content, send_dual_notification_logic
 
@@ -173,23 +176,11 @@ def _process_single_doctor(doctor_id: int, global_rules: Dict[str, _RuleData], n
             PendingNotification.scheduled_for < today_end
         )}
 
-        for rule_def in NOTIFICATION_REGISTRY:
+        for rule_def in DOCTOR_NOTIFICATION_REGISTRY:
             rtype = rule_def["type"]
-            if rule_def.get("category") != "doctor":
-                continue
             
-            # evaluate_registry_rule ya maneja la categoría 'doctor' retornando True
-            if not evaluate_registry_rule(rule_def, None, None): 
-                # Pasamos None porque para doctores no hay settings específicos (por ahora)
-                # y la lógica lambda ya está en el registro
-                pass
-            
-            # Evaluación manual de la lambda para doctores
-            try:
-                if not rule_def["logic"](smart_ctx):
-                    continue
-            except Exception as e:
-                logger.error(f"Error evaluating doctor rule {rtype}: {e}")
+            # Usar la nueva lógica de evaluación de doctores
+            if not evaluate_doctor_rule(rule_def, smart_ctx):
                 continue
 
             template_rule = global_rules.get(rtype)
@@ -361,12 +352,11 @@ def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, 
     Dispara una notificación inmediata para un doctor basada en un evento.
     """
     try:
-        from .registry import evaluate_registry_rule, NOTIFICATION_MAP
         from .sender import safe_render_content
         
         now = normalize_to_caracas()
         
-        # 1. Obtener la regla para este doctor
+        # 1. Obtener la regla para este doctor (template de la DB)
         rule = db.query(NotificationRule).filter(
             NotificationRule.tenant_id == doctor_id,
             NotificationRule.notification_type == notification_type,
@@ -377,17 +367,17 @@ def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, 
             logger.warning(f"No active rule found for doctor {doctor_id} and type {notification_type}")
             return False
 
-        # 2. Evaluar lógica (Registry)
-        rule_def = NOTIFICATION_MAP.get(notification_type)
+        # 2. Evaluar lógica (Registry de Doctores)
+        rule_def = DOCTOR_NOTIFICATION_MAP.get(notification_type)
         if not rule_def:
-            logger.error(f"Rule type {notification_type} not found in registry")
+            logger.error(f"Rule type {notification_type} not found in doctor registry")
             return False
             
-        # Añadir el rol doctor al contexto para que evaluate_registry_rule pase
+        # Añadir el rol doctor al contexto
         full_context = context.copy()
         full_context["role"] = "doctor"
         
-        if not evaluate_registry_rule(rule_def, full_context, None): # No user settings for doctors yet
+        if not evaluate_doctor_rule(rule_def, full_context):
             return False
 
         # 3. Renderizar
