@@ -231,7 +231,8 @@ export default function NotificationManagerPage() {
             const week = type.split('_').pop()
             return `Se envía al iniciar la semana ${week} de embarazo.`
         }
-        if (type.startsWith('doctor_new_appointment')) return "Se envía cuando una paciente agenda una cita pública."
+        if (type.startsWith('doctor_new_appointment')) return "Se envía cuando una paciente agenda una cita pública presencial."
+        if (type.startsWith('doctor_new_online_consultation')) return "Se envía cuando una paciente agenda una consulta online."
         if (type.startsWith('doctor_preconsulta_completed')) return "Se envía cuando una paciente completa la preconsulta."
         if (type.startsWith('doctor_new_contact_message')) return "Se envía cuando alguien envía un mensaje de contacto."
         if (type.startsWith('system_')) return "Se envía por eventos del sistema."
@@ -293,7 +294,8 @@ export default function NotificationManagerPage() {
             'system_welcome': 'Bienvenida',
             'system_update': 'Actualización del Sistema',
             'symptom_alert': 'Alerta de Síntoma',
-            'doctor_new_appointment': 'Nueva Cita Agendada',
+            'doctor_new_appointment': 'Nueva Cita Presencial',
+            'doctor_new_online_consultation': 'Nueva Consulta Online',
             'doctor_preconsulta_completed': 'Preconsulta Completada',
             'doctor_new_contact_message': 'Nuevo Mensaje de Contacto',
             'custom': 'Notificación Especial'

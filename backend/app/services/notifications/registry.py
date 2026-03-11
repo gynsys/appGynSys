@@ -153,6 +153,14 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
         "title": "📨 Nuevo Mensaje de Contacto",
         "message": "Has recibido un nuevo mensaje de {patient_name}: {message_preview}",
         "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "new_contact_message"
+    },
+    {
+        "type": "doctor_new_online_consultation",
+        "category": "doctor",
+        "priority": 56,
+        "title": "📹 Nueva Consulta Online",
+        "message": "Hola {doctor_name}, tienes una nueva consulta online con {patient_name} para el {appointment_date}.",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "new_online_consultation"
     }
 ]
 

@@ -860,6 +860,16 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "channel": "dual",
             "send_time": "08:00"
         },
+        {
+            "notification_type": "doctor_new_online_consultation",
+            "trigger_condition": {"role": "doctor", "event": "new_online_consultation"},
+            "priority": 56,
+            "title_template": "📹 Nueva Consulta Online",
+            "message_template": "Hola {doctor_name}, tienes una nueva consulta online con {patient_name} para el {appointment_date}.",
+            "message_text_template": "Nueva consulta online de {patient_name} para el {appointment_date}.",
+            "channel": "dual",
+            "send_time": "08:00"
+        },
     ]
 
     for rule_data in standard_rules:

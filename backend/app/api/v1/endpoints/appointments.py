@@ -56,9 +56,15 @@ async def create_public_appointment(
     # Send notification to doctor (centralized system)
     try:
         date_str = db_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if db_appointment.appointment_date else "Fecha por definir"
+        
+        # Distinguish between regular and online consultations
+        notif_type = "doctor_new_appointment"
+        if db_appointment.appointment_type == "Consulta Online":
+            notif_type = "doctor_new_online_consultation"
+
         trigger_doctor_event(
             doctor_id=doctor.id,
-            notification_type="doctor_new_appointment",
+            notification_type=notif_type,
             context={
                 "doctor_name": doctor.nombre_completo,
                 "patient_name": db_appointment.patient_name,
