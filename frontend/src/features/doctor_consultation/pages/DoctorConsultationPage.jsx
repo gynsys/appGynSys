@@ -211,10 +211,10 @@ export const DoctorConsultationPage = () => {
               ...answers,
               full_name: answers.full_name || appointment.patient_name,
               phone: answers.phone || appointment.patient_phone,
-              email: answers.email || appointment.patient_email,
               age: answers.age || appointment.patient_age,
               ci: extractedCi || answers.ci || appointment.patient_dni,
               address: answers.address || appointment.residence || answers.residence,
+              university: answers.university,
               occupation: answers.occupation || appointment.occupation,
               email: answers.email || appointment.patient_email || "",
               reason_for_visit: appointment.reason_for_visit || answers.reason_for_visit || answers.gyn_reason,
@@ -234,7 +234,6 @@ export const DoctorConsultationPage = () => {
             patientInfo = {
               full_name: appointment.patient_name,
               phone: appointment.patient_phone,
-              email: appointment.patient_email,
               age: appointment.patient_age,
               ci: extractedCi || loadedHistory.patient_ci,
               address: appointment.residence || loadedHistory.address,
@@ -257,7 +256,6 @@ export const DoctorConsultationPage = () => {
             patientInfo = {
               full_name: appointment.patient_name,
               phone: appointment.patient_phone,
-              email: appointment.patient_email,
               age: appointment.patient_age,
               ci: extractedCi,
               address: appointment.residence,
