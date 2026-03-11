@@ -1,9 +1,10 @@
 import sys
 import os
 
-# Base directory
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, base_dir)
+# Base directory - In Docker /app is the root for the app module
+sys.path.insert(0, os.getcwd())
+# Also try parent just in case of different execution context
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.db.session import SessionLocal
 from app.db.models.notification import NotificationRule
