@@ -110,13 +110,14 @@ class NotificationTestResponse(BaseModel):
 
 
 class PushKeys(BaseModel):
-    p256dh: str
-    auth: str
+    p256dh: Optional[str] = None
+    auth: Optional[str] = None
 
 
 class PushSubscriptionSchema(BaseModel):
-    endpoint: str
-    keys: PushKeys
+    endpoint: Optional[str] = None
+    keys: Optional[PushKeys] = None
+    token: Optional[str] = None # For Capacitor native push
 
 
 class NotificationTrackRequest(BaseModel):

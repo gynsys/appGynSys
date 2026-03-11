@@ -81,32 +81,50 @@ def create_or_update_subscription(
     user_id: Optional[int] = None,
     doctor_id: Optional[int] = None
 ) -> PushSubscription:
-    """UPSERT atómico para suscripciones push. Soporta CycleUser y Doctor."""
+    """UPSERT atómico para suscripciones push. Soporta CycleUser y Doctor (Web y Nativo)."""
+    
+    # Determine if it's native (token) or web (endpoint)
+    is_native = bool(sub_in.token)
+    conflict_index = 'token' if is_native else 'endpoint'
+    unique_value = sub_in.token if is_native else sub_in.endpoint
+
+    if not unique_value:
+        raise ValueError("Either endpoint or token must be provided")
+
     values = {
         "endpoint": sub_in.endpoint,
-        "p256dh": sub_in.keys.p256dh,
-        "auth": sub_in.keys.auth,
+        "token": sub_in.token,
+        "p256dh": sub_in.keys.p256dh if sub_in.keys else None,
+        "auth": sub_in.keys.auth if sub_in.keys else None,
         "updated_at": normalize_to_caracas(),
         "user_id": user_id,
         "doctor_id": doctor_id
     }
     
     stmt = insert(PushSubscription).values(**values).on_conflict_do_update(
-        index_elements=['endpoint'],
+        index_elements=[conflict_index],
         set_={
             "user_id": user_id, 
             "doctor_id": doctor_id,
-            "p256dh": sub_in.keys.p256dh, 
-            "auth": sub_in.keys.auth,
+            "p256dh": sub_in.keys.p256dh if sub_in.keys else None, 
+            "auth": sub_in.keys.auth if sub_in.keys else None,
             "updated_at": normalize_to_caracas()
         }
     )
     db.execute(stmt)
     db.commit()
+    
+    if is_native:
+        return db.query(PushSubscription).filter_by(token=sub_in.token).first()
     return db.query(PushSubscription).filter_by(endpoint=sub_in.endpoint).first()
 
-def delete_subscription_by_endpoint(db: Session, endpoint: str) -> bool:
-    result = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
+def delete_subscription_by_endpoint(db: Session, identifier: str) -> bool:
+    """Borra suscripción por endpoint (Web) o token (Nativo)."""
+    # Intentar borrar por endpoint primero, luego por token
+    result = db.query(PushSubscription).filter(
+        (PushSubscription.endpoint == identifier) | 
+        (PushSubscription.token == identifier)
+    ).delete()
     db.commit()
     return result > 0
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '@/lib/axios';
+import { isCapacitor } from '@/utils/platform';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 const urlBase64ToUint8Array = (base64String) => {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -17,7 +19,7 @@ const urlBase64ToUint8Array = (base64String) => {
 };
 
 export const usePushNotifications = () => {
-    const [permission, setPermission] = useState(Notification.permission);
+    const [permission, setPermission] = useState('prompt');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -27,6 +29,17 @@ export const usePushNotifications = () => {
     }, []);
 
     const checkSubscription = async () => {
+        if (isCapacitor()) {
+            const permStatus = await PushNotifications.checkPermissions();
+            setPermission(permStatus.receive);
+            
+            // Note: In Capacitor, "isSubscribed" is mainly local state 
+            // since the token registration happens on every app launch in a robust app
+            const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
+            setIsSubscribed(hasExplicitConsent && permStatus.receive === 'granted');
+            return;
+        }
+
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
             setError("Push notifications not supported");
             return;
@@ -34,9 +47,6 @@ export const usePushNotifications = () => {
 
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
-        
-        // El dispositivo solo se considera suscrito si existe la suscripción técnica
-        // Y el usuario ha dado su consentimiento explícito en este dispositivo/navegador
         const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
         
         setIsSubscribed(!!subscription && hasExplicitConsent);
@@ -47,27 +57,41 @@ export const usePushNotifications = () => {
         setLoading(true);
         setError(null);
         try {
+            if (isCapacitor()) {
+                // 1. Request Permission
+                let permStatus = await PushNotifications.requestPermissions();
+                setPermission(permStatus.receive);
+                if (permStatus.receive !== 'granted') throw new Error("Permission not granted");
+
+                // 2. Register for Push
+                await PushNotifications.register();
+
+                // 3. Handle token registration (this requires listeners to be set up globally or here)
+                // For this hook, we store the intent. The actual registration listener 
+                // in App.jsx or similar will send it to backend.
+                localStorage.setItem('gynsys_push_enabled', 'true');
+                setIsSubscribed(true);
+                return true;
+            }
+
+            // --- WEB PWA FLOW ---
             if (permission === 'denied') {
                 throw new Error("Notifications blocked by browser");
             }
 
-            // 1. Request Permission
             const perm = await Notification.requestPermission();
             setPermission(perm);
             if (perm !== 'granted') throw new Error("Permission not granted");
 
-            // 2. Get VAPID Key
             const { data } = await axios.get('/notifications/vapid-public-key');
             if (!data.public_key) throw new Error("Server VAPID key missing");
 
-            // 3. Subscribe in Browser
             const registration = await navigator.serviceWorker.ready;
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(data.public_key)
             });
 
-            // 4. Send to Backend (Reconocimiento del dispositivo)
             await axios.post('/notifications/subscribe', subscription.toJSON());
 
             localStorage.setItem('gynsys_push_enabled', 'true');
@@ -85,17 +109,21 @@ export const usePushNotifications = () => {
     const unsubscribeFromPush = async () => {
         setLoading(true);
         try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
+            if (isCapacitor()) {
+                // native unregister
+                await PushNotifications.removeAllListeners();
+                // Optionally call backend to delete token
+                // ...
+            } else {
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
 
-            if (subscription) {
-                // Unsubscribe from Backend first (best effort)
-                try {
-                    await axios.post('/notifications/unsubscribe', { endpoint: subscription.endpoint });
-                } catch (e) { console.warn("Backend unsubscribe failed", e); }
-
-                // Unsubscribe from Browser
-                await subscription.unsubscribe();
+                if (subscription) {
+                    try {
+                        await axios.post('/notifications/unsubscribe', { endpoint: subscription.endpoint });
+                    } catch (e) { console.warn("Backend unsubscribe failed", e); }
+                    await subscription.unsubscribe();
+                }
             }
             
             localStorage.removeItem('gynsys_push_enabled');

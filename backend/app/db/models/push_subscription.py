@@ -14,12 +14,13 @@ class PushSubscription(Base):
     user_id = Column(Integer, ForeignKey("cycle_users.id"), index=True, nullable=True)
     doctor_id = Column(Integer, ForeignKey("doctors.id"), index=True, nullable=True)
     
-    endpoint = Column(String, unique=True, index=True, nullable=False)
-    p256dh = Column(String, nullable=False)
-    auth = Column(String, nullable=False)
+    endpoint = Column(String, unique=True, index=True, nullable=True)
+    p256dh = Column(String, nullable=True)
+    auth = Column(String, nullable=True)
+    token = Column(String, unique=True, index=True, nullable=True) # For Capacitor/FCM
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    user = relationship("CycleUser", backref="push_subscriptions")
-    doctor = relationship("Doctor", backref="push_subscriptions")
+    user = relationship("CycleUser", backref="patient_push_subscriptions")
+    doctor = relationship("Doctor", backref="doctor_push_subscriptions")

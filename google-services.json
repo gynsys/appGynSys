@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "717633841119",
+    "project_id": "gynsys-d01eb",
+    "storage_bucket": "gynsys-d01eb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717633841119:android:4150618fba5eadbae9c66a",
+        "android_client_info": {
+          "package_name": "net.gynsys"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcNwDxGkIJ0xBZ0_0giZTGbwwQsafO03E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717633841119:android:f9ff2487c22d3eb5e9c66a",
+        "android_client_info": {
+          "package_name": "net.gynsys.gynsys"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcNwDxGkIJ0xBZ0_0giZTGbwwQsafO03E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

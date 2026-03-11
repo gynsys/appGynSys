@@ -55,3 +55,6 @@ resend==0.8.0
 
 numpy
 pymupdf==1.23.5
+
+# Firebase
+firebase-admin==6.4.0

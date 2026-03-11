@@ -5,10 +5,34 @@ from html import unescape
 from typing import Dict, Any, Optional, Union
 
 from pywebpush import webpush, WebPushException
+try:
+    import firebase_admin
+    from firebase_admin import messaging, credentials
+except ImportError:
+    firebase_admin = None
+
 from app.core.config import settings
 from app.db.models.cycle_user import CycleUser
 
 logger = logging.getLogger(__name__)
+
+# Initialize Firebase if not already initialized
+def _init_firebase():
+    if firebase_admin and not firebase_admin._apps:
+        try:
+            service_account_path = settings.FIREBASE_SERVICE_ACCOUNT_PATH
+            if service_account_path and os.path.exists(service_account_path):
+                cred = credentials.Certificate(service_account_path)
+                firebase_admin.initialize_app(cred)
+                logger.info(f"Firebase SDK initialized with service account from {service_account_path}")
+            else:
+                # Fallback to default credentials or no-auth init if allowed
+                firebase_admin.initialize_app()
+                logger.info("Firebase SDK initialized with default settings")
+        except Exception as e:
+            logger.error(f"Failed to initialize Firebase: {e}")
+
+_init_firebase()
 
 
 def strip_html_tags(text: str) -> str:
@@ -33,7 +57,11 @@ def send_push_to_actor(
     """
     Generic function to send push to any actor (CycleUser or Doctor).
     """
-    subscriptions = actor.push_subscriptions
+    # Try both relationship names for compatibility
+    subscriptions = getattr(actor, 'patient_push_subscriptions', None)
+    if subscriptions is None:
+        subscriptions = getattr(actor, 'doctor_push_subscriptions', [])
+    
     if not subscriptions:
         return {"success": False, "error": "Actor has no push subscription"}
         
@@ -52,38 +80,66 @@ def send_push_to_actor(
     errors = []
 
     for sub in subscriptions:
-        subscription_info = {
-            "endpoint": sub.endpoint,
-            "keys": {
-                "p256dh": sub.p256dh,
-                "auth": sub.auth
-            }
-        }
-            
-        try:
-            response = webpush(
-                subscription_info=subscription_info,
-                data=json.dumps(payload),
-                vapid_private_key=settings.VAPID_PRIVATE_KEY,
-                vapid_claims={"sub": f"mailto:{settings.EMAILS_FROM_EMAIL}"}
-            )
-            status_code = getattr(response, 'status_code', 'unknown')
-            logger.info(f"WebPush success for actor {actor.id}, endpoint {sub.id}: {status_code}")
-            
-            if status_code not in [200, 201, 202]:
-                errors.append(f"Endpoint {sub.id} returned {status_code}")
-            else:
+        # Case 1: Native Push (Capacitor/FCM)
+        if sub.token:
+            if not firebase_admin:
+                logger.error("firebase-admin not installed, cannot send native push")
+                errors.append("FCM not supported on this server instance")
+                continue
+                
+            try:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=payload["title"],
+                        body=payload["body"],
+                        image=payload.get("image")
+                    ),
+                    data={k: str(v) for k, v in payload["data"].items()},
+                    token=sub.token
+                )
+                response = messaging.send(message)
+                logger.info(f"FCM success for actor {actor.id}, sub {sub.id}: {response}")
                 success_count += 1
-        except WebPushException as ex:
-            error_msg = str(ex)
-            # Extraer más info si es posible
-            if hasattr(ex, 'response') and ex.response is not None:
-                error_msg += f" (Status: {ex.response.status_code}, Body: {ex.response.text})"
-            logger.error(f"WebPush error for actor {actor.id}: {error_msg}")
-            errors.append(error_msg)
-        except Exception as e:
-            logger.error(f"Unexpected error in push: {str(e)}")
-            errors.append(str(e))
+            except Exception as e:
+                logger.error(f"FCM error for actor {actor.id}, sub {sub.id}: {str(e)}")
+                errors.append(f"FCM error: {str(e)}")
+            continue
+
+        # Case 2: Web Push (Browser)
+        if sub.endpoint and sub.p256dh and sub.auth:
+            subscription_info = {
+                "endpoint": sub.endpoint,
+                "keys": {
+                    "p256dh": sub.p256dh,
+                    "auth": sub.auth
+                }
+            }
+                
+            try:
+                response = webpush(
+                    subscription_info=subscription_info,
+                    data=json.dumps(payload),
+                    vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                    vapid_claims={"sub": f"mailto:{settings.EMAILS_FROM_EMAIL}"}
+                )
+                status_code = getattr(response, 'status_code', 'unknown')
+                logger.info(f"WebPush success for actor {actor.id}, endpoint {sub.id}: {status_code}")
+                
+                if status_code not in [200, 201, 202]:
+                    errors.append(f"Endpoint {sub.id} returned {status_code}")
+                else:
+                    success_count += 1
+            except WebPushException as ex:
+                error_msg = str(ex)
+                if hasattr(ex, 'response') and ex.response is not None:
+                    error_msg += f" (Status: {ex.response.status_code}, Body: {ex.response.text})"
+                logger.error(f"WebPush error for actor {actor.id}: {error_msg}")
+                errors.append(error_msg)
+            except Exception as e:
+                logger.error(f"Unexpected error in webpush: {str(e)}")
+                errors.append(str(e))
+        else:
+            logger.warning(f"Incomplete subscription data for sub {sub.id}")
             
     return {
         "success": success_count > 0, 

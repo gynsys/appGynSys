@@ -51,6 +51,7 @@ import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSett
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { useState } from 'react'
+import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
 
 const RootRedirector = () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -137,7 +138,9 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <>
+      <CapacitorPushListener />
+      <BrowserRouter>
       <Toaster position="top-center" richColors />
       <ToastContainer />
       <Routes>
@@ -211,6 +214,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
+    </>
   )
 }
 
