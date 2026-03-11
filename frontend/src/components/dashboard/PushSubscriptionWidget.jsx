@@ -27,24 +27,24 @@ export default function PushSubscriptionWidget({ primaryColor = '#4F46E5' }) {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 transition-all duration-200">
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${isSubscribed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-50 dark:bg-gray-700'}`}>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-indigo-500/5 border border-indigo-50/50 dark:border-gray-700 p-5 transition-all duration-300 hover:shadow-indigo-500/10 active:scale-[0.99]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
+                <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl transition-all duration-500 ${isSubscribed ? 'bg-green-50 dark:bg-green-900/20 rotate-0' : 'bg-gray-50 dark:bg-gray-700 -rotate-12'}`}>
                         {isSubscribed ? (
-                            <Bell className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            <Bell className="w-6 h-6 text-green-600 dark:text-green-400 animate-bounce-slow" />
                         ) : (
-                            <BellOff className="w-5 h-5 text-gray-400" />
+                            <BellOff className="w-6 h-6 text-gray-400" />
                         )}
                     </div>
-                    <div>
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {isSubscribed ? 'Notificaciones Activas' : 'Notificaciones Desactivadas'}
+                    <div className="text-center sm:text-left">
+                        <h4 className="text-base font-bold text-gray-900 dark:text-white mb-0.5">
+                            {isSubscribed ? 'Notificaciones Vinculadas' : 'Dispositivo no Vinculado'}
                         </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[280px]">
                             {isSubscribed
-                                ? 'Recibirás avisos 90 min antes de cada cita.'
-                                : 'Actívalas para recibir recordatorios en tu móvil.'}
+                                ? 'Este móvil recibirá avisos de tus citas en tiempo real.'
+                                : 'Actívalas en este dispositivo para recibir alertas push.'}
                         </p>
                     </div>
                 </div>
@@ -52,26 +52,30 @@ export default function PushSubscriptionWidget({ primaryColor = '#4F46E5' }) {
                 <button
                     onClick={handleToggle}
                     disabled={loading}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all transform active:scale-95 flex items-center gap-2 ${isSubscribed
+                    className={`w-full sm:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-all transform active:scale-95 flex items-center justify-center gap-2 min-w-[160px] ${isSubscribed
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                            : 'text-white shadow-lg'
+                            : 'text-white shadow-lg shadow-indigo-500/30'
                         }`}
-                    style={!isSubscribed ? { backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}40` } : {}}
+                    style={!isSubscribed ? { 
+                        background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+                    } : {}}
                 >
                     {loading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                     ) : isSubscribed ? (
-                        'Desactivar'
+                        'Desvincular móvil'
                     ) : (
-                        'Activar en este móvil'
+                        'Vincular este móvil'
                     )}
                 </button>
             </div>
 
             {error && (
-                <p className="mt-2 text-[10px] text-red-500 font-medium animate-pulse">
-                    ⚠️ {error}
-                </p>
+                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-2">
+                        <span className="text-base">⚠️</span> {error}
+                    </p>
+                </div>
             )}
         </div>
     );

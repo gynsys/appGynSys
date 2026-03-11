@@ -98,7 +98,8 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                     push_circuit.record_success()
                     channels_sent.append("push")
                 else:
-                    errors.append(f"Push failed: {result.get('error')}")
+                    push_errors = result.get("errors")
+                    errors.append(f"Push failed: {push_errors[0] if push_errors else 'Unknown error'}")
             except Exception as e:
                 push_circuit.record_failure()
                 errors.append(f"Push error: {str(e)}")

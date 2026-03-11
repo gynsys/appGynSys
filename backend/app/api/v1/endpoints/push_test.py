@@ -33,22 +33,35 @@ async def get_users_with_push(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
-    Get list of users who have push notifications enabled
+    Get list of users (CycleUsers and Doctors) who have push notifications enabled
     """
-    # Query distinct users who have at least one push subscription
+    # Query distinct cycle users who have at least one push subscription
     users_data = db.query(CycleUser.id, CycleUser.email, CycleUser.nombre_completo).join(PushSubscription).distinct().all()
+    
+    # Query distinct doctors who have at least one push subscription
+    doctors_data = db.query(Doctor.id, Doctor.email, Doctor.nombre_completo).join(PushSubscription).distinct().all()
+    
+    all_users = []
+    for u in users_data:
+        all_users.append({
+            "id": f"u_{u.id}",
+            "email": u.email,
+            "name": u.nombre_completo or u.email.split('@')[0],
+            "type": "patient"
+        })
+        
+    for d in doctors_data:
+        all_users.append({
+            "id": f"d_{d.id}",
+            "email": d.email,
+            "name": f"{d.nombre_completo} (Inquilino)",
+            "type": "doctor"
+        })
     
     return {
         "success": True,
-        "count": len(users_data),
-        "users": [
-            {
-                "id": u.id,
-                "email": u.email,
-                "name": u.nombre_completo or u.email.split('@')[0]
-            }
-            for u in users_data
-        ]
+        "count": len(all_users),
+        "users": all_users
     }
 
 
@@ -58,17 +71,24 @@ async def get_detailed_users_devices(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
-    Audit endpoint: List all cycle users and their registered push devices.
+    Audit endpoint: List all cycle users and doctors and their registered push devices.
     (SuperAdmin Only)
     """
-    # Get all users with their subscriptions using joinedload would be better,
-    # but for simplicity and control we can query and map
     from sqlalchemy.orm import joinedload
     
+    # 1. Get Cycle Users
     users = db.query(CycleUser).options(joinedload(CycleUser.push_subscriptions)).all()
     
+    # 2. Get Doctors
+    doctors = db.query(Doctor).options(joinedload(Doctor.push_subscriptions)).all()
+    
     result = []
+    
+    # Map Cycle Users
     for user in users:
+        if not user.push_subscriptions:
+            continue
+            
         devices = []
         for sub in user.push_subscriptions:
             devices.append({
@@ -79,10 +99,35 @@ async def get_detailed_users_devices(
             })
         
         result.append({
-            "id": user.id,
+            "id": f"u_{user.id}",
             "email": user.email,
-            "name": user.nombre_completo,
+            "name": user.nombre_completo or user.email,
+            "type": "patient",
             "created_at": user.created_at.isoformat() if user.created_at else None,
+            "devices_count": len(devices),
+            "devices": devices
+        })
+        
+    # Map Doctors
+    for doctor in doctors:
+        if not doctor.push_subscriptions:
+            continue
+            
+        devices = []
+        for sub in doctor.push_subscriptions:
+            devices.append({
+                "id": sub.id,
+                "endpoint_short": sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint,
+                "created_at": sub.created_at.isoformat() if sub.created_at else None,
+                "updated_at": sub.updated_at.isoformat() if sub.updated_at else None
+            })
+        
+        result.append({
+            "id": f"d_{doctor.id}",
+            "email": doctor.email,
+            "name": f"{doctor.nombre_completo} (Inquilino)",
+            "type": "doctor",
+            "created_at": doctor.created_at.isoformat() if doctor.created_at else None,
             "devices_count": len(devices),
             "devices": devices
         })
@@ -101,37 +146,29 @@ async def test_push_notification(
     current_admin: Doctor = Depends(get_current_admin_user)
 ):
     """
-    Send a test push notification to a specific user
-    
-    **Admin only** - Requires authentication
-    
-    Example payload:
-    ```json
-    {
-        "user_email": "paciente@example.com",
-        "title": "🔔 Prueba de Notificación",
-        "body": "Esta es una notificación de prueba del sistema",
-        "data": {"type": "test", "timestamp": "2026-02-08T22:00:00Z"}
-    }
-    ```
+    Send a test push notification to a specific user or doctor
     """
-    # Find user by email
-    user = db.query(CycleUser).filter(CycleUser.email == request.user_email).first()
+    # 1. Search in CycleUser
+    actor = db.query(CycleUser).filter(CycleUser.email == request.user_email).first()
     
-    if not user:
-        raise HTTPException(status_code=404, detail=f"User not found: {request.user_email}")
+    # 2. If not found, search in Doctor
+    if not actor:
+        actor = db.query(Doctor).filter(Doctor.email == request.user_email).first()
     
-    # Check if user has push subscription
-    if not user.push_subscriptions:
+    if not actor:
+        raise HTTPException(status_code=404, detail=f"User or Doctor not found: {request.user_email}")
+    
+    # Check if they have push subscriptions
+    if not actor.push_subscriptions:
         raise HTTPException(
             status_code=400, 
-            detail=f"User {request.user_email} has not enabled push notifications"
+            detail=f"Entity {request.user_email} has not enabled push notifications"
         )
     
     try:
         # Send push notification
         result = send_push_notification(
-            user=user,
+            user=actor, #send_push_notification handles both as they both have .push_subscriptions
             title=request.title,
             body=request.body,
             icon=request.icon,
@@ -142,13 +179,14 @@ async def test_push_notification(
         return {
             "success": True,
             "message": f"Test notification sent to {request.user_email}",
-            "user_id": user.id,
-            "subscription_count": len(user.push_subscriptions),
-            "subscription_endpoint": user.push_subscriptions[0].endpoint[:50] + "..." if user.push_subscriptions else None,
+            "actor_id": actor.id,
+            "subscription_count": len(actor.push_subscriptions),
             "result": result
         }
     
     except Exception as e:
+        import logging
+        logging.error(f"Push test error for {request.user_email}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to send push notification: {str(e)}"

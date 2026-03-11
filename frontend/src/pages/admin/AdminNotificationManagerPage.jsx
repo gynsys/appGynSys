@@ -486,7 +486,8 @@ export default function NotificationManagerPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
-                            <TableHead className="text-gray-500 dark:text-gray-400 pl-6 h-12">Usuaria</TableHead>
+                            <TableHead className="text-gray-500 dark:text-gray-400 pl-6 h-12 w-[300px]">Usuario / Dispositivo</TableHead>
+                            <TableHead className="text-gray-500 dark:text-gray-400 h-12">Tipo</TableHead>
                             <TableHead className="text-gray-500 dark:text-gray-400 h-12">Dispositivos</TableHead>
                             <TableHead className="text-gray-500 dark:text-gray-400 h-12">Registro</TableHead>
                             <TableHead className="text-right text-gray-500 dark:text-gray-400 pr-6 h-12">Acciones</TableHead>
@@ -495,14 +496,14 @@ export default function NotificationManagerPage() {
                     <TableBody>
                         {loadingAudit ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-12 text-gray-400 italic">
+                                <TableCell colSpan={5} className="text-center py-12 text-gray-400 italic">
                                     Cargando datos de auditoría...
                                 </TableCell>
                             </TableRow>
                         ) : filteredAudit.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-12 text-gray-400 italic">
-                                    No se encontraron usuarias con los criterios de búsqueda.
+                                <TableCell colSpan={5} className="text-center py-12 text-gray-400 italic">
+                                    No se encontraron destinatarios con los criterios de búsqueda.
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -510,9 +511,18 @@ export default function NotificationManagerPage() {
                                 <TableRow key={user.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                                     <TableCell className="pl-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-gray-900 dark:text-gray-100">{user.name}</span>
+                                            <span className="font-bold text-gray-900 dark:text-gray-100 truncate max-w-[250px]">{user.name}</span>
                                             <span className="text-xs text-gray-500 dark:text-gray-400">{user.email}</span>
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                            user.type === 'doctor' 
+                                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' 
+                                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                        }`}>
+                                            {user.type === 'doctor' ? 'Inquilino' : 'Paciente'}
+                                        </span>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
@@ -520,7 +530,7 @@ export default function NotificationManagerPage() {
                                                 {user.devices_count} {user.devices_count === 1 ? 'dispositivo' : 'dispositivos'}
                                             </span>
                                             {user.devices.map((dev, idx) => (
-                                                <span key={idx} className="text-[10px] text-gray-400 font-mono truncate max-w-[200px]" title={dev.endpoint_short}>
+                                                <span key={idx} className="text-[10px] text-gray-400 font-mono truncate max-w-[150px]" title={dev.endpoint_short}>
                                                     {dev.endpoint_short}
                                                 </span>
                                             ))}

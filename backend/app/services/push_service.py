@@ -61,18 +61,28 @@ def send_push_to_actor(
         }
             
         try:
-            webpush(
+            response = webpush(
                 subscription_info=subscription_info,
                 data=json.dumps(payload),
                 vapid_private_key=settings.VAPID_PRIVATE_KEY,
                 vapid_claims={"sub": f"mailto:{settings.EMAILS_FROM_EMAIL}"}
             )
-            success_count += 1
+            status_code = getattr(response, 'status_code', 'unknown')
+            logger.info(f"WebPush success for actor {actor.id}, endpoint {sub.id}: {status_code}")
+            
+            if status_code not in [200, 201, 202]:
+                errors.append(f"Endpoint {sub.id} returned {status_code}")
+            else:
+                success_count += 1
         except WebPushException as ex:
-            logger.error(f"WebPush error for actor {actor.id}: {str(ex)}")
-            errors.append(str(ex))
+            error_msg = str(ex)
+            # Extraer más info si es posible
+            if hasattr(ex, 'response') and ex.response is not None:
+                error_msg += f" (Status: {ex.response.status_code}, Body: {ex.response.text})"
+            logger.error(f"WebPush error for actor {actor.id}: {error_msg}")
+            errors.append(error_msg)
         except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
+            logger.error(f"Unexpected error in push: {str(e)}")
             errors.append(str(e))
             
     return {

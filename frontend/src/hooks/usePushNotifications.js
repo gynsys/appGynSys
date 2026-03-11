@@ -34,7 +34,12 @@ export const usePushNotifications = () => {
 
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
-        setIsSubscribed(!!subscription);
+        
+        // El dispositivo solo se considera suscrito si existe la suscripción técnica
+        // Y el usuario ha dado su consentimiento explícito en este dispositivo/navegador
+        const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
+        
+        setIsSubscribed(!!subscription && hasExplicitConsent);
         setPermission(Notification.permission);
     };
 
@@ -62,9 +67,10 @@ export const usePushNotifications = () => {
                 applicationServerKey: urlBase64ToUint8Array(data.public_key)
             });
 
-            // 4. Send to Backend
+            // 4. Send to Backend (Reconocimiento del dispositivo)
             await axios.post('/notifications/subscribe', subscription.toJSON());
 
+            localStorage.setItem('gynsys_push_enabled', 'true');
             setIsSubscribed(true);
             return true;
         } catch (err) {
@@ -90,8 +96,10 @@ export const usePushNotifications = () => {
 
                 // Unsubscribe from Browser
                 await subscription.unsubscribe();
-                setIsSubscribed(false);
             }
+            
+            localStorage.removeItem('gynsys_push_enabled');
+            setIsSubscribed(false);
         } catch (err) {
             setError(err.message);
         } finally {
