@@ -91,7 +91,7 @@
             timestamp: new Date().toISOString()
           }
         };
-        fetch('/api/v1/notifications/track', {
+        fetch('https://api.gynsys.net/api/v1/notifications/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(pingData)
