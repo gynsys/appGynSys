@@ -77,6 +77,23 @@ const RootRedirector = () => {
 function App() {
   const [isInitializing, setIsInitializing] = useState(true)
 
+  // CRITICAL DEBUG PING
+  useEffect(() => {
+    fetch('/api/v1/notifications/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        notification_id: 0,
+        event: 'debug',
+        metadata: { 
+          message: 'APP_COMPONENT_MOUNTED_FETCH',
+          ua: navigator.userAgent,
+          isCapacitor: isCapacitor()
+        }
+      })
+    }).catch(() => {});
+  }, []);
+
   // Global theme effect & Auth Init
   useEffect(() => {
     const initApp = async () => {
