@@ -47,7 +47,7 @@ export const CapacitorPushListener = () => {
                 const isAuthenticated = !!(user || cycleUser);
 
                 if (isAuthenticated) {
-                    remoteLog(`[GynSysPush] Syncing native token`);
+                    remoteLog(`[GynSysPush] Syncing native token to backend...`);
                     axios.post('/notifications/subscribe', { token: tokenValue })
                         .then(() => {
                             remoteLog('[GynSysPush] Native token synced successfully');
@@ -56,10 +56,17 @@ export const CapacitorPushListener = () => {
                             const errorDetail = err?.response?.data || err.message;
                             remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
                         });
+                } else {
+                    remoteLog(`[GynSysPush] Registration success but NOT authenticated yet`);
                 }
             });
 
+            PushNotifications.addListener('registrationError', (error) => {
+                remoteLog(`[GynSysPush] Registration error: ${JSON.stringify(error)}`);
+            });
+
             PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                remoteLog(`[GynSysPush] Notification received: ${notification.title}`);
                 toast((t) => (
                     <div className="flex flex-col">
                         <span className="font-bold">{notification.title}</span>
@@ -90,12 +97,18 @@ export const CapacitorPushListener = () => {
         if (isCapacitor()) {
             remoteLog(`[GynSysPush] Checking Native permissions...`);
             PushNotifications.checkPermissions().then((res) => {
+                remoteLog(`[GynSysPush] Permission result: ${res.receive}`);
                 if (res.receive === 'granted') {
+                    remoteLog(`[GynSysPush] Calling register()...`);
                     PushNotifications.register();
                 } else if (res.receive === 'prompt') {
+                    remoteLog(`[GynSysPush] Requesting permissions...`);
                     PushNotifications.requestPermissions().then((res) => {
+                        remoteLog(`[GynSysPush] Request result: ${res.receive}`);
                         if (res.receive === 'granted') PushNotifications.register();
                     });
+                } else {
+                    remoteLog(`[GynSysPush] Permissions DENIED or restricted: ${res.receive}`);
                 }
             });
         } else {
