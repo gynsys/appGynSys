@@ -40,6 +40,9 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    
+    // Firebase Cloud Messaging dependency for diagnostics
+    implementation 'com.google.firebase:firebase-messaging:24.1.0'
 }
 
 apply from: 'capacitor.build.gradle'

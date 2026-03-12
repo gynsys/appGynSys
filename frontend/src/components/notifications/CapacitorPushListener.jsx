@@ -18,14 +18,29 @@ export const CapacitorPushListener = () => {
             }
 
             PushNotifications.addListener('registration', (token) => {
-                console.log('Push registration success, token:', token.value);
-                // When coming from "Vincular" button or auto-login, we send the token
-                // We check the intent stored in localStorage
+                const tokenValue = token.value;
+                console.log('[GynSysPush] Registration success. Token:', tokenValue.substring(0, 10) + '...');
+                
+                // CRITICAL: Sync token if user is logged in OR has explicit consent
+                const { user, cycleUser } = useAuthStore.getState();
                 const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
-                if (hasExplicitConsent) {
-                    axios.post('/notifications/subscribe', { token: token.value })
-                        .then(() => console.log('Native token synced with backend'))
-                        .catch(err => console.error('Error syncing native token:', err));
+                const isAuthenticated = !!(user || cycleUser);
+
+                if (hasExplicitConsent || isAuthenticated) {
+                    console.log('[GynSysPush] Syncing token with backend (Auth:', isAuthenticated, 'Consent:', hasExplicitConsent, ')');
+                    axios.post('/notifications/subscribe', { token: tokenValue })
+                        .then(() => {
+                            console.log('[GynSysPush] Native token synced successfully');
+                            // If it was auto-synced by auth, we mark it as enabled for future UI consistency
+                            if (isAuthenticated && !hasExplicitConsent) {
+                                localStorage.setItem('gynsys_push_enabled', 'true');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('[GynSysPush] Error syncing native token:', err?.response?.data || err.message);
+                        });
+                } else {
+                    console.log('[GynSysPush] Token received but not synced (No auth/consent)');
                 }
             });
 
@@ -47,9 +62,13 @@ export const CapacitorPushListener = () => {
                 if (data?.url) window.location.href = data.url;
             });
 
-            // Initial registration attempt if already enabled
+            // Initial registration attempt if already enabled OR user is logged in
+            const { user: initialUser, cycleUser: initialCycleUser } = useAuthStore.getState();
             const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
-            if (hasExplicitConsent) {
+            const initialAuth = !!(initialUser || initialCycleUser);
+
+            if (hasExplicitConsent || initialAuth) {
+                console.log('[GynSysPush] Attempting initial registration (Auth:', initialAuth, ')');
                 const res = await PushNotifications.checkPermissions();
                 if (res.receive === 'granted') {
                     await PushNotifications.register();
