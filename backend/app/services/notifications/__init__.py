@@ -82,6 +82,8 @@ def create_or_update_subscription(
     doctor_id: Optional[int] = None
 ) -> PushSubscription:
     """UPSERT atómico para suscripciones push. Soporta CycleUser y Doctor (Web y Nativo)."""
+    import logging
+    _logger = logging.getLogger(__name__)
     
     # Determine if it's native (token) or web (endpoint)
     is_native = bool(sub_in.token)
