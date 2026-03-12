@@ -79,19 +79,17 @@ function App() {
 
   // CRITICAL DEBUG PING
   useEffect(() => {
-    fetch('/api/v1/notifications/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    import('./lib/axios').then(({ default: api }) => {
+      api.post('/notifications/track', {
         notification_id: 0,
         event: 'debug',
         metadata: { 
-          message: 'APP_COMPONENT_MOUNTED_FETCH',
+          message: 'APP_COMPONENT_MOUNTED_API',
           ua: navigator.userAgent,
           isCapacitor: isCapacitor()
         }
-      })
-    }).catch(() => {});
+      }).catch(() => {});
+    });
   }, []);
 
   // Global theme effect & Auth Init
