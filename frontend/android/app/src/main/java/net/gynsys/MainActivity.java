@@ -33,6 +33,10 @@ public class MainActivity extends BridgeActivity {
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        
+        // Custom User Agent for reliable platform detection
+        String defaultUA = settings.getUserAgentString();
+        settings.setUserAgentString(defaultUA + " GynSysApp/Capacitor");
 
         // Diagnóstico: Inyectar un script al cargar la página para verificar el Bridge
         webView.setWebViewClient(new WebViewClient() {

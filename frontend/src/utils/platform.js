@@ -5,19 +5,17 @@ import { Capacitor } from '@capacitor/core';
  * @returns {boolean}
  */
 export const isCapacitor = () => {
-    // 1. Detect bridge object
+    // 1. Synchronous detection by User Agent (Fastest & most reliable for remote URLs)
+    const ua = window.navigator.userAgent;
+    const isUAApp = ua.includes('GynSysApp') || ua.includes('Capacitor');
+    
+    // 2. Detect bridge object (Legacy/Alternative)
     const cap = window.Capacitor || (window.parent && window.parent.Capacitor);
     
-    // 2. Safe check for native platform
-    // It's native if the bridge object exists AND it's not explicitly the web platform
-    let isNative = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
-    
-    // Fallback: If bridge exists but isNativePlatform fails/missing (older versions or custom bridge)
-    if (!isNative && cap && cap.getPlatform) {
-        isNative = cap.getPlatform() !== 'web';
-    }
+    // 3. Native check
+    const isNative = isUAApp || !!(cap && cap.isNativePlatform && cap.isNativePlatform());
 
-    console.log(`[GynSysDebug] Platform detection - isNative: ${isNative}, BridgeFound: ${!!cap}`);
+    console.log(`[GynSysDebug] Platform detection - isNative: ${isNative}, UA: ${isUAApp}, BridgeFound: ${!!cap}`);
     return isNative;
 };
 

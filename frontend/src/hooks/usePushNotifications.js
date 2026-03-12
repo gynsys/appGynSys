@@ -41,6 +41,11 @@ export const usePushNotifications = () => {
         }
 
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            // If we are in Capacitor, we don't need Service Workers for Push, so we don't error out
+            if (isCapacitor()) {
+                console.log('[GynSysDebug] Skipping SW check because we are in Native environment');
+                return;
+            }
             setError("Push notifications not supported");
             return;
         }
