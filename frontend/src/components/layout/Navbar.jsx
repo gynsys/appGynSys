@@ -236,7 +236,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => logoutDoctor()}
+                    onClick={() => logout()}
                     className="text-sm font-medium text-red-500 hover:text-red-600 transition"
                   >
                     Cerrar Sesión

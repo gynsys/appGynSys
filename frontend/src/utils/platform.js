@@ -5,11 +5,16 @@ import { Capacitor } from '@capacitor/core';
  * @returns {boolean}
  */
 export const isCapacitor = () => {
-    // Try to detect if we have the bridge locally or in the parent (for some webview contexts)
+    // 1. Detect bridge
     const cap = window.Capacitor || (window.parent && window.parent.Capacitor);
-    const isNative = (cap && cap.isNativePlatform && cap.isNativePlatform()) || Capacitor.isNativePlatform();
     
-    console.log(`[GynSysDebug] Detection - isNative: ${isNative}, Bridge: ${!!cap}`);
+    // 2. Determine if native: Flag true OR bridge exists in a non-web environment
+    // Note: If we are in the APK, even if the flag fails, existence of Capacitor bridge is proof
+    const isNative = (cap && cap.isNativePlatform && cap.isNativePlatform()) || 
+                     (cap && !!cap.Plugins) || 
+                     Capacitor.isNativePlatform();
+    
+    console.log(`[GynSysDebug] Detection - isNative: ${isNative}, BridgeFound: ${!!cap}`);
     return isNative;
 };
 

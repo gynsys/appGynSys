@@ -80,15 +80,10 @@
         }
       } catch (e) {}
 
-      // 2. Dynamic Bridge Injection: Required for remote URLs on native apps
-      if (window.location.protocol !== 'file:') {
-        // Tag used by Capacitor to know it needs to inject the bridge
-        const script = document.createElement('script');
-        script.src = '/capacitor.js';
-        script.onload = () => { console.log('[GynSysDebug] Capacitor bridge injected successfully.'); };
-        script.onerror = () => { console.log('[GynSysDebug] Skipping bridge (Web context).'); };
-        document.head.appendChild(script);
-      }
+      // 2. Inyección automática: En una APK configurada con server.url, 
+      // Capacitor inyecta el bridge automáticamente. No necesitamos cargarlo manualmente
+      // desde una URL que devuelve HTML 404.
+      console.log('[GynSysDebug] Bridge Bridge Proxy Ready');
     })();
   </script>
 </head>
