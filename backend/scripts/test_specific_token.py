@@ -7,13 +7,14 @@ if os.path.basename(os.getcwd()) == "scripts":
     sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.services.push_service import send_push_to_actor
-from app.db.session import get_db_session
+from app.db.base import SessionLocal
 from app.db.models.doctor import Doctor
 
 def test_token_push(token: str):
     print(f"Testing push notification to token: {token[:20]}...")
     
-    with get_db_session() as db:
+    db = SessionLocal()
+    try:
         # We need an actor to "own" the subscription for the generic function
         # Let's pick mariel-herrera
         actor = db.query(Doctor).filter(Doctor.slug_url == 'mariel-herrera').first()
@@ -47,6 +48,8 @@ def test_token_push(token: str):
             print(f"Result: {result}")
         finally:
             actor.doctor_push_subscriptions = original_subs
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     test_token = "fqgpFReoTA6I0q9Rhjpj1S:APA91bEVgF65jJP8VFYgFtdB3f8CclxrF4SrZv0R5NgEbS1S0HTxOvDER3BCF-U7kbzhd4TLhUqWBFaBv7KbXzcMQlm2xWctkleditFFP07NYDgwoqmSfoE"
