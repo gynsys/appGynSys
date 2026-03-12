@@ -73,14 +73,20 @@
   <!-- Capacitor bridge for remote URL support -->
   <script>
     (function() {
-      // If we are in a native context (Capacitor), the bridge is required
-      // We try to load it. On the web this will 404 safely, but in the APK 
-      // Capacitor will intercept this request and serve the bridge.
+      // 1. Safety Proxy: If we are in an iframe or special context, link the Bridge
+      try {
+        if (!window.Capacitor && window.parent && window.parent.Capacitor) {
+          window.Capacitor = window.parent.Capacitor;
+        }
+      } catch (e) {}
+
+      // 2. Dynamic Bridge Injection: Required for remote URLs on native apps
       if (window.location.protocol !== 'file:') {
+        // Tag used by Capacitor to know it needs to inject the bridge
         const script = document.createElement('script');
         script.src = '/capacitor.js';
-        script.onload = () => { console.log('Capacitor bridge loaded.'); };
-        script.onerror = () => { console.log('Not a native environment, skipping Capacitor bridge.'); };
+        script.onload = () => { console.log('[GynSysDebug] Capacitor bridge injected successfully.'); };
+        script.onerror = () => { console.log('[GynSysDebug] Skipping bridge (Web context).'); };
         document.head.appendChild(script);
       }
     })();
