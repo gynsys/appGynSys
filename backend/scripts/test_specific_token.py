@@ -1,8 +1,10 @@
 import os
 import sys
 
-# Add backend to path
-sys.path.append(os.path.join(os.getcwd(), "backend"))
+# Add current directory and its parent to path to find 'app'
+sys.path.append(os.getcwd())
+if os.path.basename(os.getcwd()) == "scripts":
+    sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.services.push_service import send_push_to_actor
 from app.db.session import get_db_session
