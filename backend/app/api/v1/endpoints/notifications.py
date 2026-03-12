@@ -72,17 +72,28 @@ def get_vapid_public_key(
 
 @router.post("/subscribe")
 def subscribe_push(
-    subscription: PushSubscriptionSchema,
+    subscription: Any = Body(...),
     db: Session = Depends(get_db),
     current_actor: Union[CycleUser, Doctor] = Depends(get_current_actor)
 ):
     """Subscribe current actor (Doctor or CycleUser) to Push Notifications."""
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.info(f"[GynSysPush] Received subscription request: {subscription}")
+
+    # Validate manually or convert to schema
+    try:
+        sub_in = PushSubscriptionSchema(**subscription) if isinstance(subscription, dict) else subscription
+    except Exception as e:
+        _logger.error(f"[GynSysPush] Validation error: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
+
     user_id = current_actor.id if isinstance(current_actor, CycleUser) else None
     doctor_id = current_actor.id if isinstance(current_actor, Doctor) else None
     
     service.create_or_update_subscription(
         db=db, 
-        sub_in=subscription, 
+        sub_in=sub_in, 
         user_id=user_id, 
         doctor_id=doctor_id
     )
