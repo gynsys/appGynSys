@@ -91,9 +91,15 @@ async def get_detailed_users_devices(
             
         devices = []
         for sub in user.patient_push_subscriptions:
+            # Handle null endpoint (Capacitor devices use tokens)
+            endpoint_display = "CAPACITOR_DEVICE"
+            if sub.endpoint:
+                endpoint_display = sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint
+            
             devices.append({
                 "id": sub.id,
-                "endpoint_short": sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint,
+                "endpoint_short": endpoint_display,
+                "token_short": sub.token[:20] + "..." if sub.token else None,
                 "created_at": sub.created_at.isoformat() if sub.created_at else None,
                 "updated_at": sub.updated_at.isoformat() if sub.updated_at else None
             })
@@ -115,9 +121,15 @@ async def get_detailed_users_devices(
             
         devices = []
         for sub in doctor.doctor_push_subscriptions:
+            # Handle null endpoint (Capacitor devices use tokens)
+            endpoint_display = "CAPACITOR_DEVICE"
+            if sub.endpoint:
+                endpoint_display = sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint
+
             devices.append({
                 "id": sub.id,
-                "endpoint_short": sub.endpoint[:60] + "..." if len(sub.endpoint) > 60 else sub.endpoint,
+                "endpoint_short": endpoint_display,
+                "token_short": sub.token[:20] + "..." if sub.token else None,
                 "created_at": sub.created_at.isoformat() if sub.created_at else None,
                 "updated_at": sub.updated_at.isoformat() if sub.updated_at else None
             })
