@@ -6,15 +6,25 @@ import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
 export const CapacitorPushListener = () => {
+    // --- REMOTE LOGGING FOR DEBUGGING ---
+    const remoteLog = (msg) => {
+        console.log(msg);
+        axios.post('/notifications/track', { 
+            notification_id: 0, 
+            event: 'debug', 
+            metadata: { message: msg, ua: navigator.userAgent } 
+        }).catch(() => {});
+    };
+
     useEffect(() => {
         if (!isCapacitor()) return;
+        remoteLog('[GynSysPush] Native environment detected');
 
         const setupListeners = async () => {
             try {
-                // Remove existing listeners before adding new ones to avoid duplicates
                 await PushNotifications.removeAllListeners();
             } catch (e) {
-                console.warn('[GynSysDebug] Could not remove listeners (Plugin not ready or web context):', e);
+                remoteLog(`[GynSysPush] Warning: Could not remove listeners: ${e.message}`);
             }
 
             PushNotifications.addListener('registration', (token) => {
@@ -44,7 +54,7 @@ export const CapacitorPushListener = () => {
             });
 
             PushNotifications.addListener('registrationError', (error) => {
-                console.error('Push registration error:', JSON.stringify(error));
+                remoteLog(`[GynSysPush] Registration error: ${JSON.stringify(error)}`);
             });
 
             PushNotifications.addListener('pushNotificationReceived', (notification) => {
@@ -60,19 +70,6 @@ export const CapacitorPushListener = () => {
                 const data = notification.notification.data;
                 if (data?.url) window.location.href = data.url;
             });
-
-            // Initial registration attempt if already enabled OR user is logged in
-            const { user: initialUser, cycleUser: initialCycleUser } = useAuthStore.getState();
-            const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
-            const initialAuth = !!(initialUser || initialCycleUser);
-
-            if (hasExplicitConsent || initialAuth) {
-                console.log('[GynSysPush] Attempting initial registration (Auth:', initialAuth, ')');
-                const res = await PushNotifications.checkPermissions();
-                if (res.receive === 'granted') {
-                    await PushNotifications.register();
-                }
-            }
         };
 
         setupListeners();
@@ -82,15 +79,27 @@ export const CapacitorPushListener = () => {
         };
     }, []);
 
-    // --- 3. REMOTE LOGGING FOR DEBUGGING ---
-    const remoteLog = (msg) => {
-        console.log(msg);
-        axios.post('/notifications/track', { 
-            notification_id: 0, 
-            event: 'debug', 
-            metadata: { message: msg, ua: navigator.userAgent } 
-        }).catch(() => {});
-    };
+    // --- RE-REGISTER ON LOGIN/AUTH CHANGE ---
+    const { user, cycleUser } = useAuthStore();
+    useEffect(() => {
+        const activeUser = user || cycleUser;
+        if (activeUser && isCapacitor()) {
+            remoteLog(`[GynSysPush] User change detected (${activeUser.email}), checking permissions...`);
+            PushNotifications.checkPermissions().then((res) => {
+                remoteLog(`[GynSysPush] Permissions state: ${res.receive}`);
+                if (res.receive === 'granted') {
+                    PushNotifications.register();
+                } else if (res.receive === 'prompt') {
+                    PushNotifications.requestPermissions().then((res) => {
+                        remoteLog(`[GynSysPush] Permission request result: ${res.receive}`);
+                        if (res.receive === 'granted') {
+                            PushNotifications.register();
+                        }
+                    });
+                }
+            });
+        }
+    }, [user, cycleUser]);
 
     return null;
 };
