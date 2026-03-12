@@ -25,7 +25,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const { isAuthenticated, user, logout, isCycleAuthenticated, cycleUser, logoutPatient } = useAuthStore()
+  const { isAuthenticated, user, logout, logoutDoctor, isCycleAuthenticated, cycleUser, logoutPatient } = useAuthStore()
   const { isStandalone } = usePWAStore()
   const navigate = useNavigate()
 

@@ -10,8 +10,12 @@ export const CapacitorPushListener = () => {
         if (!isCapacitor()) return;
 
         const setupListeners = async () => {
-            // Remove existing listeners before adding new ones to avoid duplicates
-            await PushNotifications.removeAllListeners();
+            try {
+                // Remove existing listeners before adding new ones to avoid duplicates
+                await PushNotifications.removeAllListeners();
+            } catch (e) {
+                console.warn('[GynSysDebug] Could not remove listeners (Plugin not ready or web context):', e);
+            }
 
             PushNotifications.addListener('registration', (token) => {
                 console.log('Push registration success, token:', token.value);
