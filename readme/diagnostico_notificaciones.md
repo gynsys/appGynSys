@@ -2,35 +2,39 @@
 
 Este documento centraliza el proceso de depuración del sistema de notificaciones para evitar repetir investigaciones desde cero.
 
-## 🛠 Herramientas de Diagnóstico
-El script principal se encuentra en `readme/diagnose_appointments.py` (Local) y en `/app/diagnose_appointments.py` (Docker).
+## 🛠 Herramienta Unificada
+El script principal se encuentra en `readme/diagnose_appointments.py`. Es una herramienta integral que verifica entorno, suscripciones, lógica de reglas y logs.
 
-**Comando para ejecutar el diagnóstico (SaaS Multi-inquilino):**
+### 🚀 Cómo ejecutarlo (vía SSH)
+
+**1. Diagnóstico Completo de un Inquilino (Recomendado):**
 ```bash
-python ssh_runner.py "docker exec appgynsys-backend-1 bash -c 'PYTHONPATH=/app python /app/diagnose_appointments.py <doctor_id> <tipo_notificacion>'"
+python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --doc-id <id> --type <tipo>"
 ```
 
-**Ejemplos de tipos:**
+**2. Ver solo suscripciones de un usuario/doctor:**
+```bash
+python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --subs-only --email <email>"
+```
+
+**3. Ver logs recientes de un doctor:**
+```bash
+python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --logs-only --doc-id <id>"
+```
+
+### 📋 Tipos de Notificación Comunes:
 - `doctor_new_appointment`
 - `doctor_preconsulta_completed`
 - `doctor_new_contact_message`
 - `doctor_new_online_consultation`
 - `doctor_daily_agenda`
 
-**Lo que hace el script:**
-1. Verifica si la regla existe y está activa en la base de datos para ese inquilino.
-2. Verifica si la regla está definida en el nuevo `doctor_registry.py`.
-3. Prueba la evaluación de la lógica técnica.
-4. Intenta un disparo real y verifica si se crea la entrada en `pending_notifications`.
+## 🔍 Puntos de Verificación Críticos
 
-## 🔍 Puntos de Verificación Comunes
-
-1.  **Reglas del Inquilino**: Cada doctor debe tener sus propias reglas (`tenant_id`). Si el doctor es nuevo o se resetearon las reglas, puede que falten las de tipo `doctor_new_appointment`.
-2.  **Estado de Celery**: Las notificaciones se procesan de forma asíncrona. Si el worker está caído o Redis lleno, no saldrán.
-3.  **Caché de Reglas**: El sistema cachea las reglas globales. Cambios manuales en la DB requieren:
-    ```bash
-    docker compose restart backend celery_worker celery_beat
-    ```
+1.  **Reglas del Inquilino**: Cada doctor debe tener sus propias reglas (`tenant_id`). 
+2.  **Suscripciones**: Si no hay suscripciones en el comando `--subs-only`, el usuario NUNCA recibirá push.
+3.  **Esquema de BD**: La columna `token` debe existir en `push_subscriptions` para dispositivos móviles (Capacitor).
 
 ## 📋 Historial de Problemas Detectados
+- **2026-03-12**: Investigando falla masiva en APK. Se detectó falta de columna `token` en producción y error 500 en auditoría. Solucionado.
 - **2026-03-11**: Investigando falla de notificación de cita para inquilino.

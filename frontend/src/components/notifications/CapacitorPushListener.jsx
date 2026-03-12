@@ -4,6 +4,7 @@ import { isCapacitor } from '@/utils/platform';
 import axios from '@/lib/axios';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
+import pushService from '@/services/pushService';
 
 export const CapacitorPushListener = () => {
     // --- REMOTE LOGGING FOR DEBUGGING ---
@@ -22,16 +23,15 @@ export const CapacitorPushListener = () => {
             notification_id: 0, 
             event: 'debug', 
             metadata: { 
-                message: 'CAPACITOR_LISTENER_MOUNTED', 
+                message: 'NOTIF_MANAGER_MOUNTED', 
                 isCapacitor: isCapacitor(),
                 userAgent: navigator.userAgent
             } 
         }).catch(() => {});
 
         if (!isCapacitor()) return;
-        remoteLog('[GynSysPush] Native environment detected');
-        remoteLog(`[GynSysPush] PushNotifications object: ${typeof PushNotifications}`);
-
+        
+        // --- NATIVE CAPACITOR LOGIC ---
         const setupListeners = async () => {
             try {
                 await PushNotifications.removeAllListeners();
@@ -44,29 +44,19 @@ export const CapacitorPushListener = () => {
                 remoteLog(`[GynSysPush] Registration success. Token: ${tokenValue.substring(0, 10)}...`);
                 
                 const { user, cycleUser } = useAuthStore.getState();
-                const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
                 const isAuthenticated = !!(user || cycleUser);
 
-                if (hasExplicitConsent || isAuthenticated) {
-                    remoteLog(`[GynSysPush] Syncing token (Auth:${isAuthenticated})`);
+                if (isAuthenticated) {
+                    remoteLog(`[GynSysPush] Syncing native token`);
                     axios.post('/notifications/subscribe', { token: tokenValue })
                         .then(() => {
                             remoteLog('[GynSysPush] Native token synced successfully');
-                            if (isAuthenticated && !hasExplicitConsent) {
-                                localStorage.setItem('gynsys_push_enabled', 'true');
-                            }
                         })
                         .catch(err => {
                             const errorDetail = err?.response?.data || err.message;
                             remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
                         });
-                } else {
-                    remoteLog('[GynSysPush] Token received but not synced (No auth/consent)');
                 }
-            });
-
-            PushNotifications.addListener('registrationError', (error) => {
-                remoteLog(`[GynSysPush] Registration error: ${JSON.stringify(error)}`);
             });
 
             PushNotifications.addListener('pushNotificationReceived', (notification) => {
@@ -91,25 +81,32 @@ export const CapacitorPushListener = () => {
         };
     }, []);
 
-    // --- RE-REGISTER ON LOGIN/AUTH CHANGE ---
+    // --- RE-REGISTER ON AUTH CHANGE (Both Capacitor and PWA) ---
     const { user, cycleUser } = useAuthStore();
     useEffect(() => {
         const activeUser = user || cycleUser;
-        if (activeUser && isCapacitor()) {
-            remoteLog(`[GynSysPush] User change detected (${activeUser.email}), checking permissions...`);
+        if (!activeUser) return;
+
+        if (isCapacitor()) {
+            remoteLog(`[GynSysPush] Checking Native permissions...`);
             PushNotifications.checkPermissions().then((res) => {
-                remoteLog(`[GynSysPush] Permissions state: ${res.receive}`);
                 if (res.receive === 'granted') {
                     PushNotifications.register();
                 } else if (res.receive === 'prompt') {
                     PushNotifications.requestPermissions().then((res) => {
-                        remoteLog(`[GynSysPush] Permission request result: ${res.receive}`);
-                        if (res.receive === 'granted') {
-                            PushNotifications.register();
-                        }
+                        if (res.receive === 'granted') PushNotifications.register();
                     });
                 }
             });
+        } else {
+            // --- PWA AUTO-REGISTRATION ---
+            // If already permitted, subscribe silently to sync with backend
+            if ("Notification" in window && Notification.permission === "granted") {
+                console.log("[GynSysPush] PWA Permission already granted. Syncing subscription...");
+                pushService.subscribeUser().catch(err => {
+                    console.error("[GynSysPush] PWA Auto-sync failed:", err);
+                });
+            }
         }
     }, [user, cycleUser]);
 

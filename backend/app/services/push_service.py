@@ -79,7 +79,11 @@ def send_push_to_actor(
     success_count = 0
     errors = []
 
-    for sub in subscriptions:
+    # To avoid modifying all callers, we try to get the session from the actor
+    from sqlalchemy.orm import object_session
+    db = object_session(actor)
+
+    for sub in list(subscriptions): # Use list to allow removal during iteration if using a local list, but here we just delete from db
         # Case 1: Native Push (Capacitor/FCM)
         if sub.token:
             if not firebase_admin:
@@ -100,6 +104,12 @@ def send_push_to_actor(
                 response = messaging.send(message)
                 logger.info(f"FCM success for actor {actor.id}, sub {sub.id}: {response}")
                 success_count += 1
+            except (messaging.UnregisteredError, messaging.SenderIdMismatchError) as e:
+                logger.warning(f"FCM token invalid/unregistered for actor {actor.id}, sub {sub.id}. Deleting subscription. Error: {e}")
+                if db:
+                    db.delete(sub)
+                    db.commit()
+                errors.append(f"FCM token unregistered: {str(e)}")
             except Exception as e:
                 logger.error(f"FCM error for actor {actor.id}, sub {sub.id}: {str(e)}")
                 errors.append(f"FCM error: {str(e)}")
@@ -127,14 +137,27 @@ def send_push_to_actor(
                 
                 if status_code not in [200, 201, 202]:
                     errors.append(f"Endpoint {sub.id} returned {status_code}")
+                    # If 410 Gone or 404 Not Found, delete subscription
+                    if status_code in [404, 410] and db:
+                        logger.warning(f"WebPush endpoint {status_code} for actor {actor.id}, sub {sub.id}. Deleting.")
+                        db.delete(sub)
+                        db.commit()
                 else:
                     success_count += 1
             except WebPushException as ex:
+                status_code = ex.response.status_code if hasattr(ex, 'response') and ex.response else None
                 error_msg = str(ex)
-                if hasattr(ex, 'response') and ex.response is not None:
-                    error_msg += f" (Status: {ex.response.status_code}, Body: {ex.response.text})"
+                if status_code:
+                    error_msg += f" (Status: {status_code}, Body: {ex.response.text})"
+                
                 logger.error(f"WebPush error for actor {actor.id}: {error_msg}")
                 errors.append(error_msg)
+
+                # Cleanup on expiration
+                if status_code in [404, 410] and db:
+                    logger.warning(f"Deleting expired WebPush subscription {sub.id} for actor {actor.id}")
+                    db.delete(sub)
+                    db.commit()
             except Exception as e:
                 logger.error(f"Unexpected error in webpush: {str(e)}")
                 errors.append(str(e))
