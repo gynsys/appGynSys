@@ -28,7 +28,7 @@ export default defineConfig({
         name: 'GynSys - Salud Integral',
         short_name: 'GynSys',
         description: 'Plataforma de gestión para ginecólogas',
-        version: '2.4.6', // Increment to force PWA update
+        version: '3.0.0', // Major increment to force deep update
         theme_color: '#030712',
         background_color: '#030712',
         start_url: '/', // Restore root as entry point

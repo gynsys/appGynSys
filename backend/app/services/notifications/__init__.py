@@ -101,6 +101,8 @@ def create_or_update_subscription(
         "doctor_id": doctor_id
     }
     
+    _logger.info(f"[GynSysPush] UPSERT Values: {values}")
+    
     stmt = insert(PushSubscription).values(**values).on_conflict_do_update(
         index_elements=[conflict_index],
         set_={
