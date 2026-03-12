@@ -63,13 +63,11 @@ export const usePushNotifications = () => {
                 setPermission(permStatus.receive);
                 if (permStatus.receive !== 'granted') throw new Error("Permission not granted");
 
-                // 2. Register for Push
-                await PushNotifications.register();
-
-                // 3. Handle token registration (this requires listeners to be set up globally or here)
-                // For this hook, we store the intent. The actual registration listener 
-                // in App.jsx or similar will send it to backend.
+                // 2. Set intent/consent BEFORE registering so the listener catches it
                 localStorage.setItem('gynsys_push_enabled', 'true');
+
+                // 3. Register for Push
+                await PushNotifications.register();
                 setIsSubscribed(true);
                 return true;
             }
