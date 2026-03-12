@@ -32,8 +32,7 @@ app.add_middleware(
 @app.middleware("http")
 async def log_user_agent(request, call_next):
     ua = request.headers.get("user-agent", "unknown")
-    if "GynSys" in ua or "Capacitor" in ua:
-        logger.info(f"[GynSysUA] Path: {request.url.path} | UA: {ua}")
+    logger.info(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}")
     return await call_next(request)
 # Include API router
 # Include API router
