@@ -80,9 +80,24 @@
         }
       } catch (e) {}
 
-      // 2. Inyección automática: En una APK configurada con server.url, 
-      // Capacitor inyecta el bridge automáticamente. No necesitamos cargarlo manualmente
-      // desde una URL que devuelve HTML 404.
+      // 2. Immediate Debug Ping
+      try {
+        const pingData = {
+          notification_id: 0,
+          event: 'debug',
+          metadata: { 
+            message: 'INDEX_HTML_MOUNTED', 
+            ua: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          }
+        };
+        fetch('/api/v1/notifications/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pingData)
+        }).catch(function() {});
+      } catch (e) {}
+
       console.log('[GynSysDebug] Bridge Bridge Proxy Ready');
     })();
   </script>
