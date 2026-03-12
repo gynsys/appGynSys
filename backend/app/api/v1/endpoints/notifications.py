@@ -120,6 +120,8 @@ def track_notification(
     Public endpoint to track notification receipt and clicks.
     Does not require auth to facilitate background reporting from SW.
     """
+    import json
+    print(f"[TELEMETRY] Event: {track_in.event} | Metadata: {json.dumps(track_in.metadata or {})}", flush=True)
     log = service.track_notification_event(db, track_in)
     if not log:
         # Silently fail or return 404. SW shouldn't care much.
