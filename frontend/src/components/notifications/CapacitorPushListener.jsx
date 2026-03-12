@@ -19,28 +19,27 @@ export const CapacitorPushListener = () => {
 
             PushNotifications.addListener('registration', (token) => {
                 const tokenValue = token.value;
-                console.log('[GynSysPush] Registration success. Token:', tokenValue.substring(0, 10) + '...');
+                remoteLog(`[GynSysPush] Registration success. Token: ${tokenValue.substring(0, 10)}...`);
                 
-                // CRITICAL: Sync token if user is logged in OR has explicit consent
                 const { user, cycleUser } = useAuthStore.getState();
                 const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
                 const isAuthenticated = !!(user || cycleUser);
 
                 if (hasExplicitConsent || isAuthenticated) {
-                    console.log('[GynSysPush] Syncing token with backend (Auth:', isAuthenticated, 'Consent:', hasExplicitConsent, ')');
+                    remoteLog(`[GynSysPush] Syncing token (Auth:${isAuthenticated})`);
                     axios.post('/notifications/subscribe', { token: tokenValue })
                         .then(() => {
-                            console.log('[GynSysPush] Native token synced successfully');
-                            // If it was auto-synced by auth, we mark it as enabled for future UI consistency
+                            remoteLog('[GynSysPush] Native token synced successfully');
                             if (isAuthenticated && !hasExplicitConsent) {
                                 localStorage.setItem('gynsys_push_enabled', 'true');
                             }
                         })
                         .catch(err => {
-                            console.error('[GynSysPush] Error syncing native token:', err?.response?.data || err.message);
+                            const errorDetail = err?.response?.data || err.message;
+                            remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
                         });
                 } else {
-                    console.log('[GynSysPush] Token received but not synced (No auth/consent)');
+                    remoteLog('[GynSysPush] Token received but not synced (No auth/consent)');
                 }
             });
 
@@ -83,25 +82,15 @@ export const CapacitorPushListener = () => {
         };
     }, []);
 
-    // --- 2. RE-REGISTER ON LOGIN ---
-    const { user, cycleUser } = useAuthStore();
-    useEffect(() => {
-        const activeUser = user || cycleUser;
-        if (activeUser && isCapacitor()) {
-            console.log('User change detected, checking push permissions...');
-            PushNotifications.checkPermissions().then((res) => {
-                if (res.receive === 'granted') {
-                    PushNotifications.register();
-                } else if (res.receive === 'prompt') {
-                    PushNotifications.requestPermissions().then((res) => {
-                        if (res.receive === 'granted') {
-                            PushNotifications.register();
-                        }
-                    });
-                }
-            });
-        }
-    }, [user, cycleUser]);
+    // --- 3. REMOTE LOGGING FOR DEBUGGING ---
+    const remoteLog = (msg) => {
+        console.log(msg);
+        axios.post('/notifications/track', { 
+            notification_id: 0, 
+            event: 'debug', 
+            metadata: { message: msg, ua: navigator.userAgent } 
+        }).catch(() => {});
+    };
 
-    return null; // This component doesn't render anything
+    return null;
 };
