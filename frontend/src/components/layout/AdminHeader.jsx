@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MdDashboard, MdLogout, MdHome, MdMenu, MdNotifications } from 'react-icons/md';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../features/auth/useAuth';
 import { getImageUrl } from '../../lib/imageUtils';
 
 export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificationCount = 0, doctor }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // Doctor is now passed from parent DashboardLayout
 
   const handleLogout = () => {
-    authService.logout();
-    navigate('/');
+    logout(true); // logout and redirect to login
   };
 
   if (!doctor) return null;

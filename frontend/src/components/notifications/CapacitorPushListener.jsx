@@ -3,6 +3,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { isCapacitor } from '@/utils/platform';
 import axios from '@/lib/axios';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '@/store/authStore';
 
 export const CapacitorPushListener = () => {
     useEffect(() => {
@@ -67,10 +68,31 @@ export const CapacitorPushListener = () => {
             });
         }
 
-        return () => {
-            PushNotifications.removeAllListeners();
-        };
-    }, []);
+    // --- 3. RE-REGISTER ON LOGIN ---
+    // Listen for user changes to trigger registration immediately after login
+    const { user, cycleUser } = useAuthStore();
+    useEffect(() => {
+        const activeUser = user || cycleUser;
+        if (activeUser && isCapacitor()) {
+            console.log('User change detected, checking/requesting push permissions...');
+            PushNotifications.checkPermissions().then((res) => {
+                if (res.receive === 'granted') {
+                    PushNotifications.register();
+                } else if (res.receive === 'prompt') {
+                    PushNotifications.requestPermissions().then((res) => {
+                        if (res.receive === 'granted') {
+                            PushNotifications.register();
+                        }
+                    });
+                }
+            });
+        }
+    }, [user, cycleUser]);
+
+    return () => {
+        PushNotifications.removeAllListeners();
+    };
+}, [user, cycleUser]);
 
     return null; // This component doesn't render anything
 };

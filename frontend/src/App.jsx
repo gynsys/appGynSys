@@ -53,15 +53,21 @@ import { DashboardLayout } from './components/layout/DashboardLayout'
 import { useState } from 'react'
 import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
 
+import { isCapacitor } from './utils/platform'
+
 const RootRedirector = () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const isNative = isCapacitor();
   const lastSlug = localStorage.getItem('last_doctor_slug');
   const cycleToken = localStorage.getItem('cycle_access_token');
 
-  // Intelligent Redirect ONLY for PWA standalone mode
-  if (isStandalone) {
+  // Intelligent Redirect for APK OR PWA standalone mode
+  if (isNative || isStandalone) {
     if (cycleToken) return <Navigate to="/cycle/dashboard" replace />;
-    if (lastSlug) return <Navigate to={`/dr/${lastSlug}`} replace />;
+    
+    // Priority: Last visited slug > Default Slug for this personalized APK
+    const targetSlug = lastSlug || 'mariel-herrera';
+    return <Navigate to={`/dr/${targetSlug}`} replace />;
   }
 
   // Regular browser users always see the Landing Page (avoids loop)
