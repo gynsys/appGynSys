@@ -32,7 +32,7 @@ app.add_middleware(
 @app.middleware("http")
 async def log_user_agent(request, call_next):
     ua = request.headers.get("user-agent", "unknown")
-    logger.info(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}")
+    print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)
     return await call_next(request)
 # Include API router
 # Include API router
