@@ -102,7 +102,6 @@ def create_or_update_subscription(
     }
     
     _logger.info(f"[GynSysPush] UPSERT Values: {values}")
-    print(f"[GynSysPush] UPSERT on {conflict_index} with values: {json.dumps(values, default=str)}", flush=True)
     
     stmt = insert(PushSubscription).values(**values).on_conflict_do_update(
         index_elements=[conflict_index],
