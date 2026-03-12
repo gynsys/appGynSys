@@ -5,19 +5,20 @@ import { Capacitor } from '@capacitor/core';
  * @returns {boolean}
  */
 export const isCapacitor = () => {
-    // 1. Detect bridge
+    // 1. Detect bridge object
     const cap = window.Capacitor || (window.parent && window.parent.Capacitor);
     
-    // 2. Determine if native: Flag true OR bridge exists in a non-web environment
-    // Note: In our customized APK, the existence of ANY Capacitor bridge is sufficient proof.
-    const isNative = !!(cap && (cap.isNativePlatform?.() || cap.Plugins || true)) && 
-                     (window.location.protocol !== 'http:' && window.location.protocol !== 'https:' || !!cap);
+    // 2. Safe check for native platform
+    // It's native if the bridge object exists AND it's not explicitly the web platform
+    let isNative = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
     
-    // Even more direct: if window.Capacitor exists, we ARE in the app
-    const finalIsNative = !!window.Capacitor || !!(window.parent && window.parent.Capacitor);
+    // Fallback: If bridge exists but isNativePlatform fails/missing (older versions or custom bridge)
+    if (!isNative && cap && cap.getPlatform) {
+        isNative = cap.getPlatform() !== 'web';
+    }
 
-    console.log(`[GynSysDebug] Detection - isNative: ${finalIsNative}, BridgeFound: ${!!cap}`);
-    return finalIsNative;
+    console.log(`[GynSysDebug] Platform detection - isNative: ${isNative}, BridgeFound: ${!!cap}`);
+    return isNative;
 };
 
 /**
