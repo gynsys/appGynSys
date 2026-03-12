@@ -4,7 +4,11 @@
   "webDir": "dist",
   "server": {
     "url": "https://gynsys.net/dr/mariel-herrera",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "gynsys.net",
+      "*.gynsys.net"
+    ]
   },
   "plugins": {
     "PushNotifications": {
