@@ -17,8 +17,20 @@ export const CapacitorPushListener = () => {
     };
 
     useEffect(() => {
+        // Immediate ping to verify component is alive and executing
+        axios.post('/notifications/track', { 
+            notification_id: 0, 
+            event: 'debug', 
+            metadata: { 
+                message: 'CAPACITOR_LISTENER_MOUNTED', 
+                isCapacitor: isCapacitor(),
+                userAgent: navigator.userAgent
+            } 
+        }).catch(() => {});
+
         if (!isCapacitor()) return;
         remoteLog('[GynSysPush] Native environment detected');
+        remoteLog(`[GynSysPush] PushNotifications object: ${typeof PushNotifications}`);
 
         const setupListeners = async () => {
             try {
