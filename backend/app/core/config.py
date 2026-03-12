@@ -79,7 +79,9 @@ class Settings(BaseSettings):
             "https://gynsys.net",
             "https://www.gynsys.net",
             "https://api.gynsys.net",
-            "https://appgynsys.onrender.com"
+            "https://appgynsys.onrender.com",
+            "http://localhost",
+            "capacitor://localhost"
         ]
         
         if isinstance(origins, list):
