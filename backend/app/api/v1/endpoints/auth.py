@@ -179,7 +179,7 @@ async def login(
     
     # Create access token
     access_token = create_access_token(
-        data={"sub": doctor.email, "doctor_id": doctor.id}
+        data={"sub": doctor.email, "doctor_id": doctor.id, "user_type": "doctor"}
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
@@ -376,6 +376,7 @@ async def guest_login(
         data={
             "sub": guest_email, 
             "user_id": guest_id, 
+            "user_type": "guest",
             "role": "guest",
             "tenant_id": str(doctor_id), 
             "name": name

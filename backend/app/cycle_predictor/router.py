@@ -38,6 +38,10 @@ def get_current_actor(
     email: str = payload.get("sub")
     user_type: str = payload.get("user_type")
     
+    # Fallback for legacy tokens (if user_type is missing but doctor_id exists, it's a doctor)
+    if not user_type and payload.get("doctor_id"):
+        user_type = "doctor"
+    
     if not email or not user_type:
         raise credentials_exception
 
@@ -45,6 +49,12 @@ def get_current_actor(
         user = db.query(CycleUser).filter(CycleUser.email == email).first()
     elif user_type == "doctor":
         user = db.query(Doctor).filter(Doctor.email == email).first()
+    elif user_type == "guest":
+        # Guest is a special virtual user, for now we might not have a table
+        # but the dependency expects a model. 
+        # For notification endpoints, we usually need a real DB user.
+        # Let's see if we can return a mock or just fail for now if DB is needed.
+        raise credentials_exception
     else:
         # Unknown user_type in token
         raise credentials_exception
