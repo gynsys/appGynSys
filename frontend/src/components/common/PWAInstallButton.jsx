@@ -1,8 +1,10 @@
 import { FiDownload, FiActivity } from 'react-icons/fi';
 import { useToastStore } from '../../store/toastStore';
 import usePWAStore from '../../store/pwaStore';
+import { isCapacitor } from '../../utils/platform';
 
 const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
+    if (isCapacitor()) return null;
     const { deferredPrompt, isStandalone, setDeferredPrompt } = usePWAStore();
     const toast = useToastStore();
 
