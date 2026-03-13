@@ -76,7 +76,7 @@ export default function BlogLayout({ children }) {
 
   return (
     <div
-      className={`min-h-screen pb-16 md:pb-0 transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-950 text-white' : (!doctor.theme_body_bg_color ? 'bg-gray-50' : '')}`}
+      className={`fixed inset-0 flex flex-col transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-950 text-white' : (!doctor.theme_body_bg_color ? 'bg-gray-50' : '')}`}
       style={bodyBgStyle}
     >
       {/* Modals */}
@@ -164,7 +164,7 @@ export default function BlogLayout({ children }) {
       </nav>
 
       {/* Content */}
-      <main>
+      <main className="flex-1 overflow-y-auto pb-20">
         {children}
       </main>
 

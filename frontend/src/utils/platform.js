@@ -7,10 +7,10 @@ import { Capacitor } from '@capacitor/core';
 export const isCapacitor = () => {
     // 1. Synchronous detection by User Agent (Fastest & most reliable for remote URLs)
     const ua = window.navigator.userAgent;
-    const isUAApp = ua.includes('GynSysApp') || ua.includes('Capacitor');
+    const isUAApp = ua.includes('GynSysApp') || ua.includes('Capacitor') || ua.includes('Android') && window.location.hostname === 'gynsys.net';
     
     // 2. Detect bridge object (Legacy/Alternative)
-    const cap = window.Capacitor || (window.parent && window.parent.Capacitor);
+    const cap = window.Capacitor || (window.parent && window.parent.Capacitor) || (window.top && window.top.Capacitor);
     
     // 3. Native check
     const isNative = isUAApp || !!(cap && cap.isNativePlatform && cap.isNativePlatform());
