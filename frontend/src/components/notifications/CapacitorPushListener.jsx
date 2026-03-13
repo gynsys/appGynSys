@@ -133,9 +133,15 @@ export const CapacitorPushListener = () => {
             }
         } else {
             // --- PWA AUTO-REGISTRATION ---
-            // If already permitted, subscribe silently to sync with backend
-            if ("Notification" in window && Notification.permission === "granted") {
-                console.log("[GynSysPush] PWA Permission already granted. Syncing subscription...");
+            // Solo sincronizamos automáticamente si:
+            // 1. Hay permiso del navegador.
+            // 2. El usuario ha dado consentimiento explícito antes (localStorage).
+            // Esto evita que dispositivos borrados manualmente desde la DB o Admin
+            // "revivan" infinitamente solo por entrar a la web si ya no se desea push ahí.
+            const hasConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
+            
+            if ("Notification" in window && Notification.permission === "granted" && hasConsent) {
+                console.log("[GynSysPush] PWA Permission and Consent active. Syncing subscription...");
                 pushService.subscribeUser().catch(err => {
                     console.error("[GynSysPush] PWA Auto-sync failed:", err);
                 });

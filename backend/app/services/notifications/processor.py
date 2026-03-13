@@ -425,46 +425,53 @@ def recover_stale_processing_notifications() -> int:
         logger.error(f"Error in recovery: {e}"); return 0
 
 def cleanup_invalid_subscriptions(db: Session) -> int:
-    """Elimina suscripciones que han fallado con 403 o 410."""
+    """
+    Elimina selectivamente suscripciones Push que han fallado con errores críticos (403, 410).
+    A diferencia de la versión anterior, esta NO borra tokens de App Nativa (Capacitor)
+    a menos que el error sea específico de FCM, y maneja tanto Doctores como Pacientes.
+    """
     from app.db.models.push_subscription import PushSubscription
+    from sqlalchemy import or_
     
-    # Buscamos en los logs errores de VAPID (403) o Gone (410)
-    # Nota: Como los errores se guardan en PendingNotification.last_error
-    stale_error_patterns = ['403 Forbidden', '410 Gone', 'VAPID credentials']
+    # Patrones de errores que indican que un endpoint web ya no es válido
+    stale_error_patterns = ['%403%', '%410%', '%Gone%', '%VAPID%']
+    filters = or_(*[PendingNotification.last_error.like(p) for p in stale_error_patterns])
     
-    # 1. Obtener endpoints con errores críticos de los logs de notificaciones pendientes fallidas
-    subquery = db.query(PendingNotification.last_error).filter(
-        PendingNotification.status == "failed"
-    ).all()
-    
-    # Filtramos localmente para simplicidad con los patrones
-    invalid_endpoints = []
-    # En realidad, necesitamos el endpoint. PendingNotification no tiene el endpoint directamente.
-    # Tendríamos que buscar en las suscripciones asociadas a esos usuarios.
-    
-    # Alternativamente, si el error es 403/410, el sender suele marcarlo o nosotros simplemente
-    # podemos limpiar TODAS las suscripciones de los usuarios que tienen un error reciente de este tipo
-    # o mejor aún, si detectamos el error de VAPID, el sender debería informarlo.
-    
-    # Para la herramienta de "Limpieza" manual del admin, vamos a permitir borrar suscripciones
-    # que tengan errores conocidos en la tabla PendingNotification
-    
-    # Implementación simple para el botón del admin:
-    # Borrar suscripciones de usuarios que tienen notificaciones fallidas con "403"
+    # 1. Identificar destinatarios (Pacientes y Doctores) con errores recientes de este tipo
     affected_users = db.query(PendingNotification.recipient_id).filter(
         PendingNotification.status == "failed",
-        PendingNotification.last_error.like('%403%')
+        filters,
+        PendingNotification.recipient_id.isnot(None)
     ).distinct().all()
+    user_ids = [r[0] for r in affected_users]
+
+    affected_doctors = db.query(PendingNotification.doctor_id).filter(
+        PendingNotification.status == "failed",
+        filters,
+        PendingNotification.doctor_id.isnot(None)
+    ).distinct().all()
+    doctor_ids = [r[0] for r in affected_doctors]
+
+    deleted_total = 0
+
+    # 2. Borrado SELECTIVO: Solo borramos dispositivos WEB (donde endpoint no es nulo)
+    # Esto protege los tokens de la App Nativa que suelen fallar por otras razones (red, etc)
+    # y que el usuario reporta que desaparecen injustificadamente.
     
-    user_ids = [r[0] for r in affected_users if r[0]]
-    
-    if not user_ids:
-        return 0
+    if user_ids:
+        deleted = db.query(PushSubscription).filter(
+            PushSubscription.user_id.in_(user_ids),
+            PushSubscription.endpoint.isnot(None)
+        ).delete(synchronize_session=False)
+        deleted_total += deleted
+
+    if doctor_ids:
+        deleted = db.query(PushSubscription).filter(
+            PushSubscription.doctor_id.in_(doctor_ids),
+            PushSubscription.endpoint.isnot(None)
+        ).delete(synchronize_session=False)
+        deleted_total += deleted
         
-    deleted = db.query(PushSubscription).filter(
-        PushSubscription.user_id.in_(user_ids)
-    ).delete(synchronize_session=False)
-    
     db.commit()
-    logger.info(f"Cleaned up {deleted} invalid subscriptions due to VAPID mismatch")
-    return deleted
+    logger.info(f"[GynSysCleanup] Se eliminaron {deleted_total} suscripciones WEB inválidas. Tokens nativos preservados.")
+    return deleted_total
