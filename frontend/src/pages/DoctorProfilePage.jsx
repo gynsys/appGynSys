@@ -708,6 +708,13 @@ export default function DoctorProfilePage() {
             />
           </ScrollReveal>
         )}
+        
+        {/* Locations Section */}
+        {isModuleEnabled('locations') && (
+          <ScrollReveal variant="fade-up">
+            <LocationsSection doctor={doctor} primaryColor={primaryColor} cardShadow={doctor.card_shadow} containerShadow={doctor.container_shadow} containerBgColor={containerBgColor} theme={theme} />
+          </ScrollReveal>
+        )}
 
         {/* Online Consultation Section - Marketing */}
         {onlineSettings?.is_active && isModuleEnabled('online_consultation') && (
@@ -758,13 +765,6 @@ export default function DoctorProfilePage() {
         {isModuleEnabled('gallery') && (
           <ScrollReveal variant="zoom-in">
             <GallerySection doctorSlug={slug} primaryColor={primaryColor} cardShadow={doctor.card_shadow} containerShadow={doctor.container_shadow} containerBgColor={containerBgColor} galleryWidth={'60%'} theme={theme} />
-          </ScrollReveal>
-        )}
-
-        {/* Locations Section */}
-        {isModuleEnabled('locations') && (
-          <ScrollReveal variant="fade-up">
-            <LocationsSection doctor={doctor} primaryColor={primaryColor} cardShadow={doctor.card_shadow} containerShadow={doctor.container_shadow} containerBgColor={containerBgColor} theme={theme} />
           </ScrollReveal>
         )}
 
