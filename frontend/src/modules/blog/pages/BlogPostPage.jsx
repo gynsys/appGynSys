@@ -157,13 +157,13 @@ export default function BlogPostPage() {
 
   return (
     <BlogLayout>
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="py-12 px-0 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12">
 
           {/* Main Content Column */}
           <div className="lg:col-span-8">
             <div
-              className={`p-8 rounded-xl shadow-sm transition-colors duration-200 ${isDarkTheme ? 'bg-white dark:bg-gray-800 border dark:border-gray-700' : (!doctor?.theme_container_bg_color ? 'bg-white' : '')
+              className={`p-4 sm:p-8 rounded-xl shadow-sm transition-colors duration-200 ${isDarkTheme ? 'bg-white dark:bg-gray-800 border dark:border-gray-700' : (!doctor?.theme_container_bg_color ? 'bg-white' : '')
                 }`}
               style={(!isDarkTheme && doctor?.theme_container_bg_color) ? { backgroundColor: doctor.theme_container_bg_color } : {}}
             >
@@ -177,7 +177,7 @@ export default function BlogPostPage() {
                 <img
                   src={getImageUrl(post.cover_image)}
                   alt={post.title}
-                  className="w-full h-96 object-cover rounded-xl shadow-lg mb-8"
+                  className="w-full h-auto rounded-xl shadow-lg mb-8"
                 />
               )}
 
