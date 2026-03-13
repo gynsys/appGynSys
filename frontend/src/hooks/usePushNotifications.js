@@ -30,13 +30,17 @@ export const usePushNotifications = () => {
 
     const checkSubscription = async () => {
         if (isCapacitor()) {
-            const permStatus = await PushNotifications.checkPermissions();
-            setPermission(permStatus.receive);
-            
-            // Note: In Capacitor, "isSubscribed" is mainly local state 
-            // since the token registration happens on every app launch in a robust app
-            const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
-            setIsSubscribed(hasExplicitConsent && permStatus.receive === 'granted');
+            try {
+                const permStatus = await PushNotifications.checkPermissions();
+                setPermission(permStatus.receive);
+                
+                // Note: In Capacitor, "isSubscribed" is mainly local state 
+                // since the token registration happens on every app launch in a robust app
+                const hasExplicitConsent = localStorage.getItem('gynsys_push_enabled') === 'true';
+                setIsSubscribed(hasExplicitConsent && permStatus.receive === 'granted');
+            } catch (e) {
+                console.warn("Capacitor checkPermissions not available on this platform", e);
+            }
             return;
         }
 
@@ -64,17 +68,26 @@ export const usePushNotifications = () => {
         try {
             if (isCapacitor()) {
                 // 1. Request Permission
-                let permStatus = await PushNotifications.requestPermissions();
-                setPermission(permStatus.receive);
-                if (permStatus.receive !== 'granted') throw new Error("Permission not granted");
+                try {
+                    let permStatus = await PushNotifications.requestPermissions();
+                    setPermission(permStatus.receive);
+                    if (permStatus.receive !== 'granted') throw new Error("Permission not granted");
 
-                // 2. Set intent/consent BEFORE registering so the listener catches it
-                localStorage.setItem('gynsys_push_enabled', 'true');
+                    // 2. Set intent/consent BEFORE registering so the listener catches it
+                    localStorage.setItem('gynsys_push_enabled', 'true');
 
-                // 3. Register for Push
-                await PushNotifications.register();
-                setIsSubscribed(true);
-                return true;
+                    // 3. Register for Push
+                    await PushNotifications.register();
+                    setIsSubscribed(true);
+                    return true;
+                } catch (e) {
+                    if (e.message?.includes('not implemented')) {
+                        setError("Notificaciones nativas no disponibles en navegador");
+                    } else {
+                        setError(e.message);
+                    }
+                    return false;
+                }
             }
 
             // --- WEB PWA FLOW ---

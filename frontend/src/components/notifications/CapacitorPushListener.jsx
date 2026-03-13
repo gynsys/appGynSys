@@ -34,58 +34,70 @@ export const CapacitorPushListener = () => {
         // --- NATIVE CAPACITOR LOGIC ---
         const setupListeners = async () => {
             try {
+                // Failsafe: Double check if plugin is actually available to avoid "plugin not implemented"
+                if (!PushNotifications) return;
                 await PushNotifications.removeAllListeners();
             } catch (e) {
-                remoteLog(`[GynSysPush] Warning: Could not remove listeners: ${e.message}`);
+                // Silence this specific error on web if environment detection failed
+                if (e.message?.includes('not implemented')) return;
+                remoteLog(`[GynSysPush] Warning: Could not initialize listeners: ${e.message}`);
             }
 
-            PushNotifications.addListener('registration', (token) => {
-                const tokenValue = token.value;
-                remoteLog(`[GynSysPush] Registration success. Token: ${tokenValue.substring(0, 10)}...`);
-                
-                const { user, cycleUser } = useAuthStore.getState();
-                const isAuthenticated = !!(user || cycleUser);
+            try {
+                PushNotifications.addListener('registration', (token) => {
+                    const tokenValue = token.value;
+                    remoteLog(`[GynSysPush] Registration success. Token: ${tokenValue.substring(0, 10)}...`);
+                    
+                    const { user, cycleUser } = useAuthStore.getState();
+                    const isAuthenticated = !!(user || cycleUser);
 
-                if (isAuthenticated) {
-                    remoteLog(`[GynSysPush] Syncing native token to backend...`);
-                    axios.post('/notifications/subscribe', { token: tokenValue })
-                        .then(() => {
-                            remoteLog('[GynSysPush] Native token synced successfully');
-                        })
-                        .catch(err => {
-                            const errorDetail = err?.response?.data || err.message;
-                            remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
-                        });
-                } else {
-                    remoteLog(`[GynSysPush] Registration success but NOT authenticated yet`);
+                    if (isAuthenticated) {
+                        remoteLog(`[GynSysPush] Syncing native token to backend...`);
+                        axios.post('/notifications/subscribe', { token: tokenValue })
+                            .then(() => {
+                                remoteLog('[GynSysPush] Native token synced successfully');
+                            })
+                            .catch(err => {
+                                const errorDetail = err?.response?.data || err.message;
+                                remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
+                            });
+                    } else {
+                        remoteLog(`[GynSysPush] Registration success but NOT authenticated yet`);
+                    }
+                });
+
+                PushNotifications.addListener('registrationError', (error) => {
+                    remoteLog(`[GynSysPush] Registration error: ${JSON.stringify(error)}`);
+                });
+
+                PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                    remoteLog(`[GynSysPush] Notification received: ${notification.title}`);
+                    toast((t) => (
+                        <div className="flex flex-col">
+                            <span className="font-bold">{notification.title}</span>
+                            <span className="text-sm">{notification.body}</span>
+                        </div>
+                    ), { duration: 5000, position: 'top-right', icon: '🔔' });
+                });
+
+                PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                    const data = notification.notification.data;
+                    if (data?.url) window.location.href = data.url;
+                });
+            } catch (e) {
+                if (!e.message?.includes('not implemented')) {
+                    remoteLog(`[GynSysPush] Error setting up listeners: ${e.message}`);
                 }
-            });
-
-            PushNotifications.addListener('registrationError', (error) => {
-                remoteLog(`[GynSysPush] Registration error: ${JSON.stringify(error)}`);
-            });
-
-            PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                remoteLog(`[GynSysPush] Notification received: ${notification.title}`);
-                toast((t) => (
-                    <div className="flex flex-col">
-                        <span className="font-bold">{notification.title}</span>
-                        <span className="text-sm">{notification.body}</span>
-                    </div>
-                ), { duration: 5000, position: 'top-right', icon: '🔔' });
-            });
-
-            PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-                const data = notification.notification.data;
-                if (data?.url) window.location.href = data.url;
-            });
+            }
         };
 
         setupListeners();
 
         return () => {
             if (isCapacitor()) {
-                PushNotifications.removeAllListeners();
+                try {
+                    PushNotifications.removeAllListeners();
+                } catch (e) {}
             }
         };
     }, []);
@@ -98,21 +110,27 @@ export const CapacitorPushListener = () => {
 
         if (isCapacitor()) {
             remoteLog(`[GynSysPush] Checking Native permissions...`);
-            PushNotifications.checkPermissions().then((res) => {
-                remoteLog(`[GynSysPush] Permission result: ${res.receive}`);
-                if (res.receive === 'granted') {
-                    remoteLog(`[GynSysPush] Calling register()...`);
-                    PushNotifications.register();
-                } else if (res.receive === 'prompt') {
-                    remoteLog(`[GynSysPush] Requesting permissions...`);
-                    PushNotifications.requestPermissions().then((res) => {
-                        remoteLog(`[GynSysPush] Request result: ${res.receive}`);
-                        if (res.receive === 'granted') PushNotifications.register();
-                    });
-                } else {
-                    remoteLog(`[GynSysPush] Permissions DENIED or restricted: ${res.receive}`);
+            try {
+                PushNotifications.checkPermissions().then((res) => {
+                    remoteLog(`[GynSysPush] Permission result: ${res.receive}`);
+                    if (res.receive === 'granted') {
+                        remoteLog(`[GynSysPush] Calling register()...`);
+                        PushNotifications.register().catch(() => {});
+                    } else if (res.receive === 'prompt') {
+                        remoteLog(`[GynSysPush] Requesting permissions...`);
+                        PushNotifications.requestPermissions().then((res) => {
+                            remoteLog(`[GynSysPush] Request result: ${res.receive}`);
+                            if (res.receive === 'granted') PushNotifications.register().catch(() => {});
+                        });
+                    } else {
+                        remoteLog(`[GynSysPush] Permissions DENIED or restricted: ${res.receive}`);
+                    }
+                }).catch(() => {});
+            } catch (e) {
+                if (!e.message?.includes('not implemented')) {
+                    remoteLog(`[GynSysPush] Error checking permissions: ${e.message}`);
                 }
-            });
+            }
         } else {
             // --- PWA AUTO-REGISTRATION ---
             // If already permitted, subscribe silently to sync with backend

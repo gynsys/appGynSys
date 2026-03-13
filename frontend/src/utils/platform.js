@@ -5,11 +5,11 @@ import { Capacitor } from '@capacitor/core';
  * @returns {boolean}
  */
 export const isCapacitor = () => {
-    // 1. Synchronous detection by User Agent (Fastest & most reliable for remote URLs)
+    // 1. Synchronous detection by User Agent (Strictly for our App)
     const ua = window.navigator.userAgent;
-    const isUAApp = ua.includes('GynSysApp') || ua.includes('Capacitor') || ua.includes('Android') && window.location.hostname === 'gynsys.net';
+    const isUAApp = ua.includes('GynSysApp') || ua.includes('Capacitor');
     
-    // 2. Detect bridge object (Legacy/Alternative)
+    // 2. Detect bridge object
     const cap = window.Capacitor || (window.parent && window.parent.Capacitor) || (window.top && window.top.Capacitor);
     
     // 3. Native check
