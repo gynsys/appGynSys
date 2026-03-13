@@ -56,7 +56,8 @@ export const authService = {
   },
 
   async loginGoogle(token, isCycle = false) {
-    const response = await api.post('/auth/login/google', { token })
+    const user_type = isCycle ? 'cycle_user' : 'doctor'
+    const response = await api.post('/auth/login/google', { token, user_type })
     if (response.data.access_token) {
       const tokenKey = isCycle ? 'cycle_access_token' : 'access_token'
       localStorage.setItem(tokenKey, response.data.access_token)

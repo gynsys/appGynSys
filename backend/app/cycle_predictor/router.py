@@ -38,12 +38,16 @@ def get_current_actor(
     email: str = payload.get("sub")
     user_type: str = payload.get("user_type")
     
+    if not email or not user_type:
+        raise credentials_exception
+
     if user_type == "cycle_user":
         user = db.query(CycleUser).filter(CycleUser.email == email).first()
-    else:
-        # Fallback to Doctor (assuming doctor emails are unique across system or managed here)
-        # Note: In a real system, we should strictly check user_type/role
+    elif user_type == "doctor":
         user = db.query(Doctor).filter(Doctor.email == email).first()
+    else:
+        # Unknown user_type in token
+        raise credentials_exception
         
     if user is None:
         raise credentials_exception

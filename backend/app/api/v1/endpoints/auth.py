@@ -187,6 +187,7 @@ async def login(
 
 class GoogleLoginRequest(BaseModel):
     token: str
+    user_type: Optional[str] = None  # "doctor" or "cycle_user"
 
 @router.post("/login/google", response_model=Token)
 async def login_google(
@@ -239,27 +240,50 @@ async def login_google(
             
         email = email.lower().strip()
         
-        # 2. Identify User (Priority: CycleUser then Doctor)
-        cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
-        doctor = db.query(Doctor).filter(Doctor.email == email).first()
+        # 2. Identify User
+        # If user_type is specified, we check that first.
+        # If not specified, we check Doctor first (prioritizing Approved tenants).
         
-        user_type = "doctor"
+        cycle_user = None
+        doctor = None
+        
+        if login_data.user_type == "cycle_user":
+            cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
+        elif login_data.user_type == "doctor":
+            doctor = db.query(Doctor).filter(Doctor.email == email).first()
+        else:
+            # Automatic discovery (legacy/default)
+            # Priority: Approved Doctor > Active CycleUser > Pending Doctor
+            doctor = db.query(Doctor).filter(Doctor.email == email).first()
+            cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
+            
+            # If both exist, prioritize Doctor if they are approved
+            if doctor and cycle_user:
+                if doctor.status != 'approved':
+                    # If doctor is pending, maybe they are logging in as patient for now?
+                    # But usually, if they have a doctor account, they WANT that.
+                    # Let's stick to Doctor if approved.
+                    pass 
+        
+        user_type = login_data.user_type # Use requested if possible
         user_id = None
         doc_id = None
 
-        if cycle_user:
-            user_type = "cycle_user"
-            user_id = cycle_user.id
-            doc_id = cycle_user.doctor_id
-        elif doctor:
+        # Resolve final identity
+        if doctor and (login_data.user_type == "doctor" or not login_data.user_type):
             user_type = "doctor"
             user_id = doctor.id
             doc_id = doctor.id
+            active_user = doctor
+        elif cycle_user:
+            user_type = "cycle_user"
+            user_id = cycle_user.id
+            doc_id = cycle_user.doctor_id
+            active_user = cycle_user
         else:
-            # 3. Handle Auto-Registration (If whitelisted/applicable)
-            # Default to Doctor for now if whitelisted, but ideally we'd know the context
+            # 3. Handle Auto-Registration (For Doctors ONLY if whitelisted)
             from app.core.oauth_utils import is_email_whitelisted
-            if is_email_whitelisted(email, db):
+            if is_email_whitelisted(email, db) and (not login_data.user_type or login_data.user_type == "doctor"):
                 slug = generate_slug_from_name(name)
                 counter = 1
                 original_slug = slug
@@ -282,17 +306,14 @@ async def login_google(
                 user_id = new_doctor.id
                 doc_id = new_doctor.id
                 user_type = "doctor"
+                active_user = new_doctor
             else:
-                # If not whitelisted and not found, deny access
-                # NOTE: For CycleUsers, registration usually happens via /register
-                # But if we want auto-google-registration for CycleUsers, we'd need context here.
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Account not found. Please register first."
                 )
 
         # 4. Final Verification
-        active_user = cycle_user or doctor or (new_doctor if 'new_doctor' in locals() else None)
         if active_user and not active_user.is_active:
              raise HTTPException(status_code=403, detail="Account is inactive")
 

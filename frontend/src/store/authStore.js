@@ -44,7 +44,7 @@ export const useAuthStore = create((set, get) => {
     loginWithGoogle: async (token) => {
       set({ loading: true })
       try {
-        const data = await authService.loginGoogle(token)
+        const data = await authService.loginGoogle(token, false)
         const user = await authService.getCurrentUser()
         set({ user, isAuthenticated: true, loading: false })
         return data
