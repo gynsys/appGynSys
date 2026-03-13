@@ -49,6 +49,8 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
   const showGallery = isModuleEnabled('gallery')
   const showLocations = isModuleEnabled('locations')
   const showFAQ = isModuleEnabled('faqs')
+  const showOnlineConsultation = isModuleEnabled('online_consultation')
+  const showCycle = isModuleEnabled('cycle_predictor')
 
   // Calculate Dark Mode based on doctor's template
   const isDarkTheme = doctor?.design_template === 'dark'
@@ -223,12 +225,28 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   Testimonios
                 </a>
               )}
+              {showOnlineConsultation && (
+                <a
+                  href="#consulta-online"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Consulta Online
+                </a>
+              )}
               {showGallery && (
                 <a
                   href="#galeria"
                   className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
                 >
                   Galería
+                </a>
+              )}
+              {showCycle && (
+                <a
+                  href="#mi-ciclo-app"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Mi Ciclo
                 </a>
               )}
               {showLocations && (
@@ -375,6 +393,15 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     Testimonios
                   </a>
                 )}
+                {showOnlineConsultation && (
+                  <a
+                    href="#consulta-online"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Consulta Online
+                  </a>
+                )}
                 {showGallery && (
                   <a
                     href="#galeria"
@@ -382,6 +409,15 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Galería
+                  </a>
+                )}
+                {showCycle && (
+                  <a
+                    href="#mi-ciclo-app"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mi Ciclo
                   </a>
                 )}
                 {showLocations && (
