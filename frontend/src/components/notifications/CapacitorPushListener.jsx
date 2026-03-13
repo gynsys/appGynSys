@@ -84,7 +84,9 @@ export const CapacitorPushListener = () => {
         setupListeners();
 
         return () => {
-            PushNotifications.removeAllListeners();
+            if (isCapacitor()) {
+                PushNotifications.removeAllListeners();
+            }
         };
     }, []);
 

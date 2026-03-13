@@ -114,7 +114,9 @@ export const usePushNotifications = () => {
         try {
             if (isCapacitor()) {
                 // native unregister
-                await PushNotifications.removeAllListeners();
+                try {
+                    await PushNotifications.removeAllListeners();
+                } catch (e) { console.warn("Native removeAllListeners failed", e); }
                 // Optionally call backend to delete token
                 // ...
             } else {
