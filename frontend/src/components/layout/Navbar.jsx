@@ -32,10 +32,23 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
   // Usage: if containerBgColor is explicitly passed (even null), use it. Only fallback to doctor.theme... if undefined.
   const effectiveBgColor = containerBgColor !== undefined ? containerBgColor : doctor?.theme_container_bg_color
 
-  // Check if Endometriosis Test module is enabled
-  const showEndoTest = doctor?.enabled_modules?.includes('endometriosis_test')
-  // Check if Blog module is enabled
-  const showBlog = doctor?.enabled_modules?.includes('blog')
+  // Helper to check if a module is enabled (handles strings and objects)
+  const isModuleEnabled = (code) => {
+    return doctor?.enabled_modules?.some(m =>
+      typeof m === 'string'
+        ? m === code
+        : m.code === code
+    )
+  }
+
+  // Check visibility for sections
+  const showEndoTest = isModuleEnabled('endometriosis_test')
+  const showBlog = isModuleEnabled('blog')
+  const showServices = isModuleEnabled('services')
+  const showTestimonials = isModuleEnabled('testimonials')
+  const showGallery = isModuleEnabled('gallery')
+  const showLocations = isModuleEnabled('locations')
+  const showFAQ = isModuleEnabled('faqs')
 
   // Calculate Dark Mode based on doctor's template
   const isDarkTheme = doctor?.design_template === 'dark'
@@ -194,37 +207,47 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               >
                 Sobre Mí
               </a>
-              <a
-                href="#servicios"
-                className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
-              >
-                Servicios
-              </a>
-              <a
-                href="#testimonios"
-                className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
-              >
-                Testimonios
-              </a>
-              <a
-                href="#galeria"
-                className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
-              >
-                Galería
-              </a>
-              <a
-                href="#ubicaciones"
-                className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
-              >
-                Ubicaciones
-              </a>
+              {showServices && (
+                <a
+                  href="#servicios"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Servicios
+                </a>
+              )}
+              {showTestimonials && (
+                <a
+                  href="#testimonios"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Testimonios
+                </a>
+              )}
+              {showGallery && (
+                <a
+                  href="#galeria"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Galería
+                </a>
+              )}
+              {showLocations && (
+                <a
+                  href="#ubicaciones"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  Ubicaciones
+                </a>
+              )}
 
-              <a
-                href="#preguntas-frecuentes"
-                className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
-              >
-                FAQ
-              </a>
+              {showFAQ && (
+                <a
+                  href="#preguntas-frecuentes"
+                  className="text-gray-700 hover:opacity-75 transition dark:text-gray-300 dark:hover:text-white"
+                >
+                  FAQ
+                </a>
+              )}
 
               {
                 showBlog && (
@@ -334,41 +357,51 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 >
                   Sobre Mí
                 </a>
-                <a
-                  href="#servicios"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Servicios
-                </a>
-                <a
-                  href="#testimonios"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Testimonios
-                </a>
-                <a
-                  href="#galeria"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Galería
-                </a>
-                <a
-                  href="#ubicaciones"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Ubicaciones
-                </a>
-                <a
-                  href="#preguntas-frecuentes"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  FAQ
-                </a>
+                {showServices && (
+                  <a
+                    href="#servicios"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Servicios
+                  </a>
+                )}
+                {showTestimonials && (
+                  <a
+                    href="#testimonios"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Testimonios
+                  </a>
+                )}
+                {showGallery && (
+                  <a
+                    href="#galeria"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Galería
+                  </a>
+                )}
+                {showLocations && (
+                  <a
+                    href="#ubicaciones"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Ubicaciones
+                  </a>
+                )}
+                {showFAQ && (
+                  <a
+                    href="#preguntas-frecuentes"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    FAQ
+                  </a>
+                )}
                 {isAuthenticated ? (
                   <button
                     onClick={() => {
