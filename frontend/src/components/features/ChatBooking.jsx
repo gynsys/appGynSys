@@ -663,7 +663,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
 
   return (
     <div className="flex flex-col flex-1 bg-white dark:bg-gray-800 relative overflow-hidden min-h-0">
-      <ModernLoader isOpen={loading} text="Agendando Cita..." />
+      <ModernLoader isOpen={loading} text="Agendando Cita..." primaryColor={primaryColor} />
 
       {/* Chat History */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
