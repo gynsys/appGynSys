@@ -37,8 +37,8 @@ def cleanup_and_link(token: str):
         # 2. Identificar Peta / Petra
         # Buscamos en todos los cycle_users ya que hay pocos y el usuario suele referirse a 'Peta'
         users = db.query(CycleUser).filter(
-            (CycleUser.name.ilike('%peta%')) | 
-            (CycleUser.name.ilike('%petra%')) |
+            (CycleUser.nombre_completo.ilike('%peta%')) | 
+            (CycleUser.nombre_completo.ilike('%petra%')) |
             (CycleUser.email.ilike('%peta%'))
         ).all()
         
@@ -48,7 +48,7 @@ def cleanup_and_link(token: str):
             print("No se encontró usuario específico 'Peta', aplicando a todos los usuarios pacientes.")
 
         for user in users:
-            print(f"Limpiando dispositivos para Usuario: {user.name or user.email} (ID: {user.id})...")
+            print(f"Limpiando dispositivos para Usuario: {user.nombre_completo or user.email} (ID: {user.id})...")
             deleted = db.query(PushSubscription).filter(
                 PushSubscription.user_id == user.id,
                 PushSubscription.token != target_token
@@ -58,7 +58,7 @@ def cleanup_and_link(token: str):
             # Vincular el token correcto
             sub_in = PushSubscriptionSchema(token=target_token)
             create_or_update_subscription(db=db, sub_in=sub_in, user_id=user.id)
-            print(f"Token vinculado a {user.name or user.email}.")
+            print(f"Token vinculado a {user.nombre_completo or user.email}.")
 
         db.commit()
         print("¡Mantenimiento completado exitosamente!")
