@@ -4,7 +4,7 @@ Authentication endpoints for login, registration, and OAuth.
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import Annotated, Union
+from typing import Annotated, Union, Optional
 import re
 import unicodedata
 import uuid

@@ -32,11 +32,7 @@ app.add_middleware(
 @app.middleware("http")
 async def log_user_agent(request, call_next):
     ua = request.headers.get("user-agent", "unknown")
-    origin = request.headers.get("origin", "no-origin")
-    headers = dict(request.headers)
-    print(f"[UA-DEBUG] Path: {request.url.path} | Origin: {origin} | UA: {ua}", flush=True)
-    if "track" in request.url.path or "profiles" in request.url.path:
-        print(f"[HEADER-DEBUG] All Headers: {headers}", flush=True)
+    print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)
     return await call_next(request)
 # Include API router
 # Include API router
