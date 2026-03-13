@@ -779,10 +779,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <button
                 key={type}
                 onClick={() => handleTypeSelect(type)}
-                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-full transition-colors text-sm font-medium border"
+                className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
                 style={{
-                  color: primaryColor,
-                  borderColor: `${primaryColor}40`, // 25% opacity
+                  backgroundColor: primaryColor,
                 }}
               >
                 {type}
@@ -797,10 +796,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <button
                 key={reason}
                 onClick={() => handleReasonSelect(reason)}
-                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-full transition-colors text-sm font-medium border"
+                className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
                 style={{
-                  color: primaryColor,
-                  borderColor: `${primaryColor}40`,
+                  backgroundColor: primaryColor,
                 }}
               >
                 {reason}
@@ -816,10 +814,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
                 <button
                   key={loc.id}
                   onClick={() => handleLocationSelect(loc)}
-                  className="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-full transition-colors text-sm font-medium border"
+                  className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
                   style={{
-                    color: primaryColor,
-                    borderColor: `${primaryColor}40`,
+                    backgroundColor: primaryColor,
                   }}
                 >
                   {loc.name}
@@ -838,10 +835,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <button
                 key={idx}
                 onClick={() => handleSmartDateSelect(date)}
-                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-xl transition-all text-sm font-bold border flex items-center gap-2"
+                className="px-4 py-3 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white flex items-center gap-2"
                 style={{
-                  color: primaryColor,
-                  borderColor: `${primaryColor}40`,
+                  backgroundColor: primaryColor,
                 }}
               >
                 <MdCalendarToday /> {formatSmartDate(date)}
@@ -884,10 +880,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <button
                 key={idx}
                 onClick={() => handleSmartTimeSelect(time)}
-                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-xl transition-all text-sm font-bold border flex items-center gap-2"
+                className="px-4 py-3 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white flex items-center gap-2"
                 style={{
-                  color: primaryColor,
-                  borderColor: `${primaryColor}40`,
+                  backgroundColor: primaryColor,
                 }}
               >
                 <MdAccessTime /> {time}
