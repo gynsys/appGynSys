@@ -9,41 +9,45 @@ const PWAInstallButton = ({ isFloating = false, fullWidth = false }) => {
     const toast = useToastStore();
 
     const handleInstallClick = async () => {
-        // Caso: Ya está instalada
-        if (isStandalone) {
-            toast.success('¡GynSys ya está instalada en tu dispositivo! ✨');
+        // --- DETECCIÓN DE PLATAFORMA ---
+        const ua = navigator.userAgent;
+        const isIOS = /iPhone|iPad|iPod/.test(ua) && !window.navigator.standalone;
+        const isAndroid = /Android/.test(ua);
+
+        // Caso 1: Android - Descarga Directa de APK (Mejor que PWA)
+        if (isAndroid) {
+            toast.info('Descargando App para Android... 📲');
+            const link = document.createElement('a');
+            link.href = '/GynSys.apk';
+            link.download = 'GynSys.apk';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             return;
         }
 
-        if (!deferredPrompt) {
-            // Detectar Plataforma
-            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
-            const isAndroid = /Android/.test(navigator.userAgent);
-            const isChrome = /Chrome/.test(navigator.userAgent);
+        // Caso 2: iOS - Instrucciones PWA (No admite APK)
+        if (isIOS) {
+            toast.info('Para instalar en iOS: Pulsa "Compartir" y luego "Añadir a pantalla de inicio" ✨');
+            return;
+        }
 
-            if (isIOS) {
-                toast.info('iOS: Pulsa "Compartir" y luego "Añadir a pantalla de inicio" ✨');
-            } else if (isAndroid && isChrome) {
-                toast.info('Busca "Instalar aplicación" en el menú (⋮) de tu Chrome 📲');
-            } else {
-                toast.info('Usa Chrome en Android o Safari en iOS para instalar la App 🛠️');
+        // Caso 3: Desktop u Otros - Intentar PWA Nativo si está disponible
+        if (deferredPrompt) {
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') toast.success('¡Instalación iniciada! 🎉');
+                setDeferredPrompt(null);
+            } catch (err) {
+                console.error('Error PWA:', err);
+                toast.error('Usa el menú de tu navegador para instalar 🛠️');
             }
             return;
         }
 
-        try {
-            // Mostrar el prompt nativo directamente
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-
-            if (outcome === 'accepted') {
-                toast.success('¡Instalación iniciada! 🎉');
-            }
-            setDeferredPrompt(null);
-        } catch (err) {
-            console.error('Error PWA:', err);
-            toast.error('Usa el menú de tu navegador para instalar 🛠️');
-        }
+        // Caso 4: Desktop sin prompt - Sugerir Chrome o APK manual
+        toast.info('Sugerencia: Usa Chrome en Android o Safari en iOS para la mejor experiencia 🛠️');
     };
 
     // Estilo base para ambos estados
