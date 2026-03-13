@@ -69,7 +69,39 @@ api.interceptors.request.use(
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    // --- CORS BYPASS FOR CAPACITOR ---
+    // If we have a network error in Capacitor, it's likely a CORS issue.
+    // We try to fallback to Native HTTP request which bypasses CORS.
+    if (error.code === 'ERR_NETWORK' || !error.response) {
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        const { CapacitorHttp } = await import('@capacitor/core');
+        console.log('[AxiosBypass] Network error detected in Native. Attempting Native HTTP Bypass for:', error.config.url);
+        
+        try {
+          // Convert axios config to CapacitorHttp options
+          const options = {
+            url: error.config.url.startsWith('http') ? error.config.url : `${error.config.baseURL}${error.config.url}`,
+            method: error.config.method.toUpperCase(),
+            headers: error.config.headers,
+            data: typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data,
+          };
+          
+          const nativeResponse = await CapacitorHttp.request(options);
+          
+          // Map back to axios-like response
+          return {
+            data: nativeResponse.data,
+            status: nativeResponse.status,
+            headers: nativeResponse.headers,
+            config: error.config
+          };
+        } catch (nativeErr) {
+          console.error('[AxiosBypass] Native Bypass failed too:', nativeErr);
+        }
+      }
+    }
     // Solo redirigir a login si no es un endpoint público
     const isPublicEndpoint = error.config?.url?.includes('/public') ||
       error.config?.url?.includes('/profiles/') ||
