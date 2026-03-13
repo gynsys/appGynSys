@@ -35,7 +35,7 @@ export default function OnlineConsultationSection({ doctor, settings, onOpenChat
 
                 {/* Content Overlay - Bottom positioned with padding */}
                 <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-                    <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+                    <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-6 text-center md:text-left">
                         {/* Text Content - Left */}
                         <div className="flex-1 text-white max-w-2xl">
                             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white drop-shadow-2xl">

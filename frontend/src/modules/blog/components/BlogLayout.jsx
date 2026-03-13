@@ -25,6 +25,14 @@ export default function BlogLayout({ children }) {
     }
   }, [slug])
 
+  useEffect(() => {
+    // Scroll Lock logic for App Experience
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
   const loadDoctor = async () => {
     try {
       setLoading(true)
