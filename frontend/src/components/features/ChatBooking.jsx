@@ -267,9 +267,30 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
     fetchLocations();
   }, [doctor]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior = "smooth") => {
+    // Small delay to ensure DOM has updated and keyboard might be moving
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+    }, 100);
   };
+
+  // Dedicated effect for visualViewport (Keyboard detection)
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      // If the viewport height changes significantly, it's likely a keyboard event
+      scrollToBottom("auto"); // Faster scroll for resize
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
