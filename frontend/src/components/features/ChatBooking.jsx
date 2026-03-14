@@ -113,6 +113,45 @@ const generateSmartTimes = (scheduleStr) => {
   return slots.slice(0, 4);
 }
 
+// Helper: Format Allowed Days to Natural Spanish
+const formatDaysText = (allowedDays) => {
+  if (!allowedDays || allowedDays.length === 0) return "los días de consulta";
+  
+  const dayNamesSingular = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const dayNamesPlural = ['Domingos', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábados'];
+  const sortedDays = [...allowedDays].sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b)); // Sort starting from Monday
+  
+  if (sortedDays.length === 1) {
+    return `los días ${dayNamesPlural[sortedDays[0]]}`;
+  }
+
+  // Check for Lunes a Viernes [1,2,3,4,5]
+  const isMF = sortedDays.length === 5 && sortedDays.join('') === '12345';
+  if (isMF) return "lunes a viernes";
+
+  // Check for continuous range
+  let continuous = true;
+  for (let i = 1; i < sortedDays.length; i++) {
+    if (sortedDays[i] !== sortedDays[i-1] + 1) {
+      continuous = false;
+      break;
+    }
+  }
+
+  if (continuous && sortedDays.length > 2) {
+    return `${dayNamesSingular[sortedDays[0]]} a ${dayNamesSingular[sortedDays[sortedDays.length - 1]]}`;
+  }
+
+  // List days (Lunes, Miércoles y Viernes)
+  const names = sortedDays.map(d => dayNamesPlural[d]);
+  if (names.length === 2) {
+    return `los días ${names[0]} y ${names[1]}`;
+  }
+  
+  const last = names.pop();
+  return `los días ${names.join(', ')} y ${last}`;
+};
+
 // Helper: Capitalize words
 const capitalizeWords = (str) => {
   return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
@@ -447,15 +486,17 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
       const suggestions = generateSmartDates(allowedDays);
       setSuggestedDates(suggestions);
       setFormData(prev => ({ ...prev, location: locName, _tempSchedule: scheduleStr }));
+      daysText = formatDaysText(allowedDays);
     } else {
       setSuggestedDates(generateSmartDates([1, 2, 3, 4, 5]));
       setFormData(prev => ({ ...prev, location: locName, _tempSchedule: '' }));
+      daysText = "lunes a viernes";
     }
 
     setTimeout(() => {
       const firstName = formData.patient_name.split(' ')[0];
       // Updated Message: "Sra. {name}, para {sede} las consultas son {dias}, le mostraré..."
-      addMessage(`Sra. ${firstName}, para ${locName} las consultas son ${daysText}, le mostraré los dias disponibles para su cita:`, 'bot');
+      addMessage(`Sra. ${firstName}, para ${locName} las consultas son ${daysText}, le mostraré los días disponibles para su cita:`, 'bot');
       setStep(STEPS.DATE_SUGGESTION);
     }, 800);
   };
