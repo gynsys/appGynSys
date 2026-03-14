@@ -123,8 +123,8 @@ export default function AppointmentManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Citas</h1>
@@ -161,7 +161,7 @@ export default function AppointmentManager() {
         </div>
 
         {/* List */}
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+        <div className="bg-white dark:bg-gray-800 shadow-sm sm:shadow overflow-hidden rounded-none sm:rounded-xl border-y sm:border border-gray-100 dark:border-gray-700">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Cargando citas...</div>
           ) : filteredAppointments.length === 0 ? (
@@ -169,7 +169,7 @@ export default function AppointmentManager() {
           ) : (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAppointments.map((appointment) => (
-                <li key={appointment.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <li key={appointment.id} className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex-1 min-w-0 w-full">
                       <div className="flex items-center justify-between mb-2">
@@ -209,12 +209,12 @@ export default function AppointmentManager() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-3 w-full sm:w-auto justify-end mt-4 sm:mt-0">
+                    <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end mt-4 sm:mt-0">
                       {appointment.status === 'scheduled' && filter === 'scheduled' && (
                         <button
                           onClick={() => handleStatusChange(appointment.id, 'confirmed')}
                           disabled={confirmingId === appointment.id}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${confirmingId === appointment.id ? 'opacity-75 cursor-not-allowed' : ''}`}
+                          className={`inline-flex items-center justify-center flex-1 sm:flex-none px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${confirmingId === appointment.id ? 'opacity-75 cursor-not-allowed' : ''}`}
                         >
                           {confirmingId === appointment.id ? (
                             <>
@@ -234,7 +234,7 @@ export default function AppointmentManager() {
                       {filter === 'scheduled' && ['scheduled', 'confirmed', 'preconsulta_completed'].includes(appointment.status) && (
                         <button
                           onClick={() => openRescheduleModal(appointment)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          className="inline-flex items-center justify-center flex-1 sm:flex-none px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                           Reagendar
                         </button>
@@ -246,7 +246,7 @@ export default function AppointmentManager() {
                       {filter === 'scheduled' && (
                         <button
                           onClick={() => handleDeleteClick(appointment)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          className="inline-flex items-center justify-center flex-1 sm:flex-none px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
                           Eliminar
                         </button>
