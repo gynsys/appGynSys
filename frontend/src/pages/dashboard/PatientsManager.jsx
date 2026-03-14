@@ -396,15 +396,15 @@ export default function PatientsManager({ isEmbedded = false }) {
   );
 
   return (
-    <div className={isEmbedded ? "py-4" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"}>
+    <div className={isEmbedded ? "py-4" : "max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8"}>
       {!isEmbedded && (
         <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left px-4 sm:px-0">
             <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">Gestión de Historias Médicas</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Administra las consultas y reportes generados.</p>
           </div>
-          <div className="relative w-full md:w-80">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <div className="relative w-full md:w-80 px-4 sm:px-0">
+            <div className="absolute inset-y-0 left-0 pl-8 md:pl-4 flex items-center pointer-events-none">
               <FiSearch className="h-5 w-5 text-gray-400" />
             </div>
             <input
@@ -423,7 +423,7 @@ export default function PatientsManager({ isEmbedded = false }) {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
       ) : filteredConsultations.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-[32px] shadow-sm p-12 md:p-20 text-center border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] shadow-sm p-12 md:p-20 text-center border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700">
           <FiUser className="mx-auto h-16 w-16 text-gray-200 dark:text-gray-700 mb-6" />
           <h3 className="text-xl font-black text-gray-900 dark:text-white">
             {searchTerm ? 'No se encontraron resultados' : 'No hay historias registradas'}
@@ -435,9 +435,9 @@ export default function PatientsManager({ isEmbedded = false }) {
       ) : (
         <div className="space-y-6">
           {/* Card View for Mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-2">
             {filteredConsultations.map((consultation) => (
-              <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-[24px] border border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[24px] border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
                     <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
@@ -452,7 +452,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     #{consultation.history_number || 'PEND'}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700">
                     HISTORIA
                   </button>

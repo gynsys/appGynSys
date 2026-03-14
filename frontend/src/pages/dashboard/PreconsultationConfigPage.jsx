@@ -449,7 +449,7 @@ export default function PreconsultationConfigPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-0 sm:px-4 py-8">
       {/* Page Header with Actions */}
       {/* Page Header Card */}
       {/* Header hidden by user request */}
@@ -460,7 +460,7 @@ export default function PreconsultationConfigPage() {
 
       {/* Section Title and Count */}
       {/* Section Title, Count, and Add Button Card */}
-      <div className="mb-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="mb-4 bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-sm border-y border-x-0 sm:border border-gray-100 dark:border-gray-700 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
             Preguntas Configuradas en Chatbot de Preconsulta Ginecología y Obstetricia
@@ -484,7 +484,7 @@ export default function PreconsultationConfigPage() {
       </div>
 
       {/* Functional Exam Card */}
-      <div className="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 p-4 rounded-2xl border border-blue-100 dark:border-gray-700 flex items-center justify-between shadow-sm">
+      <div className="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 p-4 rounded-none sm:rounded-2xl border-y border-x-0 sm:border border-blue-100 dark:border-gray-700 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-300">
             <FiActivity className="w-5 h-5" />
@@ -510,10 +510,10 @@ export default function PreconsultationConfigPage() {
 
       <div className="space-y-6">
         {/* Questions List Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-sm border-y border-x-0 sm:border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="space-y-3">
             {visibleQuestions.map((q) => (
-              <div key={q.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all group">
+              <div key={q.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all group">
                 <div className="flex-1">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 text-gray-400 text-xs font-mono select-none">{q.order + 1 < 10 ? `0${q.order + 1}` : q.order + 1}</span>

@@ -117,9 +117,9 @@ export default function OnlineConsultationSettings() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-5xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-8 px-4 sm:px-0">
                     <div className="flex items-center gap-3 mb-2">
                         <div
                             className="p-2 rounded-lg text-white"
@@ -138,7 +138,7 @@ export default function OnlineConsultationSettings() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Enable/Disable Toggle */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Estado del Servicio</h3>
@@ -162,7 +162,7 @@ export default function OnlineConsultationSettings() {
                     </div>
 
                     {/* Video Section */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <FiVideo className="w-5 h-5" style={{ color: primaryColor }} />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Video de Marketing</h3>
@@ -190,7 +190,7 @@ export default function OnlineConsultationSettings() {
                     </div>
 
                     {/* Pricing */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <FiDollarSign className="w-5 h-5" style={{ color: primaryColor }} />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Precios</h3>
@@ -251,7 +251,7 @@ export default function OnlineConsultationSettings() {
                     </div>
 
                     {/* Payment Methods */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <FiCreditCard className="w-5 h-5" style={{ color: primaryColor }} />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Métodos de Pago</h3>
@@ -284,7 +284,7 @@ export default function OnlineConsultationSettings() {
                     </div>
 
                     {/* Available Hours */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <FiClock className="w-5 h-5" style={{ color: primaryColor }} />
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Horario de Atención</h3>
@@ -363,7 +363,7 @@ export default function OnlineConsultationSettings() {
                     </div>
 
                     {/* Save Button */}
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-3 px-4 sm:px-0">
                         <Button
                             type="submit"
                             disabled={saving}

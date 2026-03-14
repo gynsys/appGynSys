@@ -121,8 +121,8 @@ export default function PdfConfigurationPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-4xl mx-auto px-0 sm:px-4 py-8">
+      <div className="mb-6 flex items-center justify-between px-4 sm:px-0">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configuración de PDF</h1>
         </div>
@@ -136,7 +136,7 @@ export default function PdfConfigurationPage() {
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-xl shadow-sm border-y border-x-0 sm:border border-gray-200 dark:border-gray-700 p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
 
           <div className="border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">

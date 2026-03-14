@@ -164,8 +164,8 @@ export default function LocationsManager() {
   if (loading) return <Spinner />
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-between items-center mb-8 px-4 sm:px-0">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Ubicaciones</h1>
         <Button onClick={() => handleOpenModal()}>
           Nueva Ubicación
@@ -174,7 +174,7 @@ export default function LocationsManager() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {locations.map((location) => (
-          <div key={location.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <div key={location.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 overflow-hidden">
             {location.image_url && (
               <img
                 src={getImageUrl(location.image_url)}

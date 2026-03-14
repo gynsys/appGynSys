@@ -225,8 +225,8 @@ export default function GalleryManager() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Gestor de Galería</h1>
+    <div className="max-w-6xl mx-auto px-0 sm:px-6 py-6">
+      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white px-4 sm:px-0">Gestor de Galería</h1>
 
 
 
@@ -237,7 +237,7 @@ export default function GalleryManager() {
 
       {/* Upload Form */}
 
-      <form onSubmit={handleUpload} className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow w-full" style={{ minHeight: 287 }}>
+      <form onSubmit={handleUpload} className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full" style={{ minHeight: 287 }}>
         <h2 className="text-xl font-semibold mb-4 w-full text-gray-900 dark:text-white">Subir Nueva Imagen</h2>
         {/* Contenedor padre de inputs y drag and drop */}
         {/* Contenedor padre: Columna vertical */}
@@ -347,7 +347,7 @@ export default function GalleryManager() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {images.map(img => (
-              <div key={img.id} className="border dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+              <div key={img.id} className="border-y border-x-0 sm:border border-gray-200 dark:border-gray-700 rounded-none sm:rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
                 <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden rounded-t-lg">
                   {img.crop && img.crop.croppedArea ? (() => {
                     const area = img.crop.croppedArea;

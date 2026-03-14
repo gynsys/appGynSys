@@ -124,8 +124,8 @@ export default function AppointmentManager() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8">
-      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8 px-4 sm:px-0">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Citas</h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Administra tus citas médicas</p>
@@ -133,7 +133,7 @@ export default function AppointmentManager() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-2">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 mb-6 flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('scheduled')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'scheduled' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}

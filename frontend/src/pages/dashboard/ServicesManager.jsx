@@ -127,8 +127,8 @@ export default function ServicesManager() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
+      <main className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-6 px-4 sm:px-0">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Servicios</h1>
           <Button onClick={() => handleOpenModal()} style={{ backgroundColor: primaryColor }}>
             Nuevo Servicio
@@ -136,7 +136,7 @@ export default function ServicesManager() {
         </div>
 
         {/* Editable services section title */}
-        <form onSubmit={handleProfileSubmit} className="mb-8 flex items-center gap-4">
+        <form onSubmit={handleProfileSubmit} className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 px-4 sm:px-0">
           <label htmlFor="services_section_title" className="text-lg font-medium text-gray-900 dark:text-white">Título de sección servicios:</label>
           <input
             id="services_section_title"
@@ -155,7 +155,7 @@ export default function ServicesManager() {
 
         <div className="flex flex-wrap justify-center gap-6">
           {services.map((service) => (
-            <div key={service.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden w-full sm:w-80">
+            <div key={service.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 overflow-hidden w-full sm:w-80">
               <div className="h-48 bg-gray-200 dark:bg-gray-700 relative">
                 {service.image_url ? (
                   <img

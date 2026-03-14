@@ -47,7 +47,7 @@ const ProfileEditorPage = () => {
 
 
         {/* Main Content */}
-        <div className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="py-12 px-0 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="">
               <div className="flex items-center justify-between mb-8 px-2">

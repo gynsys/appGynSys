@@ -168,10 +168,10 @@ export default function RecommendationsManager() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
 
                 {/* Header & Actions */}
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 px-4 sm:px-0">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <FiShoppingBag className="w-8 h-8 opacity-75" />
@@ -214,7 +214,7 @@ export default function RecommendationsManager() {
                 {activeTab === 'items' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {items.map((item) => (
-                            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group">
+                            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-xl shadow-sm border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group">
                                 <div className="h-48 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
                                     {item.image_url ? (
                                         <img
@@ -294,7 +294,7 @@ export default function RecommendationsManager() {
                 {/* --- CATEGORIES TAB --- */}
                 {activeTab === 'categories' && (
                     <div className="max-w-3xl mx-auto">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-xl shadow-sm border-y border-x-0 sm:border-x border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                                 <span className="font-semibold text-gray-700 dark:text-gray-200">Categorías Activas</span>
                                 <span className="text-xs text-gray-500">Se mostrarán como pestañas en tu perfil</span>

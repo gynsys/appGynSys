@@ -599,7 +599,7 @@ export const DoctorConsultationPage = () => {
 
     if (appointments.length === 0) {
       return (
-        <div className="p-8 text-center bg-white rounded-lg shadow">
+        <div className="p-8 text-center bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900">No hay preconsultas pendientes</h3>
           <p className="text-gray-500 mt-2">Las citas con preconsulta completada aparecerán aquí.</p>
         </div>
@@ -607,7 +607,7 @@ export const DoctorConsultationPage = () => {
     }
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow overflow-hidden border-y border-x-0 sm:border-x border-gray-200 dark:border-gray-700">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Preconsultas en Tránsito</h3>
         </div>
@@ -732,7 +732,7 @@ export const DoctorConsultationPage = () => {
   const renderExamContent = () => {
     if (examMode === 'manual') {
       return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-none sm:rounded-lg border-y border-x-0 sm:border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Examen Físico Manual</h3>
           <textarea
             value={manualExamText}
@@ -754,7 +754,7 @@ export const DoctorConsultationPage = () => {
       if (isFinished) {
         const summary = formatPhysicalExamSummary(answers);
         return (
-          <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg border border-green-200 dark:border-green-800">
+          <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-none sm:rounded-lg border-y border-x-0 sm:border border-green-200 dark:border-green-800">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-bold text-green-800 dark:text-green-300">Examen Físico Completado</h3>
@@ -797,7 +797,7 @@ export const DoctorConsultationPage = () => {
       const label = currentNode.text_key ? doctorExamTexts[currentNode.text_key] || currentNode.text_key : 'Pregunta';
 
       return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col items-center">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-none sm:rounded-lg border-y border-x-0 sm:border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col items-center">
           <div className="mb-4 flex justify-between items-center w-full">
             {hasPrevious && (
               <button onClick={goToPrevious} className="text-sm text-gray-500 hover:text-gray-700">

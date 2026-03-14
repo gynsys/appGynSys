@@ -109,7 +109,7 @@ export default function DashboardOverviewPage() {
     <>
       {/* Main Content */}
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 min-h-[80vh] flex flex-col justify-center">
+      <main className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-3 min-h-[80vh] flex flex-col justify-center">
         <div className="mb-4 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Panel de Administración
@@ -118,53 +118,53 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Push Subscription Alert (Dra. Mariel/Inquilina) */}
-        <div className="mb-6 max-w-6xl mx-auto w-full px-2">
+        <div className="mb-6 max-w-6xl mx-auto w-full px-0 sm:px-2">
           <PushSubscriptionWidget primaryColor={primaryColor} />
         </div>
 
         {/* Dashboard Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-w-6xl mx-auto w-full px-2">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-8 max-w-6xl mx-auto w-full px-0 sm:px-2">
           {/* Citas del Mes */}
-          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+          <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Citas del Mes</h3>
             <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
           </div>
 
           {/* Pacientes */}
-          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+          <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Pacientes</h3>
             <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{stats.appointments_month_count}</p>
           </div>
 
           {/* Artículos */}
-          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+          <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Artículos</h3>
             <p className="text-2xl md:text-3xl font-extrabold" style={{ color: primaryColor }}>{articleCount}</p>
           </div>
 
           {/* Test Realizados (Conditional) */}
           {hasEndometriosisModule && (
-            <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+            <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
               <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Test Endo</h3>
               <p className="text-2xl md:text-3xl font-extrabold text-pink-500">{stats.test_count}</p>
             </div>
           )}
 
           {/* Usuarios Predictor */}
-          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+          <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Ciclo</h3>
             <p className="text-2xl md:text-3xl font-extrabold text-purple-500">{stats.cycle_users_count}</p>
           </div>
 
           {/* Visitantes */}
-          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform transition-transform w-full h-[100px]">
+          <div className="bg-white rounded-none sm:rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white transition-colors duration-200 flex flex-col items-center justify-center text-center hover:scale-105 transform border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 w-full h-[100px]">
             <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Visitantes</h3>
             <p className="text-2xl md:text-3xl font-extrabold text-blue-500">{stats.visitor_count}</p>
           </div>
         </div>
 
         {/* Calendars Section */}
-        <div className="max-w-6xl mx-auto w-full mb-6">
+        <div className="max-w-6xl mx-auto w-full mb-6 px-0 sm:px-2">
           <div className="flex flex-wrap justify-center gap-[90px]">
             <DashboardCalendar
               appointments={appointmentsList}
