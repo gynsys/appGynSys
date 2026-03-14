@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 /**
  * Detects if the application is running within a Capacitor native environment (iOS or Android).
@@ -27,4 +28,19 @@ export const getPlatform = () => {
     const platform = Capacitor.getPlatform();
     console.log(`[GynSysDebug] Current Platform: ${platform}`);
     return platform;
+};
+
+/**
+ * Opens a file or URL in the system's external browser.
+ * Mandatory for PDFs in Capacitor as internal WebViews don't handle them well.
+ * @param {string} url 
+ */
+export const openExternalFile = async (url) => {
+    if (isCapacitor()) {
+        console.log(`[GynSys] Opening external URL via Capacitor Browser: ${url}`);
+        await Browser.open({ url, windowName: '_system' });
+    } else {
+        console.log(`[GynSys] Opening external URL via window.open: ${url}`);
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
 };

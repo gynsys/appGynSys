@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../lib/axios';
+import { toast } from 'react-hot-toast';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
+import { openExternalFile, isCapacitor } from '../../utils/platform';
 
 const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
@@ -530,6 +533,19 @@ export default function PatientsManager({ isEmbedded = false }) {
                 <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
                   {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="Visor de PDF" />}
                 </div>
+                {/* Mobile specific PDF helper for native apps */}
+                {isCapacitor() && (
+                  <div className="md:hidden flex flex-col items-center justify-center p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-800">
+                    <FiFileText className="w-12 h-12 text-indigo-500 mb-4" />
+                    <p className="text-sm text-center font-medium mb-6">Para una mejor experiencia y compatibilidad, abre el documento en el visor nativo del sistema.</p>
+                    <button 
+                      onClick={() => openExternalFile(currentPdfUrl)}
+                      className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"
+                    >
+                      ABRIR DOCUMENTO
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               // Tab Content: Assets
@@ -539,8 +555,15 @@ export default function PatientsManager({ isEmbedded = false }) {
             )}
           </div>
           <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
-            {currentPdfUrl && <a href={currentPdfUrl} target="_blank" rel="noreferrer" className="px-2 py-[3px] bg-indigo-600 text-white rounded-lg text-sm font-medium">Descargar PDF</a>}
-            <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-2 py-[3px] border rounded-lg text-sm font-medium">Cerrar</button>
+            {currentPdfUrl && (
+              <button 
+                onClick={() => openExternalFile(currentPdfUrl)} 
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
+              >
+                {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
+              </button>
+            )}
+            <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-4 py-2 border rounded-lg text-sm font-medium">Cerrar</button>
           </div>
         </div>
       </Modal>

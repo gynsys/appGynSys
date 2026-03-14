@@ -4,6 +4,7 @@ import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX } from 'reac
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
+import { openExternalFile, isCapacitor } from '../../utils/platform';
 
 export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange }) => {
     const [assets, setAssets] = useState(initialAssets);
@@ -197,16 +198,13 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                             <FiEye className="w-3.5 h-3.5" />
                                         </button>
                                     )}
-                                    <a
-                                        href={getFullUrl(asset.file_path)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <button
+                                        onClick={() => openExternalFile(getFullUrl(asset.file_path))}
                                         className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
                                         title="Descargar"
-                                        download
                                     >
                                         <FiDownload className="w-3.5 h-3.5" />
-                                    </a>
+                                    </button>
                                     <button
                                         onClick={() => handleDelete(asset.id)}
                                         className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
@@ -296,16 +294,15 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                     </div>
 
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-10">
-                        <a
-                            href={getFullUrl(previewAsset.file_path)}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <button
+                            onClick={() => openExternalFile(getFullUrl(previewAsset.file_path))}
                             className="text-white hover:text-indigo-400 transition-colors flex items-center space-x-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
                         >
                             <FiDownload className="w-5 h-5" />
-                            <span className="text-sm font-medium">Descargar original</span>
-                        </a>
+                            <span className="text-sm font-medium">
+                                {isCapacitor() ? 'Abrir en Navegador' : 'Descargar original'}
+                            </span>
+                        </button>
                     </div>
 
                     <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm z-10 bg-black/40 py-1">

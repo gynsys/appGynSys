@@ -35,6 +35,7 @@ import OnlineConsultationSection from '../components/features/OnlineConsultation
 import PWAInstallButton from '../components/common/PWAInstallButton'
 import CycleMarketingSection from '../components/features/CycleMarketingSection'
 import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog'
+import { openExternalFile, isCapacitor } from '../utils/platform'
 
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
@@ -912,14 +913,12 @@ export default function DoctorProfilePage() {
             <p className="text-[10px] text-gray-400 italic">Esta información es confidencial y solo para tu uso personal.</p>
             <div className="flex items-center gap-3 w-full md:w-auto">
               {historyPdfUrl && (
-                <a
-                  href={historyPdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => openExternalFile(historyPdfUrl)}
                   className="flex-1 md:flex-none text-center px-4 py-1.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition shadow-md"
                 >
-                  Descargar PDF
-                </a>
+                  {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
+                </button>
               )}
               <button
                 onClick={() => { setShowHistoryModal(false); setHistoryPdfUrl(null); setHistoryData(null) }}
