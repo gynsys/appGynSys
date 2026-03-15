@@ -436,8 +436,8 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
     addMessage(value, 'user');
     setFormData(prev => ({ ...prev, residence: value }));
     setTimeout(() => {
-      addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
-      setStep(STEPS.TYPE);
+      addMessage("Entendido. Por favor indica tu número de teléfono (mínimo 11 dígitos).", 'bot');
+      setStep(STEPS.PHONE);
     }, 600);
   };
 
@@ -648,8 +648,8 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
 
     setFormData(prev => ({ ...prev, patient_email: val }));
     setTimeout(() => {
-      addMessage("¡Gracias! Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-      setStep(STEPS.CONFIRM);
+      addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
+      setStep(STEPS.TYPE);
     }, 600);
   };
 
@@ -780,8 +780,34 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
-        {step === STEPS.NAME && (
-          <SimpleInput placeholder="Escribe tu nombre completo..." onSubmit={handleNameSubmit} primaryColor={primaryColor} />
+        {/* UNIFIED TEXT INPUTS (To prevent unmounting and keyboard flicker) */}
+        {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.OCCUPATION, STEPS.EMAIL, STEPS.LOCATION].includes(step) && (locations.length === 0 || step !== STEPS.LOCATION) && (
+          <SimpleInput 
+            placeholder={
+              step === STEPS.NAME ? "Escribe tu nombre completo..." :
+              step === STEPS.DNI ? "Ej: V-12345678" :
+              step === STEPS.AGE ? "Ej: 30" :
+              step === STEPS.RESIDENCE ? "Ej: Centro, Norte..." :
+              step === STEPS.PHONE ? "Ej: 0414-1234567" :
+              step === STEPS.OCCUPATION ? "Ej: Docente, Ingeniero..." :
+              step === STEPS.EMAIL ? "Ej: correo@ejemplo.com" :
+              "Escribe la sede..."
+            }
+            onSubmit={
+              step === STEPS.NAME ? handleNameSubmit :
+              step === STEPS.DNI ? handleDniSubmit :
+              step === STEPS.AGE ? handleAgeSubmit :
+              step === STEPS.RESIDENCE ? handleResidenceSubmit :
+              step === STEPS.PHONE ? handlePhoneSubmit :
+              step === STEPS.OCCUPATION ? handleOccupationSubmit :
+              step === STEPS.EMAIL ? handleEmailSubmit :
+              handleLocationTextSubmit
+            }
+            type={step === STEPS.EMAIL ? "email" : step === STEPS.PHONE ? "tel" : "text"}
+            numericOnly={step === STEPS.AGE}
+            primaryColor={primaryColor}
+            key="unified-chat-input"
+          />
         )}
 
         {step === STEPS.RECURRENT_CONFIRM && (
@@ -800,18 +826,6 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               Sí, actualizar
             </button>
           </div>
-        )}
-
-        {step === STEPS.DNI && (
-          <SimpleInput placeholder="Ej: V-12345678" onSubmit={handleDniSubmit} primaryColor={primaryColor} />
-        )}
-
-        {step === STEPS.AGE && (
-          <SimpleInput placeholder="Ej: 30" onSubmit={handleAgeSubmit} type="text" numericOnly={true} primaryColor={primaryColor} />
-        )}
-
-        {step === STEPS.RESIDENCE && (
-          <SimpleInput placeholder="Ej: Centro, Norte..." onSubmit={handleResidenceSubmit} primaryColor={primaryColor} />
         )}
 
         {step === STEPS.TYPE && (
@@ -848,24 +862,20 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
           </div>
         )}
 
-        {step === STEPS.LOCATION && (
+        {step === STEPS.LOCATION && locations.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {locations.length > 0 ? (
-              locations.map(loc => (
-                <button
-                  key={loc.id}
-                  onClick={() => handleLocationSelect(loc)}
-                  className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
-                  style={{
-                    backgroundColor: primaryColor,
-                  }}
-                >
-                  {loc.name}
-                </button>
-              ))
-            ) : (
-              <SimpleInput placeholder="Escribe la sede..." onSubmit={handleLocationTextSubmit} primaryColor={primaryColor} />
-            )}
+            {locations.map(loc => (
+              <button
+                key={loc.id}
+                onClick={() => handleLocationSelect(loc)}
+                className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
+                style={{
+                  backgroundColor: primaryColor,
+                }}
+              >
+                {loc.name}
+              </button>
+            ))}
           </div>
         )}
 
@@ -958,24 +968,6 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <MdSend size={20} />
             </button>
           </form>
-        )}
-
-        {step === STEPS.PHONE && (
-          <SimpleInput placeholder="Ej: 0414-1234567" onSubmit={handlePhoneSubmit} type="tel" primaryColor={primaryColor} />
-        )}
-
-        {step === STEPS.OCCUPATION && (
-          <SimpleInput
-            placeholder="Ej: Docente, Ingeniero, Estudiante..."
-            onSubmit={handleOccupationSubmit}
-            type="text"
-            autoFocus
-            primaryColor={primaryColor}
-          />
-        )}
-
-        {step === STEPS.EMAIL && (
-          <SimpleInput placeholder="Ej: correo@ejemplo.com" onSubmit={handleEmailSubmit} type="email" primaryColor={primaryColor} />
         )}
       </div>
     </div>

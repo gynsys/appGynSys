@@ -463,8 +463,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, residence: value }));
         setTimeout(() => {
-            addMessage("¿Qué tipo de consulta necesitas?", 'bot');
-            setStep(STEPS.CONSULTATION_TYPE);
+            addMessage("Entendido. Por favor indica tu número de teléfono (WhatsApp preferiblemente, mínimo 11 dígitos).", 'bot');
+            setStep(STEPS.PHONE);
         }, 600);
     };
 
@@ -604,8 +604,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(timeStr, 'user');
         setFormData(prev => ({ ...prev, time_part: timeStr }));
         setTimeout(() => {
-            addMessage("Entendido. Por favor indica tu número de teléfono (WhatsApp preferiblemente, mínimo 11 dígitos).", 'bot');
-            setStep(STEPS.PHONE);
+            addMessage("Por favor, indíqueme su método de pago.", 'bot');
+            setStep(STEPS.PAYMENT_METHOD);
         }, 600);
     };
 
@@ -621,8 +621,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(val, 'user');
         setFormData(prev => ({ ...prev, time_part: val }));
         setTimeout(() => {
-            addMessage("Entendido. Por favor indica tu número de teléfono (WhatsApp preferiblemente, mínimo 11 dígitos).", 'bot');
-            setStep(STEPS.PHONE);
+            addMessage("Por favor, indíqueme su método de pago.", 'bot');
+            setStep(STEPS.PAYMENT_METHOD);
         }, 600);
     };
 
@@ -636,8 +636,17 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         setFormData(prev => ({ ...prev, patient_phone: value }));
         addMessage(value, 'user');
         setTimeout(() => {
-            addMessage("Por favor, indíqueme su método de pago.", 'bot');
-            setStep(STEPS.PAYMENT_METHOD);
+            addMessage(
+                `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span>:</p>
+        <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
+        <div class="ml-2 mb-3">
+            <p class="text-[10px] mb-1">• Link de la videollamada</p>
+            <p class="text-[10px] mb-1">• Datos para el pago</p>
+        </div>
+        <p class="font-semibold">Correo electrónico:</p>`,
+                'bot'
+            );
+            setStep(STEPS.EMAIL);
         }, 500);
     };
 
@@ -646,18 +655,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(method, 'user');
         setFormData(prev => ({ ...prev, payment_method: method }));
         setTimeout(() => {
-            addMessage(
-                `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span> para tu Consulta Online:</p>
-        <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
-        <div class="ml-2 mb-3">
-            <p class="text-xs mb-1">• Link de la videollamada (Zoom/Meet)</p>
-            <p class="text-xs mb-1">• Datos para el pago</p>
-            <p class="text-xs mb-1">• Recordatorios automáticos</p>
-        </div>
-        <p class="font-semibold">Correo electrónico:</p>`,
-                'bot'
-            );
-            setStep(STEPS.EMAIL);
+            addMessage("¡Gracias! Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+            setStep(STEPS.CONFIRM);
         }, 400);
     };
 
@@ -672,8 +671,8 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, patient_email: value }));
         setTimeout(() => {
-            addMessage("¡Gracias! Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-            setStep(STEPS.CONFIRM);
+            addMessage("¿Qué tipo de consulta necesitas?", 'bot');
+            setStep(STEPS.CONSULTATION_TYPE);
         }, 600);
     };
 
@@ -961,46 +960,32 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                     </button>
                                 </div>
                             )}
+                        </div>
 
-
-
-
-
-                            {/* NAME input */}
-                            {step === STEPS.NAME && (
+                        <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
+                            {/* UNIFIED TEXT INPUTS */}
+                            {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.EMAIL].includes(step) && (
                                 <SimpleInput
-                                    placeholder="Escribe tu nombre completo..."
-                                    onSubmit={handleNameSubmit}
+                                    placeholder={
+                                        step === STEPS.NAME ? "Escribe tu nombre completo..." :
+                                        step === STEPS.DNI ? "Ej: V-12345678" :
+                                        step === STEPS.AGE ? "¿Cuántos años tienes?" :
+                                        step === STEPS.RESIDENCE ? "Ej: Centro, Norte..." :
+                                        step === STEPS.PHONE ? "Ej: 04141234567" :
+                                        "ejemplo@email.com"
+                                    }
+                                    onSubmit={
+                                        step === STEPS.NAME ? handleNameSubmit :
+                                        step === STEPS.DNI ? handleDniSubmit :
+                                        step === STEPS.AGE ? handleAgeSubmit :
+                                        step === STEPS.RESIDENCE ? handleResidenceSubmit :
+                                        step === STEPS.PHONE ? handlePhoneSubmit :
+                                        handleEmailSubmit
+                                    }
+                                    type={step === STEPS.EMAIL ? "email" : step === STEPS.PHONE ? "tel" : "text"}
+                                    numericOnly={step === STEPS.AGE}
                                     primaryColor={primaryColor}
-                                />
-                            )}
-
-                            {/* DNI input */}
-                            {step === STEPS.DNI && (
-                                <SimpleInput
-                                    placeholder="Ej: V-12345678"
-                                    onSubmit={handleDniSubmit}
-                                    primaryColor={primaryColor}
-                                />
-                            )}
-
-                            {/* AGE input */}
-                            {step === STEPS.AGE && (
-                                <SimpleInput
-                                    placeholder="Ej: 30"
-                                    onSubmit={handleAgeSubmit}
-                                    type="text"
-                                    numericOnly={true}
-                                    primaryColor={primaryColor}
-                                />
-                            )}
-
-                            {/* RESIDENCE input */}
-                            {step === STEPS.RESIDENCE && (
-                                <SimpleInput
-                                    placeholder="Ej: Centro, Norte..."
-                                    onSubmit={handleResidenceSubmit}
-                                    primaryColor={primaryColor}
+                                    key="unified-online-input"
                                 />
                             )}
 
@@ -1023,7 +1008,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 </div>
                             )}
 
-                            {/* REASON buttons */}
+                            {/* ... (REASON, DATE, TIME buttons remain the same but kept here for structure) */}
                             {step === STEPS.REASON && (
                                 <div className="flex flex-wrap gap-2 justify-center">
                                     {getOnlineReasonOptions(formData.consultation_category).map(reason => (
@@ -1042,7 +1027,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 </div>
                             )}
 
-                            {/* DATE_SUGGESTION buttons */}
                             {step === STEPS.DATE_SUGGESTION && (
                                 <div className="space-y-3">
                                     <div className="flex gap-2 justify-center overflow-x-auto pb-2">
@@ -1067,7 +1051,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 </div>
                             )}
 
-                            {/* DATE_MANUAL input */}
                             {step === STEPS.DATE_MANUAL && (
                                 <input
                                     type="date"
@@ -1076,7 +1059,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 />
                             )}
 
-                            {/* TIME_SUGGESTION buttons */}
                             {step === STEPS.TIME_SUGGESTION && (
                                 <div className={`grid gap-2 ${suggestedTimes.some(t => parseInt(t.split(':')[0]) < 12) &&
                                     suggestedTimes.some(t => parseInt(t.split(':')[0]) >= 12)
@@ -1136,7 +1118,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                 </div>
                             )}
 
-                            {/* TIME_MANUAL input */}
                             {step === STEPS.TIME_MANUAL && (
                                 <input
                                     type="time"
@@ -1147,15 +1128,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                         '--tw-ring-color': primaryColor,
                                         borderColor: primaryColor
                                     }}
-                                />
-                            )}
-
-                            {/* PHONE input */}
-                            {step === STEPS.PHONE && (
-                                <SimpleInput
-                                    placeholder="Ej: 04141234567"
-                                    onSubmit={handlePhoneSubmit}
-                                    primaryColor={primaryColor}
                                 />
                             )}
 
@@ -1186,16 +1158,6 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                         ));
                                     })()}
                                 </div>
-                            )}
-
-                            {/* EMAIL input */}
-                            {step === STEPS.EMAIL && (
-                                <SimpleInput
-                                    placeholder="ejemplo@email.com"
-                                    onSubmit={handleEmailSubmit}
-                                    type="email"
-                                    primaryColor={primaryColor}
-                                />
                             )}
                         </div>
                     </div>
