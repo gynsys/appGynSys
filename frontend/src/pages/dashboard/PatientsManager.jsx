@@ -217,12 +217,13 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [consultationToDelete, setConsultationToDelete] = useState(null);
 
   // PDF Preview State
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [isPdfModalOpen, setPdfModalOpen] = useState(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
   const [historyData, setHistoryData] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [activePdfTab, setActivePdfTab] = useState('pdf'); // 'pdf' or 'assets'
   const [currentConsultationId, setCurrentConsultationId] = useState(null);
+  const [includeImages, setIncludeImages] = useState(false);
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -360,7 +361,11 @@ export default function PatientsManager({ isEmbedded = false }) {
   };
 
   const handleViewPdf = async (url) => {
-    setCurrentPdfUrl(url);
+    let finalUrl = url;
+    if (includeImages) {
+      finalUrl = `${url}?include_images=true`;
+    }
+    setCurrentPdfUrl(finalUrl);
     setHistoryData(null);
     setActivePdfTab('pdf'); // Modal always opens on PDF view by default
     setCurrentConsultationId(null);
@@ -519,23 +524,43 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      <Modal isOpen={pdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl" fullScreenOnMobile>
+      <Modal isOpen={isPdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl" fullScreenOnMobile>
         <div className="flex flex-col h-full">
           {/* Tabs Navigation */}
           {currentConsultationId && (
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
-              <button
-                className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors ${activePdfTab === 'pdf' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
-                onClick={() => setActivePdfTab('pdf')}
-              >
-                Documento
-              </button>
-              <button
-                className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activePdfTab === 'assets' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
-                onClick={() => setActivePdfTab('assets')}
-              >
-                <FiImage /> Soportes Multimedias
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setActivePdfTab('pdf')}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                    activePdfTab === 'pdf' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  INFORME
+                </button>
+                <button
+                  onClick={() => setActivePdfTab('assets')}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                    activePdfTab === 'assets' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  SOPORTES
+                </button>
+
+                <label className="flex items-center gap-2 cursor-pointer ml-auto">
+                  <input
+                    type="checkbox"
+                    checked={includeImages}
+                    onChange={(e) => setIncludeImages(e.target.checked)}
+                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir imágenes</span>
+                </label>
+              </div>
             </div>
           )}
 

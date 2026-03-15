@@ -326,6 +326,7 @@ def delete_consultation(
 @router.get("/{id}/pdf")
 def get_consultation_pdf(
     id: int,
+    include_images: bool = Query(False),
     db: Session = Depends(get_db)
 ):
     consultation = db.query(Consultation).filter(Consultation.id == id).first()
@@ -333,8 +334,35 @@ def get_consultation_pdf(
         raise HTTPException(status_code=404, detail="Consultation not found")
 
     # Map DB model to dictionary expected by PDF generator
-    # Map DB model to dictionary expected by PDF generator
     data = _map_consultation_to_data(consultation)
+    data["include_images"] = include_images
+    
+    # Get assets for this consultation
+    data["assets"] = [
+        {
+            "id": a.id,
+            "file_path": a.file_path,
+            "file_name": a.file_name,
+            "file_type": a.file_type
+        }
+        for a in consultation.assets
+    ]
+
+    # Try to determine consultation_type from related appointment
+    # Match by patient and close date
+    from datetime import timedelta
+    appointment = db.query(Appointment).filter(
+        Appointment.doctor_id == consultation.doctor_id,
+        Appointment.patient_dni == consultation.patient_ci,
+        Appointment.appointment_date >= (consultation.created_at - timedelta(days=2)),
+        Appointment.appointment_date <= (consultation.created_at + timedelta(days=2))
+    ).first()
+    
+    if appointment:
+        data["consultation_type"] = appointment.appointment_type
+    else:
+        # Fallback if no appointment found
+        data["consultation_type"] = "Ginecología"
 
     # Generate PDF (Summary Report)
     pdf_buffer = generate_summary_report(data, consultation.doctor_id, db)

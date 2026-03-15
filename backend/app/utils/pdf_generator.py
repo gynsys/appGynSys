@@ -277,6 +277,83 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(Paragraph(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
     story.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
     
+    # --- PAGE 2: IMAGES (Optional) ---
+    if report_data.get('include_images') and report_data.get('assets'):
+        from reportlab.platypus import PageBreak
+        story.append(PageBreak())
+        
+        # Determine title based on consultation type
+        c_type = (report_data.get('consultation_type') or "").lower()
+        if "prenatal" in c_type or "obstetrica" in c_type:
+            img_title = "ULTRASONIDO OBSTÉTRICO"
+        else:
+            img_title = "ULTRASONIDO GINECOLÓGICO"
+            
+        # Repeat Header
+        story.append(header_table)
+        story.append(line_table)
+        story.append(Spacer(1, 0.25*inch))
+        story.append(Paragraph(f"<u>{img_title}</u>", styleH1))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Patient Info Small
+        story.append(Paragraph(f"<b>Paciente:</b> {report_context.get('full_name')} | <b>C.I.:</b> {report_context.get('ci')}", styleN))
+        story.append(Spacer(1, 0.25*inch))
+        
+        # Grid of 4 images
+        assets = [a for a in report_data.get('assets', []) if "image" in (a.get('file_type') or "").lower()][:4]
+        
+        grid_data = []
+        # We need a 2x2 grid
+        for i in range(0, 4, 2):
+            row = []
+            for j in range(2):
+                idx = i + j
+                if idx < len(assets):
+                    asset = assets[idx]
+                    path = get_local_path_from_url(asset.get('file_path'))
+                    if path and os.path.exists(path):
+                        img_reader = ImageReader(path)
+                        iw, ih = img_reader.getSize()
+                        aspect = ih / float(iw)
+                        
+                        # Max dimensions for the block
+                        max_w = 3.2*inch
+                        max_h = 3.2*inch
+                        
+                        if aspect > 1: # Vertical
+                            h = max_h
+                            w = h / aspect
+                        else: # Horizontal
+                            w = max_w
+                            h = w * aspect
+                            
+                        block_img = Image(path, width=w, height=h)
+                        row.append(block_img)
+                    else:
+                        row.append("")
+                else:
+                    row.append("")
+            grid_data.append(row)
+            
+        # If we have less than 4, ensure grid is consistent
+        while len(grid_data) < 2:
+            grid_data.append(["", ""])
+            
+        img_table = Table(grid_data, colWidths=[3.5*inch, 3.5*inch], rowHeights=[3.5*inch, 3.5*inch])
+        
+        # Custom Dash Style
+        img_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            # Gray dashed border for each cell
+            ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)), # 2 on, 2 off dash
+            ('TOPPADDING', (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ]))
+        
+        story.append(img_table)
+
     doc.build(story)
     buffer.seek(0)
     return buffer
