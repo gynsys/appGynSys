@@ -6,7 +6,7 @@ import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 import { openExternalFile, isCapacitor } from '../../utils/platform';
 
-export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange }) => {
+export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange, readOnly = false }) => {
     const [assets, setAssets] = useState(initialAssets);
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -205,13 +205,15 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                     >
                                         <FiDownload className="w-3.5 h-3.5" />
                                     </button>
-                                    <button
-                                        onClick={() => handleDelete(asset.id)}
-                                        className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                                        title="Eliminar"
-                                    >
-                                        <FiTrash2 className="w-3.5 h-3.5" />
-                                    </button>
+                                    {!readOnly && (
+                                        <button
+                                            onClick={() => handleDelete(asset.id)}
+                                            className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                            title="Eliminar"
+                                        >
+                                            <FiTrash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="p-3 bg-white dark:bg-gray-800">
@@ -232,25 +234,27 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                 )}
             </div>
 
-            {/* 2. Área de Subida de Nuevos Archivos (Mostrada al Final) */}
-            <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Adjuntar Nuevos Archivos</h4>
-                <div className="relative">
-                    {isUploading && (
-                        <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 z-10 flex items-center justify-center rounded-xl">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                        </div>
-                    )}
-                    <FileUploader
-                        title="Arrastra y suelta tus imágenes o videos aquí"
-                        subtitle="o haz clic para buscar Soportes Multimedias"
-                        multiple={true}
-                        onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
-                        onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
-                        acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
-                    />
+            {/* 2. Área de Subida de Nuevos Archivos (Oculta en modo solo lectura) */}
+            {!readOnly && (
+                <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Adjuntar Nuevos Archivos</h4>
+                    <div className="relative">
+                        {isUploading && (
+                            <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 z-10 flex items-center justify-center rounded-xl">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            </div>
+                        )}
+                        <FileUploader
+                            title="Arrastra y suelta tus imágenes o videos aquí"
+                            subtitle="o haz clic para buscar Soportes Multimedias"
+                            multiple={true}
+                            onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
+                            onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
+                            acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Fullscreen Assets Preview Modal (Lightbox) via Portal */}
             {previewAsset && createPortal(

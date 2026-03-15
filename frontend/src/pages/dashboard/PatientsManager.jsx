@@ -225,6 +225,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [currentConsultationId, setCurrentConsultationId] = useState(null);
   const [basePdfUrl, setBasePdfUrl] = useState(null);
   const [includeImages, setIncludeImages] = useState(false);
+  const [isAssetOnly, setIsAssetOnly] = useState(false);
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -362,6 +363,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   };
 
   const handleViewPdf = async (url) => {
+    setIsAssetOnly(false); // Reset to PDF mode
     setBasePdfUrl(url);
     setHistoryData(null);
     setActivePdfTab('pdf'); // Modal siempre abre en PDF por defecto
@@ -542,8 +544,10 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <div className="flex gap-2 justify-center">
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
-                        <button 
+                         <button 
                           onClick={() => {
+                            setBasePdfUrl(null); // No queremos PDF
+                            setIsAssetOnly(true);
                             setCurrentConsultationId(consultation.id);
                             setActivePdfTab('assets');
                             setPdfModalOpen(true);
@@ -565,10 +569,21 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      <Modal isOpen={isPdfModalOpen} onClose={() => { setPdfModalOpen(false); setHistoryData(null); setActivePdfTab('pdf'); }} title="Vista Previa" size="4xl" fullScreenOnMobile>
+      <Modal 
+        isOpen={isPdfModalOpen} 
+        onClose={() => { 
+          setPdfModalOpen(false); 
+          setHistoryData(null); 
+          setActivePdfTab('pdf'); 
+          setIsAssetOnly(false);
+        }} 
+        title={isAssetOnly ? "Soportes Digitales" : "Vista Previa"} 
+        size="4xl" 
+        fullScreenOnMobile
+      >
         <div className="flex flex-col h-full">
-          {/* Tabs Navigation */}
-          {currentConsultationId && (
+          {/* Tabs Navigation - Ocultas en modo solo activos */}
+          {currentConsultationId && !isAssetOnly && (
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
               <div className="flex gap-4">
                 <button
@@ -633,12 +648,12 @@ export default function PatientsManager({ isEmbedded = false }) {
             ) : (
               // Tab Content: Assets
               <div className="h-[70vh] overflow-y-auto pr-2">
-                <ConsultationAssetManager consultationId={currentConsultationId} />
+                <ConsultationAssetManager consultationId={currentConsultationId} readOnly={true} />
               </div>
             )}
           </div>
           <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
-             {basePdfUrl && (
+             {basePdfUrl && !isAssetOnly && (
               <button 
                 onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
