@@ -77,10 +77,11 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
             {showDashboardButton && (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium hidden md:flex items-center gap-2"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium flex items-center gap-2"
+                title="Panel Principal"
               >
                 <MdDashboard className="text-lg" />
-                Panel Principal
+                <span className="hidden md:inline">Panel Principal</span>
               </button>
             )}
 
@@ -88,9 +89,10 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
             <button
               onClick={handleLogout}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium flex items-center gap-2"
+              title="Cerrar Sesión"
             >
               <MdLogout className="text-lg" />
-              Cerrar Sesión
+              <span className="hidden md:inline">Cerrar Sesión</span>
             </button>
           </div>
         </div>
