@@ -44,3 +44,24 @@ export const openExternalFile = async (url) => {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 };
+
+/**
+ * Specifically triggers a file download.
+ * On web, it uses a hidden anchor tag to avoid tab flickering.
+ * On Capacitor, it uses openExternalFile.
+ * @param {string} url 
+ * @param {string} filename 
+ */
+export const downloadFile = (url, filename = 'documento.pdf') => {
+    if (isCapacitor()) {
+        return openExternalFile(url);
+    }
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};

@@ -6,7 +6,7 @@ import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
 import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
-import { openExternalFile, isCapacitor } from '../../utils/platform';
+import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
 
 const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
@@ -632,7 +632,7 @@ export default function PatientsManager({ isEmbedded = false }) {
           <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
              {basePdfUrl && (
               <button 
-                onClick={() => openExternalFile(getFullPdfUrl(true))} 
+                onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
               >
                 {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
