@@ -66,7 +66,7 @@ export default function MegaMenu({ doctorSlug, primaryColor }) {
           {menuItems.map((item) => (
             <Link
               key={item.slug}
-              to={`/dr/${doctorSlug}/blog/${item.slug}`}
+              to={`/${doctorSlug}/blog/${item.slug}`}
               className="flex items-start px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition ease-in-out duration-150 group/item"
               onMouseEnter={() => handleMouseEnter(item.slug)}
               onMouseLeave={() => handleMouseLeave(item.slug)}

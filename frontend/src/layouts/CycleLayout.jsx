@@ -84,7 +84,7 @@ export default function CycleLayout() {
                         onClick={() => {
                             const lastSlug = localStorage.getItem('last_doctor_slug');
                             if (lastSlug) {
-                                navigate(`/dr/${lastSlug}`);
+                                navigate(`/${lastSlug}`);
                             } else {
                                 navigate('/');
                             }

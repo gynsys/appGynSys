@@ -109,7 +109,7 @@ export default function BlogLayout({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Doctor Name */}
-            <Link to={`/dr/${doctor.slug_url}`} className="flex items-center space-x-4 hover:opacity-90 transition">
+            <Link to={`/${doctor.slug_url}`} className="flex items-center space-x-4 hover:opacity-90 transition">
               {doctor.logo_url && (
                 <img
                   src={getImageUrl(doctor.logo_url)}
@@ -132,7 +132,7 @@ export default function BlogLayout({ children }) {
 
 
               <Link
-                to={`/dr/${doctor.slug_url}`}
+                to={`/${doctor.slug_url}`}
                 className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@ export default function BlogLayout({ children }) {
           {
             icon: <NavIcons.Home />,
             label: 'Inicio',
-            action: () => navigate(`/dr/${doctor.slug_url}`),
+            action: () => navigate(`/${doctor.slug_url}`),
             isActive: false
           },
           {

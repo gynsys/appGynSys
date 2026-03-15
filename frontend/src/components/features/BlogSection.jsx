@@ -41,7 +41,7 @@ export default function BlogSection({ doctor, primaryColor, cardShadow = true, c
     >
       <div className="flex justify-end mb-6 -mt-4">
         <Link
-          to={`/dr/${doctor.slug_url}/blog`}
+          to={`/${doctor.slug_url}/blog`}
           className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center transition-colors text-sm uppercase tracking-wider"
           style={{ color: primaryColor }}
         >

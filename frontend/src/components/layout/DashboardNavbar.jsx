@@ -6,7 +6,7 @@ import { useDarkMode } from '../../hooks/useDarkMode'
 export default function DashboardNavbar({ doctor, primaryColor = '#4F46E5' }) {
   const navigate = useNavigate()
   const [darkMode, toggleDarkMode] = useDarkMode()
-  const publicUrl = doctor?.slug_url ? `/dr/${doctor.slug_url}` : '#'
+  const publicUrl = doctor?.slug_url ? `/${doctor.slug_url}` : '#'
 
   return (
     <nav

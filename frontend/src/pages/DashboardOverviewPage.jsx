@@ -103,7 +103,7 @@ export default function DashboardOverviewPage() {
   }
 
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'
-  const publicUrl = doctor?.slug_url ? `/dr/${doctor.slug_url}` : '#'
+  const publicUrl = doctor?.slug_url ? `/${doctor.slug_url}` : '#'
 
   return (
     <>

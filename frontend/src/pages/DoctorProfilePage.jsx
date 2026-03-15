@@ -543,7 +543,7 @@ export default function DoctorProfilePage() {
     {
       icon: <NavIcons.Blog />,
       label: 'Blog',
-      action: () => navigate(`/dr/${slug}/blog`),
+      action: () => navigate(`/${slug}/blog`),
       isActive: false
     }
   ]

@@ -597,7 +597,7 @@ def send_tenant_approval_email(self, email: str, doctor_name: str, slug: str):
     Send approval email to a tenant with their landing page link.
     """
     try:
-        landing_url = f"{settings.FRONTEND_URL}/dr/{slug}"
+        landing_url = f"{settings.FRONTEND_URL}/{slug}"
         
         subject = "¡Bienvenido a GynSys! Tu cuenta ha sido aprobada"
         content = f"""

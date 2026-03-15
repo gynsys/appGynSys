@@ -29,8 +29,8 @@ export default function WelcomeTourModal({ doctor }) {
         {
             icon: <Globe className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />,
             title: "Tu Sitio ya está en línea",
-            description: `Los pacientes ya pueden visitarte en gynsys.net/dr/${doctor.slug_url}`,
-            link: `/dr/${doctor.slug_url}`,
+            description: `Los pacientes ya pueden visitarte en gynsys.net/${doctor.slug_url}`,
+            link: `/${doctor.slug_url}`,
             linkLabel: "Ver mi sitio"
         },
         {

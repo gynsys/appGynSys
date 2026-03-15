@@ -47,7 +47,7 @@ export default function LandingPage() {
     price: "9.99",
     description: "Acceso total a todas las herramientas de GynSys por un costo mensual promocional.",
     features: [
-      "Página Web con /dr/slug",
+      "Página Web con /slug",
       "Socio Tecnológico: Mi Ciclo (App Pacientes)",
       "App Móvil PWA (Para el Doctor)",
       "Gestión de Citas y Pre-consultas",

@@ -22,7 +22,7 @@ export default function BlogCard({ post, doctor, shadow = true }) {
         style={containerBgColor ? { backgroundColor: containerBgColor } : {}}
       >
         <div className="flex-1">
-          <Link to={`/dr/${slug}/blog/${post.slug}`} className="mt-2 block">
+          <Link to={`/${slug}/blog/${post.slug}`} className="mt-2 block">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">{post.title}</h3>
             <p className="mt-3 text-base text-gray-500 dark:text-gray-300 line-clamp-5">
               {post.summary || post.content.replace(/<[^>]*>?/gm, '').substring(0, 250) + '...'}
@@ -35,7 +35,7 @@ export default function BlogCard({ post, doctor, shadow = true }) {
               {new Date(post.published_at || post.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
             </time>
           </div>
-          <Link to={`/dr/${slug}/blog/${post.slug}`} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
+          <Link to={`/${slug}/blog/${post.slug}`} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
             Leer más &rarr;
           </Link>
         </div>

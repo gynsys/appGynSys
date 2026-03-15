@@ -33,7 +33,7 @@ export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', 
   const getBlogLink = (service) => {
     // Example: service.blog_slug or service.blog_entry_url
     if (service.blog_slug) {
-      return `/dr/${doctorSlug}/blog/${service.blog_slug}`
+      return `/${doctorSlug}/blog/${service.blog_slug}`
     }
     return null
   }

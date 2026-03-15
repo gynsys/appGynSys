@@ -168,7 +168,7 @@ export default function BlogPostPage() {
               style={(!isDarkTheme && doctor?.theme_container_bg_color) ? { backgroundColor: doctor.theme_container_bg_color } : {}}
             >
               <div className="mb-8">
-                <Link to={`/dr/${slug}/blog`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+                <Link to={`/${slug}/blog`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
                   &larr; Volver al Blog
                 </Link>
               </div>
@@ -336,7 +336,7 @@ export default function BlogPostPage() {
               ) : relatedPosts.length > 0 ? (
                 <div className="space-y-6">
                   {relatedPosts.map(relPost => (
-                    <Link to={`/dr/${slug}/blog/${relPost.slug}`} key={relPost.id} className="group flex space-x-4">
+                    <Link to={`/${slug}/blog/${relPost.slug}`} key={relPost.id} className="group flex space-x-4">
                       <div className="flex-shrink-0 relative overflow-hidden rounded-lg h-20 w-20">
                         {relPost.cover_image ? (
                           <img
@@ -361,7 +361,7 @@ export default function BlogPostPage() {
                     </Link>
                   ))}
                   <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <Link to={`/dr/${slug}/blog`} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 flex items-center justify-center">
+                    <Link to={`/${slug}/blog`} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 flex items-center justify-center">
                       Ver todos los artículos &rarr;
                     </Link>
                   </div>

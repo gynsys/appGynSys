@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import GynSysLoader from './components/common/GynSysLoader'
 import { Toaster } from 'sonner'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -67,11 +67,16 @@ const RootRedirector = () => {
     
     // Priority: Last visited slug > Default Slug for this personalized APK
     const targetSlug = lastSlug || 'mariel-herrera';
-    return <Navigate to={`/dr/${targetSlug}`} replace />;
+    return <Navigate to={`/${targetSlug}`} replace />;
   }
 
   // Regular browser users always see the Landing Page (avoids loop)
   return <LandingPage />;
+};
+
+const LegacyDoctorRedirect = () => {
+  const { slug, '*': rest } = useParams();
+  return <Navigate to={`/${slug}${rest ? `/${rest}` : ''}`} replace />;
 };
 
 function App() {
@@ -166,7 +171,7 @@ function App() {
       <ToastContainer />
       <Routes>
         <Route path="/preconsulta" element={<PreconsultaPage />} />
-        <Route path="/dr/:slug/preconsulta" element={<DoctorProfilePage />} />
+        <Route path="/:slug/preconsulta" element={<DoctorProfilePage />} />
         <Route path="/cycle-report" element={<CycleReportPage />} />
 
         {/* Cycle Predictor Routes */}
@@ -188,9 +193,12 @@ function App() {
 
 
         {/* Public Doctor Routes */}
-        <Route path="/dr/:slug" element={<DoctorProfilePage />} />
-        <Route path="/dr/:slug/blog" element={<BlogPublicPage />} />
-        <Route path="/dr/:slug/blog/:postSlug" element={<BlogPostPage />} />
+        <Route path="/:slug" element={<DoctorProfilePage />} />
+        <Route path="/:slug/blog" element={<BlogPublicPage />} />
+        <Route path="/:slug/blog/:postSlug" element={<BlogPostPage />} />
+
+        {/* Legacy Redirection */}
+        <Route path="/dr/:slug/*" element={<LegacyDoctorRedirect />} />
 
         {/* Dashboard Routes (SPA Layout) */}
         <Route path="/dashboard" element={
