@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { Transition } from '@headlessui/react'
 import { MdClose } from 'react-icons/md'
+import { isCapacitor } from '../../utils/platform'
 import ChatBooking from './ChatBooking'
 
 export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, primaryColor = '#4F46E5' }) {
@@ -30,8 +31,11 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
           leaveTo="translate-y-10 opacity-0 scale-95"
         >
           <div
-            className="fixed bottom-[var(--total-bottom-offset)] md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[75vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300"
-            style={{ borderColor: `${primaryColor}33` }}
+            className="fixed md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[75vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300"
+            style={{ 
+              borderColor: `${primaryColor}33`,
+              bottom: isCapacitor() || window.innerWidth < 768 ? 'var(--total-bottom-offset)' : undefined
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
