@@ -3,7 +3,7 @@
   "appName": "gynsys-app",
   "webDir": "dist",
   "server": {
-    "url": "https://gynsys.net/dr/mariel-herrera",
+    "url": "https://gynsys.net/mariel-herrera",
     "cleartext": true,
     "allowNavigation": [
       "gynsys.net",

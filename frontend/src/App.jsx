@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import GynSysLoader from './components/common/GynSysLoader'
 import { Toaster } from 'sonner'
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -71,6 +71,7 @@ const RootRedirector = () => {
   }
 
   // Regular browser users always see the Landing Page (avoids loop)
+  // We use key=slug to force remounting when slug changes if needed, but here it's simple
   return <LandingPage />;
 };
 
@@ -166,10 +167,12 @@ function App() {
   return (
     <>
       <CapacitorPushListener />
-      <BrowserRouter>
       <Toaster position="top-center" richColors />
       <ToastContainer />
       <Routes>
+        {/* Legacy Redirection - MOVE TO TOP for priority */}
+        <Route path="/dr/:slug/*" element={<LegacyDoctorRedirect />} />
+
         <Route path="/preconsulta" element={<PreconsultaPage />} />
         <Route path="/:slug/preconsulta" element={<DoctorProfilePage />} />
         <Route path="/cycle-report" element={<CycleReportPage />} />
@@ -196,9 +199,6 @@ function App() {
         <Route path="/:slug" element={<DoctorProfilePage />} />
         <Route path="/:slug/blog" element={<BlogPublicPage />} />
         <Route path="/:slug/blog/:postSlug" element={<BlogPostPage />} />
-
-        {/* Legacy Redirection */}
-        <Route path="/dr/:slug/*" element={<LegacyDoctorRedirect />} />
 
         {/* Dashboard Routes (SPA Layout) */}
         <Route path="/dashboard" element={
@@ -242,7 +242,6 @@ function App() {
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </BrowserRouter>
     </>
   )
 }
