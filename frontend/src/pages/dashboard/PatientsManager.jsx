@@ -226,6 +226,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [basePdfUrl, setBasePdfUrl] = useState(null);
   const [includeImages, setIncludeImages] = useState(false);
   const [isAssetOnly, setIsAssetOnly] = useState(false);
+  const [currentPatientName, setCurrentPatientName] = useState('');
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -362,9 +363,10 @@ export default function PatientsManager({ isEmbedded = false }) {
     });
   };
 
-  const handleViewPdf = async (url) => {
+   const handleViewPdf = async (url) => {
     setIsAssetOnly(false); // Reset to PDF mode
     setBasePdfUrl(url);
+    setCurrentPatientName(''); 
     setHistoryData(null);
     setActivePdfTab('pdf'); // Modal siempre abre en PDF por defecto
     setCurrentConsultationId(null);
@@ -386,8 +388,16 @@ export default function PatientsManager({ isEmbedded = false }) {
   // Effect to fetch history data when modal opens or basePdfUrl/activePdfTab changes
   useEffect(() => {
     const fetchHistoryData = async () => {
-      // Si el modal no está abierto o no hay URL base, limpiamos todo
-      if (!isPdfModalOpen || !basePdfUrl) {
+      // Si el modal no está abierto, limpiamos todo
+      if (!isPdfModalOpen) {
+        setHistoryData(null);
+        setCurrentConsultationId(null);
+        setCurrentPatientName('');
+        return;
+      }
+
+      // Si no hay URL base y no estamos en modo solo activos, también limpiamos
+      if (!basePdfUrl && !isAssetOnly) {
         setHistoryData(null);
         setCurrentConsultationId(null);
         return;
@@ -549,6 +559,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                             setBasePdfUrl(null); // No queremos PDF
                             setIsAssetOnly(true);
                             setCurrentConsultationId(consultation.id);
+                            setCurrentPatientName(consultation.patient_name || '');
                             setActivePdfTab('assets');
                             setPdfModalOpen(true);
                           }} 
@@ -576,8 +587,9 @@ export default function PatientsManager({ isEmbedded = false }) {
           setHistoryData(null); 
           setActivePdfTab('pdf'); 
           setIsAssetOnly(false);
+          setCurrentPatientName('');
         }} 
-        title={isAssetOnly ? "Soportes Digitales" : "Vista Previa"} 
+        title={isAssetOnly ? `Soportes Digitales de ${currentPatientName}` : "Vista Previa"} 
         size="4xl" 
         fullScreenOnMobile
       >
