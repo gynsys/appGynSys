@@ -223,6 +223,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [activePdfTab, setActivePdfTab] = useState('pdf'); // 'pdf' or 'assets'
   const [currentConsultationId, setCurrentConsultationId] = useState(null);
+  const [basePdfUrl, setBasePdfUrl] = useState(null);
   const [includeImages, setIncludeImages] = useState(false);
 
   // Edit State
@@ -361,39 +362,71 @@ export default function PatientsManager({ isEmbedded = false }) {
   };
 
   const handleViewPdf = async (url) => {
-    let finalUrl = url;
-    if (includeImages) {
-      finalUrl = `${url}?include_images=true`;
-    }
-    setCurrentPdfUrl(finalUrl);
+    setBasePdfUrl(url);
     setHistoryData(null);
-    setActivePdfTab('pdf'); // Modal always opens on PDF view by default
+    setActivePdfTab('pdf'); // Modal siempre abre en PDF por defecto
     setCurrentConsultationId(null);
-
-    const isHistory = url.includes('history_pdf');
-    const isReport = url.includes('/pdf') && !url.includes('history');
-
-    if (isHistory || isReport) {
-      const match = url.match(/\/consultations\/(\d+)\//);
-      const consultationId = match ? match[1] : null;
-      if (consultationId) {
-        setCurrentConsultationId(consultationId);
-        setLoadingHistory(true);
-        try {
-          const dataEndpoint = isHistory ? 'history_data' : 'data';
-          const response = await fetch(`${API_BASE}/consultations/${consultationId}/${dataEndpoint}`);
-          if (response.ok) {
-            setHistoryData(await response.json());
-          }
-        } catch (error) {
-          console.error("Error fetching native data:", error);
-        } finally {
-          setLoadingHistory(false);
-        }
-      }
-    }
     setPdfModalOpen(true);
   };
+
+  // Helper function to get the actual PDF URL with current parameters
+  const getFullPdfUrl = (isDownload = false) => {
+    if (!basePdfUrl) return null;
+    let url = basePdfUrl;
+    const params = new URLSearchParams();
+    if (includeImages) params.append('include_images', 'true');
+    if (isDownload) params.append('download', 'true');
+    
+    const queryString = params.toString();
+    return queryString ? `${url}${url.includes('?') ? '&' : '?'}${queryString}` : url;
+  };
+
+  // Effect to fetch history data when modal opens or basePdfUrl/activePdfTab changes
+  useEffect(() => {
+    const fetchHistoryData = async () => {
+      if (!isPdfModalOpen || !basePdfUrl || activePdfTab !== 'pdf') {
+        setHistoryData(null);
+        setCurrentConsultationId(null);
+        return;
+      }
+
+      const isHistory = basePdfUrl.includes('history_pdf');
+      const isReport = basePdfUrl.includes('/pdf') && !basePdfUrl.includes('history');
+
+      if (isHistory || isReport) {
+        const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
+        const consultationId = match ? match[1] : null;
+        if (consultationId) {
+          setCurrentConsultationId(consultationId);
+          setLoadingHistory(true);
+          try {
+            const dataEndpoint = isHistory ? 'history_data' : 'data';
+            const response = await fetch(`${API_BASE}/consultations/${consultationId}/${dataEndpoint}`);
+            if (response.ok) {
+              setHistoryData(await response.json());
+            } else {
+              console.error("Error fetching native data:", response.statusText);
+              setHistoryData(null);
+            }
+          } catch (error) {
+            console.error("Error fetching native data:", error);
+            setHistoryData(null);
+          } finally {
+            setLoadingHistory(false);
+          }
+        } else {
+          setHistoryData(null);
+          setCurrentConsultationId(null);
+        }
+      } else {
+        setHistoryData(null);
+        setCurrentConsultationId(null);
+      }
+    };
+
+    fetchHistoryData();
+  }, [isPdfModalOpen, basePdfUrl, activePdfTab, API_BASE]);
+
 
   const filteredConsultations = consultations.filter(consultation =>
     consultation.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -570,18 +603,18 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {loadingHistory ? (
                   <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse text-gray-500">Cargando documento...</div>
                 ) : historyData ? (
-                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={currentPdfUrl} /></div>
+                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={getFullPdfUrl()} /></div>
                 ) : null}
-                <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
-                  {currentPdfUrl && <iframe src={currentPdfUrl} className="w-full h-full border-0" title="Visor de PDF" />}
+                 <div className="hidden md:block h-[70vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                  {basePdfUrl && <iframe src={getFullPdfUrl()} className="w-full h-full border-0" title="Visor de PDF" />}
                 </div>
                 {/* Mobile specific PDF helper for native apps */}
                 {isCapacitor() && (
                   <div className="md:hidden flex flex-col items-center justify-center p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-800">
                     <FiFileText className="w-12 h-12 text-indigo-500 mb-4" />
                     <p className="text-sm text-center font-medium mb-6">Para una mejor experiencia y compatibilidad, abre el documento en el visor nativo del sistema.</p>
-                    <button 
-                      onClick={() => openExternalFile(currentPdfUrl)}
+                     <button 
+                      onClick={() => openExternalFile(getFullPdfUrl())}
                       className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"
                     >
                       ABRIR DOCUMENTO
@@ -597,9 +630,9 @@ export default function PatientsManager({ isEmbedded = false }) {
             )}
           </div>
           <div className="mt-4 flex justify-between items-center px-2 pb-[40px]">
-            {currentPdfUrl && (
+             {basePdfUrl && (
               <button 
-                onClick={() => openExternalFile(currentPdfUrl)} 
+                onClick={() => openExternalFile(getFullPdfUrl(true))} 
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
               >
                 {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}

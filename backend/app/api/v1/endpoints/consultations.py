@@ -327,6 +327,7 @@ def delete_consultation(
 def get_consultation_pdf(
     id: int,
     include_images: bool = Query(False),
+    download: bool = Query(False),
     db: Session = Depends(get_db)
 ):
     consultation = db.query(Consultation).filter(Consultation.id == id).first()
@@ -349,7 +350,6 @@ def get_consultation_pdf(
     ]
 
     # Try to determine consultation_type from related appointment
-    # Match by patient and close date
     from datetime import timedelta
     appointment = db.query(Appointment).filter(
         Appointment.doctor_id == consultation.doctor_id,
@@ -367,7 +367,12 @@ def get_consultation_pdf(
     # Generate PDF (Summary Report)
     pdf_buffer = generate_summary_report(data, consultation.doctor_id, db)
     
-    return Response(content=pdf_buffer.getvalue(), media_type="application/pdf")
+    headers = {}
+    if download:
+        safe_name = (consultation.patient_name or "report").replace(" ", "_")
+        headers["Content-Disposition"] = f'attachment; filename="informe_{safe_name}.pdf"'
+    
+    return Response(content=pdf_buffer.getvalue(), media_type="application/pdf", headers=headers)
 
 @router.get("/{id}/history_data")
 def get_consultation_history_data(
