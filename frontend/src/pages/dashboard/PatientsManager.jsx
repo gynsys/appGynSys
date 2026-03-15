@@ -448,7 +448,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400">CI: {consultation.patient_ci || 'N/A'}</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-300">
+                  <div className="text-[10px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-300 whitespace-nowrap">
                     #{consultation.history_number || 'PEND'}
                   </div>
                 </div>
@@ -496,6 +496,17 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <div className="flex gap-2 justify-center">
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
+                        <button 
+                          onClick={() => {
+                            setCurrentConsultationId(consultation.id);
+                            setActivePdfTab('assets');
+                            setPdfModalOpen(true);
+                          }} 
+                          className="p-2 text-blue-500 rounded-xl hover:bg-blue-50 transition-colors"
+                          title="Ver Soportes Digitales"
+                        >
+                          <FiImage size={18} />
+                        </button>
                         <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl"><FiEdit /></button>
                         <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl"><FiTrash2 /></button>
                       </div>
