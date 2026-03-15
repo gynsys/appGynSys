@@ -25,7 +25,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
       title: 'Configuraciones',
       items: [
         { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
-        { icon: FiVideo, label: 'Consultas Online (Video)', path: '/dashboard/online-consultations' },
+        { icon: FiVideo, label: 'Consultas Online', path: '/dashboard/online-consultations' },
         { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
         { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },
         { icon: FiMapPin, label: 'Ubicaciones', path: '/dashboard/locations' },
