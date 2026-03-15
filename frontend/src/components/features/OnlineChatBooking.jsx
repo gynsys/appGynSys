@@ -42,12 +42,17 @@ const formatSmartDate = (date) => {
 // Simple Input Component
 const SimpleInput = ({ placeholder, onSubmit, type = 'text', autoFocus = true, numericOnly = false, primaryColor }) => {
     const [value, setValue] = useState('');
+    const inputRef = useRef(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!value.trim()) return;
         onSubmit(value);
         setValue('');
+        // Keep focus
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 0);
     };
 
     const handleChange = (e) => {
@@ -62,6 +67,7 @@ const SimpleInput = ({ placeholder, onSubmit, type = 'text', autoFocus = true, n
         <form onSubmit={handleSubmit} className="flex gap-2 w-full">
             <div className="relative flex-1 flex items-center">
                 <input
+                    ref={inputRef}
                     type={type === 'number' ? 'text' : type}
                     inputMode={numericOnly ? 'numeric' : undefined}
                     value={value}
@@ -77,6 +83,7 @@ const SimpleInput = ({ placeholder, onSubmit, type = 'text', autoFocus = true, n
                 <button
                     type="submit"
                     disabled={!value.trim()}
+                    onMouseDown={(e) => e.preventDefault()} // CRITICAL: Prevent blur on mobile
                     className="absolute right-2 p-1.5 rounded-full disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center shadow-md"
                     style={{
                         backgroundColor: value.trim() ? primaryColor : '#9CA3AF',
