@@ -1,3 +1,7 @@
+/**
+ * Platform utilities for GynSys.
+ * Updated: 2026-03-15 12:05
+ */
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 
