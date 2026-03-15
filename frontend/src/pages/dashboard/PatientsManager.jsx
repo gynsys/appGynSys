@@ -640,7 +640,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     onChange={(e) => setIncludeImages(e.target.checked)}
                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                   />
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir imágenes</span>
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir imágenes en el PDF</span>
                 </label>
               </div>
             </div>
