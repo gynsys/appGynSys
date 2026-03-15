@@ -123,6 +123,16 @@ function App() {
         }
       }
 
+      // Pre-calculate platform for zero-jump positioning
+      const isMobile = window.innerWidth < 768;
+      const isCap = isCapacitor();
+      if (isMobile || isCap) {
+        document.documentElement.classList.add('is-mobile-device');
+      }
+      if (isCap) {
+        document.documentElement.classList.add('is-capacitor');
+      }
+
       const applyTheme = () => {
         const theme = localStorage.getItem('theme_preference');
         if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

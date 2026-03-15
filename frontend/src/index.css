@@ -8,6 +8,17 @@
   --total-bottom-offset: calc(var(--nav-height) + var(--safe-area-bottom));
 }
 
+/* Zero-Jump Positioning Utility */
+.bottom-nav-safe {
+  bottom: 0px; /* Default */
+}
+
+/* Apply only on mobile/capacitor already detected at root */
+.is-mobile-device .bottom-nav-safe,
+.is-capacitor .bottom-nav-safe {
+  bottom: var(--total-bottom-offset) !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -726,10 +726,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
 
             {/* Modal Content */}
             <div 
-                className={`bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-[380px] h-[75vh] md:h-[500px] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'} absolute md:bottom-0 md:relative`}
-                style={{
-                    bottom: isCapacitor() || window.innerWidth < 768 ? 'var(--total-bottom-offset)' : undefined
-                }}
+                className={`bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-[380px] h-[75vh] md:h-[500px] overflow-hidden relative transform transition-all duration-300 ${isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'} absolute md:bottom-0 md:relative bottom-nav-safe`}
             >
                 <ModernLoader isOpen={loading} text="Agendando Consulta Online..." />
 
