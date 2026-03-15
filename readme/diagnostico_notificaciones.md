@@ -35,6 +35,5 @@ python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_ap
 2.  **Suscripciones**: Si no hay suscripciones en el comando `--subs-only`, el usuario NUNCA recibirá push.
 3.  **Esquema de BD**: La columna `token` debe existir en `push_subscriptions` para dispositivos móviles (Capacitor).
 
-## 📋 Historial de Problemas Detectados
+- **2026-03-15**: Falla crítica tras reinicio de Droplet. Las notificaciones salían como "sent" pero no llegaban. Causa: Falta de librería `firebase_admin` en contenedores Docker. Solucionado reinstalando manualmente y reiniciando servicios. Ver [guia_recuperacion_post_reinicio.md](file:///c:/Users/pablo/Documents/appgynsys/readme/guia_recuperacion_post_reinicio.md).
 - **2026-03-12**: Investigando falla masiva en APK. Se detectó falta de columna `token` en producción y error 500 en auditoría. Solucionado.
-- **2026-03-11**: Investigando falla de notificación de cita para inquilino.

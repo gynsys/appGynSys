@@ -11,6 +11,8 @@ Guía rápida de comandos esenciales para el mantenimiento diario del sistema.
 | **Rebuild Backend** | `docker compose build backend && docker compose up -d` |
 | **Ver logs del API** | `docker logs -f appgynsys-backend-1` |
 | **Ver logs de Celery** | `docker logs -f appgynsys-celery_worker-1` |
+| **Verificar Firebase Lib** | `docker exec appgynsys-backend-1 pip list \| grep firebase` |
+| **Reinstalar Fast** | `docker exec appgynsys-backend-1 pip install firebase-admin==6.4.0` |
 
 ## 🗄️ Base de Datos (PostgreSQL)
 
