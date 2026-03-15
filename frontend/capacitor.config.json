@@ -3,7 +3,7 @@
   "appName": "gynsys-app",
   "webDir": "dist",
   "server": {
-    "url": "https://gynsys.net/mariel-herrera",
+    "url": "https://gynsys.net/dr/mariel-herrera",
     "cleartext": true,
     "allowNavigation": [
       "gynsys.net",
@@ -13,6 +13,16 @@
   "plugins": {
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#FFFFFF",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
     }
   }
 }

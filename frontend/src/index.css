@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --nav-height: 4rem;
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --total-bottom-offset: calc(var(--nav-height) + var(--safe-area-bottom));
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

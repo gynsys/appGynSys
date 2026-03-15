@@ -17,8 +17,8 @@ export const BottomNav = ({ items, theme = '#C75B7A', className = '' }) => {
                        border-t border-gray-200 dark:border-gray-800
                        ${className} transition-all duration-300`}
             style={{
-                paddingBottom: 'env(safe-area-inset-bottom)',
-                height: 'calc(4rem + env(safe-area-inset-bottom))',
+                paddingBottom: 'var(--safe-area-bottom)',
+                height: 'var(--total-bottom-offset)',
                 boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
             }}
         >

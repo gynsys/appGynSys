@@ -224,7 +224,7 @@ export default function PreconsultaUI({
                     leaveTo="translate-y-full opacity-0 sm:translate-y-10 sm:scale-95"
                 >
                     <div
-                        className="fixed bottom-0 left-0 right-0 w-full md:w-[400px] md:bottom-24 md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-2xl rounded-b-none md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col h-[600px] max-h-[85vh]"
+                        className="fixed bottom-[var(--total-bottom-offset)] left-0 right-0 w-full md:w-[400px] md:bottom-24 md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-2xl rounded-b-none md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col h-[600px] max-h-[85vh]"
                         style={{ borderColor: `${primaryColor}33` }}
                     >
                         {/* Header */}
