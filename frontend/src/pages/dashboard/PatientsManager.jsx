@@ -610,8 +610,8 @@ export default function PatientsManager({ isEmbedded = false }) {
         <div className="flex flex-col h-full">
           {/* Tabs Navigation - Ocultas en modo solo activos */}
           {currentConsultationId && !isAssetOnly && (
-            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
-              <div className="flex gap-4">
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-4 pb-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={() => setActivePdfTab('pdf')}
                   className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
@@ -633,7 +633,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                   SOPORTES
                 </button>
 
-                <label className="flex items-center gap-2 cursor-pointer ml-auto">
+                <label className="flex items-center gap-2 cursor-pointer sm:ml-auto">
                   <input
                     type="checkbox"
                     checked={includeImages}
