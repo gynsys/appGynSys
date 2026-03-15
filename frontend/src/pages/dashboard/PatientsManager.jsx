@@ -384,9 +384,17 @@ export default function PatientsManager({ isEmbedded = false }) {
   // Effect to fetch history data when modal opens or basePdfUrl/activePdfTab changes
   useEffect(() => {
     const fetchHistoryData = async () => {
-      if (!isPdfModalOpen || !basePdfUrl || activePdfTab !== 'pdf') {
+      // Si el modal no está abierto o no hay URL base, limpiamos todo
+      if (!isPdfModalOpen || !basePdfUrl) {
         setHistoryData(null);
         setCurrentConsultationId(null);
+        return;
+      }
+
+      // Si estamos en la pestaña de ACTIVOS (assets), NO debemos resetear el ID de la consulta,
+      // ni intentar cargar datos de historia PDF.
+      if (activePdfTab === 'assets') {
+        setHistoryData(null);
         return;
       }
 
@@ -511,12 +519,12 @@ export default function PatientsManager({ isEmbedded = false }) {
           {/* Table View for Desktop */}
           <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-              <thead className="bg-gray-50/50">
+              <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">Paciente</th>
-                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">N° Historia</th>
-                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">Fecha</th>
-                  <th className="px-6 py-4 text-center text-xs font-black uppercase tracking-widest text-gray-400">Acciones</th>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-300">Paciente</th>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-300">N° Historia</th>
+                  <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-300">Fecha</th>
+                  <th className="px-6 py-4 text-center text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-300">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
