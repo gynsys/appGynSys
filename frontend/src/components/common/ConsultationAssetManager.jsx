@@ -148,91 +148,89 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
     return (
         <div className="space-y-8">
-            {/* 1. Soportes Subidos (Mostrados Primero) */}
-            <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-between">
-                    <span>Soportes Subidos ({assets.length})</span>
-                </h4>
-                {loading ? (
-                    <div className="text-center py-4 text-sm text-gray-500">Cargando archivos...</div>
-                ) : assets.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {assets.map((asset) => (
-                            <div key={asset.id} className="relative bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 transition-colors shadow-sm">
-                                <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
-                                    {isImage(asset.file_type) ? (
-                                        <img
-                                            src={getFullUrl(asset.file_path)}
-                                            alt={asset.file_name}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.src = '/placeholder-image.png'; }}
-                                        />
-                                    ) : isVideo(asset.file_type) ? (
-                                        <div className="relative w-full h-full">
-                                            <video
+            {/* 1. Soportes Subidos (Mostrados Solo si existen) */}
+            {assets.length > 0 && (
+                <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-between">
+                        <span>Soportes Subidos ({assets.length})</span>
+                    </h4>
+                    {loading ? (
+                        <div className="text-center py-4 text-sm text-gray-500">Cargando archivos...</div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {assets.map((asset) => (
+                                <div key={asset.id} className="relative bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 transition-colors shadow-sm">
+                                    <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
+                                        {isImage(asset.file_type) ? (
+                                            <img
                                                 src={getFullUrl(asset.file_path)}
+                                                alt={asset.file_name}
                                                 className="w-full h-full object-cover"
-                                                muted
-                                                preload="metadata"
-                                                playsInline
+                                                onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                                             />
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                <div className="bg-black/50 p-2 rounded-full backdrop-blur-sm">
-                                                    <FiVideo className="w-5 h-5 text-white" />
+                                        ) : isVideo(asset.file_type) ? (
+                                            <div className="relative w-full h-full">
+                                                <video
+                                                    src={getFullUrl(asset.file_path)}
+                                                    className="w-full h-full object-cover"
+                                                    muted
+                                                    preload="metadata"
+                                                    playsInline
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <div className="bg-black/50 p-2 rounded-full backdrop-blur-sm">
+                                                        <FiVideo className="w-5 h-5 text-white" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        renderIcon(asset.file_type)
-                                    )}
-                                </div>
+                                        ) : (
+                                            renderIcon(asset.file_type)
+                                        )}
+                                    </div>
 
-                                {/* Acciones estáticas en la esquina superior derecha, tamaño reducido un ~15% */}
-                                <div className="absolute top-2 right-2 flex space-x-1 bg-white/80 dark:bg-black/60 shadow-sm backdrop-blur-md rounded-lg p-1 opacity-100">
-                                    {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
+                                    {/* Acciones estáticas en la esquina superior derecha, tamaño reducido un ~15% */}
+                                    <div className="absolute top-2 right-2 flex space-x-1 bg-white/80 dark:bg-black/60 shadow-sm backdrop-blur-md rounded-lg p-1 opacity-100">
+                                        {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
+                                            <button
+                                                onClick={() => setPreviewAsset(asset)}
+                                                className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
+                                                title="Ver archivo"
+                                            >
+                                                <FiEye className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={() => setPreviewAsset(asset)}
+                                            onClick={() => openExternalFile(getFullUrl(asset.file_path))}
                                             className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
-                                            title="Ver archivo"
+                                            title="Descargar"
                                         >
-                                            <FiEye className="w-3.5 h-3.5" />
+                                            <FiDownload className="w-3.5 h-3.5" />
                                         </button>
-                                    )}
-                                    <button
-                                        onClick={() => openExternalFile(getFullUrl(asset.file_path))}
-                                        className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
-                                        title="Descargar"
-                                    >
-                                        <FiDownload className="w-3.5 h-3.5" />
-                                    </button>
-                                    {!readOnly && (
-                                        <button
-                                            onClick={() => handleDelete(asset.id)}
-                                            className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                                            title="Eliminar"
-                                        >
-                                            <FiTrash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
-                                </div>
+                                        {!readOnly && (
+                                            <button
+                                                onClick={() => handleDelete(asset.id)}
+                                                className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                                title="Eliminar"
+                                            >
+                                                <FiTrash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
 
-                                <div className="p-3 bg-white dark:bg-gray-800">
-                                    <p className="text-xs font-medium text-gray-900 dark:text-white truncate" title={asset.file_name}>
-                                        {asset.file_name}
-                                    </p>
-                                    <p className="text-[10px] text-gray-500">
-                                        {asset.file_size_bytes ? `${(asset.file_size_bytes / 1024 / 1024).toFixed(2)} MB` : 'Desconocido'}
-                                    </p>
+                                    <div className="p-3 bg-white dark:bg-gray-800">
+                                        <p className="text-xs font-medium text-gray-900 dark:text-white truncate" title={asset.file_name}>
+                                            {asset.file_name}
+                                        </p>
+                                        <p className="text-[10px] text-gray-500">
+                                            {asset.file_size_bytes ? `${(asset.file_size_bytes / 1024 / 1024).toFixed(2)} MB` : 'Desconocido'}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed rounded-xl border-gray-200 dark:border-gray-700">
-                        No hay imágenes ni soportes multimedia previamente guardados.
-                    </div>
-                )}
-            </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* 2. Área de Subida de Nuevos Archivos (Oculta en modo solo lectura) */}
             {!readOnly && (

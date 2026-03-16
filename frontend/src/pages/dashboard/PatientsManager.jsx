@@ -193,12 +193,7 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
 
       {/* Adjuntos / Soportes */}
       {data.id && (
-        <div className="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
-          <h4 className="text-lg font-bold border-b pb-2 mb-4 text-gray-900 dark:text-gray-100">
-            Soportes y Exámenes Guardados
-          </h4>
-          <ConsultationAssetManager consultationId={data.id} />
-        </div>
+          <ConsultationAssetManager consultationId={data.id} readOnly={false} />
       )}
 
     </div>
@@ -674,7 +669,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             ) : (
               // Tab Content: Assets
               <div className="h-[70vh] overflow-y-auto pr-2">
-                <ConsultationAssetManager consultationId={currentConsultationId} readOnly={true} />
+                <ConsultationAssetManager consultationId={currentConsultationId} readOnly={false} />
               </div>
             )}
           </div>
