@@ -180,7 +180,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
             {/* 1. Área de Subida de Nuevos Archivos (Oculta en modo solo lectura) - AHORA PRIMERO */}
             {!readOnly && (
                 <div
-                    className={`relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 ${
+                    className={`relative border-2 border-dashed rounded-xl p-4 transition-all duration-300 ${
                         dragActive
                         ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 scale-[0.99]'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
@@ -197,23 +197,23 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         onChange={handleFileChange}
                         disabled={isUploading}
-                        accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx" // Added accepted formats
+                        accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx"
                     />
 
-                    <div className="flex flex-col items-center justify-center text-center space-y-4">
-                        <div className={`p-4 rounded-full ${dragActive ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-400'} shadow-sm transition-colors`}>
+                    <div className="flex flex-col items-center justify-center text-center space-y-2">
+                        <div className={`p-2 rounded-full ${dragActive ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-400'} shadow-sm transition-colors`}>
                             {isUploading ? (
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
                             ) : (
-                                <FiUploadCloud className="w-8 h-8" />
+                                <FiUploadCloud className="w-6 h-6" />
                             )}
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                                {isUploading ? 'Subiendo archivos...' : 'Haz clic o arrastra archivos aquí'}
+                            <p className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                                {isUploading ? 'Subiendo...' : 'Haz clic o arrastra archivos aquí'}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Imágenes, ecografías, videos o documentos PDF (Máx 10MB)
+                            <p className="text-[10px] text-gray-400 mt-0.5">
+                                Máx 10MB
                             </p>
                         </div>
                     </div>
