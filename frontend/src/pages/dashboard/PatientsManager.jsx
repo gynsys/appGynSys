@@ -673,7 +673,7 @@ export default function PatientsManager({ isEmbedded = false }) {
               </div>
             )}
           </div>
-          <div className="mt-[52px] flex justify-between items-center px-2 pb-[76px]">
+          <div className="mt-8 flex-shrink-0 flex justify-between items-center px-2 pb-[40px]">
              {basePdfUrl && !isAssetOnly && (
               <button 
                 onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
