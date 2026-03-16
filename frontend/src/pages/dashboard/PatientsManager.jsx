@@ -236,18 +236,17 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const fetchConsultations = async () => {
     try {
-      const response = await fetch(`${API_BASE}/consultations/`);
-      if (response.ok) {
-        const data = await response.json();
-        const grouped = {};
-        data.forEach(consultation => {
-          const ci = consultation.patient_ci;
-          if (!grouped[ci] || new Date(consultation.created_at) > new Date(grouped[ci].created_at)) {
-            grouped[ci] = consultation;
-          }
-        });
-        setConsultations(Object.values(grouped));
-      }
+      setLoading(true);
+      const response = await api.get('/consultations/');
+      const data = response.data;
+      const grouped = {};
+      data.forEach(consultation => {
+        const ci = consultation.patient_ci;
+        if (!grouped[ci] || new Date(consultation.created_at) > new Date(grouped[ci].created_at)) {
+          grouped[ci] = consultation;
+        }
+      });
+      setConsultations(Object.values(grouped));
     } catch (error) {
       console.error('Error fetching consultations:', error);
     } finally {
@@ -310,20 +309,12 @@ export default function PatientsManager({ isEmbedded = false }) {
     e.preventDefault();
     if (!consultationToEdit) return;
     try {
-      const response = await fetch(`${API_BASE}/consultations/${consultationToEdit.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFormData),
-      });
-      if (response.ok) {
-        showToast('Historia actualizada exitosamente', 'success');
-        fetchConsultations();
-        setEditModalOpen(false);
-      } else {
-        showToast('Error al actualizar la historia', 'error');
-      }
+      const response = await api.put(`/consultations/${consultationToEdit.id}`, editFormData);
+      showToast('Historia actualizada exitosamente', 'success');
+      fetchConsultations();
+      setEditModalOpen(false);
     } catch (error) {
-      showToast('Error de conexión', 'error');
+      showToast('Error al actualizar la historia', 'error');
     }
   };
 
@@ -335,15 +326,11 @@ export default function PatientsManager({ isEmbedded = false }) {
   const confirmDelete = async () => {
     if (!consultationToDelete) return;
     try {
-      const response = await fetch(`${API_BASE}/consultations/${consultationToDelete}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        showToast('Consulta eliminada exitosamente', 'success');
-        setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
-      }
+      await api.delete(`/consultations/${consultationToDelete}`);
+      showToast('Consulta eliminada exitosamente', 'success');
+      setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
     } catch (error) {
-      showToast('Error de conexión', 'error');
+      showToast('Error al eliminar la consulta', 'error');
     } finally {
       setDeleteModalOpen(false);
       setConsultationToDelete(null);
@@ -358,13 +345,27 @@ export default function PatientsManager({ isEmbedded = false }) {
     });
   };
 
-   const handleViewPdf = async (url) => {
+  const handleViewPdf = (url) => {
     setIsAssetOnly(false); // Reset to PDF mode
     setBasePdfUrl(url);
     setCurrentPatientName(''); 
     setHistoryData(null);
     setActivePdfTab('pdf'); // Modal siempre abre en PDF por defecto
-    setCurrentConsultationId(null);
+    
+    // Extraer ID inmediatamente para evitar ruidos en AssetManager
+    const match = url.match(/\/consultations\/(\d+)\//);
+    if (match) setCurrentConsultationId(match[1]);
+    
+    setPdfModalOpen(true);
+  };
+
+  const handleViewAssets = (consultationId, patientName) => {
+    setIsAssetOnly(true);
+    setBasePdfUrl(null);
+    setCurrentConsultationId(consultationId);
+    setCurrentPatientName(patientName || '');
+    setActivePdfTab('assets');
+    setHistoryData(null);
     setPdfModalOpen(true);
   };
 
@@ -383,27 +384,21 @@ export default function PatientsManager({ isEmbedded = false }) {
   // Effect to fetch history data when modal opens or basePdfUrl/activePdfTab changes
   useEffect(() => {
     const fetchHistoryData = async () => {
-      // Si el modal no está abierto, limpiamos todo
-      if (!isPdfModalOpen) {
-        setHistoryData(null);
-        setCurrentConsultationId(null);
-        setCurrentPatientName('');
-        return;
-      }
+      // 1. Si el modal no está abierto, no hacemos nada
+      if (!isPdfModalOpen) return;
 
-      // Si no hay URL base y no estamos en modo solo activos, también limpiamos
-      if (!basePdfUrl && !isAssetOnly) {
-        setHistoryData(null);
-        setCurrentConsultationId(null);
-        return;
-      }
-
-      // Si estamos en la pestaña de ACTIVOS (assets), NO debemos resetear el ID de la consulta,
-      // ni intentar cargar datos de historia PDF.
+      // 2. Si es pestaña de activos, solo nos aseguramos de tener el ID si es posible
       if (activePdfTab === 'assets') {
         setHistoryData(null);
+        if (!currentConsultationId && basePdfUrl) {
+           const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
+           if (match) setCurrentConsultationId(match[1]);
+        }
         return;
       }
+
+      // 3. Si no hay URL base y no estamos en modo solo activos, paramos
+      if (!basePdfUrl) return;
 
       const isHistory = basePdfUrl.includes('history_pdf');
       const isReport = basePdfUrl.includes('/pdf') && !basePdfUrl.includes('history');
@@ -411,36 +406,31 @@ export default function PatientsManager({ isEmbedded = false }) {
       if (isHistory || isReport) {
         const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
         const consultationId = match ? match[1] : null;
+        
         if (consultationId) {
+          // Si ya tenemos el ID y los datos de ESE ID, no recargamos
+          if (historyData?.id === parseInt(consultationId) && !loadingHistory) {
+              return;
+          }
+
           setCurrentConsultationId(consultationId);
           setLoadingHistory(true);
           try {
             const dataEndpoint = isHistory ? 'history_data' : 'data';
-            const response = await fetch(`${API_BASE}/consultations/${consultationId}/${dataEndpoint}`);
-            if (response.ok) {
-              setHistoryData(await response.json());
-            } else {
-              console.error("Error fetching native data:", response.statusText);
-              setHistoryData(null);
-            }
+            const response = await api.get(`/consultations/${consultationId}/${dataEndpoint}`);
+            setHistoryData(response.data);
           } catch (error) {
             console.error("Error fetching native data:", error);
             setHistoryData(null);
           } finally {
             setLoadingHistory(false);
           }
-        } else {
-          setHistoryData(null);
-          setCurrentConsultationId(null);
         }
-      } else {
-        setHistoryData(null);
-        setCurrentConsultationId(null);
       }
     };
 
     fetchHistoryData();
-  }, [isPdfModalOpen, basePdfUrl, activePdfTab, API_BASE]);
+  }, [isPdfModalOpen, basePdfUrl, activePdfTab]);
 
 
   const filteredConsultations = consultations.filter(consultation =>
@@ -513,14 +503,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     INFORME
                   </button>
                   <button 
-                    onClick={() => {
-                      setBasePdfUrl(null);
-                      setIsAssetOnly(true);
-                      setCurrentConsultationId(consultation.id);
-                      setCurrentPatientName(consultation.patient_name || '');
-                      setActivePdfTab('assets');
-                      setPdfModalOpen(true);
-                    }} 
+                    onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
                     className="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"
                     title="Ver Soportes Digitales"
                   >
@@ -564,14 +547,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
                         <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
                          <button 
-                          onClick={() => {
-                            setBasePdfUrl(null); // No queremos PDF
-                            setIsAssetOnly(true);
-                            setCurrentConsultationId(consultation.id);
-                            setCurrentPatientName(consultation.patient_name || '');
-                            setActivePdfTab('assets');
-                            setPdfModalOpen(true);
-                          }} 
+                          onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
                           className="p-2 text-blue-500 rounded-xl hover:bg-blue-50 transition-colors"
                           title="Ver Soportes Digitales"
                         >
