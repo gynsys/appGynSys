@@ -340,7 +340,7 @@ export const DoctorConsultationPage = () => {
       }
 
       return (
-        <div className={`${fullWidth ? 'col-span-full' : ''} flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 text-sm`}>
+        <div className={`${fullWidth ? 'col-span-full' : ''} flex flex-row items-baseline gap-2 text-sm`}>
           <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">{label}:</span>
           <span className="text-gray-900 dark:text-gray-200 break-words">{String(displayValue)}</span>
         </div>
@@ -348,14 +348,14 @@ export const DoctorConsultationPage = () => {
     };
 
     const ModernCard = ({ title, icon: Icon, children, className = "", headerColor = "bg-gray-50 dark:bg-gray-700", borderColor = "border-gray-200 dark:border-gray-700", gridCols = "md:grid-cols-2" }) => (
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 ${borderColor} overflow-hidden ${className}`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 ${borderColor} overflow-hidden mx-auto w-full max-w-[343px] md:max-w-none ${className}`}>
         {title && (
           <div className={`${headerColor} px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2`}>
             {Icon && <Icon className="text-lg opacity-70" />}
             <h4 className="text-sm font-bold uppercase tracking-wide inherit-color">{title}</h4>
           </div>
         )}
-        <div className={`p-6 grid grid-cols-1 ${gridCols} gap-x-6 gap-y-4`}>
+        <div className={`p-5 md:p-6 grid grid-cols-1 ${gridCols} gap-x-6 gap-y-3 md:gap-y-4`}>
           {children}
         </div>
       </div>
@@ -381,8 +381,8 @@ export const DoctorConsultationPage = () => {
         </ModernCard>
 
         {/* Motivo de Consulta & Suplementos (Highlighted Grid) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 relative overflow-hidden">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-6 items-center md:items-stretch">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 relative overflow-hidden w-full max-w-[343px] md:max-w-none">
             <FaCommentMedical className="absolute top-4 right-4 text-6xl text-indigo-100 dark:text-indigo-900/40 -rotate-12" />
             <h4 className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2 relative z-10">
               <FaCommentMedical /> Motivo de Consulta
@@ -390,7 +390,7 @@ export const DoctorConsultationPage = () => {
             <p className="text-lg font-medium text-indigo-900 dark:text-indigo-200 relative z-10">{patientData.reason_for_visit || patientData.gyn_reason || "No especificado"}</p>
           </div>
 
-          <div className="bg-teal-50 dark:bg-teal-900/20 p-6 rounded-xl border-2 border-teal-200 dark:border-teal-800 relative overflow-hidden">
+          <div className="bg-teal-50 dark:bg-teal-900/20 p-6 rounded-xl border-2 border-teal-200 dark:border-teal-800 relative overflow-hidden w-full max-w-[343px] md:max-w-none">
             <FaPills className="absolute top-4 right-4 text-6xl text-teal-100 dark:text-teal-900/40 rotate-12" />
             <h4 className="flex items-center gap-2 text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-2 relative z-10">
               <FaPills /> Suplementos Activos
@@ -421,8 +421,8 @@ export const DoctorConsultationPage = () => {
           <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
             <h5 className="font-bold text-gray-900 dark:text-gray-100 mb-3 text-xs uppercase tracking-wider">Algias Pélvicas</h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Dispareunia:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Dispareunia:</span>
                 <span className="text-gray-900 dark:text-gray-200">
                   {patientData.functional_dispareunia === 'Sí' || patientData.functional_dispareunia === true ? (
                     <>
@@ -434,8 +434,8 @@ export const DoctorConsultationPage = () => {
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Dolor pélvico/piernas:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Dolor pélvico/piernas:</span>
                 <span className="text-gray-900 dark:text-gray-200">
                   {patientData.functional_leg_pain === 'Sí' || patientData.functional_leg_pain === true ? (
                     <>
@@ -449,8 +449,8 @@ export const DoctorConsultationPage = () => {
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Disquecia:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Disquecia:</span>
                 <span className="text-gray-900 dark:text-gray-200">
                   {patientData.functional_dischezia === 'Sí' || patientData.functional_dischezia === true ? (
                     <>
@@ -487,8 +487,8 @@ export const DoctorConsultationPage = () => {
             <h5 className="font-bold text-gray-900 dark:text-gray-100 mb-3 text-xs uppercase tracking-wider">Función Urinaria</h5>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Problemas Urinarios:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Problemas Urinarios:</span>
                 <span className="text-gray-900 dark:text-gray-200">
                   {patientData.functional_urinary_problem === 'Sí' || patientData.functional_urinary_problem === true ?
                     <span className="font-bold text-blue-700 dark:text-white">Refiere</span> :
@@ -497,8 +497,8 @@ export const DoctorConsultationPage = () => {
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Dolor al Orinar:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Dolor al Orinar:</span>
                 <span className="text-gray-900 dark:text-gray-200">
                   {patientData.functional_urinary_pain === 'Sí' || patientData.functional_urinary_pain === true ? (
                     <>
@@ -509,22 +509,22 @@ export const DoctorConsultationPage = () => {
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Irritación vesical:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Irritación vesical:</span>
                 <span className="font-medium">
                   {patientData.functional_urinary_irritation === 'Sí' || patientData.functional_urinary_irritation === true ? <span className="font-bold text-blue-700 dark:text-white">Refiere</span> : <span className="text-gray-500 dark:text-white italic">Niega</span>}
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Incontinencia:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Incontinencia:</span>
                 <span className="font-medium">
                   {patientData.functional_urinary_incontinence === 'Sí' || patientData.functional_urinary_incontinence === true ? <span className="font-bold text-blue-700 dark:text-white">Refiere</span> : <span className="text-gray-500 dark:text-white italic">Niega</span>}
                 </span>
               </div>
 
-              <div className="text-sm">
-                <span className="font-bold text-gray-700 dark:text-gray-400 mr-1">Nocturia:</span>
+              <div className="text-sm flex flex-row items-baseline gap-2">
+                <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Nocturia:</span>
                 <span className="font-medium">
                   {patientData.functional_urinary_nocturia === 'Sí' || patientData.functional_urinary_nocturia === true ? <span className="font-bold text-blue-700 dark:text-white">Refiere</span> : <span className="text-gray-500 dark:text-white italic">Niega</span>}
                 </span>
