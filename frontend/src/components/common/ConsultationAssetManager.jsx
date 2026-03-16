@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX } from 'react-icons/fi';
+import { FiTrash2, FiFile, FiImage, FiVideo, FiDownload, FiEye, FiX, FiUploadCloud } from 'react-icons/fi';
 import { FileUploader } from './FileUploader';
 import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
@@ -11,6 +11,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [previewAsset, setPreviewAsset] = useState(null);
+    const [dragActive, setDragActive] = useState(false);
+    const inputRef = useRef(null);
     const hasFetchedForId = useRef(null);
 
     // Helper to resolve absolute URL for backend static files
@@ -146,9 +148,79 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const isVideo = (fileType) => fileType.startsWith('video/');
     const isPdf = (fileType) => fileType === 'application/pdf';
 
+    // Drag and drop handlers
+    const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleMultipleFilesUpload(Array.from(e.dataTransfer.files));
+            e.dataTransfer.clearData();
+        }
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleMultipleFilesUpload(Array.from(e.target.files));
+        }
+    };
+
     return (
         <div className="space-y-8">
-            {/* 1. Soportes Subidos (Mostrados Solo si existen) */}
+            {/* 1. Área de Subida de Nuevos Archivos (Oculta en modo solo lectura) - AHORA PRIMERO */}
+            {!readOnly && (
+                <div
+                    className={`relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 ${
+                        dragActive
+                        ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 scale-[0.99]'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                >
+                    <input
+                        ref={inputRef}
+                        type="file"
+                        multiple
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onChange={handleFileChange}
+                        disabled={isUploading}
+                        accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx" // Added accepted formats
+                    />
+
+                    <div className="flex flex-col items-center justify-center text-center space-y-4">
+                        <div className={`p-4 rounded-full ${dragActive ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-400'} shadow-sm transition-colors`}>
+                            {isUploading ? (
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            ) : (
+                                <FiUploadCloud className="w-8 h-8" />
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                {isUploading ? 'Subiendo archivos...' : 'Haz clic o arrastra archivos aquí'}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Imágenes, ecografías, videos o documentos PDF (Máx 10MB)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 2. Soportes Subidos (Mostrados Solo si existen) - AHORA DEBAJO */}
             {assets.length > 0 && (
                 <div>
                     <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-between">
@@ -229,28 +301,6 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                             ))}
                         </div>
                     )}
-                </div>
-            )}
-
-            {/* 2. Área de Subida de Nuevos Archivos (Oculta en modo solo lectura) */}
-            {!readOnly && (
-                <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Adjuntar Nuevos Archivos</h4>
-                    <div className="relative">
-                        {isUploading && (
-                            <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 z-10 flex items-center justify-center rounded-xl">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            </div>
-                        )}
-                        <FileUploader
-                            title="Arrastra y suelta tus imágenes o videos aquí"
-                            subtitle="o haz clic para buscar Soportes Multimedias"
-                            multiple={true}
-                            onFilesSelect={(files) => { if (files && files.length > 0) handleMultipleFilesUpload(files); }}
-                            onFileSelect={(file) => { if (file) handleMultipleFilesUpload([file]); }}
-                            acceptedFormats={['.jpg', '.jpeg', '.png', '.mp4', '.pdf', '.doc', '.docx']}
-                        />
-                    </div>
                 </div>
             )}
 
