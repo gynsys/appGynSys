@@ -4,8 +4,12 @@ import notificationService from '../services/notificationService';
 const useNotificationStore = create((set, get) => ({
     rules: [],
     health: null,
+    auditLogs: [],
+    pendingQueue: [],
     loading: false,
     loadingHealth: false,
+    loadingAudit: false,
+    loadingQueue: false,
     error: null,
     lastFetch: null,
 
@@ -42,6 +46,28 @@ const useNotificationStore = create((set, get) => ({
         } catch (error) {
             console.error('[NotificationStore] ❌ Error fetching health:', error);
             set({ loadingHealth: false });
+        }
+    },
+
+    fetchAuditLogs: async (params = {}) => {
+        set({ loadingAudit: true });
+        try {
+            const data = await notificationService.getAuditLogs(params);
+            set({ auditLogs: data, loadingAudit: false });
+        } catch (error) {
+            console.error('[NotificationStore] ❌ Error fetching audit logs:', error);
+            set({ loadingAudit: false });
+        }
+    },
+
+    fetchPendingQueue: async (params = {}) => {
+        set({ loadingQueue: true });
+        try {
+            const data = await notificationService.getPendingQueue(params);
+            set({ pendingQueue: data, loadingQueue: false });
+        } catch (error) {
+            console.error('[NotificationStore] ❌ Error fetching pending queue:', error);
+            set({ loadingQueue: false });
         }
     },
 

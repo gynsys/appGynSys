@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Send, Pencil, AlertTriangle, Megaphone } from 'lucide-react'
+import { Plus, Trash2, Send, Pencil, AlertTriangle, Megaphone, Search, Calendar, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -35,7 +35,17 @@ const TABS = [
     {
         id: 'devices',
         label: 'Usuarios / Dispositivos',
-        filter: () => false // Special tab, not for rules
+        filter: () => false
+    },
+    {
+        id: 'audit',
+        label: 'Historial / Auditoría',
+        filter: () => false
+    },
+    {
+        id: 'queue',
+        label: 'Cola de Envío',
+        filter: () => false
     }
 ]
 
@@ -43,6 +53,8 @@ export default function NotificationManagerPage() {
     const {
         rules, loading, fetchRules, updateRule,
         health, loadingHealth, fetchHealth,
+        auditLogs, loadingAudit: loadingAuditLogs, fetchAuditLogs,
+        pendingQueue, loadingQueue: loadingPendingQueue, fetchPendingQueue,
         resetCircuit, triggerEvaluation, triggerDelivery, cleanupSubscriptions
     } = useNotificationStore()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -78,12 +90,16 @@ export default function NotificationManagerPage() {
 
         if (activeTab === 'devices') {
             fetchAuditData()
+        } else if (activeTab === 'audit') {
+            fetchAuditLogs({ search: searchQuery })
+        } else if (activeTab === 'queue') {
+            fetchPendingQueue({ search: searchQuery })
         }
 
         // Refresh health every minute
         const interval = setInterval(fetchHealth, 60000)
         return () => clearInterval(interval)
-    }, [fetchRules, fetchHealth, activeTab])
+    }, [fetchRules, fetchHealth, fetchAuditLogs, fetchPendingQueue, activeTab, searchQuery])
 
     const fetchAuditData = async () => {
         try {
@@ -570,6 +586,173 @@ export default function NotificationManagerPage() {
         )
     }
 
+    const renderAuditTable = () => {
+        return (
+            <div className="w-full">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30 flex items-center gap-4">
+                    <div className="relative flex-1">
+                        <Input
+                            placeholder="Buscar en historial (email, nombre, título)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 h-10 w-full max-w-md bg-white dark:bg-gray-800"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    </div>
+                </div>
+
+                <Table>
+                    <TableHeader>
+                        <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
+                            <TableHead className="pl-6 h-12">Fecha / Hora</TableHead>
+                            <TableHead className="h-12">Notificación</TableHead>
+                            <TableHead className="h-12">Canal</TableHead>
+                            <TableHead className="h-12">Estado</TableHead>
+                            <TableHead className="h-12">Telemetría</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loadingAuditLogs ? (
+                            <TableRow><TableCell colSpan={5} className="text-center py-12">Cargando historial...</TableCell></TableRow>
+                        ) : auditLogs.length === 0 ? (
+                            <TableRow><TableCell colSpan={5} className="text-center py-12 text-gray-400">No hay registros de auditoría.</TableCell></TableRow>
+                        ) : (
+                            auditLogs.map(log => (
+                                <TableRow key={log.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    <TableCell className="pl-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                                                {new Date(log.sent_at).toLocaleDateString()}
+                                            </span>
+                                            <span className="text-[10px] text-gray-500">
+                                                {new Date(log.sent_at).toLocaleTimeString()}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold truncate max-w-[200px]" title={log.title_sent}>{log.title_sent}</span>
+                                            <span className="text-[10px] text-blue-500 font-medium">{translateType(log.notification_type)}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+                                            {log.channel_used}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            {log.status === 'sent' ? (
+                                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                            ) : log.status === 'failed' ? (
+                                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                            ) : (
+                                                <Clock className="w-4 h-4 text-amber-500" />
+                                            )}
+                                            <span className={`text-xs font-bold ${log.status === 'sent' ? 'text-green-600' : log.status === 'failed' ? 'text-red-600' : 'text-amber-600'}`}>
+                                                {log.status === 'sent' ? 'Enviado' : log.status === 'failed' ? 'Fallido' : log.status}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[9px] text-gray-400 uppercase font-bold">Recibido</span>
+                                                {log.received_at ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <div className="w-3.5 h-3.5 border-2 border-gray-200 rounded-full" />}
+                                            </div>
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[9px] text-gray-400 uppercase font-bold">Clic</span>
+                                                {log.clicked_at ? <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" /> : <div className="w-3.5 h-3.5 border-2 border-gray-200 rounded-full" />}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    }
+
+    const renderQueueTable = () => {
+        return (
+            <div className="w-full">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30 flex items-center gap-4">
+                    <div className="relative flex-1">
+                        <Input
+                            placeholder="Buscar en la cola (email, nombre, título)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 h-10 w-full max-w-md bg-white dark:bg-gray-800"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    </div>
+                </div>
+
+                <Table>
+                    <TableHeader>
+                        <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
+                            <TableHead className="pl-6 h-12">Programado</TableHead>
+                            <TableHead className="h-12">Contenido (Asunto)</TableHead>
+                            <TableHead className="h-12">Estado / Reintentos</TableHead>
+                            <TableHead className="h-12">Error/Detalle</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loadingPendingQueue ? (
+                            <TableRow><TableCell colSpan={4} className="text-center py-12">Cargando cola...</TableCell></TableRow>
+                        ) : pendingQueue.length === 0 ? (
+                            <TableRow><TableCell colSpan={4} className="text-center py-12 text-gray-400">La cola de envío está vacía.</TableCell></TableRow>
+                        ) : (
+                            pendingQueue.map(item => (
+                                <TableRow key={item.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    <TableCell className="pl-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                                                {new Date(item.scheduled_for).toLocaleDateString()}
+                                            </span>
+                                            <span className="text-[10px] text-blue-600 font-bold">
+                                                {new Date(item.scheduled_for).toLocaleTimeString()}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <p className="text-sm font-semibold truncate max-w-[250px]" title={item.subject}>{item.subject}</p>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full w-fit ${
+                                                item.status === 'pending' ? 'bg-blue-100 text-blue-700' :
+                                                item.status === 'retrying' ? 'bg-indigo-100 text-indigo-700' :
+                                                item.status === 'failed' ? 'bg-red-100 text-red-700' :
+                                                'bg-gray-100 text-gray-700'
+                                            }`}>
+                                                {item.status}
+                                            </span>
+                                            {item.retry_count > 0 && (
+                                                <span className="text-[9px] text-gray-500 font-bold">Reintentos: {item.retry_count} / 3</span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {item.last_error ? (
+                                            <p className="text-[10px] text-red-500 max-w-[300px] line-clamp-2" title={item.last_error}>
+                                                {item.last_error}
+                                            </p>
+                                        ) : (
+                                            <span className="text-[10px] text-gray-400 italic">Sin errores registrados</span>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    }
+
     return (
         <div className="px-4 py-8 sm:px-6 lg:px-8">
             {/* Header section as blueprint */}
@@ -619,6 +802,10 @@ export default function NotificationManagerPage() {
                 <div className="p-0">
                     {activeTab === 'devices' ? (
                         renderUserDevicesTable()
+                    ) : activeTab === 'audit' ? (
+                        renderAuditTable()
+                    ) : activeTab === 'queue' ? (
+                        renderQueueTable()
                     ) : loading && rules.length === 0 ? (
                         <div className="text-center py-12 text-gray-400">
                             Cargando notificaciones...

@@ -87,6 +87,29 @@ class NotificationLogResponse(BaseModel):
     channel_used: str
     status: str
     sent_at: datetime
+    recipient_id: Optional[int] = None
+    doctor_id: Optional[int] = None
+    error_message: Optional[str] = None
+    received_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class PendingNotificationResponse(BaseModel):
+    id: int
+    recipient_id: Optional[int] = None
+    doctor_id: Optional[int] = None
+    notification_rule_id: Optional[int] = None
+    subject: str
+    scheduled_for: datetime
+    channel: str
+    status: str
+    retry_count: int
+    last_error: Optional[str] = None
+    created_at: datetime
+    sent_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

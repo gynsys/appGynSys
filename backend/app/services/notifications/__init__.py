@@ -159,3 +159,67 @@ def track_notification_event(db: Session, track_in: NotificationTrackRequest) ->
     db.commit()
     db.refresh(log)
     return log
+
+
+from app.db.models.notification import PendingNotification
+from app.db.models.cycle_user import CycleUser
+from app.db.models.doctor import Doctor
+from sqlalchemy import or_
+
+def get_audit_logs(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 100, 
+    search: Optional[str] = None, 
+    status: Optional[str] = None
+) -> List[NotificationLog]:
+    """Obtiene el historial de notificaciones con filtros opcionales."""
+    query = db.query(NotificationLog)
+    
+    if status:
+        query = query.filter(NotificationLog.status == status)
+        
+    if search:
+        search_filter = f"%{search}%"
+        # Buscar en titulo, o por email de destinatario (si el join es posible aquí o vía subquery)
+        # Para simplificar y eficiencia, buscamos en el título primero.
+        # Si queremos por email, necesitamos joins con CycleUser y Doctor.
+        query = query.outerjoin(CycleUser, NotificationLog.recipient_id == CycleUser.id)\
+                     .outerjoin(Doctor, NotificationLog.doctor_id == Doctor.id)\
+                     .filter(or_(
+                         NotificationLog.title_sent.ilike(search_filter),
+                         NotificationLog.notification_type.ilike(search_filter),
+                         CycleUser.email.ilike(search_filter),
+                         Doctor.email.ilike(search_filter),
+                         CycleUser.nombre_completo.ilike(search_filter),
+                         Doctor.nombre_completo.ilike(search_filter)
+                     ))
+        
+    return query.order_by(NotificationLog.sent_at.desc()).offset(skip).limit(limit).all()
+
+def get_pending_queue(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 100, 
+    search: Optional[str] = None, 
+    status: Optional[str] = None
+) -> List[PendingNotification]:
+    """Obtiene la cola de notificaciones pendientes con filtros opcionales."""
+    query = db.query(PendingNotification)
+    
+    if status:
+        query = query.filter(PendingNotification.status == status)
+        
+    if search:
+        search_filter = f"%{search}%"
+        query = query.outerjoin(CycleUser, PendingNotification.recipient_id == CycleUser.id)\
+                     .outerjoin(Doctor, PendingNotification.doctor_id == Doctor.id)\
+                     .filter(or_(
+                         PendingNotification.subject.ilike(search_filter),
+                         CycleUser.email.ilike(search_filter),
+                         Doctor.email.ilike(search_filter),
+                         CycleUser.nombre_completo.ilike(search_filter),
+                         Doctor.nombre_completo.ilike(search_filter)
+                     ))
+        
+    return query.order_by(PendingNotification.scheduled_for.asc()).offset(skip).limit(limit).all()

@@ -148,6 +148,32 @@ def get_system_health(
     return service.get_notification_system_health(db)
 
 
+@router.get("/audit/logs", response_model=List[NotificationLogResponse])
+def read_audit_logs(
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """List notification logs with filters (SuperAdmin only)."""
+    return service.get_audit_logs(db, skip=skip, limit=limit, search=search, status=status)
+
+
+@router.get("/audit/queue", response_model=List[PendingNotificationResponse])
+def read_pending_queue(
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+) -> Any:
+    """List pending notifications with filters (SuperAdmin only)."""
+    return service.get_pending_queue(db, skip=skip, limit=limit, search=search, status=status)
+
+
 @router.get("/debug/user/{user_id}")
 def get_user_notification_debug(
     user_id: int,

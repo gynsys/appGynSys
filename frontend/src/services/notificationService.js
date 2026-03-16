@@ -55,6 +55,16 @@ const notificationService = {
     cleanupSubscriptions: async () => {
         const response = await api.post('/notifications/cleanup-subscriptions');
         return response.data;
+    },
+
+    getAuditLogs: async (params = {}) => {
+        const response = await api.get('/notifications/audit/logs', { params });
+        return response.data;
+    },
+
+    getPendingQueue: async (params = {}) => {
+        const response = await api.get('/notifications/audit/queue', { params });
+        return response.data;
     }
 };
 
