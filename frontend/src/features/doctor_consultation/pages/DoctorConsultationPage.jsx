@@ -348,7 +348,7 @@ export const DoctorConsultationPage = () => {
     };
 
     const ModernCard = ({ title, icon: Icon, children, className = "", headerColor = "bg-gray-50 dark:bg-gray-700", borderColor = "border-gray-200 dark:border-gray-700", gridCols = "md:grid-cols-2" }) => (
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 ${borderColor} overflow-hidden mx-auto w-full max-w-[343px] md:max-w-none ${className}`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 ${borderColor} overflow-hidden mx-auto w-full max-w-[343px] md:max-w-none md:w-full ${className}`}>
         {title && (
           <div className={`${headerColor} px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2`}>
             {Icon && <Icon className="text-lg opacity-70" />}
@@ -1003,7 +1003,7 @@ export const DoctorConsultationPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-4 md:p-6">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
             <button
