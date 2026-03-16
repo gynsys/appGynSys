@@ -279,6 +279,9 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
 
   // Initialize Chat
   useEffect(() => {
+    // Only initialize if history is empty to prevent resets when doctor data updates
+    if (history.length > 0) return;
+
     let name = doctor?.nombre_completo || 'Doctor';
     const hasTitle = name.toLowerCase().startsWith('dr');
     const isFemale = name.toLowerCase().includes('dra.');
@@ -296,7 +299,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
         text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para comenzar a agendar tu cita,</p><p class="font-bold">¿podrías indicarme tu nombre completo?</p>`
       }
     ]);
-  }, [doctor]);
+  }, [doctor, history.length]);
 
   // Fetch Locations on Mount
   useEffect(() => {

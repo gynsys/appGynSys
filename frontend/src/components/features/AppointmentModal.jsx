@@ -23,28 +23,30 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
 
         <Transition.Child
           as={Fragment}
-          enter="transform transition duration-300 ease-in-out"
-          enterFrom="translate-y-10 opacity-0 scale-95"
-          enterTo="translate-y-0 opacity-100 scale-100"
-          leave="transform transition duration-200 ease-in-out"
-          leaveFrom="translate-y-0 opacity-100 scale-100"
-          leaveTo="translate-y-10 opacity-0 scale-95"
+          enter="transform transition duration-400 cubic-bezier(0.34, 1.56, 0.64, 1)"
+          enterFrom="scale-0 opacity-0"
+          enterTo="scale-100 opacity-100"
+          leave="transform transition duration-200 ease-in"
+          leaveFrom="scale-100 opacity-100"
+          leaveTo="scale-0 opacity-0"
         >
           <div
-            className="fixed md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[75vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300 bottom-nav-safe"
+            className="fixed md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[80vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300 bottom-nav-safe origin-center sm:origin-bottom-right"
             style={{ 
               borderColor: `${primaryColor}33`
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 z-10 shadow-sm">
               <h3 className="font-bold text-gray-800 dark:text-white text-sm">Agendar Cita</h3>
               <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                 <MdClose className="text-gray-500" />
               </button>
             </div>
             {/* Body */}
-            <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} />
+            <div className="flex-1 overflow-hidden flex flex-col pt-2">
+              <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} />
+            </div>
           </div>
         </Transition.Child>
       </div>

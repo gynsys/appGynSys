@@ -216,10 +216,12 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         loadData();
     }, [doctor, propSettings]);
 
+    const prevIsOpenRef = useRef(false);
+
     // Initialize chat with welcome
     useEffect(() => {
-        if (isOpen) {
-            // Reset State for fresh session
+        if (isOpen && !prevIsOpenRef.current) {
+            // Reset State for fresh session (ONLY when opening for the first time)
             setStep(STEPS.WELCOME_ONLINE);
             setFormData({
                 patient_name: '',
@@ -227,7 +229,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                 patient_age: '',
                 residence: '',
                 appointment_type: 'Consulta Online',
-                consultation_category: '', // Reset new field
+                consultation_category: '',
                 reason_for_visit: '',
                 location: 'Online (Videollamada)',
                 date_part: '',
@@ -245,7 +247,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             setHistory([
                 {
                     type: 'bot',
-                    text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
+                    text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalid?</p>`
                 }
             ]);
 
@@ -254,9 +256,10 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             setTimeout(() => {
                 setShowOptions(true);
             }, 1000);
-        } else {
+        } else if (!isOpen) {
             setIsVisible(false);
         }
+        prevIsOpenRef.current = isOpen;
     }, [doctor, isOpen]);
 
     const handleClose = () => {
@@ -750,7 +753,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                 ) : (
                     <div className="flex flex-col h-full w-full">
                         {/* Header */}
-                        <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <div className="p-3 flex items-center justify-between bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 z-10 shadow-sm">
 
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-600">
@@ -780,7 +783,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         </div>
 
                         {/* Chat History */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 min-h-0">
+                        <div className="flex-1 overflow-y-auto p-4 pt-6 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 min-h-0">
                             {history.map((msg, idx) => (
                                 <div
                                     key={idx}

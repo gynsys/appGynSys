@@ -100,6 +100,16 @@ function App() {
 
   // Global theme effect & Auth Init
   useEffect(() => {
+    // IMMEDIATE platform detection for zero-jump positioning
+    const isMobile = window.innerWidth < 768;
+    const isCap = isCapacitor();
+    if (isMobile || isCap) {
+      document.documentElement.classList.add('is-mobile-device');
+    }
+    if (isCap) {
+      document.documentElement.classList.add('is-capacitor');
+    }
+
     const initApp = async () => {
       // Try to load user if token exists (restore session)
       const token = localStorage.getItem('access_token');
@@ -121,16 +131,6 @@ function App() {
             useNotificationStore.getState().fetchRules()
           })
         }
-      }
-
-      // Pre-calculate platform for zero-jump positioning
-      const isMobile = window.innerWidth < 768;
-      const isCap = isCapacitor();
-      if (isMobile || isCap) {
-        document.documentElement.classList.add('is-mobile-device');
-      }
-      if (isCap) {
-        document.documentElement.classList.add('is-capacitor');
       }
 
       const applyTheme = () => {
