@@ -255,6 +255,13 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [canFocus, setCanFocus] = useState(false); // Keyboard delay
+
+  // Delay autoFocus to prevent layout jumps during modal entrance
+  useEffect(() => {
+    const timer = setTimeout(() => setCanFocus(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Smart Logic State
   const [suggestedDates, setSuggestedDates] = useState([]);
@@ -792,16 +799,15 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
         {/* UNIFIED TEXT INPUTS (To prevent unmounting and keyboard flicker) */}
         {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.OCCUPATION, STEPS.EMAIL, STEPS.LOCATION].includes(step) && (locations.length === 0 || step !== STEPS.LOCATION) && (
-          <SimpleInput 
+          <SimpleInput
             placeholder={
               step === STEPS.NAME ? "Escribe tu nombre completo..." :
               step === STEPS.DNI ? "Ej: V-12345678" :
               step === STEPS.AGE ? "Ej: 30" :
               step === STEPS.RESIDENCE ? "Ej: Centro, Norte..." :
-              step === STEPS.PHONE ? "Ej: 0414-1234567" :
-              step === STEPS.OCCUPATION ? "Ej: Docente, Ingeniero..." :
-              step === STEPS.EMAIL ? "Ej: correo@ejemplo.com" :
-              "Escribe la sede..."
+              step === STEPS.PHONE ? "Ej: 04141234567" :
+              step === STEPS.OCCUPATION ? "Ej: Administradora" :
+              "ejemplo@email.com"
             }
             onSubmit={
               step === STEPS.NAME ? handleNameSubmit :
@@ -810,13 +816,13 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               step === STEPS.RESIDENCE ? handleResidenceSubmit :
               step === STEPS.PHONE ? handlePhoneSubmit :
               step === STEPS.OCCUPATION ? handleOccupationSubmit :
-              step === STEPS.EMAIL ? handleEmailSubmit :
-              handleLocationTextSubmit
+              handleEmailSubmit
             }
             type={step === STEPS.EMAIL ? "email" : step === STEPS.PHONE ? "tel" : "text"}
             numericOnly={step === STEPS.AGE}
             primaryColor={primaryColor}
-            key="unified-chat-input"
+            autoFocus={canFocus}
+            key="unified-input-field"
           />
         )}
 

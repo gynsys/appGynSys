@@ -23,12 +23,12 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
 
         <Transition.Child
           as={Fragment}
-          enter="transform transition duration-400 cubic-bezier(0.34, 1.56, 0.64, 1)"
-          enterFrom="scale-0 opacity-0"
-          enterTo="scale-100 opacity-100"
-          leave="transform transition duration-200 ease-in"
-          leaveFrom="scale-100 opacity-100"
-          leaveTo="scale-0 opacity-0"
+          enter="transition-opacity duration-800 ease-out"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="transition-opacity duration-400 ease-in"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
           <div
             className="fixed md:bottom-24 left-0 right-0 w-full md:w-[360px] h-[80vh] md:h-auto md:max-h-[600px] md:right-8 md:left-auto bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-2xl shadow-2xl border-t-2 md:border-2 border-x-0 border-b-0 md:border-x-2 md:border-b-2 overflow-hidden flex flex-col transition-all duration-300 bottom-nav-safe origin-center sm:origin-bottom-right"
