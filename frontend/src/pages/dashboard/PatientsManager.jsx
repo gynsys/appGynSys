@@ -649,7 +649,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                 ) : historyData ? (
                   <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={getFullPdfUrl()} /></div>
                 ) : null}
-                 <div className="hidden md:block h-[calc(70vh+36px)] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                 <div className="hidden md:block h-[calc(70vh+86px)] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
                   {basePdfUrl && <iframe src={getFullPdfUrl()} className="w-full h-full border-0" title="Visor de PDF" />}
                 </div>
                 {/* Mobile specific PDF helper for native apps */}
@@ -668,7 +668,7 @@ export default function PatientsManager({ isEmbedded = false }) {
               </>
             ) : (
               // Tab Content: Assets
-              <div className="h-[calc(70vh+36px)] overflow-y-auto pr-2">
+              <div className="h-[calc(70vh+86px)] overflow-y-auto pr-2">
                 <ConsultationAssetManager consultationId={currentConsultationId} readOnly={false} />
               </div>
             )}
