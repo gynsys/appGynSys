@@ -116,7 +116,7 @@ class NotificationRule(Base):
             return {
                 "title": self.title_template.format(**context),
                 "message_html": self.message_template.format(**context),
-                "message_text": self.message_text_template.format(**context) if self.message_text_template else None
+                "message_text": (self.message_text_template or self.message_template).format(**context)
             }
         except KeyError as e:
             # Fallback if variable missing

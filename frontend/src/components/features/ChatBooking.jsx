@@ -444,7 +444,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
     addMessage(value, 'user');
     setFormData(prev => ({ ...prev, patient_age: value }));
     setTimeout(() => {
-      addMessage("¿En qué zona reside actualmente?", 'bot');
+      addMessage("¿En cual ciudad reside actualmente?", 'bot');
       setStep(STEPS.RESIDENCE); // Go to Residence
     }, 600);
   };
@@ -771,7 +771,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Nombre:</span> {formData.patient_name}</li>
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Cédula:</span> {formData.patient_dni}</li>
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Edad:</span> {formData.patient_age} años</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Zona:</span> {formData.residence}</li>
+              <li><span className="font-medium text-gray-900 dark:text-gray-100">Ciudad:</span> {formData.residence}</li>
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Tipo:</span> {formData.appointment_type}</li>
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Motivo:</span> {formData.reason_for_visit}</li>
               <li><span className="font-medium text-gray-900 dark:text-gray-100">Sede:</span> {formData.location}</li>
@@ -804,7 +804,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
               step === STEPS.NAME ? "Escribe tu nombre completo..." :
               step === STEPS.DNI ? "Ej: V-12345678" :
               step === STEPS.AGE ? "Ej: 30" :
-              step === STEPS.RESIDENCE ? "Ej: Centro, Norte..." :
+              step === STEPS.RESIDENCE ? "Ej: Valencia, Caracas" :
               step === STEPS.PHONE ? "Ej: 04141234567" :
               step === STEPS.OCCUPATION ? "Ej: Administradora" :
               "ejemplo@email.com"

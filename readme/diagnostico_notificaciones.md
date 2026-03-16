@@ -29,11 +29,19 @@ python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_ap
 - `doctor_new_online_consultation`
 - `doctor_daily_agenda`
 
+## 🧠 Lógica de Notificaciones (Actualizada 2026-03-16)
+
+A partir de marzo de 2026, el sistema se simplificó para garantizar estabilidad en un entorno SaaS multiusuario:
+
+1.  **Fuente Única de Verdad (Single Source of Truth)**: Se eliminaron las reglas específicas por doctor (`tenant_id`). Ahora **todas** las notificaciones usan las plantillas globales administradas por el Super Admin.
+2.  **Sincronización Push/Email**: Las notificaciones Push ahora heredan automáticamente el texto de la plantilla de Email (limpiando tags HTML) si no hay un texto plano específico. Esto evita que la App muestre mensajes viejos mientras el correo muestra los nuevos.
+3.  **Variables Dinámicas**: Aunque la plantilla es global, variables como `{doctor_name}`, `{patient_name}`, etc., se llenan en tiempo real según el inquilino que dispara el evento.
+
 ## 🔍 Puntos de Verificación Críticos
 
-1.  **Reglas del Inquilino**: Cada doctor debe tener sus propias reglas (`tenant_id`). 
-2.  **Suscripciones**: Si no hay suscripciones en el comando `--subs-only`, el usuario NUNCA recibirá push.
-3.  **Esquema de BD**: La columna `token` debe existir en `push_subscriptions` para dispositivos móviles (Capacitor).
+1.  **Reglas Globales**: Verificar que el cambio se hizo en la regla con `tenant_id IS NULL` en la tabla `notification_rules`.
+2.  **Suscripciones**: Si no hay suscripciones activas (verificable con `--subs-only`), el usuario NUNCA recibirá push.
+3.  **Cierre de Sesión**: Si un cambio de texto no se refleja en la App pero sí en el servidor, pedir al médico que cierre sesión y vuelva a entrar para refrescar el token de vinculación.
 
 - **2026-03-15**: Falla crítica tras reinicio de Droplet. Las notificaciones salían como "sent" pero no llegaban. Causa: Falta de librería `firebase_admin` en contenedores Docker. Solucionado reinstalando manualmente y reiniciando servicios. Ver [guia_recuperacion_post_reinicio.md](file:///c:/Users/pablo/Documents/appgynsys/readme/guia_recuperacion_post_reinicio.md).
 - **2026-03-12**: Investigando falla masiva en APK. Se detectó falta de columna `token` en producción y error 500 en auditoría. Solucionado.

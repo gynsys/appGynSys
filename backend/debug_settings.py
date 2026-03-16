@@ -1,17 +1,11 @@
 import sys
 import os
-
-# Ensure we can import from app
-sys.path.append(os.getcwd())
-
+# Add backend to path to import app
+sys.path.append(os.path.join(os.getcwd(), 'backend'))
 try:
     from app.core.config import settings
-    print(f"GOOGLE_CLIENT_ID from settings: {settings.GOOGLE_CLIENT_ID}")
-    
-    if settings.GOOGLE_CLIENT_ID:
-        print("SUCCESS: Settings loaded correctly.")
-    else:
-        print("FAILURE: GOOGLE_CLIENT_ID is None or Empty.")
-        
+    print(f"DATABASE_URL: {settings.DATABASE_URL}")
+    print(f"DEBUG: {settings.DEBUG}")
+    print(f"CORS_ORIGINS: {settings.CORS_ORIGINS}")
 except Exception as e:
-    print(f"FAILURE: Could not import settings. {e}")
+    print(f"Error loading settings: {e}")

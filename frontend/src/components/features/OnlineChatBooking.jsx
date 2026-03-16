@@ -474,7 +474,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, patient_age: value }));
         setTimeout(() => {
-            addMessage("¿En qué zona reside actualmente?", 'bot');
+            addMessage("¿En cual ciudad reside actualmente?", 'bot');
             setStep(STEPS.RESIDENCE);
         }, 600);
     };
@@ -844,7 +844,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                         <p><span className="font-semibold">Nombre:</span> {formData.patient_name}</p>
                                         <p><span className="font-semibold">Cédula:</span> {formData.patient_dni}</p>
                                         <p><span className="font-semibold">Edad:</span> {formData.patient_age} años</p>
-                                        <p><span className="font-semibold">Zona:</span> {formData.residence}</p>
+                                        <p><span className="font-semibold">Ciudad:</span> {formData.residence}</p>
                                         <div className="border-t border-purple-100 my-2"></div>
                                         <p><span className="font-semibold">Motivo:</span> {formData.reason_for_visit}</p>
                                         <p><span className="font-semibold">Fecha:</span> {new Date(`${formData.date_part}T${formData.time_part}`).toLocaleString()}</p>
@@ -988,7 +988,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                         step === STEPS.NAME ? "Escribe tu nombre completo..." :
                                         step === STEPS.DNI ? "Ej: V-12345678" :
                                         step === STEPS.AGE ? "¿Cuántos años tienes?" :
-                                        step === STEPS.RESIDENCE ? "Ej: Centro, Norte..." :
+                                        step === STEPS.RESIDENCE ? "Ej: Valencia, Caracas" :
                                         step === STEPS.PHONE ? "Ej: 04141234567" :
                                         "ejemplo@email.com"
                                     }

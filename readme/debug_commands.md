@@ -29,6 +29,8 @@ docker exec -it appgynsys-db-1 psql -U postgres -d gynsys
 ### 🔍 Diagnóstico de Notificaciones (Python Scripts)
 - **Ver estado de un usuario**: `docker exec appgynsys-backend-1 python scripts/check_user_subs.py <email>`
 - **Prueba de Push + Eval**: `docker exec appgynsys-backend-1 python scripts/test_push_debug.py --user <id> --eval`
+- **Prueba individual de dispositivos (FCM/Web)**: `docker exec appgynsys-backend-1 python scripts/test_mariel_push_debug.py`
+- **Verificar contenido de regla global**: `docker exec appgynsys-backend-1 python scripts/check_global_rule_content.py`
 - **Ver fallos en cola**: `docker exec appgynsys-backend-1 python scripts/check_failed_notifs.py`
 
 ## 📧 Notificaciones & Celery

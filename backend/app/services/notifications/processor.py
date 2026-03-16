@@ -356,15 +356,15 @@ def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, 
         
         now = normalize_to_caracas()
         
-        # 1. Obtener la regla para este doctor (template de la DB)
+        # 1. Obtener la regla GLOBAL (Centralizada para todos los doctores)
         rule = db.query(NotificationRule).filter(
-            NotificationRule.tenant_id == doctor_id,
+            NotificationRule.tenant_id == None,
             NotificationRule.notification_type == notification_type,
             NotificationRule.is_active == True
         ).first()
         
         if not rule:
-            logger.warning(f"No active rule found for doctor {doctor_id} and type {notification_type}")
+            logger.warning(f"No active global rule found for type {notification_type}")
             return False
 
         # 2. Evaluar lógica (Registry de Doctores)
