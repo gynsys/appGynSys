@@ -2,7 +2,6 @@ package net.gynsys;
 
 import android.os.Bundle;
 import android.util.Log;
-import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 import com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -12,9 +11,6 @@ import android.webkit.WebView;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // Inicializar el Splash Screen nativo ANTES de super.onCreate
-        SplashScreen.installSplashScreen(this);
-        
         super.onCreate(savedInstanceState);
 
         registerPlugin(PushNotificationsPlugin.class);
