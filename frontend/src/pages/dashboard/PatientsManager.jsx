@@ -526,10 +526,10 @@ export default function PatientsManager({ isEmbedded = false }) {
                   </div>
                 </div>
                 <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700">
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 uppercase">
                     HISTORIA
                   </button>
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700">
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700 uppercase">
                     INFORME
                   </button>
                   <button 
@@ -574,8 +574,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                     <td className="px-6 py-4 text-xs font-bold">{formatDate(consultation.created_at)}</td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-2 justify-center">
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black uppercase">HISTORIA</button>
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black uppercase">INFORME</button>
                          <button 
                           onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
                           className="p-2 text-blue-500 rounded-xl hover:bg-blue-50 transition-colors"
@@ -643,6 +643,22 @@ export default function PatientsManager({ isEmbedded = false }) {
                   SOPORTES
                 </button>
             </div>
+
+            {/* Checkbox Imágenes (Restaurado) */}
+            {!isAssetOnly && activePdfTab === 'pdf' && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100/50 dark:border-indigo-800/50">
+                <input 
+                  type="checkbox" 
+                  id="includeImages" 
+                  checked={includeImages} 
+                  onChange={(e) => setIncludeImages(e.target.checked)}
+                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                />
+                <label htmlFor="includeImages" className="text-[10px] font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-widest cursor-pointer select-none">
+                  Incluir Imágenes
+                </label>
+              </div>
+            )}
 
             {!isAssetOnly && (
                <div className="flex items-center gap-4 ml-auto">
