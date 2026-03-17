@@ -3,6 +3,7 @@ from app.schemas.consultation import ConsultationCreate
 from app.db.models.consultation import Consultation
 from app.db.models.appointment import Appointment
 from app.utils.history_number import get_or_create_history_number
+from app.utils.medical_report_builder import build_narrative_summary
 
 class ConsultationService:
     @staticmethod
@@ -188,5 +189,18 @@ class ConsultationService:
             "plan": consultation.plan,
             "observations": consultation.observations,
             "created_at": consultation.created_at,
-            "is_single_report": True
+            "is_single_report": True,
+            **build_narrative_summary({
+                "full_name": consultation.patient_name,
+                "ci": consultation.patient_ci,
+                "age": consultation.patient_age,
+                "reason_for_visit": consultation.reason_for_visit,
+                "admin_ultrasound": consultation.ultrasound,
+                "admin_physical_exam": consultation.physical_exam,
+                "admin_diagnosis": consultation.diagnosis,
+                "admin_plan": consultation.plan,
+                "admin_observations": consultation.observations,
+                "gyn_dysmenorrhea": getattr(consultation, 'gyn_dysmenorrhea', 'no'), # Fallback if missing
+                "gyn_fertility_intent": getattr(consultation, 'gyn_fertility_intent', 'no')
+            })
         }
