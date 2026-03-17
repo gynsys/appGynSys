@@ -125,6 +125,13 @@ Si se detecta pérdida de datos o discrepancias tras cambios de roles:
 - Ver logs: `docker logs appgynsys-backend-1 | grep backup`
 - El servicio corre en el startup del backend (`backend/app/main.py`) y usa `PGPASSWORD` del `.env`.
 
+### 📱 Gestión de Dispositivos y Multi-rol
+A partir de marzo de 2026, el sistema soporta que un mismo dispositivo esté vinculado a una cuenta de Doctor y a una de Paciente ("Mi Ciclo") simultáneamente. 
+
+**Conflicto Común:** Si un doctor reporta que no recibe notificaciones después de usar "Mi Ciclo", pídale que **vuelva a iniciar sesión como doctor**. Esto restaurará el vínculo sin afectar su cuenta de paciente.
+
+Ver guía detallada en [tips_and_best_practices.md](file:///c:/Users/pablo/Documents/appgynsys/readme/tips_and_best_practices.md).
+
 ## 6. Sistema de Notificaciones Push
 
 El sistema incluye un tablero de salud en el Super Admin y endpoints de recuperación.
