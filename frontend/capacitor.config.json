@@ -1,5 +1,19 @@
 {
   "appId": "net.gynsys",
-  "appName": "gynsys-app",
-  "webDir": "dist"
+  "appName": "GynSys",
+  "webDir": "dist",
+  "server": {
+    "url": "https://gynsys.net/dr/mariel-herrera",
+    "cleartext": true,
+    "allowNavigation": [
+      "gynsys.net",
+      "*.gynsys.net"
+    ]
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": true
+    }
+  }
 }
