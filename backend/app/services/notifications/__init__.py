@@ -103,15 +103,20 @@ def create_or_update_subscription(
         "doctor_id": doctor_id
     }
     
+    from sqlalchemy import func
+    
     _logger.info(f"[GynSysPush] UPSERT Values: {values}")
     
-    stmt = insert(PushSubscription).values(**values).on_conflict_do_update(
+    stmt = insert(PushSubscription).values(**values)
+    stmt = stmt.on_conflict_do_update(
         index_elements=[conflict_index],
         set_={
-            "user_id": user_id, 
-            "doctor_id": doctor_id,
-            "p256dh": sub_in.keys.p256dh if sub_in.keys else None, 
-            "auth": sub_in.keys.auth if sub_in.keys else None,
+            # Smart update: only overwrite if the NEW value is not null.
+            # Otherwise, keep the existing value in the database.
+            "user_id": func.coalesce(stmt.excluded.user_id, PushSubscription.user_id),
+            "doctor_id": func.coalesce(stmt.excluded.doctor_id, PushSubscription.doctor_id),
+            "p256dh": func.coalesce(stmt.excluded.p256dh, PushSubscription.p256dh),
+            "auth": func.coalesce(stmt.excluded.auth, PushSubscription.auth),
             "updated_at": normalize_to_caracas()
         }
     )

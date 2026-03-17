@@ -43,5 +43,8 @@ A partir de marzo de 2026, el sistema se simplificó para garantizar estabilidad
 2.  **Suscripciones**: Si no hay suscripciones activas (verificable con `--subs-only`), el usuario NUNCA recibirá push.
 3.  **Cierre de Sesión**: Si un cambio de texto no se refleja en la App pero sí en el servidor, pedir al médico que cierre sesión y vuelva a entrar para refrescar el token de vinculación.
 
-- **2026-03-15**: Falla crítica tras reinicio de Droplet. Las notificaciones salían como "sent" pero no llegaban. Causa: Falta de librería `firebase_admin` en contenedores Docker. Solucionado reinstalando manualmente y reiniciando servicios. Ver [guia_recuperacion_post_reinicio.md](file:///c:/Users/pablo/Documents/appgynsys/readme/guia_recuperacion_post_reinicio.md).
+- **2026-03-16**: **Conflicto "Mi Ciclo" vs Doctor**. Se detectó que si un médico usa el mismo dispositivo para loguearse como paciente en la App "Mi Ciclo", el token de push se reasigna al `user_id` del paciente y se elimina el `doctor_id`. 
+    - **Síntoma**: El médico deja de recibir notificaciones en ese teléfono.
+    - **Solución**: Cerrar sesión en "Mi Ciclo" y volver a entrar como Doctor. Para prevenir esto, se recomienda no usar cuentas de paciente en dispositivos de trabajo médico o alternar sesiones con precaución.
+- **2026-03-15**: Falla crítica tras reinicio de Droplet...
 - **2026-03-12**: Investigando falla masiva en APK. Se detectó falta de columna `token` en producción y error 500 en auditoría. Solucionado.
