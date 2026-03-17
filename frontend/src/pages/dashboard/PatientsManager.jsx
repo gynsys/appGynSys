@@ -71,14 +71,14 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
 
   const consultations = data.is_single_report
     ? [{
-      id: data.id,
-      created_at: data.created_at,
-      diagnosis: data.diagnosis,
-      plan: data.plan,
-      physical_exam: data.physical_exam,
-      ultrasound: data.ultrasound,
-      observations: data.observations
-    }]
+        id: data.id,
+        created_at: data.created_at,
+        diagnosis: data.diagnosis,
+        plan: data.plan,
+        physical_exam: data.physical_exam,
+        ultrasound: data.ultrasound,
+        observations: data.observations
+      }]
     : (data.all_consultations || []).slice().reverse();
 
   return (
@@ -86,173 +86,165 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
       {/* Contenedor tipo Hoja de Papel */}
       <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-none border border-gray-200 dark:border-gray-800 min-h-[1056px] p-[0.75in] font-serif text-[12pt] leading-[1.4] text-gray-900 dark:text-gray-100 flex flex-col">
         
-        {/* Encabezado Institucional (Replica PDF) */}
-        <div className="flex justify-between items-center border-b-2 border-gray-900 dark:border-gray-100 pb-4 mb-6">
-          <div className="w-[1.5in] flex flex-col items-center">
-             {/* Logo Placeholder - Espacio reservado para el logo oficial */}
-             <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center border border-indigo-100 dark:border-indigo-800">
-               <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">GS</span>
-             </div>
-          </div>
-          <div className="flex-1 pl-[0.25in] text-left">
-            <h1 className="text-xl font-black uppercase text-gray-900 dark:text-white leading-tight">Dra. Mariel Herrera</h1>
-            <p className="text-[10pt] font-medium text-gray-600 dark:text-gray-400">Especialista en Ginecología y Obstetricia</p>
-            <p className="text-[10pt] text-gray-500 dark:text-gray-500 italic">Caracas-Guarenas Guatire</p>
-            <p className="text-[10pt] font-bold text-gray-700 dark:text-gray-300 mt-1">Citas: 04244281876-04127738918</p>
-          </div>
-        </div>
+        {/* Encabezado Institucional (Alineación PDF) */}
+        <header className="flex items-center gap-6 mb-8 border-b-2 border-gray-900 dark:border-gray-100 pb-6 shrink-0">
+           <div className="w-[1.2in] h-[1.2in] flex items-center justify-center shrink-0">
+              <img src="/logo_gyn.png" alt="Logo" className="max-w-full max-h-full object-contain" />
+           </div>
+           <div className="flex-1 text-left">
+              <h2 className="font-black text-xl text-gray-900 dark:text-white uppercase leading-tight">Dra. Mariel Herrera</h2>
+              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Especialista en Ginecología y Obstetricia</p>
+              <p className="text-xs font-medium text-gray-500">Caracas - Guarenas - Guatire</p>
+              <p className="text-xs font-medium text-gray-500">Citas: 04244281876 / 04127738918</p>
+           </div>
+        </header>
 
         {/* Título del Documento */}
-        <div className="text-center mb-8">
-           <h2 className="text-xl font-black border-b-2 border-black dark:border-white inline-block px-4 pb-0.5 uppercase tracking-tighter">
-             {data.is_single_report ? 'INFORME MÉDICO' : 'HISTORIA MÉDICA'}
-           </h2>
+        <div className="text-center mb-10 shrink-0">
+           <h1 className="text-2xl font-black text-gray-900 dark:text-white underline decoration-2 underline-offset-8 uppercase tracking-widest">
+              {data.is_single_report ? "INFORME MÉDICO" : "HISTORIA MÉDICA"}
+           </h1>
         </div>
 
-        {/* Tabla de Datos del Paciente (Estilo PDF) */}
-        <div className="grid grid-cols-2 border-b border-gray-300 dark:border-gray-700 pb-4 mb-6 gap-y-2 text-[11pt]">
-          <div className="flex gap-2">
-            <span className="font-bold min-w-[80px]">Nombre:</span>
-            <div className="flex-1"><EditableField value={data.full_name} onSave={(val) => onUpdateField(data.id, 'full_name', val)} multiline={false} /></div>
-          </div>
-          <div className="flex gap-2 justify-end">
-            <span className="font-bold min-w-[50px]">Edad:</span>
-            <div className="w-20"><EditableField value={data.age?.toString()} onSave={(val) => onUpdateField(data.id, 'age', val)} multiline={false} /></div>
-          </div>
-          <div className="flex gap-2">
-            <span className="font-bold min-w-[80px]">C.I.:</span>
-            <div className="flex-1"><EditableField value={data.ci} onSave={(val) => onUpdateField(data.id, 'ci', val)} multiline={false} /></div>
-          </div>
-          <div className="flex gap-2 justify-end">
-            <span className="font-bold min-w-[50px]">TLF:</span>
-            <div className="w-40"><EditableField value={data.phone} onSave={(val) => onUpdateField(data.id, 'phone', val)} multiline={false} /></div>
-          </div>
-          <div className="flex gap-2 col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2 mt-1">
-            <span className="font-bold min-w-[80px]">N° Historia:</span>
-            <span className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</span>
-          </div>
+        {/* Datos del Paciente */}
+        <div className="mb-10 text-[11pt] shrink-0">
+           {data.is_single_report ? (
+             <div className="space-y-1.5 text-gray-800 dark:text-gray-200">
+                <p><strong>Nombre y Apellidos:</strong> {data.full_name}</p>
+                <p><strong>Edad:</strong> {data.age}</p>
+                <p><strong>C.I.:</strong> {data.ci}</p>
+             </div>
+           ) : (
+             <div className="grid grid-cols-2 gap-x-12 gap-y-2 border-b border-gray-100 dark:border-gray-800 pb-6 text-gray-800 dark:text-gray-200">
+                <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">Nombre:</span> <span className="flex-1 capitalize">{data.full_name}</span></div>
+                <div className="flex gap-1.5"><span className="font-bold min-w-[40px]">Edad:</span> <span>{data.age}</span></div>
+                <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">C.I.:</span> <span>{data.ci}</span></div>
+                <div className="flex gap-1.5"><span className="font-bold min-w-[40px]">TLF:</span> <span>{data.phone}</span></div>
+                <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">Dirección:</span> <span className="flex-1 opacity-80">{data.address || 'N/A'}</span></div>
+                <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">N° Historia:</span> <span className="text-indigo-600 dark:text-indigo-400 font-bold">{data.history_number}</span></div>
+             </div>
+           )}
         </div>
 
-        {/* Cuerpo del Informe / Historia */}
-        <div className="space-y-6 flex-1">
+        {/* Cuerpo Dinámico */}
+        <div className="flex-1">
           {data.is_single_report ? (
-            /* VISTA DE INFORME MÉDICO (Relato Concatenado) */
-            <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="space-y-8 animate-in fade-in duration-700">
                <section className="space-y-4">
-                  <h4 className="font-black text-[10pt] uppercase border-b border-gray-100 dark:border-gray-800 pb-1 text-gray-500">Relato Médico / Hallazgos</h4>
                   <div 
-                    className="text-[12pt] leading-[1.6] text-justify font-serif"
+                    className="text-[12pt] leading-[1.8] text-justify font-serif text-gray-800 dark:text-gray-200"
                     dangerouslySetInnerHTML={{ __html: data.narrative_summary || '' }}
                   />
                </section>
 
                {data.observations_formatted && (
                  <section className="space-y-2 pt-4 border-t border-gray-50 dark:border-gray-800">
-                    <h4 className="font-black text-[10pt] uppercase text-gray-500">Observaciones Finales</h4>
+                    <h4 className="font-bold text-[10pt] uppercase text-gray-500 opacity-60">Observaciones:</h4>
                     <div 
-                      className="text-[11pt] leading-relaxed italic"
+                      className="text-[11pt] leading-relaxed italic font-serif text-gray-700 dark:text-gray-300"
                       dangerouslySetInnerHTML={{ __html: data.observations_formatted }}
                     />
                  </section>
                )}
 
-               {/* Botón de edición rápida de campos individuales (opcional) */}
-               <div className="mt-12 pt-8 border-t-2 border-dashed border-gray-100 dark:border-gray-800 opacity-50 hover:opacity-100 transition-opacity">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Campos Base para Edición</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <section className="flex flex-col gap-2">
-                       <span className="font-black text-[8pt] uppercase text-indigo-600">Motivo:</span>
+               <div className="mt-16 text-center space-y-12 shrink-0">
+                  <p className="text-[12pt] font-medium text-gray-700 dark:text-gray-300 italic">
+                     Sin otro particular se suscribe en Guarenas a los {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}.
+                  </p>
+                  
+                  <div className="inline-block border-t-2 border-gray-900 dark:border-gray-100 pt-4 px-12 min-w-[3in]">
+                    <h5 className="font-black text-sm text-gray-900 dark:text-white uppercase leading-tight">Dra. Mariel Herrera</h5>
+                    <p className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tighter">Especialista en Ginecología y Obstetricia</p>
+                    <p className="text-[10px] font-medium text-gray-500 uppercase">MPPS: 140.795 / CMDM: 38.789</p>
+                    <p className="text-[10px] font-medium text-gray-500">C.I.: 13.409.534</p>
+                  </div>
+               </div>
+
+               <div className="mt-24 pt-8 border-t-2 border-dashed border-gray-100 dark:border-gray-800 opacity-20 hover:opacity-100 transition-opacity print:hidden shrink-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6">Ajustar Datos de Origen</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-1">
+                       <span className="text-[8pt] font-black uppercase text-indigo-600/60">Motivo:</span>
                        <EditableField value={data.reason_for_visit} onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)} />
-                    </section>
-                    <section className="flex flex-col gap-2">
-                       <span className="font-black text-[8pt] uppercase text-indigo-600">Diagnóstico:</span>
+                    </div>
+                    <div className="space-y-1">
+                       <span className="text-[8pt] font-black uppercase text-indigo-600/60">Diagnóstico:</span>
                        <EditableField value={data.diagnosis} onSave={(val) => onUpdateField(data.id, 'diagnosis', val)} />
-                    </section>
-                    <section className="flex flex-col gap-2">
-                       <span className="font-black text-[8pt] uppercase text-indigo-600">Plan:</span>
+                    </div>
+                    <div className="space-y-1">
+                       <span className="text-[8pt] font-black uppercase text-indigo-600/60">Plan:</span>
                        <EditableField value={data.plan} onSave={(val) => onUpdateField(data.id, 'plan', val)} />
-                    </section>
-                    <section className="flex flex-col gap-2">
-                       <span className="font-black text-[8pt] uppercase text-indigo-600">Observaciones:</span>
+                    </div>
+                    <div className="space-y-1">
+                       <span className="text-[8pt] font-black uppercase text-indigo-600/60">Observaciones:</span>
                        <EditableField value={data.observations} onSave={(val) => onUpdateField(data.id, 'observations', val)} />
-                    </section>
+                    </div>
                   </div>
                </div>
             </div>
           ) : (
-            /* VISTA DE HISTORIA MÉDICA (Estructura Tradicional) */
-            <div className="space-y-6">
-              {/* Secciones Base (Motivo y Antecedentes) */}
+            <div className="space-y-8 animate-in fade-in duration-500">
               <div className="space-y-4">
-                <section className="flex items-start gap-4 group">
-                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Motivo de consulta:</span>
+                <section className="flex items-start gap-4">
+                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Motivo de consulta:</span>
                    <div className="flex-1"><EditableField value={data.reason_for_visit} onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)} /></div>
                 </section>
 
                 <section className="flex items-start gap-4">
-                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Familiares:</span>
-                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Antecedentes Familiares:</span>
+                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <EditableField label="Madre" value={data.family_history_mother} onSave={(val) => onUpdateField(data.id, 'family_history_mother', val)} />
                       <EditableField label="Padre" value={data.family_history_father} onSave={(val) => onUpdateField(data.id, 'family_history_father', val)} />
                    </div>
                 </section>
 
                 <section className="flex items-start gap-4">
-                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Personales:</span>
+                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Enfermedad Actual:</span>
                    <div className="flex-1"><EditableField value={data.personal_history} onSave={(val) => onUpdateField(data.id, 'personal_history', val)} /></div>
                 </section>
 
                 <section className="flex items-start gap-4">
-                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Quirúrgicos:</span>
+                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Ant. Quirúrgicos:</span>
                    <div className="flex-1"><EditableField value={data.surgical_history} onSave={(val) => onUpdateField(data.id, 'surgical_history', val)} /></div>
                 </section>
 
                 <section className="flex items-start gap-4">
-                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Gineco-Obstétricos:</span>
+                   <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Gineco-Obstétricos:</span>
                    <div className="flex-1"><EditableField value={data.summary_gyn_obstetric} onSave={(val) => onUpdateField(data.id, 'summary_gyn_obstetric', val)} /></div>
                 </section>
               </div>
 
-              {/* Separador para Consultas */}
               {consultations.length > 0 && (
-                <div className="mt-8 border-t-2 border-gray-100 dark:border-gray-800 pt-6">
-                  <h3 className="bg-gray-100 dark:bg-gray-800 px-4 py-2 font-black text-sm uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-6 rounded-lg">
+                <div className="mt-12 border-t-4 border-double border-gray-100 dark:border-gray-800 pt-8">
+                  <h3 className="bg-gray-50 dark:bg-gray-800 px-6 py-3 font-black text-sm uppercase tracking-[0.2em] text-gray-600 dark:text-gray-300 mb-8 rounded-xl border border-gray-100 dark:border-gray-700">
                     Registro de Consultas Médicas
                   </h3>
                   
-                  <div className="space-y-12">
+                  <div className="space-y-16">
                     {consultations.map((c, idx) => (
-                      <article key={idx} className="border-l-4 border-indigo-500 pl-6 space-y-4">
-                        <header className="flex justify-between items-center mb-2">
-                          <span className="font-black text-gray-900 dark:text-white uppercase text-base">
+                      <article key={idx} className="border-l-4 border-indigo-500 pl-8 space-y-6">
+                        <header className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-r-2xl">
+                          <span className="font-black text-gray-900 dark:text-white uppercase text-base tracking-wide">
                             Consulta #{consultations.length - idx}
                           </span>
-                          <span className="text-sm font-bold text-indigo-600 italic">
+                          <span className="px-4 py-1 bg-white dark:bg-gray-800 shadow-sm rounded-full text-sm font-black text-indigo-600 italic border border-indigo-100 dark:border-indigo-800">
                             {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                           </span>
                         </header>
 
-                        <div className="space-y-4">
-                          <section className="flex items-start gap-4">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Examen Físico:</span>
-                            <div className="flex-1 font-medium"><EditableField value={c.physical_exam} onSave={(val) => onUpdateField(c.id, 'physical_exam', val)} /></div>
-                          </section>
-                          <section className="flex items-start gap-4">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Ultrasonido:</span>
-                            <div className="flex-1 font-medium"><EditableField value={c.ultrasound} onSave={(val) => onUpdateField(c.id, 'ultrasound', val)} /></div>
-                          </section>
-                          <section className="flex items-start gap-4">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Diagnóstico:</span>
-                            <div className="flex-1 font-medium"><EditableField value={c.diagnosis} onSave={(val) => onUpdateField(c.id, 'diagnosis', val)} /></div>
-                          </section>
-                          <section className="flex items-start gap-4">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Plan de Tratamiento:</span>
-                            <div className="flex-1 font-medium"><EditableField value={c.plan} onSave={(val) => onUpdateField(c.id, 'plan', val)} /></div>
-                          </section>
-                          <section className="flex items-start gap-4">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Observaciones:</span>
-                            <div className="flex-1 font-medium"><EditableField value={c.observations} onSave={(val) => onUpdateField(c.id, 'observations', val)} /></div>
-                          </section>
+                        <div className="space-y-6 pl-2">
+                          {[
+                            { label: 'Examen Físico', key: 'physical_exam' },
+                            { label: 'Ultrasonido', key: 'ultrasound' },
+                            { label: 'Diagnóstico', key: 'diagnosis' },
+                            { label: 'Plan de Tratamiento', key: 'plan' },
+                            { label: 'Observaciones', key: 'observations' }
+                          ].map((field) => (
+                            <section key={field.key} className="flex items-start gap-6">
+                              <span className="font-black text-[9pt] uppercase min-w-[1.6in] pt-1 text-gray-400">{field.label}:</span>
+                              <div className="flex-1 font-medium"><EditableField value={c[field.key]} onSave={(val) => onUpdateField(c.id, field.key, val)} /></div>
+                            </section>
+                          ))}
                         </div>
                       </article>
                     ))}
@@ -262,14 +254,6 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
             </div>
           )}
         </div>
-
-        {/* Firma Placeholder (Si es Informe Único) */}
-        {data.is_single_report && (
-          <div className="mt-20 border-t border-gray-400 dark:border-gray-600 w-64 mx-auto text-center pt-2">
-            <p className="font-black text-sm uppercase leading-tight">Dra. Mariel Herrera</p>
-            <p className="text-[9pt] text-gray-500">Ginecólogo Obstetra - UCV</p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -509,7 +493,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       const isHistory = basePdfUrl.includes('history_pdf');
       loadHistoryData(consultationId, isHistory);
     }
-  }, [isPdfModalOpen, basePdfUrl, activePdfTab]);
+  }, [isPdfModalOpen, basePdfUrl, activePdfTab, historyData, loadingHistory]);
 
 
   const filteredConsultations = consultations.filter(consultation =>
