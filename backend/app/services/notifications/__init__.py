@@ -227,4 +227,4 @@ def get_pending_queue(
                          Doctor.nombre_completo.ilike(search_filter)
                      ))
         
-    return query.order_by(PendingNotification.scheduled_for.asc()).offset(skip).limit(limit).all()
+    return query.order_by(PendingNotification.scheduled_for.desc()).offset(skip).limit(limit).all()

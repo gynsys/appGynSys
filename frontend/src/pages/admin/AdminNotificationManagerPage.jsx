@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Send, Pencil, AlertTriangle, Megaphone, Search, Calendar, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
+import { Plus, Trash2, Send, Pencil, AlertTriangle, Megaphone, Search, Calendar, CheckCircle2, AlertCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
 import Button from '../../components/common/Button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
@@ -36,6 +36,11 @@ const CONFIG_TABS = [
 
 const AUDIT_TABS = [
     {
+        id: 'queue',
+        label: 'Cola de Envío',
+        icon: 'queue'
+    },
+    {
         id: 'devices',
         label: 'Usuarios / Dispositivos',
         icon: 'users'
@@ -44,11 +49,6 @@ const AUDIT_TABS = [
         id: 'audit',
         label: 'Historial / Auditoría',
         icon: 'history'
-    },
-    {
-        id: 'queue',
-        label: 'Cola de Envío',
-        icon: 'queue'
     }
 ]
 
@@ -72,6 +72,7 @@ export default function NotificationManagerPage() {
     const [loadingUsers, setLoadingUsers] = useState(false)
     const [isSendingTest, setIsSendingTest] = useState(false)
     const [isOperating, setIsOperating] = useState(false)
+    const [isConfigExpanded, setIsConfigExpanded] = useState(true)
 
     // Audit State
     const [auditData, setAuditData] = useState([])
@@ -284,7 +285,7 @@ export default function NotificationManagerPage() {
     const getCategoryCount = (tabId) => {
         if (tabId === 'devices') return auditData.length
         if (tabId === 'audit') return auditLogs.length
-        if (tabId === 'queue') return health?.pending_count || 0
+        if (tabId === 'queue') return health?.pending_queue || 0
         
         const tab = CONFIG_TABS.find(t => t.id === tabId)
         if (!tab) return 0
@@ -349,6 +350,8 @@ export default function NotificationManagerPage() {
             open: 'text-red-600 font-bold',
             half_open: 'text-yellow-600 font-bold'
         }
+
+        if (!health) return null
 
         return (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-8 transition-all duration-300">
@@ -775,12 +778,21 @@ export default function NotificationManagerPage() {
             {/* Card Blueprint */}
             {/* 1. Configuration Section (Content Rules) */}
             <div className="bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200 overflow-hidden mb-8">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30">
+                <div 
+                    className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                    onClick={() => setIsConfigExpanded(!isConfigExpanded)}
+                >
                     <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider flex items-center gap-2">
                         <Megaphone className="w-4 h-4 text-primary" />
                         Configuración de Reglas y Contenido
                     </h2>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-transparent">
+                        {isConfigExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
                 </div>
+
+                {isConfigExpanded && (
+                    <>
 
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
                     <div className="flex overflow-x-auto scrollbar-hide">
@@ -902,6 +914,8 @@ export default function NotificationManagerPage() {
                         </div>
                     )}
                 </div>
+                </>
+                )}
             </div>
 
             {/* 2. Audit & Monitoring Section */}
