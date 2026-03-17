@@ -83,6 +83,7 @@ export default function NotificationManagerPage() {
     const [diagEmail, setDiagEmail] = useState('')
     const [diagResult, setDiagResult] = useState(null)
     const [loadingDiag, setLoadingDiag] = useState(false)
+    const [isDiagInputFocused, setIsDiagInputFocused] = useState(false)
 
     // Form State
     const [formData, setFormData] = useState({
@@ -96,8 +97,8 @@ export default function NotificationManagerPage() {
     useEffect(() => {
         fetchRules()
         fetchHealth()
-
-        // Fetch data based on which group is active or just fetch both
+        fetchUsersWithPush() // Load users for diagnostics and tests
+// ...
         if (['devices', 'audit', 'queue'].includes(activeTab)) {
             if (activeTab === 'devices') fetchAuditData()
             if (activeTab === 'audit') fetchAuditLogs({ search: searchQuery })
@@ -814,14 +815,54 @@ export default function NotificationManagerPage() {
 
                 <div className="p-6">
                     <div className="flex gap-4 mb-8">
-                        <div className="flex-1">
+                        <div className="flex-1 relative">
                             <Input
-                                placeholder="Email de la paciente o doctora (ej: likemeve@gmail.com)..."
+                                placeholder="Email o nombre de la paciente o doctora..."
                                 value={diagEmail}
-                                onChange={(e) => setDiagEmail(e.target.value)}
+                                onFocus={() => setIsDiagInputFocused(true)}
+                                onBlur={() => setTimeout(() => setIsDiagInputFocused(false), 200)}
+                                onChange={(e) => {
+                                    setDiagEmail(e.target.value)
+                                    if (diagResult) setDiagResult(null)
+                                }}
                                 onKeyDown={(e) => e.key === 'Enter' && runDiagnostic()}
-                                className="h-12 bg-gray-50 dark:bg-gray-900/50 border-gray-200"
+                                className="h-12 bg-gray-50 dark:bg-gray-900/50 border-gray-200 pl-10"
                             />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            
+                            {/* Filtered Users Dropdown */}
+                            {isDiagInputFocused && !diagResult && !loadingDiag && (
+                                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-2xl max-h-[300px] overflow-y-auto animate-in fade-in zoom-in duration-200">
+                                    {(availableUsers.filter(u => 
+                                        u.email.toLowerCase().includes(diagEmail.toLowerCase()) || 
+                                        u.name.toLowerCase().includes(diagEmail.toLowerCase())
+                                    ).length > 0 || availableUsers.length > 0) ? (
+                                        (diagEmail ? 
+                                            availableUsers.filter(u => u.email.toLowerCase().includes(diagEmail.toLowerCase()) || u.name.toLowerCase().includes(diagEmail.toLowerCase())) :
+                                            availableUsers
+                                        ).map(user => (
+                                                <button
+                                                    key={user.id}
+                                                    className="w-full text-left px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors flex items-center justify-between"
+                                                    onClick={() => {
+                                                        setDiagEmail(user.email)
+                                                        runDiagnostic(user.email)
+                                                    }}
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{user.name}</span>
+                                                        <span className="text-xs text-gray-500">{user.email}</span>
+                                                    </div>
+                                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${user.type === 'doctor' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                        {user.type === 'doctor' ? 'Inquilino' : 'Paciente'}
+                                                    </span>
+                                                </button>
+                                            ))
+                                    ) : (
+                                        <div className="p-4 text-center text-xs text-gray-400 italic">No se encontraron usuarios con push activo</div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <Button 
                             className="h-12 px-8 font-bold" 
