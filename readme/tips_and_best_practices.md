@@ -52,3 +52,20 @@ Se implementó un **Smart UPSERT** en el backend.
 Si un médico reporta que dejó de recibir notificaciones tras usar "Mi Ciclo":
 1.  Verificar suscripciones con `scripts/diagnose_appointments.py --subs-only`.
 2.  Si el `doctor_id` está vacío pero el `user_id` tiene datos, pedirle que **vuelva a iniciar sesión como doctor**. El nuevo sistema Smart UPSERT restaurará el vínculo sin borrar el de paciente.
+
+---
+
+## 3. Compatibilidad de Terminal y PowerShell (Windows)
+
+El desarrollo se realiza sobre **PowerShell (Windows)**, que tiene una sintaxis distinta a Bash/Linux para el encadenamiento de comandos.
+
+### ❌ Lo que NO funciona
+- **Operador `&&`**: No es soportado por las versiones de PowerShell estándar de este entorno. El uso de `&&` genera el error: `"El token '&&' no es un separador de instrucciones válido"`.
+
+### ✅ Lo que SÍ funciona
+- **Operador `;` (Semicolon)**: Se debe usar para separar comandos secuenciales.
+- **Ejemplos correctos**: 
+  - `git add . ; git commit -m "msg" ; git push`
+  - `python ssh_runner.py "cd /opt/appgynsys ; git pull"`
+
+---

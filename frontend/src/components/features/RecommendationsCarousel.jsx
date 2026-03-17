@@ -343,11 +343,6 @@ const CardItem = ({ item, setSelectedItem, cardBg, textColor }) => (
                 alt={item.title}
                 className="w-full h-full object-contain"
             />
-            {item.action_type === 'PAYPAL' && (
-                <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                    Oferta
-                </span>
-            )}
         </div>
         <div className="pt-4 px-3 pb-3 flex-1 flex flex-col pointer-events-none overflow-hidden">
             <h3 className={`font-bold text-sm mb-1 ${textColor}`} title={item.title}>

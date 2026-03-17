@@ -33,7 +33,7 @@ export default function RecommendationsManager() {
         description: '',
         image_url: '',
         category_id: '',
-        action_type: 'LINK', // 'LINK' | 'PAYPAL'
+        action_type: 'LINK',
         action_url: '',
         price: '',
         is_active: true
