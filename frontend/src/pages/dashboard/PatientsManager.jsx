@@ -10,8 +10,6 @@ import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platfor
 
 // EditableField removed as per user request to simplify and remove edit functionality
 
-const HistoryHtmlView = ({ data, onUpdateField }) => {
-  if (!data) return null;
 
 const HistoryHtmlView = ({ data, onUpdateField, onDownload }) => {
   if (!data) return null;
@@ -387,7 +385,9 @@ export default function PatientsManager({ isEmbedded = false }) {
                   </div>
                   <div className="text-[10px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-300 whitespace-nowrap">
                     #{consultation.history_number || 'PEND'}
-                  </d                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 uppercase truncate">
                     DETALLE
                   </button>
@@ -406,9 +406,6 @@ export default function PatientsManager({ isEmbedded = false }) {
                     </button>
                   </div>
                 </div>
-on>
-                </div>
-              </div>
             ))}
           </div>
 
