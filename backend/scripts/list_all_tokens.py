@@ -11,7 +11,7 @@ try:
             "id": s.id,
             "doctor_id": s.doctor_id,
             "user_id": s.user_id,
-            "token_prefix": s.token[:20] if s.token else None,
+            "token": s.token,
             "created_at": s.created_at.isoformat() if s.created_at else None,
             "updated_at": s.updated_at.isoformat() if s.updated_at else None
         })
