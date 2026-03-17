@@ -4,7 +4,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Este archivo estaba bloqueando tus PNGs. Al dejarlo vacío, forzamos el uso de tu logo real -->
+    <!-- Este archivo estaba dibujando el logo de Capacitor. Lo dejamos vacío para que el sistema use tus imágenes PNG -->
     <path
         android:pathData="M0,0h108v108h-108z"
         android:fillColor="#00000000" />
