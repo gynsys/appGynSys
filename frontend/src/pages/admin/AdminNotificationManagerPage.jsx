@@ -814,63 +814,44 @@ export default function NotificationManagerPage() {
                 </div>
 
                 <div className="p-6">
-                    <div className="flex gap-4 mb-8">
-                        <div className="flex-1 relative">
-                            <Input
-                                placeholder="Email o nombre de la paciente o doctora..."
-                                value={diagEmail}
-                                onFocus={() => setIsDiagInputFocused(true)}
-                                onBlur={() => setTimeout(() => setIsDiagInputFocused(false), 200)}
-                                onChange={(e) => {
-                                    setDiagEmail(e.target.value)
-                                    if (diagResult) setDiagResult(null)
-                                }}
-                                onKeyDown={(e) => e.key === 'Enter' && runDiagnostic()}
-                                className="h-12 bg-gray-50 dark:bg-gray-900/50 border-gray-200 pl-10"
-                            />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            
-                            {/* Filtered Users Dropdown */}
-                            {isDiagInputFocused && !diagResult && !loadingDiag && (
-                                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-2xl max-h-[300px] overflow-y-auto animate-in fade-in zoom-in duration-200">
-                                    {(availableUsers.filter(u => 
-                                        u.email.toLowerCase().includes(diagEmail.toLowerCase()) || 
-                                        u.name.toLowerCase().includes(diagEmail.toLowerCase())
-                                    ).length > 0 || availableUsers.length > 0) ? (
-                                        (diagEmail ? 
-                                            availableUsers.filter(u => u.email.toLowerCase().includes(diagEmail.toLowerCase()) || u.name.toLowerCase().includes(diagEmail.toLowerCase())) :
-                                            availableUsers
-                                        ).map(user => (
-                                                <button
-                                                    key={user.id}
-                                                    className="w-full text-left px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors flex items-center justify-between"
-                                                    onClick={() => {
-                                                        setDiagEmail(user.email)
-                                                        runDiagnostic(user.email)
-                                                    }}
-                                                >
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{user.name}</span>
-                                                        <span className="text-xs text-gray-500">{user.email}</span>
-                                                    </div>
-                                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${user.type === 'doctor' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                        {user.type === 'doctor' ? 'Inquilino' : 'Paciente'}
-                                                    </span>
-                                                </button>
-                                            ))
-                                    ) : (
-                                        <div className="p-4 text-center text-xs text-gray-400 italic">No se encontraron usuarios con push activo</div>
-                                    )}
-                                </div>
-                            )}
+                    <div className="flex gap-4 mb-8 items-end">
+                        <div className="flex-1 space-y-2">
+                            <Label className="text-xs font-bold text-gray-500 uppercase">Seleccionar Usuario para Diagnóstico</Label>
+                            <div className="relative">
+                                <select
+                                    value={diagEmail}
+                                    onChange={(e) => {
+                                        setDiagEmail(e.target.value)
+                                        if (e.target.value) runDiagnostic(e.target.value)
+                                    }}
+                                    className="w-full h-12 px-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer"
+                                >
+                                    <option value="">Selecciona una paciente o doctora...</option>
+                                    <optgroup label="Pacientes">
+                                        {availableUsers.filter(u => u.type === 'patient').map(user => (
+                                            <option key={user.id} value={user.email}>
+                                                {user.name} ({user.email}) {user.has_push ? '✅' : '❌'}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                    <optgroup label="Inquilinos / Doctoras">
+                                        {availableUsers.filter(u => u.type === 'doctor').map(user => (
+                                            <option key={user.id} value={user.email}>
+                                                {user.name} ({user.email}) {user.has_push ? '✅' : '❌'}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
                         </div>
                         <Button 
-                            className="h-12 px-8 font-bold" 
+                            className="h-12 px-8 font-bold bg-blue-600 hover:bg-blue-700 text-white" 
                             onClick={() => runDiagnostic()}
-                            disabled={loadingDiag}
+                            disabled={loadingDiag || !diagEmail}
                         >
                             {loadingDiag ? <Clock className="animate-spin mr-2 h-4 w-4" /> : <Search className="mr-2 h-4 w-4" />}
-                            Ejecutar Diagnóstico
+                            Re-Diagnosticar
                         </Button>
                     </div>
 

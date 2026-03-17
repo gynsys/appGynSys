@@ -35,11 +35,17 @@ async def get_users_with_push(
     """
     Get list of users (CycleUsers and Doctors) who have push notifications enabled
     """
-    # Query distinct cycle users who have at least one push subscription
-    users_data = db.query(CycleUser.id, CycleUser.email, CycleUser.nombre_completo).join(PushSubscription, CycleUser.id == PushSubscription.user_id).distinct().all()
+    # Query all cycle users
+    from app.db.models.push_subscription import PushSubscription
     
-    # Query distinct doctors who have at least one push subscription
-    doctors_data = db.query(Doctor.id, Doctor.email, Doctor.nombre_completo).join(PushSubscription, Doctor.id == PushSubscription.doctor_id).distinct().all()
+    users_data = db.query(CycleUser.id, CycleUser.email, CycleUser.nombre_completo).all()
+    
+    # Query all doctors
+    doctors_data = db.query(Doctor.id, Doctor.email, Doctor.nombre_completo).all()
+    
+    # Get IDs of those with push
+    patient_ids_with_push = set(r[0] for r in db.query(PushSubscription.user_id).filter(PushSubscription.user_id.isnot(None)).all())
+    doctor_ids_with_push = set(r[0] for r in db.query(PushSubscription.doctor_id).filter(PushSubscription.doctor_id.isnot(None)).all())
     
     all_users = []
     for u in users_data:
@@ -47,7 +53,8 @@ async def get_users_with_push(
             "id": f"u_{u.id}",
             "email": u.email,
             "name": u.nombre_completo or u.email.split('@')[0],
-            "type": "patient"
+            "type": "patient",
+            "has_push": u.id in patient_ids_with_push
         })
         
     for d in doctors_data:
@@ -55,8 +62,12 @@ async def get_users_with_push(
             "id": f"d_{d.id}",
             "email": d.email,
             "name": f"{d.nombre_completo} (Inquilino)",
-            "type": "doctor"
+            "type": "doctor",
+            "has_push": d.id in doctor_ids_with_push
         })
+    
+    # Sort by push status (those with push first) and then by name
+    all_users.sort(key=lambda x: (not x["has_push"], x["name"].lower()))
     
     return {
         "success": True,
