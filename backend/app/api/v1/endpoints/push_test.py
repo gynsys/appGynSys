@@ -206,6 +206,112 @@ async def test_push_notification(
         )
 
 
+@router.get("/diagnose")
+async def diagnose_user_notification(
+    email: str,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user)
+):
+    """
+    Unified diagnostic endpoint for both CycleUsers and Doctors.
+    Returns cycle status, predictions, push subscriptions, and recent logs.
+    """
+    from app.db.models.cycle_predictor import CycleNotificationSettings, CycleLog
+    from app.cycle_predictor.logic import calculate_predictions
+    from app.db.models.notification import NotificationLog
+    from datetime import date
+
+    # 1. Base response
+    report = {
+        "email": email,
+        "type": None,
+        "account": None,
+        "cycle": None,
+        "subscriptions": [],
+        "logs": []
+    }
+
+    # 2. Identify Actor
+    user = db.query(CycleUser).filter(CycleUser.email == email).first()
+    doctor = db.query(Doctor).filter(Doctor.email == email).first()
+
+    if not user and not doctor:
+        raise HTTPException(status_code=404, detail=f"No account found for {email}")
+
+    actor = user or doctor
+    report["type"] = "patient" if user else "doctor"
+    report["account"] = {
+        "id": actor.id,
+        "name": actor.nombre_completo or email,
+        "created_at": actor.created_at.isoformat() if hasattr(actor, 'created_at') and actor.created_at else None
+    }
+
+    # 3. Cycle Specific Data (if patient)
+    if user:
+        sett = db.query(CycleNotificationSettings).filter_by(cycle_user_id=user.id).first()
+        last_log = db.query(CycleLog).filter_by(cycle_user_id=user.id).order_by(CycleLog.start_date.desc()).first()
+        
+        report["cycle"] = {
+            "avg_cycle": user.cycle_avg_length,
+            "avg_period": user.period_avg_length,
+            "rhythm_enabled": sett.rhythm_method_enabled if sett else False,
+            "last_period": last_log.start_date.isoformat() if last_log else None,
+            "predictions": None
+        }
+
+        if last_log and user.cycle_avg_length:
+            preds = calculate_predictions(
+                last_log.start_date, 
+                user.cycle_avg_length or 28, 
+                user.period_avg_length or 5
+            )
+            # Convert dates to string for JSON
+            report["cycle"]["predictions"] = {}
+            for k, v in preds.items():
+                if isinstance(v, (date, datetime)):
+                    report["cycle"]["predictions"][k] = v.isoformat()
+                else:
+                    report["cycle"]["predictions"][k] = v
+
+    # 4. Push Subscriptions
+    subs_query = db.query(PushSubscription)
+    if user:
+        subs_query = subs_query.filter(PushSubscription.user_id == user.id)
+    else:
+        subs_query = subs_query.filter(PushSubscription.doctor_id == doctor.id)
+    
+    subs = subs_query.all()
+    for s in subs:
+        report["subscriptions"].append({
+            "id": s.id,
+            "type": "CAPACITOR" if s.token else "WEB_PUSH",
+            "updated_at": s.updated_at.isoformat() if s.updated_at else None,
+            "endpoint_short": s.endpoint[:50] + "..." if s.endpoint and len(s.endpoint) > 50 else (s.endpoint or "N/A")
+        })
+
+    # 5. Recent Logs
+    # Note: recipient_id is used for patients in NotificationLog
+    from sqlalchemy import or_
+    logs_query = db.query(NotificationLog).order_by(NotificationLog.sent_at.desc())
+    if user:
+        logs_query = logs_query.filter(NotificationLog.recipient_id == user.id)
+    else:
+        logs_query = logs_query.filter(NotificationLog.doctor_id == doctor.id)
+    
+    logs = logs_query.limit(15).all()
+    for l in logs:
+        report["logs"].append({
+            "id": l.id,
+            "type": l.notification_type,
+            "status": l.status,
+            "channel": l.channel_used,
+            "sent_at": l.sent_at.isoformat() if l.sent_at else None,
+            "error": l.error_message
+        })
+
+    return report
+
+
 @router.get("/test-all-types/{user_email}")
 async def test_all_notification_types(
     user_email: str,

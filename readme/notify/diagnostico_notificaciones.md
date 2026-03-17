@@ -2,24 +2,23 @@
 
 Este documento centraliza el proceso de depuración del sistema de notificaciones para evitar repetir investigaciones desde cero.
 
-## 🛠 Herramienta Unificada
-El script principal se encuentra en `readme/diagnose_appointments.py`. Es una herramienta integral que verifica entorno, suscripciones, lógica de reglas y logs.
+## 🛠 Herramienta Unificada V2
+El script definitivo se encuentra en `readme/diagnose_unified.py`. Es una herramienta inteligente que detecta si el email pertenece a una **Doctora** o a una **Usuaria (Mi Ciclo)** y aplica el diagnóstico correspondiente.
 
-### 🚀 Cómo ejecutarlo (vía SSH)
+### 🚀 Cómo ejecutarlo
 
-**1. Diagnóstico Completo de un Inquilino (Recomendado):**
+Hay dos formas dependiendo de dónde estés:
+
+#### A. Desde tu computadora (Local Windows)
+Usa el `ssh_runner.py` para que él se encargue de entrar al servidor por ti:
 ```bash
-python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --doc-id <id> --type <tipo>"
+python ssh_runner.py "docker exec appgynsys-backend-1 python3 app/scripts/diagnose_unified.py --email <email>"
 ```
 
-**2. Ver solo suscripciones de un usuario/doctor:**
+#### B. Directamente en el Servidor (Consola root@ubuntu)
+Si ya estás dentro del servidor vía SSH, no necesitas el `ssh_runner.py`. Corre el comando de Docker directamente:
 ```bash
-python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --subs-only --email <email>"
-```
-
-**3. Ver logs recientes de un doctor:**
-```bash
-python ssh_runner.py "docker exec appgynsys-backend-1 python scripts/diagnose_appointments.py --logs-only --doc-id <id>"
+docker exec -it appgynsys-backend-1 python3 app/scripts/diagnose_unified.py --email <email>
 ```
 
 ### 📋 Tipos de Notificación Comunes:
@@ -46,5 +45,43 @@ A partir de marzo de 2026, el sistema se simplificó para garantizar estabilidad
 - **2026-03-16**: **Conflicto "Mi Ciclo" vs Doctor**. Se detectó que si un médico usa el mismo dispositivo para loguearse como paciente en la App "Mi Ciclo", el token de push se reasigna al `user_id` del paciente y se elimina el `doctor_id`. 
     - **Síntoma**: El médico deja de recibir notificaciones en ese teléfono.
     - **Solución**: Cerrar sesión en "Mi Ciclo" y volver a entrar como Doctor. Para prevenir esto, se recomienda no usar cuentas de paciente en dispositivos de trabajo médico o alternar sesiones con precaución.
+- **2026-03-17**: **Diagnóstico Usuaria 'Likeme' (Método del Ritmo)**. Se confirmó que el sistema opera correctamente. La falta de notificaciones se debió a que la usuaria no tenía dispositivos móviles vinculados durante los días de infertilidad. Las notificaciones llegaron por Email exitosamente.
 - **2026-03-15**: Falla crítica tras reinicio de Droplet...
 - **2026-03-12**: Investigando falla masiva en APK. Se detectó falta de columna `token` en producción y error 500 en auditoría. Solucionado.
+
+---
+
+## 📅 Lógica: Método del Ritmo (10 Reglas)
+
+El método del ritmo dispara exactamente **10 notificaciones** por ciclo para advertir sobre los días de infertilidad:
+
+1.  **Días Post-Periodo (5)**: `rhythm_after_period_1` hasta `5`. Se disparan consecutivamente después de que termina el periodo.
+2.  **Días Pre-Periodo (5)**: `rhythm_before_period_5` hasta `1`. Se disparan en cuenta regresiva antes de la fecha estimada del próximo periodo.
+
+### 💡 Por qué "sent" no siempre llega:
+En los logs, puedes ver un registro como `sent` pero que el usuario no vea nada. Esto ocurre cuando:
+- La usuaria recibe la notificación por **Email** (éxito), pero el **Push** falló porque no hay dispositivo vinculado.
+- Como el sistema es **DUAL**, si uno de los dos canales (Email) funciona, el estado global se marca como exitoso. Siempre verificar la columna `channel_used` y los errores en `NotificationLog`.
+
+## 🛠 Tips Técnicos de Diagnóstico (Docker)
+
+Si necesitas correr un script de Python rápido para consultar la base de datos dentro del contenedor:
+
+1.  **Manejo de Imports**: Siempre agrega `/app` al `sys.path`.
+2.  **SessionLocal**: En este proyecto, `SessionLocal` suele inicializarse dinámicamente en los scripts de utilidad.
+3.  **Comando de Emergencia**:
+```bash
+docker exec -i appgynsys-backend-1 python3 -c "
+import sys; sys.path.append('/app')
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.core.config import settings
+from app.db.models.cycle_user import CycleUser
+
+engine = create_engine(settings.DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+db = SessionLocal()
+# ... tu lógica aquí ...
+db.close()
+"
+```

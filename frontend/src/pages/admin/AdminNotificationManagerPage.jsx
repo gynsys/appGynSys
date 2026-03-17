@@ -79,6 +79,11 @@ export default function NotificationManagerPage() {
     const [loadingAudit, setLoadingAudit] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
 
+    // Diagnostic State
+    const [diagEmail, setDiagEmail] = useState('')
+    const [diagResult, setDiagResult] = useState(null)
+    const [loadingDiag, setLoadingDiag] = useState(false)
+
     // Form State
     const [formData, setFormData] = useState({
         name: '',
@@ -136,6 +141,36 @@ export default function NotificationManagerPage() {
             toast.error(`Fallo al ejecutar ${name}`)
         } finally {
             setIsOperating(false)
+        }
+    }
+
+    const runDiagnostic = async (emailToDiag) => {
+        const email = emailToDiag || diagEmail
+        if (!email) {
+            toast.error("Ingresa un email para diagnosticar")
+            return
+        }
+
+        try {
+            setLoadingDiag(true)
+            setDiagResult(null)
+            const token = localStorage.getItem('access_token')
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/diagnose?email=${encodeURIComponent(email)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            const data = await response.json()
+            if (response.ok) {
+                setDiagResult(data)
+                toast.success("Diagnóstico completado")
+            } else {
+                toast.error(data.detail || "Error en el diagnóstico")
+            }
+        } catch (error) {
+            console.error("Diagnostic error:", error)
+            toast.error("Fallo de conexión al servidor")
+        } finally {
+            setLoadingDiag(false)
         }
     }
 
@@ -762,6 +797,157 @@ export default function NotificationManagerPage() {
         )
     }
 
+    const renderDiagnosticPanel = () => {
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
+                <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700 bg-blue-50/30 dark:bg-blue-900/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-500 rounded-lg">
+                            <Search className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Diagnóstico Unificado de Usuarios</h2>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Analiza suscripciones push, ciclos y logs directamente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    <div className="flex gap-4 mb-8">
+                        <div className="flex-1">
+                            <Input
+                                placeholder="Email de la paciente o doctora (ej: likemeve@gmail.com)..."
+                                value={diagEmail}
+                                onChange={(e) => setDiagEmail(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && runDiagnostic()}
+                                className="h-12 bg-gray-50 dark:bg-gray-900/50 border-gray-200"
+                            />
+                        </div>
+                        <Button 
+                            className="h-12 px-8 font-bold" 
+                            onClick={() => runDiagnostic()}
+                            disabled={loadingDiag}
+                        >
+                            {loadingDiag ? <Clock className="animate-spin mr-2 h-4 w-4" /> : <Search className="mr-2 h-4 w-4" />}
+                            Ejecutar Diagnóstico
+                        </Button>
+                    </div>
+
+                    {diagResult && (
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Account & Subscriptions Info */}
+                            <div className="lg:col-span-4 space-y-6">
+                                <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Información de Cuenta</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-500">Nombre:</span>
+                                            <span className="text-sm font-bold">{diagResult.account.name}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-500">Tipo:</span>
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${diagResult.type === 'doctor' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {diagResult.type === 'doctor' ? 'Inquilino' : 'Paciente'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Suscripciones Push ({diagResult.subscriptions.length})</h3>
+                                    {diagResult.subscriptions.length === 0 ? (
+                                        <p className="text-xs text-red-500 font-bold italic">⚠️ Sin dispositivos registrados</p>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {diagResult.subscriptions.map(s => (
+                                                <div key={s.id} className="text-[10px] p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
+                                                    <div className="flex justify-between mb-1">
+                                                        <span className="font-bold text-blue-600">{s.type}</span>
+                                                        <span className="text-gray-400">{new Date(s.updated_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="truncate text-gray-400 font-mono">{s.endpoint_short}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Cycle & Logs Info */}
+                            <div className="lg:col-span-8 space-y-6">
+                                {diagResult.cycle && (
+                                    <div className="p-4 bg-green-50/30 dark:bg-green-900/10 rounded-xl border border-green-100/50 dark:border-green-900/30">
+                                        <h3 className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <Calendar className="h-3.5 w-3.5" /> Estado de Mi Ciclo
+                                        </h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase">Promedio Ciclo</p>
+                                                <p className="text-sm font-bold">{diagResult.cycle.avg_cycle} días</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase">Ritmo Habilitado</p>
+                                                <p className={`text-sm font-bold ${diagResult.cycle.rhythm_enabled ? 'text-green-600' : 'text-gray-400'}`}>
+                                                    {diagResult.cycle.rhythm_enabled ? 'SÍ' : 'NO'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase">Último Periodo</p>
+                                                <p className="text-sm font-bold">{diagResult.cycle.last_period || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase">Próximo (Est)</p>
+                                                <p className="text-sm font-bold text-blue-600">
+                                                    {diagResult.cycle.predictions?.next_period_start || 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Últimos Logs de Notificación</h3>
+                                    </div>
+                                    <div className="max-h-[300px] overflow-y-auto">
+                                        <Table>
+                                            <TableBody>
+                                                {diagResult.logs.length === 0 ? (
+                                                    <TableRow><TableCell className="text-center py-8 text-gray-400 italic">No hay registros recientes</TableCell></TableRow>
+                                                ) : (
+                                                    diagResult.logs.map(log => (
+                                                        <TableRow key={log.id} className="text-[11px] hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                            <TableCell className="py-2">
+                                                                <span className="font-bold">{new Date(log.sent_at).toLocaleDateString()}</span>
+                                                                <br />
+                                                                <span className="text-[9px] text-gray-400">{new Date(log.sent_at).toLocaleTimeString()}</span>
+                                                            </TableCell>
+                                                            <TableCell className="py-2">
+                                                                <span className="font-semibold text-blue-600">{translateType(log.type)}</span>
+                                                            </TableCell>
+                                                            <TableCell className="py-2 text-center">
+                                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${log.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {log.status === 'sent' ? 'OK' : 'FAIL'}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell className="py-2 max-w-[200px] truncate text-gray-400" title={log.error}>
+                                                                {log.error || '-'}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="px-4 py-8 sm:px-6 lg:px-8">
             {/* Header section as blueprint */}
@@ -887,6 +1073,18 @@ export default function NotificationManagerPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
+                                                            onClick={() => {
+                                                                setDiagEmail(rule.email_sample || '')
+                                                                if (rule.email_sample) runDiagnostic(rule.email_sample)
+                                                            }}
+                                                            className="h-8 w-8 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                                                            title="Diagnosticar este tipo de notificación"
+                                                        >
+                                                            <AlertTriangle className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
                                                             onClick={() => handleDeleteClick(rule)}
                                                             className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                             title="Eliminar notificación"
@@ -917,6 +1115,9 @@ export default function NotificationManagerPage() {
                 </>
                 )}
             </div>
+
+            {/* Diagnostic Diagnostic Section */}
+            {renderDiagnosticPanel()}
 
             {/* 2. Audit & Monitoring Section */}
             <div className="bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200 overflow-hidden">
