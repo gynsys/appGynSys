@@ -277,8 +277,8 @@ export default function NotificationManagerPage() {
     }
 
     // Get filtered rules for active tab
-    const currentTab = TABS.find(t => t.id === activeTab)
-    const filteredRules = rules.filter(rule => currentTab.filter(rule))
+    const activeConfigTab = CONFIG_TABS.find(t => t.id === activeTab)
+    const filteredRules = activeConfigTab ? rules.filter(rule => activeConfigTab.filter(rule)) : []
 
     // Count by category
     const getCategoryCount = (tabId) => {
