@@ -35,36 +35,20 @@ const EditableField = ({ value, onSave, label, multiline = true }) => {
 
   if (isEditing) {
     return (
-      <div className="space-y-1 animate-in fade-in duration-200">
-        <div className="flex justify-between items-center mb-1">
-          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{label}</p>
-          <div className="flex gap-2">
-            <button 
-              type="button"
-              onClick={() => { setCurrentValue(value); setIsEditing(false); }} 
-              className="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors"
-            >
-              CANCELAR
-            </button>
-            <button 
-              type="button"
-              onClick={handleSave} 
-              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              GUARDAR
-            </button>
-          </div>
-        </div>
+      <div className="animate-in slide-in-from-top-1 duration-200">
         <textarea
           autoFocus
-          className="w-full p-3 text-sm border-2 border-indigo-500 rounded-xl outline-none bg-white dark:bg-gray-800 dark:text-gray-100 shadow-inner font-medium ring-4 ring-indigo-50 dark:ring-indigo-900/20"
+          className="w-full p-2 text-sm border-2 border-indigo-500 rounded-lg outline-none bg-white dark:bg-gray-800 dark:text-gray-100 shadow-sm font-medium"
           value={currentValue || ''}
           onChange={(e) => setCurrentValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
           rows={multiline ? 4 : 1}
-          placeholder={`Escriba el ${label.toLowerCase()}...`}
+          placeholder={`Escriba el ${label?.toLowerCase() || ''}...`}
         />
+        <div className="flex gap-2 justify-end mt-1">
+          <button onClick={handleSave} className="text-[9px] font-black text-indigo-600 hover:text-indigo-800 uppercase">Aceptar</button>
+        </div>
       </div>
     );
   }
@@ -72,15 +56,12 @@ const EditableField = ({ value, onSave, label, multiline = true }) => {
   return (
     <div 
       onDoubleClick={() => setIsEditing(true)}
-      className="group relative cursor-pointer hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 p-2 -m-2 rounded-xl transition-all border border-transparent hover:border-indigo-100/50 dark:hover:border-indigo-800/50"
+      className="group relative cursor-text hover:bg-yellow-50/50 dark:hover:bg-indigo-900/20 p-1 -m-1 rounded-md transition-all border border-transparent hover:border-yellow-200/50"
     >
-      <div className="flex justify-between items-start mb-1">
-         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</p>
-         <FiEdit className="opacity-0 group-hover:opacity-100 text-indigo-400 transition-all transform scale-90 group-hover:scale-100" size={12} title="Doble clic para editar" />
-      </div>
-      <p className={`text-sm leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>
-        {value || `Sin especificar ${label.toLowerCase()}`}
+      <p className={`text-[11pt] leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-200'}`}>
+        {value || `(No reportado)`}
       </p>
+      <FiEdit className="absolute -right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-indigo-400 transition-all pointer-events-none" size={10} />
     </div>
   );
 };
@@ -101,194 +82,149 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
     : (data.all_consultations || []).slice().reverse();
 
   return (
-    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-indigo-200 pr-3">
-      
-      {/* Información Demográfica (Editable) */}
-      <div className="bg-gradient-to-br from-indigo-50/50 to-white dark:from-gray-800/50 dark:to-gray-800 p-5 rounded-3xl border border-indigo-100/50 dark:border-gray-700 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-          <FiUser size={80} className="text-indigo-600" />
-        </div>
+    <div className="bg-gray-100 dark:bg-gray-950 p-2 md:p-8 min-h-full overflow-y-auto max-h-[75vh] custom-scrollbar">
+      {/* Contenedor tipo Hoja de Papel */}
+      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-none border border-gray-200 dark:border-gray-800 min-h-[1056px] p-[0.75in] font-serif text-[12pt] leading-[1.4] text-gray-900 dark:text-gray-100 flex flex-col">
         
-        <h4 className="text-lg font-black text-indigo-900 dark:text-white mb-4 flex items-center gap-2">
-          {data.is_single_report ? 'Informe Médico' : 'Expediente del Paciente'}
-          <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">GynSys</span>
-        </h4>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-          <EditableField 
-            label="Nombre Completo" 
-            value={data.full_name} 
-            onSave={(val) => onUpdateField(data.id, 'full_name', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Identificación (CI)" 
-            value={data.ci} 
-            onSave={(val) => onUpdateField(data.id, 'ci', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Edad" 
-            value={data.age?.toString()} 
-            onSave={(val) => onUpdateField(data.id, 'age', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Teléfono" 
-            value={data.phone} 
-            onSave={(val) => onUpdateField(data.id, 'phone', val)}
-            multiline={false}
-          />
-          <div className="md:col-span-2">
-            <EditableField 
-              label="Dirección" 
-              value={data.address} 
-              onSave={(val) => onUpdateField(data.id, 'address', val)}
-              multiline={false}
-            />
+        {/* Encabezado Institucional (Replica PDF) */}
+        <div className="flex justify-between items-center border-b-2 border-gray-900 dark:border-gray-100 pb-4 mb-6">
+          <div className="w-[1.5in] flex flex-col items-center">
+             {/* Logo Placeholder - Espacio reservado para el logo oficial */}
+             <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center border border-indigo-100 dark:border-indigo-800">
+               <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">GS</span>
+             </div>
           </div>
-          <EditableField 
-            label="Ocupación" 
-            value={data.occupation} 
-            onSave={(val) => onUpdateField(data.id, 'occupation', val)}
-            multiline={false}
-          />
-          <div className="flex justify-between items-center p-2 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">Número de Historia</p>
-            <p className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</p>
+          <div className="flex-1 pl-[0.25in] text-left">
+            <h1 className="text-xl font-black uppercase text-gray-900 dark:text-white leading-tight">Dra. Mariel Herrera</h1>
+            <p className="text-[10pt] font-medium text-gray-600 dark:text-gray-400">Especialista en Ginecología y Obstetricia</p>
+            <p className="text-[10pt] text-gray-500 dark:text-gray-500 italic">Caracas-Guarenas Guatire</p>
+            <p className="text-[10pt] font-bold text-gray-700 dark:text-gray-300 mt-1">Citas: 04244281876-04127738918</p>
           </div>
         </div>
-      </div>
 
-      {/* Motivo de Consulta */}
-      <div className="space-y-2 bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-        <EditableField 
-          label="Motivo de Consulta" 
-          value={data.reason_for_visit} 
-          onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)}
-        />
-      </div>
-
-      {/* Antecedentes Médicos */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
-        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">Antecedentes Médicos</h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <EditableField 
-            label="Antecedentes Madre" 
-            value={data.family_history_mother} 
-            onSave={(val) => onUpdateField(data.id, 'family_history_mother', val)}
-          />
-          <EditableField 
-            label="Antecedentes Padre" 
-            value={data.family_history_father} 
-            onSave={(val) => onUpdateField(data.id, 'family_history_father', val)}
-          />
-          <EditableField 
-            label="Personales / Suplementos" 
-            value={data.personal_history} 
-            onSave={(val) => onUpdateField(data.id, 'personal_history', val)}
-          />
-          <EditableField 
-            label="Quirúrgicos" 
-            value={data.surgical_history} 
-            onSave={(val) => onUpdateField(data.id, 'surgical_history', val)}
-          />
-          <div className="md:col-span-2">
-            <EditableField 
-              label="Resumen Gineco-Obstétrico" 
-              value={data.summary_gyn_obstetric} 
-              onSave={(val) => onUpdateField(data.id, 'summary_gyn_obstetric', val)}
-            />
-          </div>
-          <EditableField 
-            label="Examen Funcional" 
-            value={data.summary_functional_exam} 
-            onSave={(val) => onUpdateField(data.id, 'summary_functional_exam', val)}
-          />
-          <EditableField 
-            label="Hábitos" 
-            value={data.summary_habits} 
-            onSave={(val) => onUpdateField(data.id, 'summary_habits', val)}
-          />
+        {/* Título del Documento */}
+        <div className="text-center mb-8">
+           <h2 className="text-xl font-black border-b-2 border-black dark:border-white inline-block px-4 pb-0.5 uppercase tracking-tighter">
+             {data.is_single_report ? 'INFORME MÉDICO' : 'HISTORIA MÉDICA'}
+           </h2>
         </div>
-      </div>
 
-      {/* Evolución Médica */}
-      <div className="space-y-6 pt-4">
-        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">
-          {data.is_single_report ? 'Detalles Médicos' : 'Evolución Cronológica'}
-        </h4>
-        
-        <div className={`space-y-10 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 before:bg-indigo-100 dark:before:bg-gray-700" : ""}`}>
-          {consultations.map((c, idx) => (
-            <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
-              {!data.is_single_report && (
-                <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 shadow-sm z-10 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                </div>
-              )}
+        {/* Tabla de Datos del Paciente (Estilo PDF) */}
+        <div className="grid grid-cols-2 border-b border-gray-300 dark:border-gray-700 pb-4 mb-6 gap-y-2 text-[11pt]">
+          <div className="flex gap-2">
+            <span className="font-bold min-w-[80px]">Nombre:</span>
+            <div className="flex-1"><EditableField value={data.full_name} onSave={(val) => onUpdateField(data.id, 'full_name', val)} multiline={false} /></div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <span className="font-bold min-w-[50px]">Edad:</span>
+            <div className="w-20"><EditableField value={data.age?.toString()} onSave={(val) => onUpdateField(data.id, 'age', val)} multiline={false} /></div>
+          </div>
+          <div className="flex gap-2">
+            <span className="font-bold min-w-[80px]">C.I.:</span>
+            <div className="flex-1"><EditableField value={data.ci} onSave={(val) => onUpdateField(data.id, 'ci', val)} multiline={false} /></div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <span className="font-bold min-w-[50px]">TLF:</span>
+            <div className="w-40"><EditableField value={data.phone} onSave={(val) => onUpdateField(data.id, 'phone', val)} multiline={false} /></div>
+          </div>
+          <div className="flex gap-2 col-span-2 border-t border-gray-100 dark:border-gray-800 pt-2 mt-1">
+            <span className="font-bold min-w-[80px]">N° Historia:</span>
+            <span className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</span>
+          </div>
+        </div>
+
+        {/* Cuerpo del Informe / Historia */}
+        <div className="space-y-6 flex-1">
+          {/* Secciones Base (Motivo y Antecedentes) */}
+          <div className="space-y-4">
+            <section className="flex items-start gap-4 group">
+               <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Motivo de consulta:</span>
+               <div className="flex-1"><EditableField value={data.reason_for_visit} onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)} /></div>
+            </section>
+
+            <section className="flex items-start gap-4">
+               <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Familiares:</span>
+               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <EditableField label="Madre" value={data.family_history_mother} onSave={(val) => onUpdateField(data.id, 'family_history_mother', val)} />
+                  <EditableField label="Padre" value={data.family_history_father} onSave={(val) => onUpdateField(data.id, 'family_history_father', val)} />
+               </div>
+            </section>
+
+            <section className="flex items-start gap-4">
+               <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Personales:</span>
+               <div className="flex-1"><EditableField value={data.personal_history} onSave={(val) => onUpdateField(data.id, 'personal_history', val)} /></div>
+            </section>
+
+            <section className="flex items-start gap-4">
+               <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Antecedentes Quirúrgicos:</span>
+               <div className="flex-1"><EditableField value={data.surgical_history} onSave={(val) => onUpdateField(data.id, 'surgical_history', val)} /></div>
+            </section>
+
+            <section className="flex items-start gap-4">
+               <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1">Gineco-Obstétricos:</span>
+               <div className="flex-1"><EditableField value={data.summary_gyn_obstetric} onSave={(val) => onUpdateField(data.id, 'summary_gyn_obstetric', val)} /></div>
+            </section>
+          </div>
+
+          {/* Separador para Consultas */}
+          {consultations.length > 0 && (
+            <div className="mt-8 border-t-2 border-gray-100 dark:border-gray-800 pt-6">
+              <h3 className="bg-gray-100 dark:bg-gray-800 px-4 py-2 font-black text-sm uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-6 rounded-lg">
+                Registro de Consultas Médicas
+              </h3>
               
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-md shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 space-y-6">
-                <div className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/20 p-3 -m-3 mb-3 rounded-t-[1.8rem] border-b border-indigo-50 dark:border-gray-700">
-                  <p className="text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
-                    {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                  </p>
-                  <span className="bg-indigo-600 text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
-                    {data.is_single_report ? 'Consulta Actual' : `Visita #${consultations.length - idx}`}
-                  </span>
-                </div>
+              <div className="space-y-12">
+                {consultations.map((c, idx) => (
+                  <article key={idx} className="border-l-4 border-indigo-500 pl-6 space-y-4">
+                    <header className="flex justify-between items-center mb-2">
+                      <span className="font-black text-gray-900 dark:text-white uppercase text-base">
+                        Consulta #{consultations.length - idx}
+                      </span>
+                      <span className="text-sm font-bold text-indigo-600 italic">
+                        {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      </span>
+                    </header>
 
-                <div className="grid grid-cols-1 gap-6">
-                  <EditableField 
-                    label="Diagnóstico Integrado" 
-                    value={c.diagnosis} 
-                    onSave={(val) => onUpdateField(c.id, 'diagnosis', val)}
-                  />
-                  
-                  <EditableField 
-                    label="Plan de Tratamiento" 
-                    value={c.plan} 
-                    onSave={(val) => onUpdateField(c.id, 'plan', val)}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50 dark:border-gray-700">
-                    <EditableField 
-                      label="Examen Físico" 
-                      value={c.physical_exam} 
-                      onSave={(val) => onUpdateField(c.id, 'physical_exam', val)}
-                    />
-                    <EditableField 
-                      label="Hallazgos Ecográficos" 
-                      value={c.ultrasound} 
-                      onSave={(val) => onUpdateField(c.id, 'ultrasound', val)}
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-50 dark:border-gray-700">
-                    <EditableField 
-                      label="Observaciones" 
-                      value={c.observations} 
-                      onSave={(val) => onUpdateField(c.id, 'observations', val)}
-                    />
-                  </div>
-                </div>
+                    <div className="space-y-4">
+                      <section className="flex items-start gap-4">
+                        <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Examen Físico:</span>
+                        <div className="flex-1 font-medium"><EditableField value={c.physical_exam} onSave={(val) => onUpdateField(c.id, 'physical_exam', val)} /></div>
+                      </section>
+                      <section className="flex items-start gap-4">
+                        <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Ultrasonido:</span>
+                        <div className="flex-1 font-medium"><EditableField value={c.ultrasound} onSave={(val) => onUpdateField(c.id, 'ultrasound', val)} /></div>
+                      </section>
+                      <section className="flex items-start gap-4">
+                        <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Diagnóstico:</span>
+                        <div className="flex-1 font-medium"><EditableField value={c.diagnosis} onSave={(val) => onUpdateField(c.id, 'diagnosis', val)} /></div>
+                      </section>
+                      <section className="flex items-start gap-4">
+                        <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Plan de Tratamiento:</span>
+                        <div className="flex-1 font-medium"><EditableField value={c.plan} onSave={(val) => onUpdateField(c.id, 'plan', val)} /></div>
+                      </section>
+                      <section className="flex items-start gap-4">
+                        <span className="font-black text-[9pt] uppercase min-w-[1.5in] pt-1 text-gray-500">Observaciones:</span>
+                        <div className="flex-1 font-medium"><EditableField value={c.observations} onSave={(val) => onUpdateField(c.id, 'observations', val)} /></div>
+                      </section>
+                    </div>
+                  </article>
+                ))}
               </div>
             </div>
-          ))}
+          )}
         </div>
-      </div>
 
-      {/* Soportes Digitales */}
-      {data.id && (
-        <div className="pt-6">
-          <ConsultationAssetManager consultationId={data.id} readOnly={false} />
-        </div>
-      )}
+        {/* Firma Placeholder (Si es Informe Único) */}
+        {data.is_single_report && (
+          <div className="mt-20 border-t border-gray-400 dark:border-gray-600 w-64 mx-auto text-center pt-2">
+            <p className="font-black text-sm uppercase leading-tight">Dra. Mariel Herrera</p>
+            <p className="text-[9pt] text-gray-500">Ginecólogo Obstetra - UCV</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
 
 export default function PatientsManager({ isEmbedded = false }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
