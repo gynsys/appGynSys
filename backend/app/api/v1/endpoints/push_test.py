@@ -43,7 +43,7 @@ async def get_users_with_push(
     # Query all doctors
     doctors_data = db.query(Doctor.id, Doctor.email, Doctor.nombre_completo).all()
     
-    # Get IDs of those with push
+    # Get IDs of those with push (for sorting preference but not displayed as icons)
     patient_ids_with_push = set(r[0] for r in db.query(PushSubscription.user_id).filter(PushSubscription.user_id.isnot(None)).all())
     doctor_ids_with_push = set(r[0] for r in db.query(PushSubscription.doctor_id).filter(PushSubscription.doctor_id.isnot(None)).all())
     
@@ -66,8 +66,8 @@ async def get_users_with_push(
             "has_push": d.id in doctor_ids_with_push
         })
     
-    # Sort by push status (those with push first) and then by name
-    all_users.sort(key=lambda x: (not x["has_push"], x["name"].lower()))
+    # Simple alphabetical sort
+    all_users.sort(key=lambda x: x["name"].lower())
     
     return {
         "success": True,

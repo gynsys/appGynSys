@@ -830,14 +830,14 @@ export default function NotificationManagerPage() {
                                     <optgroup label="Pacientes">
                                         {availableUsers.filter(u => u.type === 'patient').map(user => (
                                             <option key={user.id} value={user.email}>
-                                                {user.name} ({user.email}) {user.has_push ? '✅' : '❌'}
+                                                {user.name} ({user.email})
                                             </option>
                                         ))}
                                     </optgroup>
                                     <optgroup label="Inquilinos / Doctoras">
                                         {availableUsers.filter(u => u.type === 'doctor').map(user => (
                                             <option key={user.id} value={user.email}>
-                                                {user.name} ({user.email}) {user.has_push ? '✅' : '❌'}
+                                                {user.name} ({user.email})
                                             </option>
                                         ))}
                                     </optgroup>
