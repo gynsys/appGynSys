@@ -842,12 +842,16 @@ export const DoctorConsultationPage = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [modalState, setModalState] = useState('initial'); // 'initial', 'sending', 'success'
   const [consultationResult, setConsultationResult] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveConsultation = async () => {
+    if (isSaving) return;
     if (!patientData) {
       toastError("No hay datos del paciente para guardar.");
       return;
     }
+
+    setIsSaving(true);
 
     // Determine physical exam content
     let physicalExamContent = "";
@@ -923,6 +927,8 @@ export const DoctorConsultationPage = () => {
       setIsSuccessModalOpen(true);
     } catch (error) {
       toastError(`Error al guardar la consulta: ${error.message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1141,10 +1147,11 @@ export const DoctorConsultationPage = () => {
           <div className="flex justify-end pt-6">
             <button
               onClick={handleSaveConsultation}
-              className="text-white py-4 px-8 rounded-lg font-bold text-lg hover:opacity-90 transition-colors shadow-lg"
+              disabled={isSaving}
+              className={`text-white py-4 px-8 rounded-lg font-bold text-lg transition-colors shadow-lg ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
               style={{ backgroundColor: primaryColor }}
             >
-              Guardar Consulta
+              {isSaving ? 'Guardando...' : 'Guardar Consulta'}
             </button>
           </div>
         </div>
