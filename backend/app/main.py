@@ -18,22 +18,21 @@ app = FastAPI(
     debug=settings.DEBUG
 )
 
-# Configure CORS
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.CORS_ORIGINS],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
 @app.middleware("http")
 async def log_user_agent(request, call_next):
     ua = request.headers.get("user-agent", "unknown")
     print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)
     return await call_next(request)
+
+# Configure CORS (Must be added last to be the outer-most middleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[str(origin).rstrip("/") for origin in settings.CORS_ORIGINS],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 # Include API router
 # Include API router
 app.include_router(api_router, prefix="/api/v1")

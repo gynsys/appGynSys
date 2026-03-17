@@ -85,9 +85,12 @@ class Settings(BaseSettings):
         ]
         
         if isinstance(origins, list):
+            # Clean origins: no trailing slashes, no spaces
+            origins = [o.strip().rstrip("/") for o in origins if o.strip()]
             for domain in required_origins:
-                if domain not in origins:
-                    origins.append(domain)
+                clean_domain = domain.strip().rstrip("/")
+                if clean_domain not in origins:
+                    origins.append(clean_domain)
             return origins
             
         return v
