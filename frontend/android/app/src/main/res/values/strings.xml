@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GynSys</string>
-    <string name="title_activity_main">GynSys</string>
-    <string name="package_name">net.gynsys</string>
-    <string name="custom_url_scheme">net.gynsys</string>
+    <string name="app_name">gynsys-app</string>
+    <string name="title_activity_main">gynsys-app</string>
+    <string name="package_name">com.gynsys.app</string>
+    <string name="custom_url_scheme">com.gynsys.app</string>
 </resources>

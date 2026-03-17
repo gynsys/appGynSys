@@ -57,7 +57,7 @@ const EditableField = ({ value, onSave, label, multiline = true }) => {
         </div>
         <textarea
           autoFocus
-          className="w-full p-3 text-sm border-2 border-indigo-500 rounded-xl outline-none bg-white shadow-inner font-medium ring-4 ring-indigo-50"
+          className="w-full p-3 text-sm border-2 border-indigo-500 rounded-xl outline-none bg-white dark:bg-gray-800 dark:text-gray-100 shadow-inner font-medium ring-4 ring-indigo-50 dark:ring-indigo-900/20"
           value={currentValue || ''}
           onChange={(e) => setCurrentValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -72,13 +72,13 @@ const EditableField = ({ value, onSave, label, multiline = true }) => {
   return (
     <div 
       onDoubleClick={() => setIsEditing(true)}
-      className="group relative cursor-pointer hover:bg-indigo-50/40 p-2 -m-2 rounded-xl transition-all border border-transparent hover:border-indigo-100/50"
+      className="group relative cursor-pointer hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 p-2 -m-2 rounded-xl transition-all border border-transparent hover:border-indigo-100/50 dark:hover:border-indigo-800/50"
     >
       <div className="flex justify-between items-start mb-1">
          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</p>
          <FiEdit className="opacity-0 group-hover:opacity-100 text-indigo-400 transition-all transform scale-90 group-hover:scale-100" size={12} title="Doble clic para editar" />
       </div>
-      <p className={`text-sm leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-300' : 'text-gray-700 font-medium'}`}>
+      <p className={`text-sm leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>
         {value || `Sin especificar ${label.toLowerCase()}`}
       </p>
     </div>
@@ -153,15 +153,15 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
             onSave={(val) => onUpdateField(data.id, 'occupation', val)}
             multiline={false}
           />
-          <div className="flex justify-between items-center p-2 bg-white rounded-xl border border-gray-100">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Número de Historia</p>
-            <p className="font-black text-indigo-600">{data.history_number}</p>
+          <div className="flex justify-between items-center p-2 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">Número de Historia</p>
+            <p className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</p>
           </div>
         </div>
       </div>
 
       {/* Motivo de Consulta */}
-      <div className="space-y-2 bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
+      <div className="space-y-2 bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
         <EditableField 
           label="Motivo de Consulta" 
           value={data.reason_for_visit} 
@@ -170,8 +170,8 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
       </div>
 
       {/* Antecedentes Médicos */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-        <h4 className="text-sm font-black text-gray-900 border-b border-gray-50 pb-3 uppercase tracking-widest">Antecedentes Médicos</h4>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
+        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">Antecedentes Médicos</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <EditableField 
@@ -216,7 +216,7 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
 
       {/* Evolución Médica */}
       <div className="space-y-6 pt-4">
-        <h4 className="text-sm font-black text-gray-900 border-b border-gray-50 pb-3 uppercase tracking-widest">
+        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">
           {data.is_single_report ? 'Detalles Médicos' : 'Evolución Cronológica'}
         </h4>
         
@@ -229,9 +229,9 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
                 </div>
               )}
               
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-md shadow-gray-200/50 border border-gray-100 dark:border-gray-700 space-y-6">
-                <div className="flex justify-between items-center bg-indigo-50/30 p-3 -m-3 mb-3 rounded-t-[1.8rem] border-b border-indigo-50">
-                  <p className="text-indigo-900 font-black text-xs uppercase tracking-wider">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-md shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 space-y-6">
+                <div className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/20 p-3 -m-3 mb-3 rounded-t-[1.8rem] border-b border-indigo-50 dark:border-gray-700">
+                  <p className="text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
                     {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </p>
                   <span className="bg-indigo-600 text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
@@ -252,7 +252,7 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
                     onSave={(val) => onUpdateField(c.id, 'plan', val)}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50 dark:border-gray-700">
                     <EditableField 
                       label="Examen Físico" 
                       value={c.physical_exam} 
@@ -265,7 +265,7 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
                     />
                   </div>
 
-                  <div className="pt-4 border-t border-gray-50">
+                  <div className="pt-4 border-t border-gray-50 dark:border-gray-700">
                     <EditableField 
                       label="Observaciones" 
                       value={c.observations} 
@@ -680,8 +680,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                   <FiFileText size={20} />
                </div>
                <div>
-                  <h3 className="font-black text-gray-900 dark:text-white leading-none">Visor Inteligente</h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Interactivo & Oficial</p>
+                  <h3 className="font-black text-gray-900 dark:text-white leading-none">Visor Interactivo</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Edición & Gestión</p>
                </div>
             </div>
 
@@ -710,27 +710,13 @@ export default function PatientsManager({ isEmbedded = false }) {
 
             {!isAssetOnly && (
                <div className="flex items-center gap-4 ml-auto">
-                  <label className="flex items-center gap-2 cursor-pointer group hidden sm:flex">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        checked={includeImages}
-                        onChange={(e) => setIncludeImages(e.target.checked)}
-                        className="sr-only"
-                      />
-                      <div className={`w-10 h-5 bg-gray-200 rounded-full transition-colors ${includeImages ? 'bg-indigo-600' : ''}`}></div>
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${includeImages ? 'translate-x-5' : ''}`}></div>
-                    </div>
-                    <span className="text-[10px] font-black text-gray-400 group-hover:text-indigo-600 transition-colors uppercase tracking-widest">Imágenes</span>
-                  </label>
-
                   {basePdfUrl && (
                     <button 
                       onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
                       className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
                     >
                       <FiDownload />
-                      <span className="hidden sm:inline">{isCapacitor() ? 'ABRIR' : 'DESCARGAR PDF'}</span>
+                      <span className="hidden sm:inline">{isCapacitor() ? 'DESCARGAR OFICIAL' : 'DESCARGAR PDF'}</span>
                       <span className="sm:hidden">PDF</span>
                     </button>
                   )}
@@ -738,7 +724,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             )}
           </div>
 
-          {/* Contenido Principal: Dual View */}
+          {/* Contenido Principal */}
           <div className="flex-1 min-h-0">
             {activePdfTab === 'assets' ? (
               <div className="h-full bg-white dark:bg-gray-800 p-4 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-y-auto">
@@ -747,46 +733,23 @@ export default function PatientsManager({ isEmbedded = false }) {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                {/* 1. Vista HTML (Interactivo/Edición) */}
-                <div className="flex flex-col h-full bg-gray-50/50 dark:bg-gray-900/50 rounded-3xl border border-indigo-100/30 dark:border-gray-800 overflow-hidden">
-                   <div className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-b border-indigo-50/50 dark:border-gray-800 flex justify-between items-center">
-                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        Edición en Vivo (Doble clic cualquier texto)
-                      </p>
-                   </div>
-                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                     {loadingHistory ? (
-                       <div className="h-full flex flex-col items-center justify-center space-y-4">
-                          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                          <p className="text-xs font-black text-indigo-400 uppercase tracking-widest">Sincronizando...</p>
-                       </div>
-                     ) : (
-                       <HistoryHtmlView data={historyData} onUpdateField={handleInlineUpdate} />
-                     )}
-                   </div>
-                </div>
-
-                {/* 2. Vista PDF (Fidelidad/Oficial) */}
-                <div className="hidden lg:flex flex-col h-full bg-slate-100 dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 shadow-inner overflow-hidden">
-                   <div className="p-3 bg-slate-50 dark:bg-gray-900 border-b border-slate-200 dark:border-gray-700 flex justify-between items-center">
-                      <p className="text-[10px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <FiFileText />
-                        Vista Previa del Documento Oficial
-                      </p>
-                   </div>
-                   <div className="flex-1 bg-slate-200 dark:bg-gray-900 relative">
-                     {basePdfUrl && (
-                        <iframe 
-                          src={getFullPdfUrl()} 
-                          className="w-full h-full border-none shadow-2xl scale-[0.98] origin-center rounded-sm transition-opacity duration-300"
-                          title="PDF Preview"
-                          key={getFullPdfUrl()}
-                        />
-                     )}
-                   </div>
-                </div>
+              <div className="h-full bg-gray-50/50 dark:bg-gray-900/50 rounded-3xl border border-indigo-100/30 dark:border-gray-800 overflow-hidden flex flex-col">
+                 <div className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-b border-indigo-50/50 dark:border-gray-800 flex justify-between items-center">
+                    <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      Edición en Vivo Activa (Doble clic cualquier texto)
+                    </p>
+                 </div>
+                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar p-1">
+                   {loadingHistory ? (
+                     <div className="h-full flex flex-col items-center justify-center space-y-4">
+                        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <p className="text-xs font-black text-indigo-400 uppercase tracking-widest">Sincronizando...</p>
+                     </div>
+                   ) : (
+                     <HistoryHtmlView data={historyData} onUpdateField={handleInlineUpdate} />
+                   )}
+                 </div>
               </div>
             )}
           </div>
