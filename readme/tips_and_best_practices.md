@@ -7,24 +7,31 @@ Este documento recopila lecciones aprendidas durante la resolución de incidente
 Al usar `python ssh_runner.py` para ejecutar comandos `psql` dentro de Docker, el escape de caracteres se vuelve extremadamente complejo debido a los múltiples niveles de interpretación (PowerShell -> Python Script -> SSH -> Bash en Server -> Bash en Docker -> Postgres).
 
 ### ❌ Lo que NO funciona (o da muchos problemas)
-- **Comandos con `/`**: Intentar usar `LIKE '%/%'` o rutas con barras suele causar errores de `unexpected EOF` o truncado de comandos.
-- **Comillas anidadas complejas**: PowerShell y Bash interpretan las comillas de forma distinta, lo que rompe la cadena del comando SQL.
+- **Comandos con `/`**: Intentar usar `LIKE '%/%'` o rutas con barras suele causar errores de `unexpected EOF`, `CommandNotFound` o el truncado silencioso del comando. El sistema interpreta la barra como un separador de ruta o escape de Shell antes de llegar a Postgres.
+- **Comillas anidadas complejas**: PowerShell y Bash interpretan las comillas de forma distinta. Lo que parece bien escapado en la terminal local se rompe al pasar por SSH y luego al `docker exec`.
+- **El "Bucle de Fallos"**: Es común intentar corregir el escape una y otra vez (cambiando `\"` por `\'`, añadiendo `\\`, etc.). Esto suele consumir muchas iteraciones sin éxito debido a la cantidad de capas de software involucradas.
 
-### ✅ Lo que SÍ funciona (Recomendado)
-Para consultas complejas, **NO uses SQL directo** en la línea de comandos. En su lugar:
+### ✅ Lo que SÍ funciona (La Regla de Oro)
+Para cualquier consulta que no sea un simple `SELECT * FROM table LIMIT 10`, **NO uses SQL directo**. En su lugar, aplica la técnica de **Fail-Fast**:
 
-1.  **Crea un script de Python temporal** en `backend/scripts/` (ej. `temp_query.py`).
-2.  Usa los modelos de SQLAlchemy para realizar la consulta.
-3.  Sincroniza el script vía Git o `scp`.
-4.  Ejecútalo con:
+1.  **Si el comando falla a la primera**, no intentes arreglar el escape.
+2.  **Crea inmediatamente un script de Python** en `backend/scripts/` (ej. `diagnose_x.py`).
+3.  Usa el boilerplate estándar para conectar a la DB:
+    ```python
+    from app.db.base import SessionLocal
+    db = SessionLocal()
+    # ... tu lógica aquí ...
+    db.close()
+    ```
+4.  Sincroniza y ejecuta:
     ```bash
-    python ssh_runner.py "docker exec -w /app -e PYTHONPATH=. appgynsys-backend-1 python scripts/temp_query.py"
+    python ssh_runner.py "cd /opt/appgynsys ; git pull ; docker exec ... python scripts/diagnose_x.py"
     ```
 
 **Ventajas:**
-- Evitas problemas de escaping.
-- Puedes formatear la salida como JSON para facilitar la lectura.
-- El script queda como referencia para el futuro.
+- **Inmunidad al Escaping**: El código SQL vive dentro del string de Python, protegido de las capas de Shell.
+- **Resultados Estructurados**: Puedes procesar datos complejos y escupir JSON limpio.
+- **Auditabilidad**: El diagnóstico queda guardado como código en el repositorio.
 
 ---
 
