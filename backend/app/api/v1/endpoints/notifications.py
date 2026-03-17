@@ -11,7 +11,9 @@ from app.schemas.notification import (
     NotificationRuleUpdate, 
     NotificationRuleResponse,
     PushSubscriptionSchema,
-    VapidKeyResponse
+    VapidKeyResponse,
+    NotificationLogResponse,
+    PendingNotificationResponse
 )
 from app.services import notifications as service
 from app.core.config import settings
