@@ -102,10 +102,10 @@ def create_or_update_subscription(
         "user_id": user_id,
         "doctor_id": doctor_id
     }
-    
     from sqlalchemy import func
     
     _logger.info(f"[GynSysPush] UPSERT Values: {values}")
+    print(f"[GynSysPush-DEBUG] UPSERT Values: {values}", flush=True)
     
     stmt = insert(PushSubscription).values(**values)
     stmt = stmt.on_conflict_do_update(
