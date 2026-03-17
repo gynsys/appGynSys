@@ -281,46 +281,39 @@ def deliver_pending_notifications():
                     if not item or item.status != "processing":
                         continue
                     
-                    # 1. Crear el Log de Notificación PREVIAMENTE para tener el ID para tracking
+                    # 1. Intentar envío DUAL (Emails + Push) 
+                    # El log_id se pasaría si ya existiera, pero vamos a crearlo después para mayor precisión
+                    success, channel, error = send_dual_notification_logic(db, item)
+                    
+                    # 2. Crear el Log de Notificación con el RESULTADO REAL
                     log = NotificationLog(
                         notification_rule_id=item.notification_rule_id,
                         recipient_id=item.recipient_id,
                         doctor_id=item.doctor_id,
                         notification_type=item.rule.notification_type if item.rule else "unknown",
                         title_sent=item.subject,
-                        status="sent",  # Optimista, se cambiará si falla
-                        channel_used="pending", # Se actualizará al enviar
+                        status="sent" if success else "failed",
+                        channel_used=channel or "none",
+                        error_message=error[:500] if error else None,
                         sent_at=now
                     )
                     db.add(log)
-                    db.flush() # Para obtener el log.id
 
-                    # 2. Intentar envío DUAL (Emails + Push) pasando el ID para tracking
-                    success, channel, error = send_dual_notification_logic(db, item, log_id=log.id)
-                    
                     if success:
                         item.status = "sent"
                         item.sent_at = now
                         item.channel_used = channel
-                        
-                        # Actualizar el log con el canal final y errores parciales si hubo
-                        log.channel_used = channel
-                        if error:
-                            log.error_message = error[:500]
                     else:
                         item.retry_count += 1
-                        item.last_error = error[:500] if error else None
+                        item.last_error = error[:500] if error else "Total failure"
                         
-                        # Actualizar log como fallido
-                        log.status = "failed"
-                        log.channel_used = channel or "none"
-                        log.error_message = error[:500] if error else "Total failure"
-
                         if item.retry_count >= MAX_RETRIES:
                             item.status = "failed"
                         else:
                             item.status = "retrying"
                             item.scheduled_for = calculate_next_retry_time(item.retry_count)
+                    
+                    db.flush()
     except Exception as e:
         logger.error(f"Error in deliver_pending_notifications: {e}")
 

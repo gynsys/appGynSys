@@ -16,6 +16,7 @@ def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dic
             return rule.render_content(context)
 
         title_tpl = getattr(rule, "title_template", "") or ""
+        html_tpl = getattr(rule, "message_template", "") or ""
         text_tpl = getattr(rule, "message_text_template", "") or ""
 
         def _fmt(tpl: str) -> str:
@@ -25,8 +26,19 @@ def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dic
                 return tpl
 
         rendered_title = _fmt(title_tpl)
-        rendered_text = _fmt(text_tpl)
-        rendered_html = f"<p>{rendered_text}</p>" if rendered_text and not rendered_text.startswith("<") else rendered_text
+        rendered_html = _fmt(html_tpl)
+        
+        # --- Fuente Única de Verdad para el Texto ---
+        # Si el usuario NO proporcionó un texto plano específico, derivamos del HTML
+        if not text_tpl:
+            import re
+            # Limpieza básica de HTML para Push
+            clean_text = re.sub(r'<[^>]+>', '', html_tpl)
+            # Normalizar espacios y saltos de línea
+            clean_text = ' '.join(clean_text.split())
+            rendered_text = _fmt(clean_text)
+        else:
+            rendered_text = _fmt(text_tpl)
 
         return {
             "title": rendered_title,
