@@ -501,25 +501,37 @@ class NarrativePreconsultaSummarizer:
         sections = []
         
         # Actividad física
-        exercises = self._get_response_value("TEMPLATE_1766696959489_53", patient_data)
-        if exercises:
+        exercises = self._get_value_by_keywords(['actividad física', 'ejercicio', 'frecuencia ejercicio'], patient_data, direct_keys=['habits_physical_activity'])
+        if exercises and str(exercises).lower() not in ['no', 'false', '0', 'ninguno', 'sedentaria']:
             sections.append("actividad física regular")
+        elif str(exercises).lower() == 'sedentaria':
+            sections.append("sedentaria")
         
         # Tabaco
-        smokes = self._get_response_value("TEMPLATE_1766696959801_58", patient_data)
-        if not smokes:
-            sections.append("no fumadora")
-        else:
-            sections.append("fumadora")
+        smokes = self._get_value_by_keywords(['smoking', 'fumas', 'tabaco', 'consumo tabaco'], patient_data, direct_keys=['habits_smoking'])
+        if smokes is not None:
+             s_lower = str(smokes).lower()
+             if s_lower in ('no', 'false', '0', 'no fumadora', 'niega'):
+                 sections.append("no fumadora")
+             else:
+                 sections.append("fumadora" if s_lower in ('si', 'sí', 'true', '1') else f"fumadora ({s_lower})")
         
         # Alcohol
-        alcohol = self._get_response_value("TEMPLATE_1766696959857_59", patient_data)
-        if alcohol and alcohol != "No":
-            if alcohol == "Ocasional (Social)":
+        alcohol = self._get_value_by_keywords(['alcohol', 'consumo alcohol', 'bebidas alcohólicas'], patient_data, direct_keys=['habits_alcohol'])
+        if alcohol and str(alcohol).lower() not in ['no', 'false', '0', 'nunca', 'niega']:
+            if str(alcohol).lower() in ["ocasional (social)", "ocasional", "social"]:
                 sections.append("consumo ocasional de alcohol")
             else:
-                sections.append(f"consumo de alcohol: {alcohol.lower()}")
+                sections.append(f"consumo de alcohol: {str(alcohol).lower()}")
         
+        # Sustancias
+        substances = self._get_value_by_keywords(['sustancias', 'drogas', 'ilícita', 'ilicitas'], patient_data, direct_keys=['habits_substance_use'])
+        if substances and str(substances).lower() not in ['no', 'false', '0', 'nunca', 'niega', 'falso']:
+            sections.append(f"consumo de sustancias: {str(substances).lower()}")
+            
+        if not sections:
+            return "hábitos de vida no reportados"
+            
         return f"{', '.join(sections)}"
     
     def generate_summary_sections(self, patient_data: Dict[str, Any], patient_name: str) -> Dict[str, str]:

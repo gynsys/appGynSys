@@ -336,6 +336,21 @@ async def submit_preconsulta(
                         "order": q.order
                     })
 
+                # Map to legacy keys for frontend display (DoctorConsultationPage.jsx)
+                for q in all_questions:
+                    q_text_lower = q.text.lower()
+                    q_id = str(q.id)
+                    if q_id in answers:
+                        val = answers[q_id]
+                        if any(kw in q_text_lower for kw in ['fuma', 'tabaco', 'smoking']):
+                            answers['habits_smoking'] = val
+                        elif any(kw in q_text_lower for kw in ['alcohol', 'bebidas']):
+                            answers['habits_alcohol'] = val
+                        elif any(kw in q_text_lower for kw in ['actividad física', 'ejercicio']):
+                            answers['habits_physical_activity'] = val
+                        elif any(kw in q_text_lower for kw in ['sustancia', 'droga']):
+                            answers['habits_substance_use'] = val
+
                 summary_data = ClinicalSummaryGenerator.generate(appointment, formatted_answers, template_data=template_data)
                 summary_html = summary_data.get('full_narrative_html')
 

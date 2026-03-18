@@ -6,33 +6,49 @@
 export const generateHabitsSummary = (answers) => {
     const parts = [];
 
+    // Helper to find value by keywords in keys or by direct key
+    const getValue = (keywords, directKey) => {
+        if (answers[directKey] !== undefined) return answers[directKey];
+        // Search in all answers for matching question text if possible
+        // But here we only have the answers object (key -> value)
+        // Let's at least check common legacy keys
+        return undefined;
+    };
+
+    const alcohol = answers.habits_alcohol;
+    const smoking = answers.habits_smoking;
+    const substance = answers.habits_substance_use;
+    const exercise = answers.habits_physical_activity;
+
     // Alcohol
-    if (answers.habits_alcohol === 'Sí' || answers.habits_alcohol === 'Ocasion') {
-        parts.push(`Alcohol: ${answers.habits_alcohol_freq || 'Ocasional'}`);
-    } else if (answers.habits_alcohol === 'No') {
+    if (alcohol === 'Sí' || alcohol === 'Ocasion' || alcohol === 'Ocasionalmente') {
+        parts.push(`Alcohol: ${answers.habits_alcohol_freq || alcohol}`);
+    } else if (alcohol === 'No' || alcohol === 'Nunca') {
         parts.push('Negativo alcohol');
     }
 
     // Smoking
-    if (answers.habits_smoking === 'Sí') {
-        parts.push(`Tabáquismo: ${answers.habits_smoking_freq || 'Sí'}`);
-    } else if (answers.habits_smoking === 'No') {
+    if (smoking === 'Sí' || (typeof smoking === 'string' && smoking.toLowerCase().includes('si'))) {
+        parts.push(`Tabáquismo: ${answers.habits_smoking_freq || smoking}`);
+    } else if (smoking === 'No' || smoking === 'Nunca') {
         parts.push('Negativo tabáquismo');
     }
 
     // Drugs
-    if (answers.habits_substance_use === 'Sí') {
-        parts.push(`Drogas: ${answers.habits_substance_type || 'Sí'}`);
-    } else if (answers.habits_substance_use === 'No') {
+    if (substance === 'Sí' || (typeof substance === 'string' && substance.toLowerCase().includes('si'))) {
+        parts.push(`Drogas: ${answers.habits_substance_type || substance}`);
+    } else if (substance === 'No' || substance === 'Nunca') {
         parts.push('Negativo drogas ilícitas');
     }
 
     // Exercise
-    if (answers.habits_physical_activity === 'Sí') {
+    if (exercise === 'Sí' || exercise === true || (typeof exercise === 'string' && exercise.toLowerCase().includes('si'))) {
         parts.push(`Actividad física: Sí`);
-    } else {
+    } else if (exercise === 'No' || exercise === false) {
         parts.push(`Sedentaria`);
     }
+
+    if (parts.length === 0) return "Hábitos no reportados.";
 
     return parts.join('. ') + '.';
 };
