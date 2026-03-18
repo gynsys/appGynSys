@@ -179,7 +179,11 @@ def get_audit_logs(
     status: Optional[str] = None
 ) -> List[NotificationLog]:
     """Obtiene el historial de notificaciones con filtros opcionales."""
-    query = db.query(NotificationLog)
+    from sqlalchemy.orm import joinedload
+    query = db.query(NotificationLog).options(
+        joinedload(NotificationLog.recipient),
+        joinedload(NotificationLog.doctor)
+    )
     
     if status:
         query = query.filter(NotificationLog.status == status)
@@ -210,7 +214,11 @@ def get_pending_queue(
     status: Optional[str] = None
 ) -> List[PendingNotification]:
     """Obtiene la cola de notificaciones pendientes con filtros opcionales."""
-    query = db.query(PendingNotification)
+    from sqlalchemy.orm import joinedload
+    query = db.query(PendingNotification).options(
+        joinedload(PendingNotification.recipient),
+        joinedload(PendingNotification.doctor)
+    )
     
     if status:
         query = query.filter(PendingNotification.status == status)

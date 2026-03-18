@@ -687,12 +687,14 @@ export default function NotificationManagerPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px]" title={log.recipient_name}>
-                                                {log.recipient_name || 'Sistema'}
+                                            <span className="text-[11px] font-black text-gray-900 dark:text-gray-100 truncate max-w-[180px]" title={log.recipient_email}>
+                                                {log.recipient_email || 'Sistema'}
                                             </span>
-                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]" title={log.recipient_email}>
-                                                {log.recipient_email || '-'}
-                                            </span>
+                                            {log.recipient_name && (
+                                                <span className="text-[9px] text-gray-500 font-bold truncate max-w-[180px]" title={log.recipient_name}>
+                                                    {log.recipient_name}
+                                                </span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -780,12 +782,14 @@ export default function NotificationManagerPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px]" title={item.recipient_name}>
-                                                {item.recipient_name || 'Sistema'}
+                                            <span className="text-[11px] font-black text-gray-900 dark:text-gray-100 truncate max-w-[180px]" title={item.recipient_email}>
+                                                {item.recipient_email || 'Sistema'}
                                             </span>
-                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]" title={item.recipient_email}>
-                                                {item.recipient_email || '-'}
-                                            </span>
+                                            {item.recipient_name && (
+                                                <span className="text-[9px] text-gray-500 font-bold truncate max-w-[180px]" title={item.recipient_name}>
+                                                    {item.recipient_name}
+                                                </span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
