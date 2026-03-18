@@ -535,10 +535,10 @@ export const DoctorConsultationPage = () => {
 
         {/* Hábitos (Full Width) */}
         <ModernCard title="Hábitos Psicobiológicos" icon={FaRunning} headerColor="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300" borderColor="border-green-200 dark:border-green-800">
-          <Field label="Tabaco" value={patientData.habits_smoking || "No reportado"} />
-          <Field label="Alcohol" value={patientData.habits_alcohol || "No reportado"} />
-          <Field label="Actividad Física" value={patientData.habits_physical_activity || "No reportado"} />
-          <Field label="Sustancias" value={patientData.habits_substance_use || "No reportado"} />
+          <Field label="Tabaco" value={patientData.habits_smoking || patientData.preconsulta_answers?.habits_smoking || patientData.preconsulta_answers?.['15'] || "No reportado"} />
+          <Field label="Alcohol" value={patientData.habits_alcohol || patientData.preconsulta_answers?.habits_alcohol || patientData.preconsulta_answers?.['16'] || "No reportado"} />
+          <Field label="Actividad Física" value={patientData.habits_physical_activity || patientData.preconsulta_answers?.habits_physical_activity || patientData.preconsulta_answers?.['17'] || "No reportado"} />
+          <Field label="Sustancias" value={patientData.habits_substance_use || patientData.preconsulta_answers?.habits_substance_use || patientData.preconsulta_answers?.['18'] || "No reportado"} />
         </ModernCard>
       </div>
     );
@@ -884,10 +884,10 @@ export const DoctorConsultationPage = () => {
       summary_gyn_obstetric: formatFullGynObstetricSummary(patientData),
       summary_functional_exam: patientData.summary_functional_exam,
       summary_habits: patientData.summary_habits,
-      habits_smoking: patientData.habits_smoking,
-      habits_alcohol: patientData.habits_alcohol,
-      habits_physical_activity: patientData.habits_physical_activity,
-      habits_substance_use: patientData.habits_substance_use,
+      habits_smoking: patientData.habits_smoking || patientData.preconsulta_answers?.habits_smoking || patientData.preconsulta_answers?.['15'],
+      habits_alcohol: patientData.habits_alcohol || patientData.preconsulta_answers?.habits_alcohol || patientData.preconsulta_answers?.['16'],
+      habits_physical_activity: patientData.habits_physical_activity || patientData.preconsulta_answers?.habits_physical_activity || patientData.preconsulta_answers?.['17'],
+      habits_substance_use: patientData.habits_substance_use || patientData.preconsulta_answers?.habits_substance_use || patientData.preconsulta_answers?.['18'],
 
       // Doctor Inputs
       admin_physical_exam: physicalExamContent,
