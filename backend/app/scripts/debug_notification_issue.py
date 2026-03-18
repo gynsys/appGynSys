@@ -1,6 +1,5 @@
 import sys
 import os
-import re
 from sqlalchemy import create_engine, text
 
 # Add /app to path if running inside docker
@@ -12,40 +11,28 @@ def run_queries():
     engine = create_engine(db_url)
     
     with engine.connect() as conn:
-        print("--- NOTIFICACIONES CALCULADORA MENSTRUAL (MÉTODO RITMO Y CICLO DIARIO) ---")
+        print("--- REPORTE DETALLADO SISTEMA ---")
         
-        # Filtramos por los tipos que pertenecen a la calculadora menstrual/ciclo
+        # Filtramos por system_ y symptom_ que es lo que agrupa el tab 'Sistema'
         query = text("""
             SELECT notification_type, title_template, message_text_template 
             FROM notification_rules 
-            WHERE (notification_type LIKE 'day_%' 
-               OR notification_type LIKE 'rhythm_%' 
-               OR notification_type = 'period_late_1_day')
+            WHERE (notification_type LIKE 'system_%' OR notification_type LIKE 'symptom_%')
             AND tenant_id IS NULL
+            ORDER BY notification_type ASC
         """)
         
         rules = conn.execute(query).fetchall()
+        total = len(rules)
+        null_count = sum(1 for r in rules if r[2] is None or r[2] == '')
         
-        def sort_key(rule):
-            ntype = rule[0]
-            if ntype.startswith('day_'):
-                match = re.search(r'day_(\d+)', ntype)
-                return (0, int(match.group(1)) if match else 0)
-            if ntype.startswith('rhythm_after'):
-                return (1, int(ntype[-1]))
-            if ntype.startswith('rhythm_before'):
-                return (2, int(ntype[-1]))
-            if ntype == 'period_late_1_day':
-                return (3, 0)
-            return (4, 0)
-            
-        sorted_rules = sorted(rules, key=sort_key)
+        print(f"Total de reglas de sistema: {total}")
+        print(f"Reglas con cuerpo NULL: {null_count}")
+        print("-" * 30)
         
-        for rule in sorted_rules:
-            print(f"Tipo: {rule[0]}")
-            print(f"Título: {rule[1]}")
-            print(f"Cuerpo: {rule[2]}")
-            print("-" * 30)
+        for rule in rules:
+            status = "OK" if rule[2] else "MISSING BODY"
+            print(f"[{status}] Tipo: {rule[0]} | Título: {rule[1]}")
 
 if __name__ == "__main__":
     run_queries()

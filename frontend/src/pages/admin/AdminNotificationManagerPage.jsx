@@ -1072,8 +1072,17 @@ export default function NotificationManagerPage() {
                                             <TableRow key={rule.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                                                 <TableCell className="font-medium text-gray-900 dark:text-gray-200 pl-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <span className="font-bold">{rule.name}</span>
-                                                        <span className="text-xs text-blue-500 dark:text-blue-400 mt-1 font-bold">{translateType(rule.notification_type)}</span>
+                                                        <span className="font-bold text-base text-primary dark:text-blue-400">
+                                                            {rule.title_template || translateType(rule.notification_type)}
+                                                        </span>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                                {rule.name}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-400 font-mono">
+                                                                {rule.notification_type}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">
