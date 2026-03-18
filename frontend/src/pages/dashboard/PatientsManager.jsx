@@ -8,89 +8,11 @@ import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, Fi
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
 
-const EditableField = ({ value, onSave, label, multiline = true }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentValue, setCurrentValue] = useState(value);
-
-  useEffect(() => {
-    setCurrentValue(value);
-  }, [value]);
-
-  const handleSave = () => {
-    if (currentValue !== value) {
-      onSave(currentValue);
-    }
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setCurrentValue(value);
-      setIsEditing(false);
-    }
-    if (e.key === 'Enter' && !multiline && !e.shiftKey) {
-      handleSave();
-    }
-  };
-
-  if (isEditing) {
-    return (
-      <div className="space-y-1 animate-in fade-in duration-200">
-        <div className="flex justify-between items-center mb-1">
-          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{label}</p>
-          <div className="flex gap-2">
-            <button 
-              type="button"
-              onClick={() => { setCurrentValue(value); setIsEditing(false); }} 
-              className="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors"
-            >
-              CANCELAR
-            </button>
-            <button 
-              type="button"
-              onClick={handleSave} 
-              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              GUARDAR
-            </button>
-          </div>
-        </div>
-        <textarea
-          autoFocus
-          className="w-full p-3 text-sm border-2 border-indigo-500 rounded-xl outline-none bg-white dark:bg-gray-800 dark:text-gray-100 shadow-inner font-medium ring-4 ring-indigo-50 dark:ring-indigo-900/20"
-          value={currentValue || ''}
-          onChange={(e) => setCurrentValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          rows={multiline ? 4 : 1}
-          placeholder={`Escriba el ${label.toLowerCase()}...`}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div 
-      onDoubleClick={() => setIsEditing(true)}
-      className="group relative cursor-pointer hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 p-2 -m-2 rounded-xl transition-all border border-transparent hover:border-indigo-100/50 dark:hover:border-indigo-800/50"
-    >
-      <div className="flex justify-between items-start mb-1">
-         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</p>
-         <FiEdit className="opacity-0 group-hover:opacity-100 text-indigo-400 transition-all transform scale-90 group-hover:scale-100" size={12} title="Doble clic para editar" />
-      </div>
-      <p className={`text-sm leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>
-        {value || `Sin especificar ${label.toLowerCase()}`}
-      </p>
-    </div>
-  );
-};
-
-const HistoryHtmlView = ({ data, onUpdateField }) => {
+const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
 
   const consultations = data.is_single_report
     ? [{
-      id: data.id,
       created_at: data.created_at,
       diagnosis: data.diagnosis,
       plan: data.plan,
@@ -101,177 +23,167 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
     : (data.all_consultations || []).slice().reverse();
 
   return (
-    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-indigo-200 pr-3">
-      
-      {/* Información Demográfica (Editable) */}
-      <div className="bg-gradient-to-br from-indigo-50/50 to-white dark:from-gray-800/50 dark:to-gray-800 p-5 rounded-3xl border border-indigo-100/50 dark:border-gray-700 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-          <FiUser size={80} className="text-indigo-600" />
-        </div>
-        
-        <h4 className="text-lg font-black text-indigo-900 dark:text-white mb-4 flex items-center gap-2">
-          {data.is_single_report ? 'Informe Médico' : 'Expediente del Paciente'}
-          <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">GynSys</span>
+    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+          {data.is_single_report ? 'Informe Médico' : 'Información del Paciente'}
         </h4>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-          <EditableField 
-            label="Nombre Completo" 
-            value={data.full_name} 
-            onSave={(val) => onUpdateField(data.id, 'full_name', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Identificación (CI)" 
-            value={data.ci} 
-            onSave={(val) => onUpdateField(data.id, 'ci', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Edad" 
-            value={data.age?.toString()} 
-            onSave={(val) => onUpdateField(data.id, 'age', val)}
-            multiline={false}
-          />
-          <EditableField 
-            label="Teléfono" 
-            value={data.phone} 
-            onSave={(val) => onUpdateField(data.id, 'phone', val)}
-            multiline={false}
-          />
-          <div className="md:col-span-2">
-            <EditableField 
-              label="Dirección" 
-              value={data.address} 
-              onSave={(val) => onUpdateField(data.id, 'address', val)}
-              multiline={false}
-            />
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Nombre Completo</p>
+            <p className="font-semibold text-right">{data.full_name}</p>
           </div>
-          <EditableField 
-            label="Ocupación" 
-            value={data.occupation} 
-            onSave={(val) => onUpdateField(data.id, 'occupation', val)}
-            multiline={false}
-          />
-          <div className="flex justify-between items-center p-2 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">Número de Historia</p>
-            <p className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</p>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Identificación (CI)</p>
+            <p className="font-semibold text-right">{data.ci}</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Edad</p>
+            <p className="font-semibold text-right">{data.age} años</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Teléfono</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-right">{data.phone}</p>
+              {data.phone && data.phone !== 'N/A' && (
+                <a
+                  href={`https://wa.me/${data.phone?.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Abrir WhatsApp"
+                  className="flex-shrink-0 w-7 h-7 rounded-full bg-[#25D366] flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Dirección</p>
+            <p className="font-semibold text-right">{data.address || ' '}</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Ocupación</p>
+            <p className="font-semibold text-right">{data.occupation || ' '}</p>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
+            <p className="text-gray-500">Correo</p>
+            <p className="font-semibold text-right truncate max-w-[60%]">{data.email || '-'}</p>
+          </div>
+          <div className="flex justify-between items-center">
+            <p className="text-gray-500">N° Historia</p>
+            <p className="font-semibold text-right text-indigo-600">{data.history_number}</p>
           </div>
         </div>
       </div>
 
-      {/* Motivo de Consulta */}
-      <div className="space-y-2 bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-        <EditableField 
-          label="Motivo de Consulta" 
-          value={data.reason_for_visit} 
-          onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)}
-        />
-      </div>
-
-      {/* Antecedentes Médicos */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
-        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">Antecedentes Médicos</h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <EditableField 
-            label="Antecedentes Madre" 
-            value={data.family_history_mother} 
-            onSave={(val) => onUpdateField(data.id, 'family_history_mother', val)}
-          />
-          <EditableField 
-            label="Antecedentes Padre" 
-            value={data.family_history_father} 
-            onSave={(val) => onUpdateField(data.id, 'family_history_father', val)}
-          />
-          <EditableField 
-            label="Personales / Suplementos" 
-            value={data.personal_history} 
-            onSave={(val) => onUpdateField(data.id, 'personal_history', val)}
-          />
-          <EditableField 
-            label="Quirúrgicos" 
-            value={data.surgical_history} 
-            onSave={(val) => onUpdateField(data.id, 'surgical_history', val)}
-          />
-          <div className="md:col-span-2">
-            <EditableField 
-              label="Resumen Gineco-Obstétrico" 
-              value={data.summary_gyn_obstetric} 
-              onSave={(val) => onUpdateField(data.id, 'summary_gyn_obstetric', val)}
-            />
-          </div>
-          <EditableField 
-            label="Examen Funcional" 
-            value={data.summary_functional_exam} 
-            onSave={(val) => onUpdateField(data.id, 'summary_functional_exam', val)}
-          />
-          <EditableField 
-            label="Hábitos" 
-            value={data.summary_habits} 
-            onSave={(val) => onUpdateField(data.id, 'summary_habits', val)}
-          />
+      {(data.reason_for_visit) && (
+        <div className="space-y-4">
+          <h4 className="text-lg font-bold border-b pb-2">Motivo de consulta</h4>
+          <p className="text-sm italic">{data.reason_for_visit}</p>
         </div>
-      </div>
+      )}
 
-      {/* Evolución Médica */}
-      <div className="space-y-6 pt-4">
-        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">
-          {data.is_single_report ? 'Detalles Médicos' : 'Evolución Cronológica'}
+      {(data.summary_gyn_obstetric || data.personal_history || data.family_history_mother || data.family_history_father || data.summary_functional_exam || data.surgical_history || !data.is_single_report) && (
+        <div className="space-y-4">
+          <h4 className="text-lg font-bold border-b pb-2">Antecedentes y Perfil</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {(data.family_history_mother || data.family_history_father) && (
+              <div className="space-y-2 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Antecedentes Familiares</p>
+                {data.family_history_mother && <p className="text-sm italic"><strong>Madre:</strong> {data.family_history_mother}</p>}
+                {data.family_history_father && <p className="text-sm italic"><strong>Padre:</strong> {data.family_history_father}</p>}
+              </div>
+            )}
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Personales / Suplementos:</p>
+              <p className="text-sm italic inline">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
+            </div>
+            {data.surgical_history && (
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Quirúrgicos:</p>
+                <p className="text-sm italic inline">{data.surgical_history}</p>
+              </div>
+            )}
+            {data.summary_gyn_obstetric && (
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Gineco-Obstétricos:</p>
+                <p className="text-sm italic inline">{data.summary_gyn_obstetric}</p>
+              </div>
+            )}
+            {data.summary_functional_exam && (
+              <div className="space-y-1 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Examen Funcional:</p>
+                <p className="text-sm italic inline">{data.summary_functional_exam}</p>
+              </div>
+            )}
+            {data.summary_habits && (
+              <div className="space-y-1 col-span-1 md:col-span-2">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Hábitos:</p>
+                <p className="text-sm italic inline">{data.summary_habits}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4 pt-4">
+        <h4 className="text-lg font-bold border-b pb-2">
+          {data.is_single_report ? 'Detalles de la Consulta' : 'Evolución Médica (Consultas)'}
         </h4>
-        
-        <div className={`space-y-10 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 before:bg-indigo-100 dark:before:bg-gray-700" : ""}`}>
+        <div className={`space-y-8 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700" : ""}`}>
           {consultations.map((c, idx) => (
             <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
               {!data.is_single_report && (
-                <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 shadow-sm z-10 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 z-10 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                 </div>
               )}
-              
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-md shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 space-y-6">
-                <div className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/20 p-3 -m-3 mb-3 rounded-t-[1.8rem] border-b border-indigo-50 dark:border-gray-700">
-                  <p className="text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
-                    {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                  </p>
-                  <span className="bg-indigo-600 text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
-                    {data.is_single_report ? 'Consulta Actual' : `Visita #${consultations.length - idx}`}
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-start mb-3">
+                  <p className="text-indigo-600 font-bold">{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                  <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+                    {data.is_single_report ? 'Reporte Actual' : 'Consulta'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  <EditableField 
-                    label="Diagnóstico Integrado" 
-                    value={c.diagnosis} 
-                    onSave={(val) => onUpdateField(c.id, 'diagnosis', val)}
-                  />
-                  
-                  <EditableField 
-                    label="Plan de Tratamiento" 
-                    value={c.plan} 
-                    onSave={(val) => onUpdateField(c.id, 'plan', val)}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50 dark:border-gray-700">
-                    <EditableField 
-                      label="Examen Físico" 
-                      value={c.physical_exam} 
-                      onSave={(val) => onUpdateField(c.id, 'physical_exam', val)}
-                    />
-                    <EditableField 
-                      label="Hallazgos Ecográficos" 
-                      value={c.ultrasound} 
-                      onSave={(val) => onUpdateField(c.id, 'ultrasound', val)}
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-50 dark:border-gray-700">
-                    <EditableField 
-                      label="Observaciones" 
-                      value={c.observations} 
-                      onSave={(val) => onUpdateField(c.id, 'observations', val)}
-                    />
-                  </div>
+                <div className="space-y-4">
+                  {c.diagnosis && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Diagnóstico</p>
+                      <p className="text-sm font-medium">{c.diagnosis}</p>
+                    </div>
+                  )}
+                  {c.plan && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
+                      <p className="text-sm whitespace-pre-line">{c.plan}</p>
+                    </div>
+                  )}
+                  {(c.physical_exam || c.ultrasound) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50 dark:border-gray-700">
+                      {c.physical_exam && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.physical_exam}</p>
+                        </div>
+                      )}
+                      {c.ultrasound && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {c.observations && (
+                    <div className="pt-2 border-t border-gray-50 dark:border-gray-700">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Observaciones</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{c.observations}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -279,16 +191,14 @@ const HistoryHtmlView = ({ data, onUpdateField }) => {
         </div>
       </div>
 
-      {/* Soportes Digitales */}
+      {/* Adjuntos / Soportes */}
       {data.id && (
-        <div className="pt-6">
           <ConsultationAssetManager consultationId={data.id} readOnly={false} />
-        </div>
       )}
+
     </div>
   );
 };
-
 
 export default function PatientsManager({ isEmbedded = false }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -319,45 +229,6 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [editFormData, setEditFormData] = useState({});
 
   const { showToast } = useToastStore();
-
-  // Función centralizada para cargar datos de la historia o reporte
-  const loadHistoryData = async (consultationId, isHistory = false) => {
-    if (!consultationId) return;
-    setLoadingHistory(true);
-    try {
-      const dataEndpoint = isHistory ? 'history_data' : 'data';
-      const response = await api.get(`/consultations/${consultationId}/${dataEndpoint}`);
-      setHistoryData(response.data);
-    } catch (error) {
-      console.error("Error fetching history data:", error);
-      showToast("Error al sincronizar datos", "error");
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  // Manejador de guardado inline (doble click)
-  const handleInlineUpdate = async (consultationId, field, value) => {
-    try {
-      const fieldMap = {
-        'summary_gyn_obstetric': 'obstetric_history_summary',
-        'summary_functional_exam': 'functional_exam_summary',
-        'summary_habits': 'habits_summary'
-      };
-      
-      const dbField = fieldMap[field] || field;
-      await api.put(`/consultations/${consultationId}`, { [dbField]: value });
-      showToast('Guardado automáticamente', 'success');
-      
-      if (basePdfUrl) {
-         const isHistory = basePdfUrl.includes('history_pdf');
-         await loadHistoryData(consultationId, isHistory);
-      }
-      fetchConsultations();
-    } catch (error) {
-      showToast('Error al guardar cambio', 'error');
-    }
-  };
 
   useEffect(() => {
     fetchConsultations();
@@ -512,18 +383,53 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   // Effect to fetch history data when modal opens or basePdfUrl/activePdfTab changes
   useEffect(() => {
-    if (!isPdfModalOpen || activePdfTab === 'assets' || !basePdfUrl) return;
+    const fetchHistoryData = async () => {
+      // 1. Si el modal no está abierto, no hacemos nada
+      if (!isPdfModalOpen) return;
 
-    const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
-    const consultationId = match ? match[1] : null;
-    
-    if (consultationId) {
-      if (historyData?.id === parseInt(consultationId) && !loadingHistory) return;
-      
-      setCurrentConsultationId(consultationId);
+      // 2. Si es pestaña de activos, solo nos aseguramos de tener el ID si es posible
+      if (activePdfTab === 'assets') {
+        setHistoryData(null);
+        if (!currentConsultationId && basePdfUrl) {
+           const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
+           if (match) setCurrentConsultationId(match[1]);
+        }
+        return;
+      }
+
+      // 3. Si no hay URL base y no estamos en modo solo activos, paramos
+      if (!basePdfUrl) return;
+
       const isHistory = basePdfUrl.includes('history_pdf');
-      loadHistoryData(consultationId, isHistory);
-    }
+      const isReport = basePdfUrl.includes('/pdf') && !basePdfUrl.includes('history');
+
+      if (isHistory || isReport) {
+        const match = basePdfUrl.match(/\/consultations\/(\d+)\//);
+        const consultationId = match ? match[1] : null;
+        
+        if (consultationId) {
+          // Si ya tenemos el ID y los datos de ESE ID, no recargamos
+          if (historyData?.id === parseInt(consultationId) && !loadingHistory) {
+              return;
+          }
+
+          setCurrentConsultationId(consultationId);
+          setLoadingHistory(true);
+          try {
+            const dataEndpoint = isHistory ? 'history_data' : 'data';
+            const response = await api.get(`/consultations/${consultationId}/${dataEndpoint}`);
+            setHistoryData(response.data);
+          } catch (error) {
+            console.error("Error fetching native data:", error);
+            setHistoryData(null);
+          } finally {
+            setLoadingHistory(false);
+          }
+        }
+      }
+    };
+
+    fetchHistoryData();
   }, [isPdfModalOpen, basePdfUrl, activePdfTab]);
 
 
@@ -668,94 +574,94 @@ export default function PatientsManager({ isEmbedded = false }) {
           setIsAssetOnly(false);
           setCurrentPatientName('');
         }} 
-        title={isAssetOnly ? `Soportes Digitales de ${currentPatientName}` : "Gestión de Historia Clínica"} 
-        size="full" 
+        title={isAssetOnly ? `Soportes Digitales de ${currentPatientName}` : "Vista Previa"} 
+        size="4xl" 
         fullScreenOnMobile
       >
-        <div className="flex flex-col h-[85vh]">
-          {/* Barra de Herramientas Superior */}
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-4 px-2">
-            <div className="flex items-center gap-2">
-               <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200">
-                  <FiFileText size={20} />
-               </div>
-               <div>
-                  <h3 className="font-black text-gray-900 dark:text-white leading-none">Visor Interactivo</h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Edición & Gestión</p>
-               </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 p-1 rounded-2xl border border-gray-100 dark:border-gray-700 mx-auto lg:mx-0">
+        <div className="flex flex-col h-full">
+          {/* Tabs Navigation - Ocultas en modo solo activos */}
+          {currentConsultationId && !isAssetOnly && (
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-4 pb-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={() => setActivePdfTab('pdf')}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                     activePdfTab === 'pdf' 
-                      ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm ring-1 ring-black/5' 
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  HISTORIA
+                  INFORME
                 </button>
                 <button
                   onClick={() => setActivePdfTab('assets')}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                     activePdfTab === 'assets' 
-                      ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm ring-1 ring-black/5' 
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
                   SOPORTES
                 </button>
-            </div>
 
-            {!isAssetOnly && (
-               <div className="flex items-center gap-4 ml-auto">
-                  {basePdfUrl && (
-                    <button 
-                      onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
-                      className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
+                <label className="flex items-center gap-2 cursor-pointer sm:ml-auto">
+                  <input
+                    type="checkbox"
+                    checked={includeImages}
+                    onChange={(e) => setIncludeImages(e.target.checked)}
+                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir imágenes en el PDF</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div className={`flex-1 overflow-auto min-h-[50vh] md:min-h-0 ${activePdfTab === 'assets' ? 'p-4' : ''}`}>
+            {activePdfTab === 'pdf' ? (
+              <>
+                {loadingHistory ? (
+                  <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse text-gray-500">Cargando documento...</div>
+                ) : historyData ? (
+                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={getFullPdfUrl()} /></div>
+                ) : null}
+                 <div className="hidden md:block h-[60vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                  {basePdfUrl && <iframe src={getFullPdfUrl()} className="w-full h-full border-0" title="Visor de PDF" />}
+                </div>
+                {/* Mobile specific PDF helper for native apps */}
+                {isCapacitor() && (
+                  <div className="md:hidden flex flex-col items-center justify-center p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-800">
+                    <FiFileText className="w-12 h-12 text-indigo-500 mb-4" />
+                    <p className="text-sm text-center font-medium mb-6">Para una mejor experiencia y compatibilidad, abre el documento en el visor nativo del sistema.</p>
+                     <button 
+                      onClick={() => openExternalFile(getFullPdfUrl())}
+                      className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"
                     >
-                      <FiDownload />
-                      <span className="hidden sm:inline">{isCapacitor() ? 'DESCARGAR OFICIAL' : 'DESCARGAR PDF'}</span>
-                      <span className="sm:hidden">PDF</span>
+                      ABRIR DOCUMENTO
                     </button>
-                  )}
-               </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Tab Content: Assets
+              <div className="h-[60vh] overflow-y-auto pr-2">
+                <ConsultationAssetManager consultationId={currentConsultationId} readOnly={false} />
+              </div>
             )}
           </div>
-
-          {/* Contenido Principal */}
-          <div className="flex-1 min-h-0">
-            {activePdfTab === 'assets' ? (
-              <div className="h-full bg-white dark:bg-gray-800 p-4 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-y-auto">
-                {currentConsultationId && (
-                  <ConsultationAssetManager consultationId={currentConsultationId} readOnly={false} />
-                )}
-              </div>
-            ) : (
-              <div className="h-full bg-gray-50/50 dark:bg-gray-900/50 rounded-3xl border border-indigo-100/30 dark:border-gray-800 overflow-hidden flex flex-col">
-                 <div className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-b border-indigo-50/50 dark:border-gray-800 flex justify-between items-center">
-                    <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                      Edición en Vivo Activa (Doble clic cualquier texto)
-                    </p>
-                 </div>
-                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar p-1">
-                   {loadingHistory ? (
-                     <div className="h-full flex flex-col items-center justify-center space-y-4">
-                        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                        <p className="text-xs font-black text-indigo-400 uppercase tracking-widest">Sincronizando...</p>
-                     </div>
-                   ) : (
-                     <HistoryHtmlView data={historyData} onUpdateField={handleInlineUpdate} />
-                   )}
-                 </div>
-              </div>
+          <div className="mt-6 flex-shrink-0 flex justify-between items-center px-2 pb-6">
+             {basePdfUrl && !isAssetOnly && (
+              <button 
+                onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
+              >
+                {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
+              </button>
             )}
+            <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-4 py-2 border rounded-lg text-sm font-medium">Cerrar</button>
           </div>
         </div>
       </Modal>
-
 
       {/* Edit Modal Refactored - Full Version */}
       <Modal 
