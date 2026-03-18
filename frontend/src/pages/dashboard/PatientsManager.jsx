@@ -97,13 +97,21 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                 {data.family_history_father && <p className="text-sm italic"><strong>Padre:</strong> {data.family_history_father}</p>}
               </div>
             )}
-            <div className="space-y-1">
-              <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Personales / Suplementos:</p>
-              <p className="text-sm italic inline">{data.personal_history} {data.supplements && `| ${data.supplements}`}</p>
-            </div>
+            {data.personal_history && (
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Antecedentes Personales:</p>
+                <p className="text-sm italic inline">{data.personal_history}</p>
+              </div>
+            )}
+            {data.supplements && (
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Suplementos:</p>
+                <p className="text-sm italic inline">{data.supplements}</p>
+              </div>
+            )}
             {data.surgical_history && (
               <div className="space-y-1">
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Quirúrgicos:</p>
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Antecedentes Quirúrgicos:</p>
                 <p className="text-sm italic inline">{data.surgical_history}</p>
               </div>
             )}

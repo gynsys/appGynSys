@@ -451,7 +451,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         ("Antecedentes Familiares", format_family_history(get_str('family_history_mother'), get_str('family_history_father')), styleN),
         ("Antecedentes Personales", format_simple_antecedente(get_str('personal_history')), styleN),
         ("Suplementos", format_simple_antecedente(get_str('supplements')), styleN),
-        ("Antecedentes quirúrgicos", format_simple_antecedente(get_str('surgical_history')), styleN),
+        ("Antecedentes Quirúrgicos", format_simple_antecedente(get_str('surgical_history')), styleN),
         ("Gineco-Obstétricos", get_str('summary_gyn_obstetric'), styleJustify),
         ("Examen Funcional", get_str('summary_functional_exam'), styleJustify),
         ("Hábitos", get_str('summary_habits'), styleJustify),
