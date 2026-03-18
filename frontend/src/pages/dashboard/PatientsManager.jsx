@@ -4,159 +4,291 @@ import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiSearch, FiImage, FiDownload, FiPrinter } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
 
-// EditableField removed as per user request to simplify and remove edit functionality
+const EditableField = ({ value, onSave, label, multiline = true }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentValue, setCurrentValue] = useState(value);
 
+  useEffect(() => {
+    setCurrentValue(value);
+  }, [value]);
 
-const HistoryHtmlView = ({ data, onUpdateField, onDownload }) => {
-  if (!data) return null;
+  const handleSave = () => {
+    if (currentValue !== value) {
+      onSave(currentValue);
+    }
+    setIsEditing(false);
+  };
 
-  if (data.is_single_report) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setCurrentValue(value);
+      setIsEditing(false);
+    }
+    if (e.key === 'Enter' && !multiline && !e.shiftKey) {
+      handleSave();
+    }
+  };
+
+  if (isEditing) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-950">
-        <div className="max-w-md w-full bg-indigo-50 dark:bg-indigo-900/20 p-8 rounded-[40px] border border-indigo-100 dark:border-indigo-800 text-center space-y-6">
-          <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-200/20">
-             <FiFileText size={40} className="text-indigo-600 dark:text-indigo-400" />
+      <div className="space-y-1 animate-in fade-in duration-200">
+        <div className="flex justify-between items-center mb-1">
+          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{label}</p>
+          <div className="flex gap-2">
+            <button 
+              type="button"
+              onClick={() => { setCurrentValue(value); setIsEditing(false); }} 
+              className="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors"
+            >
+              CANCELAR
+            </button>
+            <button 
+              type="button"
+              onClick={handleSave} 
+              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              GUARDAR
+            </button>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase leading-tight">Informe Preparado</h2>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">El layout detallado se genera exclusivamente para impresión segura.</p>
-          </div>
-          
-          <div className="py-4 border-y border-indigo-100/50 dark:border-indigo-800/50 space-y-1">
-             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Paciente</p>
-             <p className="font-bold text-gray-900 dark:text-white">{data.full_name}</p>
-          </div>
-
-          <button 
-            onClick={onDownload}
-            className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-200/40 transition-all hover:scale-[1.02] active:scale-95"
-          >
-            <FiDownload size={20} />
-            Descargar PDF Oficial
-          </button>
-          
-          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-             Diseño institucional optimizado para papel A4 / Carta
-          </p>
         </div>
+        <textarea
+          autoFocus
+          className="w-full p-3 text-sm border-2 border-indigo-500 rounded-xl outline-none bg-white dark:bg-gray-800 dark:text-gray-100 shadow-inner font-medium ring-4 ring-indigo-50 dark:ring-indigo-900/20"
+          value={currentValue || ''}
+          onChange={(e) => setCurrentValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleSave}
+          rows={multiline ? 4 : 1}
+          placeholder={`Escriba el ${label.toLowerCase()}...`}
+        />
       </div>
     );
   }
 
-  const consultations = (data.all_consultations || []).slice().reverse();
-
   return (
-    <div className="bg-gray-100 dark:bg-gray-950 p-2 md:p-8 min-h-full overflow-y-auto max-h-[75vh] custom-scrollbar">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-none border border-gray-200 dark:border-gray-800 min-h-[1056px] p-[0.75in] font-serif text-[12pt] leading-[1.4] text-gray-900 dark:text-gray-100 flex flex-col">
-        {/* Encabezado Institucional */}
-        <header className="flex items-center gap-6 mb-8 border-b-2 border-gray-900 dark:border-gray-100 pb-6 shrink-0">
-           <div className="w-[1.2in] h-[1.2in] flex items-center justify-center shrink-0">
-              <img src="/logo_gyn.png" alt="Logo" className="max-w-full max-h-full object-contain" />
-           </div>
-           <div className="flex-1 text-left">
-              <h2 className="font-black text-xl text-gray-900 dark:text-white uppercase leading-tight">Dra. Mariel Herrera</h2>
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Especialista en Ginecología y Obstetricia</p>
-              <p className="text-xs font-medium text-gray-500">Caracas - Guarenas - Guatire</p>
-              <p className="text-xs font-medium text-gray-500">Citas: 04244281876 / 04127738918</p>
-           </div>
-        </header>
-
-        <div className="text-center mb-10 shrink-0">
-           <h1 className="text-2xl font-black text-gray-900 dark:text-white underline decoration-2 underline-offset-8 uppercase tracking-widest">
-              HISTORIA MÉDICA
-           </h1>
-        </div>
-
-        <div className="mb-10 text-[11pt] shrink-0">
-          <div className="grid grid-cols-2 gap-x-12 gap-y-2 border-b border-gray-100 dark:border-gray-800 pb-6 text-gray-800 dark:text-gray-200">
-             <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">Nombre:</span> <span className="flex-1 capitalize">{data.full_name}</span></div>
-             <div className="flex gap-1.5"><span className="font-bold min-w-[40px]">Edad:</span> <span>{data.age}</span></div>
-             <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">C.I.:</span> <span>{data.ci}</span></div>
-             <div className="flex gap-1.5"><span className="font-bold min-w-[40px]">TLF:</span> <span>{data.phone}</span></div>
-             <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">Dirección:</span> <span className="flex-1 opacity-80">{data.address || 'N/A'}</span></div>
-             <div className="flex gap-1.5"><span className="font-bold min-w-[70px]">N° Historia:</span> <span className="text-indigo-600 dark:text-indigo-400 font-bold">{data.history_number}</span></div>
-          </div>
-        </div>
-
-        <div className="flex-1">
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="space-y-4">
-              <section className="flex items-start gap-4">
-                 <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Motivo de consulta:</span>
-                 <div className="flex-1 text-gray-900 dark:text-gray-100">{data.reason_for_visit}</div>
-              </section>
-
-              <section className="flex items-start gap-4">
-                 <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Antecedentes Familiares:</span>
-                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><span className="font-bold text-[9pt] text-gray-400 block uppercase">Madre:</span> {data.family_history_mother || '(No reportado)'}</div>
-                    <div><span className="font-bold text-[9pt] text-gray-400 block uppercase">Padre:</span> {data.family_history_father || '(No reportado)'}</div>
-                 </div>
-              </section>
-
-              <section className="flex items-start gap-4">
-                 <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Enfermedad Actual:</span>
-                 <div className="flex-1">{data.personal_history}</div>
-              </section>
-
-              <section className="flex items-start gap-4">
-                 <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Ant. Quirúrgicos:</span>
-                 <div className="flex-1">{data.surgical_history}</div>
-              </section>
-
-              <section className="flex items-start gap-4">
-                 <span className="font-black text-[10pt] uppercase min-w-[1.8in] pt-1 text-gray-500">Gineco-Obstétricos:</span>
-                 <div className="flex-1">{data.summary_gyn_obstetric}</div>
-              </section>
-            </div>
-
-            {consultations.length > 0 && (
-              <div className="mt-12 border-t-4 border-double border-gray-100 dark:border-gray-800 pt-8">
-                <h3 className="bg-gray-50 dark:bg-gray-800 px-6 py-3 font-black text-sm uppercase tracking-[0.2em] text-gray-600 dark:text-gray-300 mb-8 rounded-xl border border-gray-100 dark:border-gray-700">
-                  Registro de Consultas Médicas
-                </h3>
-                
-                <div className="space-y-16">
-                  {consultations.map((c, idx) => (
-                    <article key={idx} className="border-l-4 border-indigo-500 pl-8 space-y-6">
-                      <header className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-r-2xl">
-                        <span className="font-black text-gray-900 dark:text-white uppercase text-base tracking-wide">
-                          Consulta #{consultations.length - idx}
-                        </span>
-                        <span className="px-4 py-1 bg-white dark:bg-gray-800 shadow-sm rounded-full text-sm font-black text-indigo-600 italic border border-indigo-100 dark:border-indigo-800">
-                          {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        </span>
-                      </header>
-
-                      <div className="space-y-6 pl-2">
-                        {[
-                          { label: 'Examen Físico', key: 'physical_exam' },
-                          { label: 'Ultrasonido', key: 'ultrasound' },
-                          { label: 'Diagnóstico', key: 'diagnosis' },
-                          { label: 'Plan de Tratamiento', key: 'plan' },
-                          { label: 'Observaciones', key: 'observations' }
-                        ].map((field) => (
-                          <section key={field.key} className="flex items-start gap-6">
-                            <span className="font-black text-[9pt] uppercase min-w-[1.6in] pt-1 text-gray-400">{field.label}:</span>
-                            <div className="flex-1 font-medium">{c[field.key] || '(No reportado)'}</div>
-                          </section>
-                        ))}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <div 
+      onDoubleClick={() => setIsEditing(true)}
+      className="group relative cursor-pointer hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 p-2 -m-2 rounded-xl transition-all border border-transparent hover:border-indigo-100/50 dark:hover:border-indigo-800/50"
+    >
+      <div className="flex justify-between items-start mb-1">
+         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</p>
+         <FiEdit className="opacity-0 group-hover:opacity-100 text-indigo-400 transition-all transform scale-90 group-hover:scale-100" size={12} title="Doble clic para editar" />
       </div>
+      <p className={`text-sm leading-relaxed ${multiline ? 'whitespace-pre-line' : ''} ${!value ? 'italic text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>
+        {value || `Sin especificar ${label.toLowerCase()}`}
+      </p>
     </div>
   );
 };
+
+const HistoryHtmlView = ({ data, onUpdateField }) => {
+  if (!data) return null;
+
+  const consultations = data.is_single_report
+    ? [{
+      id: data.id,
+      created_at: data.created_at,
+      diagnosis: data.diagnosis,
+      plan: data.plan,
+      physical_exam: data.physical_exam,
+      ultrasound: data.ultrasound,
+      observations: data.observations
+    }]
+    : (data.all_consultations || []).slice().reverse();
+
+  return (
+    <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-indigo-200 pr-3">
+      
+      {/* Información Demográfica (Editable) */}
+      <div className="bg-gradient-to-br from-indigo-50/50 to-white dark:from-gray-800/50 dark:to-gray-800 p-5 rounded-3xl border border-indigo-100/50 dark:border-gray-700 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <FiUser size={80} className="text-indigo-600" />
+        </div>
+        
+        <h4 className="text-lg font-black text-indigo-900 dark:text-white mb-4 flex items-center gap-2">
+          {data.is_single_report ? 'Informe Médico' : 'Expediente del Paciente'}
+          <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">GynSys</span>
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <EditableField 
+            label="Nombre Completo" 
+            value={data.full_name} 
+            onSave={(val) => onUpdateField(data.id, 'full_name', val)}
+            multiline={false}
+          />
+          <EditableField 
+            label="Identificación (CI)" 
+            value={data.ci} 
+            onSave={(val) => onUpdateField(data.id, 'ci', val)}
+            multiline={false}
+          />
+          <EditableField 
+            label="Edad" 
+            value={data.age?.toString()} 
+            onSave={(val) => onUpdateField(data.id, 'age', val)}
+            multiline={false}
+          />
+          <EditableField 
+            label="Teléfono" 
+            value={data.phone} 
+            onSave={(val) => onUpdateField(data.id, 'phone', val)}
+            multiline={false}
+          />
+          <div className="md:col-span-2">
+            <EditableField 
+              label="Dirección" 
+              value={data.address} 
+              onSave={(val) => onUpdateField(data.id, 'address', val)}
+              multiline={false}
+            />
+          </div>
+          <EditableField 
+            label="Ocupación" 
+            value={data.occupation} 
+            onSave={(val) => onUpdateField(data.id, 'occupation', val)}
+            multiline={false}
+          />
+          <div className="flex justify-between items-center p-2 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">Número de Historia</p>
+            <p className="font-black text-indigo-600 dark:text-indigo-400">{data.history_number}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Motivo de Consulta */}
+      <div className="space-y-2 bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <EditableField 
+          label="Motivo de Consulta" 
+          value={data.reason_for_visit} 
+          onSave={(val) => onUpdateField(data.id, 'reason_for_visit', val)}
+        />
+      </div>
+
+      {/* Antecedentes Médicos */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
+        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">Antecedentes Médicos</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <EditableField 
+            label="Antecedentes Madre" 
+            value={data.family_history_mother} 
+            onSave={(val) => onUpdateField(data.id, 'family_history_mother', val)}
+          />
+          <EditableField 
+            label="Antecedentes Padre" 
+            value={data.family_history_father} 
+            onSave={(val) => onUpdateField(data.id, 'family_history_father', val)}
+          />
+          <EditableField 
+            label="Personales / Suplementos" 
+            value={data.personal_history} 
+            onSave={(val) => onUpdateField(data.id, 'personal_history', val)}
+          />
+          <EditableField 
+            label="Quirúrgicos" 
+            value={data.surgical_history} 
+            onSave={(val) => onUpdateField(data.id, 'surgical_history', val)}
+          />
+          <div className="md:col-span-2">
+            <EditableField 
+              label="Resumen Gineco-Obstétrico" 
+              value={data.summary_gyn_obstetric} 
+              onSave={(val) => onUpdateField(data.id, 'summary_gyn_obstetric', val)}
+            />
+          </div>
+          <EditableField 
+            label="Examen Funcional" 
+            value={data.summary_functional_exam} 
+            onSave={(val) => onUpdateField(data.id, 'summary_functional_exam', val)}
+          />
+          <EditableField 
+            label="Hábitos" 
+            value={data.summary_habits} 
+            onSave={(val) => onUpdateField(data.id, 'summary_habits', val)}
+          />
+        </div>
+      </div>
+
+      {/* Evolución Médica */}
+      <div className="space-y-6 pt-4">
+        <h4 className="text-sm font-black text-gray-900 dark:text-white border-b border-gray-50 dark:border-gray-700 pb-3 uppercase tracking-widest">
+          {data.is_single_report ? 'Detalles Médicos' : 'Evolución Cronológica'}
+        </h4>
+        
+        <div className={`space-y-10 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 before:bg-indigo-100 dark:before:bg-gray-700" : ""}`}>
+          {consultations.map((c, idx) => (
+            <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
+              {!data.is_single_report && (
+                <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 shadow-sm z-10 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                </div>
+              )}
+              
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-md shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 space-y-6">
+                <div className="flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/20 p-3 -m-3 mb-3 rounded-t-[1.8rem] border-b border-indigo-50 dark:border-gray-700">
+                  <p className="text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
+                    {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                  <span className="bg-indigo-600 text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                    {data.is_single_report ? 'Consulta Actual' : `Visita #${consultations.length - idx}`}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <EditableField 
+                    label="Diagnóstico Integrado" 
+                    value={c.diagnosis} 
+                    onSave={(val) => onUpdateField(c.id, 'diagnosis', val)}
+                  />
+                  
+                  <EditableField 
+                    label="Plan de Tratamiento" 
+                    value={c.plan} 
+                    onSave={(val) => onUpdateField(c.id, 'plan', val)}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50 dark:border-gray-700">
+                    <EditableField 
+                      label="Examen Físico" 
+                      value={c.physical_exam} 
+                      onSave={(val) => onUpdateField(c.id, 'physical_exam', val)}
+                    />
+                    <EditableField 
+                      label="Hallazgos Ecográficos" 
+                      value={c.ultrasound} 
+                      onSave={(val) => onUpdateField(c.id, 'ultrasound', val)}
+                    />
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-50 dark:border-gray-700">
+                    <EditableField 
+                      label="Observaciones" 
+                      value={c.observations} 
+                      onSave={(val) => onUpdateField(c.id, 'observations', val)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Soportes Digitales */}
+      {data.id && (
+        <div className="pt-6">
+          <ConsultationAssetManager consultationId={data.id} readOnly={false} />
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 export default function PatientsManager({ isEmbedded = false }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -171,6 +303,7 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   // PDF Preview State
   const [isPdfModalOpen, setPdfModalOpen] = useState(false);
+  const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
   const [historyData, setHistoryData] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [activePdfTab, setActivePdfTab] = useState('pdf'); // 'pdf' or 'assets'
@@ -179,6 +312,11 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [includeImages, setIncludeImages] = useState(false);
   const [isAssetOnly, setIsAssetOnly] = useState(false);
   const [currentPatientName, setCurrentPatientName] = useState('');
+
+  // Edit State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [consultationToEdit, setConsultationToEdit] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   const { showToast } = useToastStore();
 
@@ -242,6 +380,70 @@ export default function PatientsManager({ isEmbedded = false }) {
       console.error('Error fetching consultations:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const formatPlanWithBullets = (planText) => {
+    if (!planText) return '';
+    return planText.split('\n').map(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('•')) {
+        return '• ' + trimmed;
+      }
+      return trimmed;
+    }).join('\n');
+  };
+
+  const handleEditClick = (consultation) => {
+    setConsultationToEdit(consultation);
+    setEditFormData({
+      full_name: consultation.patient_name,
+      ci: consultation.patient_ci,
+      age: consultation.patient_age,
+      phone: consultation.patient_phone,
+      address: consultation.address || '',
+      occupation: consultation.occupation || '',
+      reason_for_visit: consultation.reason_for_visit,
+      family_history_mother: consultation.family_history_mother,
+      family_history_father: consultation.family_history_father,
+      personal_history: consultation.personal_history,
+      supplements: consultation.supplements,
+      surgical_history: consultation.surgical_history,
+      summary_gyn_obstetric: consultation.obstetric_history_summary || '',
+      summary_functional_exam: consultation.functional_exam_summary || '',
+      summary_habits: consultation.habits_summary || '',
+      admin_physical_exam: consultation.physical_exam || '',
+      admin_ultrasound: consultation.ultrasound || '',
+      admin_diagnosis: formatPlanWithBullets(consultation.diagnosis || ''),
+      admin_plan: formatPlanWithBullets(consultation.plan || ''),
+      admin_observations: consultation.observations || '',
+      history_number: consultation.history_number
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addBullet = (fieldName) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [fieldName]: (prev[fieldName] || '') + '\n• '
+    }));
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!consultationToEdit) return;
+    try {
+      const response = await api.put(`/consultations/${consultationToEdit.id}`, editFormData);
+      showToast('Historia actualizada exitosamente', 'success');
+      fetchConsultations();
+      setEditModalOpen(false);
+    } catch (error) {
+      showToast('Error al actualizar la historia', 'error');
     }
   };
 
@@ -322,7 +524,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       const isHistory = basePdfUrl.includes('history_pdf');
       loadHistoryData(consultationId, isHistory);
     }
-  }, [isPdfModalOpen, basePdfUrl, activePdfTab, historyData, loadingHistory]);
+  }, [isPdfModalOpen, basePdfUrl, activePdfTab]);
 
 
   const filteredConsultations = consultations.filter(consultation =>
@@ -387,24 +589,26 @@ export default function PatientsManager({ isEmbedded = false }) {
                     #{consultation.history_number || 'PEND'}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 uppercase truncate">
-                    DETALLE
+                <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700">
+                    HISTORIA
                   </button>
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 uppercase truncate">
+                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700">
                     INFORME
                   </button>
-                  <div className="col-span-2 flex gap-2">
-                    <button 
-                      onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                      className="flex-1 px-3 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase"
-                    >
-                      <FiImage size={16} /> SOPORTES
-                    </button>
-                    <button onClick={() => handleDeleteClick(consultation.id)} className="px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl flex items-center justify-center">
-                      <FiTrash2 size={18} />
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
+                    className="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"
+                    title="Ver Soportes Digitales"
+                  >
+                    <FiImage size={18} />
+                  </button>
+                  <button onClick={() => handleEditClick(consultation)} className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <FiEdit size={18} />
+                  </button>
+                  <button onClick={() => handleDeleteClick(consultation.id)} className="p-2.5 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
+                    <FiTrash2 size={18} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -434,16 +638,17 @@ export default function PatientsManager({ isEmbedded = false }) {
                     <td className="px-6 py-4 text-xs font-bold">{formatDate(consultation.created_at)}</td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-2 justify-center">
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-blue-100">Detalle</button>
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-green-100">Informe</button>
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
+                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
                          <button 
                           onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
+                          className="p-2 text-blue-500 rounded-xl hover:bg-blue-50 transition-colors"
                           title="Ver Soportes Digitales"
                         >
                           <FiImage size={18} />
                         </button>
-                        <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-colors"><FiTrash2 size={18} /></button>
+                        <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl"><FiEdit /></button>
+                        <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl"><FiTrash2 /></button>
                       </div>
                     </td>
                   </tr>
@@ -503,22 +708,6 @@ export default function PatientsManager({ isEmbedded = false }) {
                 </button>
             </div>
 
-            {/* Checkbox Imágenes (Restaurado) */}
-            {!isAssetOnly && activePdfTab === 'pdf' && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100/50 dark:border-indigo-800/50">
-                <input 
-                  type="checkbox" 
-                  id="includeImages" 
-                  checked={includeImages} 
-                  onChange={(e) => setIncludeImages(e.target.checked)}
-                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                />
-                <label htmlFor="includeImages" className="text-[10px] font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-widest cursor-pointer select-none">
-                  Incluir Imágenes
-                </label>
-              </div>
-            )}
-
             {!isAssetOnly && (
                <div className="flex items-center gap-4 ml-auto">
                   {basePdfUrl && (
@@ -558,11 +747,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                         <p className="text-xs font-black text-indigo-400 uppercase tracking-widest">Sincronizando...</p>
                      </div>
                    ) : (
-                     <HistoryHtmlView 
-                       data={historyData} 
-                       onUpdateField={handleInlineUpdate} 
-                       onDownload={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))}
-                     />
+                     <HistoryHtmlView data={historyData} onUpdateField={handleInlineUpdate} />
                    )}
                  </div>
               </div>
@@ -572,7 +757,178 @@ export default function PatientsManager({ isEmbedded = false }) {
       </Modal>
 
 
-      {/* Edit Modal Removed as per user request */}
+      {/* Edit Modal Refactored - Full Version */}
+      <Modal 
+        isOpen={editModalOpen} 
+        onClose={() => setEditModalOpen(false)} 
+        title="Editar Historia Clínica" 
+        size="4xl"
+        fullScreenOnMobile
+      >
+        <form onSubmit={handleUpdate} className="flex flex-col h-full max-h-[85vh]">
+          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-thin scrollbar-thumb-indigo-200">
+            
+            {/* Sección: Datos de Identificación */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                Identificación del Paciente
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nombre Completo</label>
+                  <input name="full_name" value={editFormData.full_name || ''} onChange={handleEditChange} placeholder="Nombre completo" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Cédula / ID</label>
+                  <input name="ci" value={editFormData.ci || ''} onChange={handleEditChange} placeholder="CI" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Número de Historia</label>
+                  <input name="history_number" value={editFormData.history_number || ''} onChange={handleEditChange} placeholder="N° Historia" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Edad</label>
+                  <input name="age" value={editFormData.age || ''} onChange={handleEditChange} placeholder="Edad" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Teléfono</label>
+                  <input name="phone" value={editFormData.phone || ''} onChange={handleEditChange} placeholder="Teléfono" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ocupación</label>
+                  <input name="occupation" value={editFormData.occupation || ''} onChange={handleEditChange} placeholder="Ocupación" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1 md:col-span-3">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Dirección</label>
+                  <input name="address" value={editFormData.address || ''} onChange={handleEditChange} placeholder="Dirección de habitación" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Sección: Antecedentes */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                Antecedentes Médicos
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Motivo de Consulta</label>
+                  <textarea name="reason_for_visit" value={editFormData.reason_for_visit || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Antecedentes Familiares (Madre)</label>
+                  <textarea name="family_history_mother" value={editFormData.family_history_mother || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Antecedentes Familiares (Padre)</label>
+                  <textarea name="family_history_father" value={editFormData.family_history_father || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Antecedentes Personales</label>
+                  <textarea name="personal_history" value={editFormData.personal_history || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Antecedentes Quirúrgicos</label>
+                  <textarea name="surgical_history" value={editFormData.surgical_history || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Suplementos / Medicamentos</label>
+                  <textarea name="supplements" value={editFormData.supplements || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-teal-50/30 border-2 border-transparent focus:border-teal-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Sección: Resúmenes de Sistemas */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-pink-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 bg-pink-600 rounded-full"></div>
+                Resúmenes de Sistemas
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Resumen Gineco-Obstétrico</label>
+                  <textarea name="summary_gyn_obstetric" value={editFormData.summary_gyn_obstetric || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-pink-50/30 border-2 border-transparent focus:border-pink-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Resumen Examen Funcional</label>
+                  <textarea name="summary_functional_exam" value={editFormData.summary_functional_exam || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Resumen de Hábitos</label>
+                  <textarea name="summary_habits" value={editFormData.summary_habits || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Sección: Hallazgos Médicos */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-green-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                Consulta Médica Actual
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Examen Físico</label>
+                    <textarea name="admin_physical_exam" value={editFormData.admin_physical_exam || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ultrasonido / Ecografía</label>
+                    <textarea name="admin_ultrasound" value={editFormData.admin_ultrasound || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Diagnóstico Integrado</label>
+                    <button type="button" onClick={() => addBullet('admin_diagnosis')} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">+ AÑADIR PUNTO</button>
+                  </div>
+                  <textarea name="admin_diagnosis" value={editFormData.admin_diagnosis || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-indigo-50/30 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Plan de Tratamiento</label>
+                    <button type="button" onClick={() => addBullet('admin_plan')} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">+ AÑADIR PUNTO</button>
+                  </div>
+                  <textarea name="admin_plan" value={editFormData.admin_plan || ''} onChange={handleEditChange} rows="5" className="w-full p-3 bg-indigo-50/30 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Observaciones Internas</label>
+                  <textarea name="admin_observations" value={editFormData.admin_observations || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl text-sm transition-all outline-none font-medium" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Footer del Modal */}
+          <div className="flex-shrink-0 p-6 bg-white border-t border-gray-100 flex items-center justify-between gap-4">
+            <button 
+              type="button" 
+              onClick={() => setEditModalOpen(false)} 
+              className="flex-1 md:flex-none px-6 py-3 border-2 border-gray-100 text-gray-500 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              className="flex-1 md:flex-none px-10 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </Modal>
 
 
       <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirmar">
