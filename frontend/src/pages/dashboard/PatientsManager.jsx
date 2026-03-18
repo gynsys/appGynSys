@@ -591,7 +591,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                       : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  INFORME
+                  {basePdfUrl?.includes('history_pdf') ? 'HISTORIA' : 'INFORME'}
                 </button>
                 <button
                   onClick={() => setActivePdfTab('assets')}
