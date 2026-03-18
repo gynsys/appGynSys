@@ -108,6 +108,12 @@ Si una migración de SQLAlchemy falla por discrepancias de entorno (Docker vs Ho
 ### 3. Notificaciones Multi-Actor
 El procesador de notificaciones ya es agnóstico. Puede enviar mensajes a `CycleUser` o `Doctor`. Al añadir nuevas reglas, asegurar que el `context_generator` maneje el tipo de actor correspondiente.
 
+### 4. Arquitectura de Plantillas (Notificaciones)
+Para que una notificación sea válida, debe tener tanto `message_template` (HTML) como `message_text_template` (Texto plano). El motor prioriza el HTML pero requiere el texto plano como fallback para notificaciones Push. Si el cuerpo llega vacío, verifica que la clase `_RuleData` en `registry.py` incluya ambos campos.
+
+### 5. Interfaz de Gestión (Admin)
+El listado de notificaciones en el panel administrativo muestra el **Título Real** del mensaje como identificador principal. Esto permite validar la claridad del mensaje hacia la paciente sin necesidad de abrir el editor.
+
 ---
 > [!TIP]
 > Toda la configuración de Google OAuth y Whitelist de correos se gestiona en `settings.GOOGLE_WHITE_LIST`.
