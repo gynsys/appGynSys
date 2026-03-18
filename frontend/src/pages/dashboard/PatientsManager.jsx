@@ -406,6 +406,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     </button>
                   </div>
                 </div>
+              </div>
             ))}
           </div>
 
