@@ -166,6 +166,22 @@ class NotificationLog(Base):
     recipient = relationship("CycleUser", backref="notification_logs")
     doctor = relationship("Doctor", backref="notification_logs")
 
+    @property
+    def recipient_name(self) -> Optional[str]:
+        if self.recipient:
+            return self.recipient.nombre_completo
+        if self.doctor:
+            return self.doctor.nombre_completo
+        return None
+
+    @property
+    def recipient_email(self) -> Optional[str]:
+        if self.recipient:
+            return self.recipient.email
+        if self.doctor:
+            return self.doctor.email
+        return None
+
 
 class PendingNotification(Base):
     """Queue for notifications to be sent at a specific time."""
@@ -206,3 +222,19 @@ class PendingNotification(Base):
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser")
     doctor = relationship("Doctor")
+
+    @property
+    def recipient_name(self) -> Optional[str]:
+        if self.recipient:
+            return self.recipient.nombre_completo
+        if self.doctor:
+            return self.doctor.nombre_completo
+        return None
+
+    @property
+    def recipient_email(self) -> Optional[str]:
+        if self.recipient:
+            return self.recipient.email
+        if self.doctor:
+            return self.doctor.email
+        return None

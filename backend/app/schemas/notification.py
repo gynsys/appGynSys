@@ -92,6 +92,8 @@ class NotificationLogResponse(BaseModel):
     error_message: Optional[str] = None
     received_at: Optional[datetime] = None
     clicked_at: Optional[datetime] = None
+    recipient_name: Optional[str] = None
+    recipient_email: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -110,6 +112,8 @@ class PendingNotificationResponse(BaseModel):
     last_error: Optional[str] = None
     created_at: datetime
     sent_at: Optional[datetime] = None
+    recipient_name: Optional[str] = None
+    recipient_email: Optional[str] = None
     
     class Config:
         from_attributes = True

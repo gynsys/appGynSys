@@ -655,6 +655,7 @@ export default function NotificationManagerPage() {
                         <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
                             <TableHead className="pl-6 h-12">Fecha / Hora</TableHead>
                             <TableHead className="h-12">Notificación</TableHead>
+                            <TableHead className="h-12">Destino</TableHead>
                             <TableHead className="h-12">Canal</TableHead>
                             <TableHead className="h-12">Estado</TableHead>
                             <TableHead className="h-12">Telemetría</TableHead>
@@ -682,6 +683,16 @@ export default function NotificationManagerPage() {
                                         <div className="flex flex-col">
                                             <span className="text-sm font-semibold truncate max-w-[200px]" title={log.title_sent}>{log.title_sent}</span>
                                             <span className="text-[10px] text-blue-500 font-medium">{translateType(log.notification_type)}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px]" title={log.recipient_name}>
+                                                {log.recipient_name || 'Sistema'}
+                                            </span>
+                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]" title={log.recipient_email}>
+                                                {log.recipient_email || '-'}
+                                            </span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -743,6 +754,7 @@ export default function NotificationManagerPage() {
                     <TableHeader>
                         <TableRow className="border-b border-gray-100 dark:border-gray-700 hover:bg-transparent">
                             <TableHead className="pl-6 h-12">Programado</TableHead>
+                            <TableHead className="h-12">Destinatario</TableHead>
                             <TableHead className="h-12">Contenido (Asunto)</TableHead>
                             <TableHead className="h-12">Estado / Reintentos</TableHead>
                             <TableHead className="h-12">Error/Detalle</TableHead>
@@ -763,6 +775,16 @@ export default function NotificationManagerPage() {
                                             </span>
                                             <span className="text-[10px] text-blue-600 font-bold">
                                                 {new Date(item.scheduled_for).toLocaleTimeString()}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px]" title={item.recipient_name}>
+                                                {item.recipient_name || 'Sistema'}
+                                            </span>
+                                            <span className="text-[10px] text-gray-500 truncate max-w-[150px]" title={item.recipient_email}>
+                                                {item.recipient_email || '-'}
                                             </span>
                                         </div>
                                     </TableCell>
