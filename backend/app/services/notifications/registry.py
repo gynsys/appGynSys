@@ -166,7 +166,7 @@ class _RuleData:
     """Contenedor simple de datos de una NotificationRule."""
     __slots__ = (
         "id", "notification_type", "send_time", "channel",
-        "title_template", "message_text_template", "is_active", "priority",
+        "title_template", "message_template", "message_text_template", "is_active", "priority",
     )
 
     def __init__(self, rule: "NotificationRule") -> None:
@@ -175,6 +175,7 @@ class _RuleData:
         self.send_time: Optional[str] = rule.send_time
         self.channel: str = rule.channel
         self.title_template: Optional[str] = rule.title_template
+        self.message_template: Optional[str] = rule.message_template
         self.message_text_template: Optional[str] = rule.message_text_template
         self.is_active: bool = rule.is_active
         self.priority: int = rule.priority if rule.priority is not None else 99

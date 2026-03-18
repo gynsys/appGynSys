@@ -1,0 +1,159 @@
+NOTIFICACIONES CALCULADORA MENSTRUAL (MÉTODO RITMO Y CICLO DIARIO)
+============================================================
+
+Tipo: day_1_period_start
+Título: Día 1 - Inicio Periodo
+Cuerpo: 🩸 Hoy inicia tu periodo. Registra tu flujo y síntomas para un seguimiento preciso.
+------------------------------
+Tipo: day_2_symptom_check
+Título: Día 2 - Chequeo de Dolor
+Cuerpo: ¿Cómo te sientes hoy? Registra dolor, flujo y otros síntomas.
+------------------------------
+Tipo: day_3_hydration
+Título: Día 3 - Hidratación
+Cuerpo: 💧 Recuerda beber mucha agua para ayudar con los cólicos.
+------------------------------
+Tipo: day_4_mood_track
+Título: Día 4 - Estado de Ánimo
+Cuerpo: ¿Cómo está tu ánimo hoy? Registra tus emociones.
+------------------------------
+Tipo: day_5_flow_decrease
+Título: Día 5 - Fin de Chequeo
+Cuerpo: Tu flujo debería estar disminuyendo. ¿Cómo va tu periodo?
+------------------------------
+Tipo: day_6_energy_boost
+Título: Día 6 - Energía en Aumento
+Cuerpo: ✨ Tu energía debería aumentar. Buen momento para ejercitarte.
+------------------------------
+Tipo: day_7_period_end
+Título: Día 7 - Fin de Periodo
+Cuerpo: Tu periodo debería estar terminando. ¡Inicia una nueva fase!
+------------------------------
+Tipo: day_8_skin_care
+Título: Día 8 - Piel Radiante
+Cuerpo: 🌸 Tu piel está en su mejor momento. Cuídala bien.
+------------------------------
+Tipo: day_9_fertile_approaching
+Título: Día 9 - Ventana Fértil Cerca
+Cuerpo: ❤️ Se aproxima tu ventana fértil. Estate atenta.
+------------------------------
+Tipo: day_10_fertile_start
+Título: Día 10 - Ventana Fértil
+Cuerpo: ❤️‍🔥 Inicia tu ventana fértil. Alta probabilidad de concepción.
+------------------------------
+Tipo: day_11_high_fertility
+Título: Día 11 - Fertilidad Alta
+Cuerpo: 🔥 Fertilidad muy alta. Momento ideal para concebir.
+------------------------------
+Tipo: day_12_peak_fertility
+Título: Día 12 - Pico de Fertilidad
+Cuerpo: 🔥🔥 Pico máximo de fertilidad. Mayor probabilidad de embarazo.
+------------------------------
+Tipo: day_13_ovulation
+Título: Día 13 - Posible Ovulación
+Cuerpo: 🥚 Probable día de ovulación. Registra síntomas.
+------------------------------
+Tipo: day_14_ovulation_peak
+Título: Día 14 - Ovulación
+Cuerpo: 🥚 Día típico de ovulación (ciclo 28 días).
+------------------------------
+Tipo: day_15_fertile_end
+Título: Día 15 - Fin Ventana Fértil
+Cuerpo: ✅ Termina tu ventana fértil.
+------------------------------
+Tipo: day_16_implantation_window
+Título: Día 16 - Posible Implantación
+Cuerpo: Si hubo concepción, puede iniciar la implantación.
+------------------------------
+Tipo: day_17_mood_watch
+Título: Día 17 - Observa tu Humos
+Cuerpo: Entras en fase lútea. Observa cambios en tu humor.
+------------------------------
+Tipo: day_18_exercise_tip
+Título: Día 18 - Ejercicio Suave
+Cuerpo: Buen momento para yoga o caminatas tranquilas.
+------------------------------
+Tipo: day_19_metabolism_alert
+Título: Día 19 - Metabolismo
+Cuerpo: Tu metabolismo aumenta. Puedes sentir más hambre.
+------------------------------
+Tipo: day_20_rest_importance
+Título: Día 20 - Descanso
+Cuerpo: Prioriza el sueño. Tu cuerpo se prepara para el fin del ciclo.
+------------------------------
+Tipo: day_21_cycle_summary
+Título: Día 21 - Resumen de Ciclo
+Cuerpo: Has tenido un ciclo regular. Revisa tus registros mensuales.
+------------------------------
+Tipo: day_22_pms_start
+Título: Día 22 - Posible SPM
+Cuerpo: 💙 Pueden iniciar síntomas premenstruales. Cuídate.
+------------------------------
+Tipo: day_23_bloating_check
+Título: Día 23 - Hinchazón
+Cuerpo: ¿Te sientes hinchada? Es normal en esta fase.
+------------------------------
+Tipo: day_24_mood_changes
+Título: Día 24 - Cambios de Ánimo
+Cuerpo: Registra tu estado de ánimo y síntomas emocionales.
+------------------------------
+Tipo: day_25_breast_tenderness
+Título: Día 25 - Sensibilidad Mamaria
+Cuerpo: ¿Sensibilidad o dolor en los senos? Registra tus síntomas.
+------------------------------
+Tipo: day_26_period_preparation
+Título: Día 26 - Preparación
+Cuerpo: Tu periodo debería llegar en 2-3 días. Prepárate.
+------------------------------
+Tipo: day_27_cramps_alert
+Título: Día 27 - Posibles Cólicos
+Cuerpo: Pueden iniciar cólicos premenstruales.
+------------------------------
+Tipo: day_28_period_tomorrow
+Título: Día 28 - Periodo Mañana
+Cuerpo: 📅 Tu periodo debería llegar mañana. ¿Ya llegó?
+------------------------------
+Tipo: rhythm_after_period_1
+Título: Día Seguro - Post Periodo (1/5)
+Cuerpo: Estás en tu primer día infértil post-periodo. Riesgo de embarazo muy bajo.
+------------------------------
+Tipo: rhythm_after_period_2
+Título: Día Seguro - Post Periodo (2/5)
+Cuerpo: Fase infértil activa. Puedes aplicar el método del ritmo de forma segura.
+------------------------------
+Tipo: rhythm_after_period_3
+Título: Día Seguro - Post Periodo (3/5)
+Cuerpo: Continúa tu ventana de días seguros según el método del ritmo.
+------------------------------
+Tipo: rhythm_after_period_4
+Título: Día Seguro - Precaución Pronto (4/5)
+Cuerpo: Penúltimo día de tu fase segura post-periodo antes de ovular.
+------------------------------
+Tipo: rhythm_after_period_5
+Título: Día Seguro - Precaución Hoy (5/5)
+Cuerpo: Último día seguro de esta fase. A partir de mañana tu ventana fértil comienza.
+------------------------------
+Tipo: rhythm_before_period_1
+Título: Día Seguro - Pre Periodo (5/5)
+Cuerpo: Último día antes de tu periodo. Fase completamente infértil.
+------------------------------
+Tipo: rhythm_before_period_2
+Título: Día Seguro - Pre Periodo (4/5)
+Cuerpo: Tu periodo está por llegar. Día completamente seguro para relaciones.
+------------------------------
+Tipo: rhythm_before_period_3
+Título: Día Seguro - Pre Periodo (3/5)
+Cuerpo: Continúan tus días seguros según el método del ritmo.
+------------------------------
+Tipo: rhythm_before_period_4
+Título: Día Seguro - Pre Periodo (2/5)
+Cuerpo: Fase infértil pre-menstrual. Probabilidad de embarazo muy baja.
+------------------------------
+Tipo: rhythm_before_period_5
+Título: Día Seguro - Pre Periodo (1/5)
+Cuerpo: Tu ventana fértil terminó. Inician tus 5 días seguros antes del próximo periodo.
+------------------------------
+Tipo: period_late_1_day
+Título: 1 Día de Retraso
+Cuerpo: 📅 Tu periodo tiene 1 día de retraso. ¿Ya llegó?
+------------------------------

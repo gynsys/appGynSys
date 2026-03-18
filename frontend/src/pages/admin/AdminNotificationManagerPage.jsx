@@ -15,7 +15,8 @@ const CONFIG_TABS = [
         filter: (rule) => rule.notification_type.startsWith('cycle_') ||
             rule.notification_type.startsWith('contraceptive_') ||
             rule.notification_type.startsWith('day_') ||
-            rule.notification_type.startsWith('period_')
+            rule.notification_type.startsWith('period_') ||
+            rule.notification_type.startsWith('rhythm_')
     },
     {
         id: 'prenatal',
@@ -364,6 +365,9 @@ export default function NotificationManagerPage() {
 
         // Dynamic mapping for day_X and week_X
         if (type.startsWith('day_')) return `Día ${type.split('_')[1]} del Ciclo`
+        if (type.startsWith('rhythm_after_period_')) return `Ritmo: Post-Periodo (${type.split('_').pop()}/5)`
+        if (type.startsWith('rhythm_before_period_')) return `Ritmo: Pre-Periodo (${type.split('_').pop()}/5)`
+        if (type === 'period_late_1_day') return 'Día 1 de Retraso (Alerta)'
         if (type.startsWith('prenatal_week_')) return `Semana ${type.split('_')[2]} de Gestación`
         if (type.startsWith('prenatal_')) return `Prenatal: ${type.split('_').slice(1).join(' ').toUpperCase()}`
         if (type.startsWith('system_')) return `Sistema: ${type.split('_').slice(1).join(' ').toUpperCase()}`
