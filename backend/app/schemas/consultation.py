@@ -24,6 +24,12 @@ class ConsultationCreate(BaseModel):
     summary_functional_exam: Optional[str] = None
     summary_habits: Optional[str] = None
     
+    # Individual Habits
+    habits_smoking: Optional[str] = None
+    habits_alcohol: Optional[str] = None
+    habits_physical_activity: Optional[str] = None
+    habits_substance_use: Optional[str] = None
+    
     # Doctor Inputs
     admin_physical_exam: str
     admin_ultrasound: str
@@ -52,6 +58,10 @@ class ConsultationUpdate(BaseModel):
     summary_gyn_obstetric: Optional[str] = None
     summary_functional_exam: Optional[str] = None
     summary_habits: Optional[str] = None
+    habits_smoking: Optional[str] = None
+    habits_alcohol: Optional[str] = None
+    habits_physical_activity: Optional[str] = None
+    habits_substance_use: Optional[str] = None
     admin_physical_exam: Optional[str] = None
     admin_ultrasound: Optional[str] = None
     admin_diagnosis: Optional[str] = None
@@ -84,6 +94,12 @@ class ConsultationInDBBase(BaseModel):
     obstetric_history_summary: Optional[str] = None
     functional_exam_summary: Optional[str] = None
     habits_summary: Optional[str] = None
+    
+    # Individual Habits
+    habits_smoking: Optional[str] = None
+    habits_alcohol: Optional[str] = None
+    habits_physical_activity: Optional[str] = None
+    habits_substance_use: Optional[str] = None
     
     # Doctor Inputs
     physical_exam: Optional[str] = None

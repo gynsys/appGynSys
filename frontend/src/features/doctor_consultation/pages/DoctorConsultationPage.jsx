@@ -535,10 +535,10 @@ export const DoctorConsultationPage = () => {
 
         {/* Hábitos (Full Width) */}
         <ModernCard title="Hábitos Psicobiológicos" icon={FaRunning} headerColor="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300" borderColor="border-green-200 dark:border-green-800">
-          <Field label="Tabaco" value={patientData.habits_smoking} />
-          <Field label="Alcohol" value={patientData.habits_alcohol} />
-          <Field label="Actividad Física" value={patientData.habits_physical_activity} />
-          <Field label="Sustancias" value={patientData.habits_substance_use} />
+          <Field label="Tabaco" value={patientData.habits_smoking || "No reportado"} />
+          <Field label="Alcohol" value={patientData.habits_alcohol || "No reportado"} />
+          <Field label="Actividad Física" value={patientData.habits_physical_activity || "No reportado"} />
+          <Field label="Sustancias" value={patientData.habits_substance_use || "No reportado"} />
         </ModernCard>
       </div>
     );
@@ -884,6 +884,10 @@ export const DoctorConsultationPage = () => {
       summary_gyn_obstetric: formatFullGynObstetricSummary(patientData),
       summary_functional_exam: patientData.summary_functional_exam,
       summary_habits: patientData.summary_habits,
+      habits_smoking: patientData.habits_smoking,
+      habits_alcohol: patientData.habits_alcohol,
+      habits_physical_activity: patientData.habits_physical_activity,
+      habits_substance_use: patientData.habits_substance_use,
 
       // Doctor Inputs
       admin_physical_exam: physicalExamContent,

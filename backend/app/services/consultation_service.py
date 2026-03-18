@@ -36,6 +36,12 @@ class ConsultationService:
             functional_exam_summary=consultation_in.summary_functional_exam,
             habits_summary=consultation_in.summary_habits,
             
+            # Individual Habits
+            habits_smoking=consultation_in.habits_smoking,
+            habits_alcohol=consultation_in.habits_alcohol,
+            habits_physical_activity=consultation_in.habits_physical_activity,
+            habits_substance_use=consultation_in.habits_substance_use,
+            
             # Doctor Inputs
             physical_exam=consultation_in.admin_physical_exam,
             ultrasound=consultation_in.admin_ultrasound,
@@ -108,6 +114,10 @@ class ConsultationService:
             "summary_gyn_obstetric": latest.obstetric_history_summary,
             "summary_functional_exam": latest.functional_exam_summary,
             "summary_habits": latest.habits_summary,
+            "habits_smoking": latest.habits_smoking,
+            "habits_alcohol": latest.habits_alcohol,
+            "habits_physical_activity": latest.habits_physical_activity,
+            "habits_substance_use": latest.habits_substance_use,
             "history_number": latest.history_number,
             "address": getattr(latest, 'address', "") or "", 
             "occupation": getattr(latest, 'occupation', "") or "",
@@ -159,6 +169,10 @@ class ConsultationService:
             "summary_gyn_obstetric": consultation.obstetric_history_summary,
             "summary_functional_exam": consultation.functional_exam_summary,
             "summary_habits": consultation.habits_summary,
+            "habits_smoking": consultation.habits_smoking,
+            "habits_alcohol": consultation.habits_alcohol,
+            "habits_physical_activity": consultation.habits_physical_activity,
+            "habits_substance_use": consultation.habits_substance_use,
             "history_number": consultation.history_number,
             "address": getattr(consultation, 'address', "") or "", 
             "occupation": getattr(consultation, 'occupation', "") or "",

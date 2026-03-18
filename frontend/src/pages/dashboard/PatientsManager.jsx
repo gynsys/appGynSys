@@ -129,10 +129,28 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
             )}
             {data.summary_habits && (
               <div className="space-y-1 col-span-1 md:col-span-2">
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Hábitos:</p>
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider inline mr-2">Resumen Hábitos:</p>
                 <p className="text-sm italic inline">{data.summary_habits}</p>
               </div>
             )}
+            <div className="grid grid-cols-2 gap-4 col-span-1 md:col-span-2 border-t pt-2 mt-2">
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Tabaco</p>
+                <p className="text-sm">{data.habits_smoking || 'No reportado'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Alcohol</p>
+                <p className="text-sm">{data.habits_alcohol || 'No reportado'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Actividad Física</p>
+                <p className="text-sm">{data.habits_physical_activity || 'No reportado'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">Sustancias</p>
+                <p className="text-sm">{data.habits_substance_use || 'No reportado'}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -291,6 +309,10 @@ export default function PatientsManager({ isEmbedded = false }) {
       summary_gyn_obstetric: consultation.obstetric_history_summary || '',
       summary_functional_exam: consultation.functional_exam_summary || '',
       summary_habits: consultation.habits_summary || '',
+      habits_smoking: consultation.habits_smoking || '',
+      habits_alcohol: consultation.habits_alcohol || '',
+      habits_physical_activity: consultation.habits_physical_activity || '',
+      habits_substance_use: consultation.habits_substance_use || '',
       admin_physical_exam: consultation.physical_exam || '',
       admin_ultrasound: consultation.ultrasound || '',
       admin_diagnosis: formatPlanWithBullets(consultation.diagnosis || ''),
@@ -776,6 +798,24 @@ export default function PatientsManager({ isEmbedded = false }) {
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Resumen de Hábitos</label>
                   <textarea name="summary_habits" value={editFormData.summary_habits || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Tabaco</label>
+                    <input name="habits_smoking" value={editFormData.habits_smoking || ''} onChange={handleEditChange} className="w-full p-2 bg-gray-50 dark:bg-gray-800/50 border rounded-lg text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Alcohol</label>
+                    <input name="habits_alcohol" value={editFormData.habits_alcohol || ''} onChange={handleEditChange} className="w-full p-2 bg-gray-50 dark:bg-gray-800/50 border rounded-lg text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Actividad Física</label>
+                    <input name="habits_physical_activity" value={editFormData.habits_physical_activity || ''} onChange={handleEditChange} className="w-full p-2 bg-gray-50 dark:bg-gray-800/50 border rounded-lg text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Sustancias</label>
+                    <input name="habits_substance_use" value={editFormData.habits_substance_use || ''} onChange={handleEditChange} className="w-full p-2 bg-gray-50 dark:bg-gray-800/50 border rounded-lg text-sm" />
+                  </div>
                 </div>
               </div>
             </div>
