@@ -225,10 +225,10 @@ export const DoctorConsultationPage = () => {
               habits_physical_activity: answers.habits_physical_activity || answers['17'] || "No reportado",
               habits_substance_use: answers.habits_substance_use || answers['18'] || "No reportado",
 
-              // BACKFILL: Generate text summaries if missing
-              summary_functional_exam: answers.summary_functional_exam || answers.functional_exam_summary || generateFunctionalExamSummary(answers),
-              habits_summary: answers.summary_habits || answers.habits_summary || generateHabitsSummary(answers),
-              summary_habits: answers.summary_habits || answers.habits_summary || generateHabitsSummary(answers),
+              // BACKFILL: Force regeneration from raw answers to ensure latest logic is used
+              summary_functional_exam: generateFunctionalExamSummary(answers) || answers.summary_functional_exam || answers.functional_exam_summary,
+              habits_summary: generateHabitsSummary(answers) || answers.summary_habits || answers.habits_summary,
+              summary_habits: generateHabitsSummary(answers) || answers.summary_habits || answers.habits_summary,
 
               // CRITICAL FIX: Always regenerate full summary from raw data first.
               // Only fallback to stored summary if regeneration returns empty/null.

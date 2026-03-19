@@ -468,71 +468,204 @@ class NarrativePreconsultaSummarizer:
         return full_narrative
     
     def _summarize_current_symptoms(self, patient_data: Dict[str, Any]) -> str:
-        """Genera resumen conciso de síntomas actuales."""
-        symptoms = []
+        """
+        Genera resumen del examen funcional.
+        Basado en la lógica del bot de Telegram (summaries.py).
+        """
+        # Verificar si hay algún dato de examen funcional
+        functional_keys = [
+            'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
+            'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
+            'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
+            'functional_urinary_incontinence', 'functional_urinary_nocturia'
+        ]
         
-        # Dolor durante relaciones
-        has_sexual_pain = self._get_response_value("TEMPLATE_1766696950262_40", patient_data)
-        if has_sexual_pain:
-            symptoms.append("dispareunia")
+        has_functional_data = any(patient_data.get(k) for k in functional_keys)
         
-        # Síntomas gastrointestinales
-        has_gi_symptoms_pre = self._get_response_value("TEMPLATE_1766696950912_46", patient_data)
-        has_gi_symptoms_during = self._get_response_value("TEMPLATE_1766696951230_48", patient_data)
+        # Fallback por palabras clave si no están las claves directas
+        if not has_functional_data:
+            # Si no hay claves directas, buscamos si hay alguna respuesta en las preguntas de examen funcional
+            # (IDs TEMPLATE_... que coincidan con la sección funcional)
+            pass 
+
+        if not has_functional_data:
+            return "Sin síntomas relevantes."
+
+        summary_parts = []
         
-        if has_gi_symptoms_pre or has_gi_symptoms_during:
-            symptoms.append("síntomas gastrointestinales")
+        # 1. Dispareunia
+        dispareunia = self._get_value_by_keywords(['relaciones', 'dispareunia', 'dolor coito'], patient_data, direct_keys=['functional_dispareunia'])
+        if dispareunia and 'sí' in str(dispareunia).lower():
+            import re
+            match = re.search(r"tipo (\w+) \(Intensidad: (\d+)/10\)", str(dispareunia))
+            if match:
+                tipo, intensidad_str = match.groups()
+                intensidad = int(intensidad_str)
+                desc_intensidad = "de alta intensidad" if intensidad >= 7 else "de moderada intensidad" if intensidad >= 4 else "de leve intensidad"
+                summary_parts.append(f"La paciente refiere dispareunia de tipo {tipo.lower()} {desc_intensidad} ({intensidad}/10).")
+            else:
+                summary_parts.append("Refiere dispareunia.")
+        else:
+            summary_parts.append("Niega dispareunia.")
+
+        # 2. Dolor en miembros inferiores
+        leg_pain = self._get_value_by_keywords(['piernas', 'miembros inferiores'], patient_data, direct_keys=['functional_leg_pain'])
+        if leg_pain and 'sí' in str(leg_pain).lower():
+            import re
+            match = re.search(r"Tipo: ([\w\s,]+), Zona: ([\w\s,]+)", str(leg_pain))
+            if match:
+                tipo, zona = match.groups()
+                summary_parts.append(f"Presenta dolor en miembros inferiores, descrito como '{tipo.lower()}' en la {zona.lower()}.")
+            else:
+                summary_parts.append("Refiere dolor en miembros inferiores no especificado.")
+        else:
+            summary_parts.append("Niega dolor en miembros inferiores durante la menstruación.")
+
+        # 3. Gastrointestinal
+        gastro_before = self._get_value_by_keywords(['gastrointestinal antes'], patient_data, direct_keys=['functional_gastro_before'])
+        gastro_during = self._get_value_by_keywords(['gastrointestinal durante'], patient_data, direct_keys=['functional_gastro_during'])
+        dischezia = self._get_value_by_keywords(['evacuar', 'disquecia'], patient_data, direct_keys=['functional_dischezia'])
+        bowel_freq = self._get_value_by_keywords(['frecuencia evacuatoria'], patient_data, direct_keys=['functional_bowel_freq'])
         
-        # Síntomas urinarios
-        has_urinary_irritation = self._get_response_value("TEMPLATE_1766696951591_50", patient_data)
-        has_incontinence = self._get_response_value("TEMPLATE_1766696953832_51", patient_data)
-        has_nocturia = self._get_response_value("TEMPLATE_1766696959323_52", patient_data)
+        s_g_before = str(gastro_before) if gastro_before else 'No'
+        s_g_during = str(gastro_during) if gastro_during else 'No'
+        s_dischezia = str(dischezia) if dischezia else 'No'
+        s_bowel_freq = str(bowel_freq) if bowel_freq else 'N/A'
+
+        symptoms_set = set()
+        if s_g_before.lower() != 'no':
+            symptoms_set.update(s.strip() for s in s_g_before.lower().split(','))
+        if s_g_during.lower() != 'no':
+            symptoms_set.update(s.strip() for s in s_g_during.lower().split(','))
         
-        if has_urinary_irritation or has_incontinence or has_nocturia:
-            symptoms.append("síntomas urinarios")
-        
-        if not symptoms:
-            return "sin síntomas relevantes"
-        
-        return f"refiere {', '.join(symptoms[:2])}"  # Máximo 2 síntomas principales
+        if symptoms_set or s_dischezia.lower() != 'no':
+            gastro_summary = "A nivel gastrointestinal, manifiesta"
+            if "dolor al evacuar" in symptoms_set:
+                symptoms_set.remove("dolor al evacuar")
+            symptoms_text = ", ".join(sorted(list(symptoms_set)))
+            final_symptoms = (symptoms_text + ", " if symptoms_text else "") + f"dolor al evacuar (disquecia {s_dischezia.lower()})" if s_dischezia.lower() != 'no' else symptoms_text
+            if final_symptoms:
+                gastro_summary += f" síntomas como {final_symptoms}."
+            
+            has_other_symptoms = len(symptoms_set) > 0
+            is_eventual_only = not has_other_symptoms and 'eventual' in s_dischezia.lower()
+            
+            if is_eventual_only:
+                gastro_summary += f" Su frecuencia evacuatoria {s_bowel_freq.lower()}."
+            else:
+                gastro_summary += f" Su frecuencia evacuatoria es de {s_bowel_freq.lower()}."
+            summary_parts.append(gastro_summary)
+        else:
+            summary_parts.append(f"A nivel gastrointestinal, no refiere síntomas significativos, con una frecuencia evacuatoria {s_bowel_freq.lower()}.")
+
+        # 4. Urinario
+        urinary_problem = self._get_value_by_keywords(['urinario', 'vejiga'], patient_data, direct_keys=['functional_urinary_problem'])
+        if urinary_problem and str(urinary_problem).lower() != 'no':
+            urinary_parts = []
+            urinary_pain = self._get_value_by_keywords(['dolor al orinar'], patient_data, direct_keys=['functional_urinary_pain'])
+            if urinary_pain and 'sí' in str(urinary_pain).lower():
+                import re
+                match = re.search(r"\(Intensidad: (\d+)/10\)", str(urinary_pain))
+                if match:
+                    intensidad = int(match.group(1))
+                    desc_intensidad = "muy alta" if intensidad >= 7 else "moderada" if intensidad >= 4 else "leve"
+                    urinary_parts.append(f"dolor al orinar de intensidad {desc_intensidad} ({intensidad}/10)")
+            
+            # Otros síntomas urinarios
+            others = []
+            if str(patient_data.get('functional_urinary_irritation')).lower() == 'sí': others.append("irritación")
+            if str(patient_data.get('functional_urinary_incontinence')).lower() == 'sí': others.append("incontinencia")
+            if str(patient_data.get('functional_urinary_nocturia')).lower() == 'sí': others.append("nocturia")
+            
+            urinary_summary = "En el sistema urinario, confirma problemas"
+            if urinary_parts:
+                urinary_summary += f", con {urinary_parts[0]}"
+                if others:
+                    urinary_summary += ", acompañado de " + " y ".join(others)
+                urinary_summary += "."
+            elif others:
+                urinary_summary += ", manifestando " + " y ".join(others) + "."
+            else:
+                urinary_summary += " no especificados."
+            summary_parts.append(urinary_summary)
+        else:
+            summary_parts.append("Hábito miccional conservado.")
+
+        return " ".join(summary_parts)
     
     def _summarize_lifestyle(self, patient_data: Dict[str, Any]) -> str:
-        """Genera resumen conciso de estilo de vida."""
-        sections = []
+        """
+        Genera resumen del estilo de vida.
+        Basado en la lógica del bot de Telegram (summaries.py).
+        """
+        summary_parts = []
+        activity_data = self._get_value_by_keywords(['actividad física', 'ejercicio'], patient_data, direct_keys=['habits_physical_activity'])
         
-        # Actividad física
-        exercises = self._get_value_by_keywords(['actividad física', 'ejercicio', 'frecuencia ejercicio'], patient_data, direct_keys=['habits_physical_activity'])
-        if exercises and str(exercises).lower() not in ['no', 'false', '0', 'ninguno', 'sedentaria']:
-            sections.append("actividad física regular")
-        elif str(exercises).lower() == 'sedentaria':
-            sections.append("sedentaria")
-        
-        # Tabaco
-        smokes = self._get_value_by_keywords(['smoking', 'fumas', 'tabaco', 'consumo tabaco'], patient_data, direct_keys=['habits_smoking'])
-        if smokes is not None:
-             s_lower = str(smokes).lower()
-             if s_lower in ('no', 'false', '0', 'no fumadora', 'niega'):
-                 sections.append("no fumadora")
-             else:
-                 sections.append("fumadora" if s_lower in ('si', 'sí', 'true', '1') else f"fumadora ({s_lower})")
-        
-        # Alcohol
-        alcohol = self._get_value_by_keywords(['alcohol', 'consumo alcohol', 'bebidas alcohólicas'], patient_data, direct_keys=['habits_alcohol'])
-        if alcohol and str(alcohol).lower() not in ['no', 'false', '0', 'nunca', 'niega']:
-            if str(alcohol).lower() in ["ocasional (social)", "ocasional", "social"]:
-                sections.append("consumo ocasional de alcohol")
+        if activity_data and 'sí' in str(activity_data).lower():
+            import re
+            freq_match = re.search(r"Frecuencia: ([\w\s/]+)[,.]", str(activity_data))
+            dura_match = re.search(r"Duración: ([\w\s>]+ min)[,.]", str(activity_data))
+            habit_match = re.search(r"Hábito: ([\w\sñ-]+)[,.]", str(activity_data))
+            goal_match = re.search(r"Objetivo: (.+)", str(activity_data))
+            frecuencia = freq_match.group(1).strip() if freq_match else ""
+            duracion = dura_match.group(1).strip().replace(" min", "") if dura_match else ""
+            habito_original = habit_match.group(1).strip() if habit_match else ""
+            objetivo = goal_match.group(1).strip() if goal_match else ""
+            objetivo = re.sub(r'^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+\s*', '', objetivo)
+            
+            habito_frases = {
+                "Menos de 1 mes": "desde hace menos de un mes",
+                "1-3 meses": "desde hace 1 a 3 meses",
+                "3-6 meses": "desde hace 3 a 6 meses",
+                "6-12 meses": "desde hace 6 a 12 meses",
+                "Más de 1 año": "desde hace más de un año"
+            }
+            habito_redactado = habito_frases.get(habito_original, "")
+            activity_summary = (
+                f"La paciente refiere realizar actividad física regular con una frecuencia de {frecuencia}, "
+                f"sesiones de {duracion} minutos"
+            )
+            if habito_redactado:
+                activity_summary += f", manteniendo este hábito {habito_redactado}"
+            activity_summary += f" con el objetivo de {objetivo.lower()}."
+            summary_parts.append(activity_summary)
+        else:
+            summary_parts.append("Niega realizar actividad física de forma regular.")
+
+        smoking = str(self._get_value_by_keywords(['smoking', 'tabaco', 'fumas'], patient_data, direct_keys=['habits_smoking']) or 'No')
+        alcohol = str(self._get_value_by_keywords(['alcohol', 'bebidas'], patient_data, direct_keys=['habits_alcohol']) or 'No')
+        substances = str(self._get_value_by_keywords(['sustancia', 'droga'], patient_data, direct_keys=['habits_substance_use']) or 'No')
+
+        # Construir texto de hábitos de forma fluida
+        if smoking.lower() == 'no' and alcohol.lower() == 'no':
+            habits_text = "Manifiesta no fumar y tampoco consume alcohol"
+            if substances.lower() == 'no':
+                habits_text += ", y niega el uso de otras sustancias."
             else:
-                sections.append(f"consumo de alcohol: {str(alcohol).lower()}")
+                habits_text += f", y refiere uso de otras sustancias ({substances})."
+        else:
+            substance_parts = []
+            if smoking.lower() != 'no':
+                substance_parts.append(f"fuma ({smoking})")
+            else:
+                substance_parts.append("no fuma")
+            
+            if 'ocasional' in alcohol.lower():
+                substance_parts.append("consume alcohol ocasionalmente")
+            elif alcohol.lower() != 'no':
+                substance_parts.append(f"consume alcohol ({alcohol})")
+            else:
+                substance_parts.append("no consume alcohol")
+            
+            if substances.lower() == 'no':
+                substance_parts.append("niega el uso de otras sustancias")
+            else:
+                substance_parts.append(f"refiere uso de otras sustancias ({substances})")
+            
+            habits_text = f"En cuanto a hábitos: {', '.join(substance_parts)}."
         
-        # Sustancias
-        substances = self._get_value_by_keywords(['sustancias', 'drogas', 'ilícita', 'ilicitas'], patient_data, direct_keys=['habits_substance_use'])
-        if substances and str(substances).lower() not in ['no', 'false', '0', 'nunca', 'niega', 'falso']:
-            sections.append(f"consumo de sustancias: {str(substances).lower()}")
-            
-        if not sections:
-            return "hábitos de vida no reportados"
-            
-        return f"{', '.join(sections)}"
+        summary_parts.append(habits_text)
+        return " ".join(summary_parts)
     
     def generate_summary_sections(self, patient_data: Dict[str, Any], patient_name: str) -> Dict[str, str]:
         """Genera todas las secciones del resumen."""

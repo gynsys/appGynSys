@@ -454,11 +454,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         ("Antecedentes Quirúrgicos", format_simple_antecedente(get_str('surgical_history')), styleN),
         ("Gineco-Obstétricos", get_str('summary_gyn_obstetric'), styleJustify),
         ("Examen Funcional", get_str('summary_functional_exam'), styleJustify),
-        ("Hábitos (Resumen)", get_str('summary_habits'), styleJustify),
-        ("Tabaquismo", get_str('habits_smoking', 'No reportado'), styleN),
-        ("Alcohol", get_str('habits_alcohol', 'No reportado'), styleN),
-        ("Actividad Física", get_str('habits_physical_activity', 'No reportado'), styleN),
-        ("Sustancias", get_str('habits_substance_use', 'No reportado'), styleN),
+        ("Hábitos", get_str('summary_habits'), styleJustify),
     ]
 
     for label, content, style_or_type in preconsulta_sections:
