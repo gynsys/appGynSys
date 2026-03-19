@@ -15,7 +15,7 @@ from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
 from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification, send_platform_registration_invitation
 from app.services.notifications import trigger_doctor_event
-from app.services.summary_generator import ClinicalSummaryGenerator
+# ClinicalSummaryGenerator removed (Legacy)
 from datetime import datetime, timedelta
 import logging
 import json
@@ -140,6 +140,7 @@ async def get_appointment(
 ):
     """
     Get a specific appointment by ID.
+    Includes dynamically generated summaries if preconsulta answers exist.
     """
     appointment = db.query(Appointment).filter(
         Appointment.id == appointment_id,
@@ -151,6 +152,36 @@ async def get_appointment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Appointment not found"
         )
+    
+    # --- DYNAMIC SUMMARY INJECTION ---
+    if appointment.preconsulta_answers:
+        try:
+            # Parse existing answers
+            if isinstance(appointment.preconsulta_answers, str):
+                answers = json.loads(appointment.preconsulta_answers)
+            else:
+                answers = appointment.preconsulta_answers
+            
+            # Generate fresh summaries
+            from app.services.summary_generator import GeneradorResumenes
+            gen = GeneradorResumenes(answers)
+            resumenes = gen.generar_todo(appointment.patient_name)
+            
+            # Inject into answers (frontend expects these keys)
+            answers['summary_gyn_obstetric'] = resumenes['gineco']
+            answers['obstetric_history_summary'] = resumenes['gineco']
+            answers['summary_functional_exam'] = resumenes['funcional']
+            answers['functional_exam_summary'] = resumenes['funcional']
+            answers['summary_habits'] = resumenes['estilo_vida']
+            answers['habits_summary'] = resumenes['estilo_vida']
+            answers['summary_general'] = resumenes['general']
+            answers['summary_medical'] = resumenes['antecedentes']
+            
+            # Re-serialize into a transient field (we don't save to DB here)
+            # Since the model expects a string, we re-stringify
+            appointment.preconsulta_answers = json.dumps(answers)
+        except Exception as e:
+            logger.error(f"Error injecting dynamic summaries: {e}")
     
     return appointment
 
@@ -351,27 +382,21 @@ async def submit_preconsulta(
                         elif any(kw in q_text_lower for kw in ['sustancia', 'droga']):
                             answers['habits_substance_use'] = val
 
-                summary_data = ClinicalSummaryGenerator.generate(appointment, formatted_answers, template_data=template_data)
-                summary_html = summary_data.get('full_narrative_html')
+                # Use GeneradorResumenes for notification email
+                from app.services.summary_generator import GeneradorResumenes
+                gen = GeneradorResumenes(answers)
+                resumenes = gen.generar_todo(appointment.patient_name)
+                summary_html = f"<p>{resumenes['general']}</p><p>{resumenes['antecedentes']}</p><p>{resumenes['gineco']}</p><p>{resumenes['funcional']}</p><p>{resumenes['estilo_vida']}</p>"
 
-                # SAVE GENERATED SUMMARIES TO ANSWERS JSON
-                # This ensures the Frontend sees the narratives in DoctorConsultationPage
-                # CRITICAL: Overwrite the frontend-sent 'obstetric_history_summary' with our full narrative
-                answers['obstetric_history_summary'] = summary_data.get('summary_obstetric')
-                answers['summary_gyn_obstetric'] = summary_data.get('summary_obstetric') # Keep for redundancy
-                answers['summary_functional_exam'] = summary_data.get('summary_functional')
-                answers['summary_habits'] = summary_data.get('summary_lifestyle')
-                answers['summary_medical'] = summary_data.get('summary_medical')
-                answers['summary_general'] = summary_data.get('summary_general')
-                
-                # Save Human Readable Snapshot (User Request)
+                # SAVE DYNAMIC DATA ONLY: Human Readable Snapshot
+                # NO GUARDAMOS los resúmenes de texto (summary_...) para que siempre se generen dinámicamente
                 answers['_human_readable'] = readable_map
                 
-                # Re-save updated answers to DB
+                # Re-save updated answers to DB (raw data + human readable)
                 appointment.preconsulta_answers = json.dumps(answers)
                 db.commit()
             except Exception as e:
-                print(f"Error generating summary: {e}")
+                print(f"Error generating summary context: {e}")
                 # Continue without summary
                 summary_html = None
 

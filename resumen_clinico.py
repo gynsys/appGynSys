@@ -488,3 +488,4 @@ class GeneradorResumenes:
             "estilo_vida": self.generar_estilo_vida().capitalize()
         }
 
+

@@ -99,6 +99,31 @@ class ConsultationService:
         # 3. Use the most recent one for demographics
         latest = all_consultations[-1] if all_consultations else consultation
         
+        # --- DYNAMIC SUMMARY REGENERATION ---
+        # Try to find raw answers from Appointment to regenerate summaries
+        dyn_summaries = {}
+        try:
+            appointment = db.query(Appointment).filter(
+                Appointment.patient_dni == latest.patient_ci,
+                Appointment.preconsulta_answers.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            
+            if appointment and appointment.preconsulta_answers:
+                from app.services.summary_generator import GeneradorResumenes
+                ans = appointment.preconsulta_answers
+                if isinstance(ans, str):
+                    ans = json.loads(ans)
+                gen = GeneradorResumenes(ans)
+                resumenes = gen.generar_todo(latest.patient_name)
+                dyn_summaries = {
+                    "summary_gyn_obstetric": resumenes['gineco'],
+                    "summary_functional_exam": resumenes['funcional'],
+                    "summary_habits": resumenes['estilo_vida']
+                }
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error regenerating dynamic history summaries: {e}")
+
         return {
             "id": latest.id,
             "full_name": latest.patient_name,
@@ -111,9 +136,9 @@ class ConsultationService:
             "personal_history": latest.personal_history,
             "supplements": latest.supplements,
             "surgical_history": latest.surgical_history,
-            "summary_gyn_obstetric": latest.obstetric_history_summary,
-            "summary_functional_exam": latest.functional_exam_summary,
-            "summary_habits": latest.habits_summary,
+            "summary_gyn_obstetric": dyn_summaries.get("summary_gyn_obstetric") or latest.obstetric_history_summary,
+            "summary_functional_exam": dyn_summaries.get("summary_functional_exam") or latest.functional_exam_summary,
+            "summary_habits": dyn_summaries.get("summary_habits") or latest.habits_summary,
             "habits_smoking": latest.habits_smoking,
             "habits_alcohol": latest.habits_alcohol,
             "habits_physical_activity": latest.habits_physical_activity,
@@ -154,6 +179,30 @@ class ConsultationService:
         if not consultation:
             return None
 
+        # --- DYNAMIC SUMMARY REGENERATION ---
+        dyn_summaries = {}
+        try:
+            appointment = db.query(Appointment).filter(
+                Appointment.patient_dni == consultation.patient_ci,
+                Appointment.preconsulta_answers.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            
+            if appointment and appointment.preconsulta_answers:
+                from app.services.summary_generator import GeneradorResumenes
+                ans = appointment.preconsulta_answers
+                if isinstance(ans, str):
+                    ans = json.loads(ans)
+                gen = GeneradorResumenes(ans)
+                resumenes = gen.generar_todo(consultation.patient_name)
+                dyn_summaries = {
+                    "summary_gyn_obstetric": resumenes['gineco'],
+                    "summary_functional_exam": resumenes['funcional'],
+                    "summary_habits": resumenes['estilo_vida']
+                }
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error regenerating dynamic consultation summaries: {e}")
+
         return {
             "id": consultation.id,
             "full_name": consultation.patient_name,
@@ -166,9 +215,9 @@ class ConsultationService:
             "personal_history": consultation.personal_history,
             "supplements": consultation.supplements,
             "surgical_history": consultation.surgical_history,
-            "summary_gyn_obstetric": consultation.obstetric_history_summary,
-            "summary_functional_exam": consultation.functional_exam_summary,
-            "summary_habits": consultation.habits_summary,
+            "summary_gyn_obstetric": dyn_summaries.get("summary_gyn_obstetric") or consultation.obstetric_history_summary,
+            "summary_functional_exam": dyn_summaries.get("summary_functional_exam") or consultation.functional_exam_summary,
+            "summary_habits": dyn_summaries.get("summary_habits") or consultation.habits_summary,
             "habits_smoking": consultation.habits_smoking,
             "habits_alcohol": consultation.habits_alcohol,
             "habits_physical_activity": consultation.habits_physical_activity,

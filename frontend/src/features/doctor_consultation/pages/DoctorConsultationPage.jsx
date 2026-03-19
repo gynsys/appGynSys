@@ -225,14 +225,12 @@ export const DoctorConsultationPage = () => {
               habits_physical_activity: answers.habits_physical_activity || answers['17'] || "No reportado",
               habits_substance_use: answers.habits_substance_use || answers['18'] || "No reportado",
 
-              // BACKFILL: Use stored summary first, fallback to fresh generation
-              summary_functional_exam: answers.summary_functional_exam || answers.functional_exam_summary || generateFunctionalExamSummary(answers),
-              habits_summary: answers.summary_habits || answers.habits_summary || generateHabitsSummary(answers),
-              summary_habits: answers.summary_habits || answers.habits_summary || generateHabitsSummary(answers),
-
-              // CRITICAL FIX: Always regenerate full summary from raw data first.
-              // Only fallback to stored summary if regeneration returns empty/null.
-              summary_gyn_obstetric: formatFullGynObstetricSummary(answers) || answers.summary_gyn_obstetric || answers.obstetric_history_summary
+              // USE BACKEND SUMMARIES (Injected dynamically in GET /appointments/{id})
+              // We prioritize these as they represent the single source of truth (GeneradorResumenes)
+              summary_functional_exam: answers.summary_functional_exam || answers.functional_exam_summary,
+              habits_summary: answers.summary_habits || answers.habits_summary,
+              summary_habits: answers.summary_habits || answers.habits_summary,
+              summary_gyn_obstetric: answers.summary_gyn_obstetric || answers.obstetric_history_summary
             };
           } else if (loadedHistory) {
             // Case B: No Answers but Has History (Recurrent Patient with missing form)
@@ -419,19 +417,27 @@ export const DoctorConsultationPage = () => {
           <Field label="Antecedentes Quirúrgicos" value={patientData.surgical_history} />
         </ModernCard>
 
-        {/* Gineco-Obstetricia */}
+         {/* Historia Gineco-Obstétrica */}
         <ModernCard title="Historia Gineco-Obstétrica" icon={FaBaby} headerColor="bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300" borderColor="border-pink-300 dark:border-pink-800">
           <div className="col-span-full text-sm text-gray-800 dark:text-gray-200 text-justify leading-relaxed font-medium">
-            {formatFullGynObstetricSummary(patientData)}
+            {patientData.summary_gyn_obstetric || "No hay resumen disponible."}
           </div>
         </ModernCard>
 
         {/* Examen Funcional (Full Width) */}
         {/* Examen Funcional (Grouped & Detailed - Vertical Stack) */}
         <ModernCard title="Examen Funcional" icon={FaStethoscope} headerColor="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200" borderColor="border-gray-200 dark:border-gray-600" gridCols="grid-cols-1">
+          {/* Resumen Narrativo (Dynamic from Backend) */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+            <h5 className="font-bold text-gray-900 dark:text-gray-100 mb-2 text-xs uppercase tracking-wider">Resumen Interrogatorio</h5>
+            <p className="text-sm text-gray-700 dark:text-gray-200 text-justify leading-relaxed font-medium bg-gray-50/50 dark:bg-gray-900/20 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+              {patientData.summary_functional_exam || "Sin hallazgos reportados."}
+            </p>
+          </div>
+
           {/* Algias Pélvicas */}
           <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-            <h5 className="font-bold text-gray-900 dark:text-gray-100 mb-3 text-xs uppercase tracking-wider">Algias Pélvicas</h5>
+            <h5 className="font-bold text-gray-900 dark:text-gray-100 mb-3 text-xs uppercase tracking-wider">Detalles Específicos</h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-sm flex flex-row items-baseline gap-2">
                 <span className="font-bold text-gray-700 dark:text-gray-400 min-w-fit">Dispareunia:</span>

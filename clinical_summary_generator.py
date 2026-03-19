@@ -1,6 +1,6 @@
 """
 Generador de resúmenes clínicos a partir de datos estructurados de preconsulta.
-Versión adaptada para leer ho_table_results y children.
+Versión simplificada y enfocada en el formato JSON actual.
 """
 
 import json
@@ -38,6 +38,7 @@ def _normalize_value(val: Any) -> str:
     if isinstance(val, bool):
         return "sí" if val else "no"
     if isinstance(val, list):
+        # Filtra elementos vacíos y une
         elementos = [str(v).strip() for v in val if v is not None and str(v).strip()]
         return ", ".join(elementos)
     return str(val).strip()
@@ -48,7 +49,7 @@ def _format_date_for_summary(date_str: Optional[str]) -> Optional[str]:
     Convierte fecha YYYY-MM-DD a formato legible: "mes del año".
     Si no se puede, retorna el original o None.
     """
-    if not date_str or str(date_str).lower() in ['nunca', 'no', 'n/a', 'no recuerdo']:
+    if not date_str or str(date_str).lower() in ['nunca', 'no', 'n/a']:
         return None
     try:
         meses = {
@@ -66,39 +67,15 @@ def _format_date_for_summary(date_str: Optional[str]) -> Optional[str]:
         return date_str
 
 
-def _es_si(valor: Any) -> bool:
-    """Determina si un valor representa 'sí'."""
-    if valor is None:
-        return False
-    if isinstance(valor, bool):
-        return valor is True
-    return str(valor).lower() in ['sí', 'si', 'true', '1']
-
-
-def _to_int(valor: Any) -> int:
-    """Convierte a entero de forma segura."""
-    try:
-        return int(valor)
-    except (TypeError, ValueError):
-        return 0
-
-
 # -----------------------------------------------------------------------------
 # Generador principal
 # -----------------------------------------------------------------------------
 
-class GeneradorResumenes:
+class ResumenClinico:
     """Genera resúmenes clínicos a partir de un diccionario de datos."""
 
     def __init__(self, datos: Dict[str, Any]):
-        self.d = datos
-        # Extraer ho_table_results si existe
-        self.ho = datos.get('ho_table_results', {})
-        if isinstance(self.ho, str):
-            try:
-                self.ho = json.loads(self.ho)
-            except:
-                self.ho = {}
+        self.d = datos  # acceso directo a los datos
 
     # -------------------------------------------------------------------------
     # Resumen general
@@ -106,16 +83,20 @@ class GeneradorResumenes:
     def generar_general(self, nombre_paciente: str = "Paciente") -> str:
         """Construye la línea inicial con nombre, edad, ocupación, localidad."""
         partes = []
+        # Nombre (en mayúsculas)
         partes.append(nombre_paciente.upper())
 
+        # Edad (si está presente como campo separado o calculada desde fecha nacimiento)
         edad = self.d.get('age') or self.d.get('edad')
         if edad:
             partes.append(f"{edad} años")
 
+        # Ocupación
         ocupacion = self.d.get('occupation') or self.d.get('ocupacion')
         if ocupacion:
             partes.append(ocupacion)
 
+        # Localidad
         localidad = self.d.get('address') or self.d.get('localidad')
         if localidad:
             partes.append(f"residencia en {localidad}")
@@ -129,6 +110,7 @@ class GeneradorResumenes:
         """Resume antecedentes personales, familiares, quirúrgicos, suplementos."""
         secciones = []
 
+        # Personales
         if self.d.get('personal_history_bool'):
             hist = self.d.get('personal_history', [])
             if hist:
@@ -138,19 +120,23 @@ class GeneradorResumenes:
         else:
             secciones.append("sin antecedentes personales")
 
+        # Familiares maternos
         if self.d.get('family_history_mother_bool'):
             hist_m = self.d.get('family_history_mother', [])
             if hist_m:
                 secciones.append(f"antecedentes maternos de {_normalize_value(hist_m)}")
 
+        # Familiares paternos
         if self.d.get('family_history_father_bool'):
             hist_p = self.d.get('family_history_father', [])
             if hist_p:
                 secciones.append(f"antecedentes paternos de {_normalize_value(hist_p)}")
 
+        # Cirugías
         if self.d.get('surgical_history_bool'):
             secciones.append("cirugías previas")
 
+        # Suplementos
         if self.d.get('supplements_bool'):
             supl = self.d.get('supplements')
             if supl:
@@ -171,24 +157,24 @@ class GeneradorResumenes:
         """Resume historia ginecológica y obstétrica."""
         partes = []
 
-        # --- Obtener valores de ho_table_results o de la raíz ---
-        g = _to_int(self.ho.get('gestas')) or _to_int(self.d.get('gestas'))
-        p = _to_int(self.ho.get('partos')) or _to_int(self.d.get('partos'))
-        c = _to_int(self.ho.get('cesareas')) or _to_int(self.d.get('cesareas'))
-        a = _to_int(self.ho.get('abortos')) or _to_int(self.d.get('abortos'))
-        e = _to_int(self.ho.get('ectopicos')) or _to_int(self.d.get('ectopicos'))
-        m = _to_int(self.ho.get('molares')) or _to_int(self.d.get('molares'))
+        # --- Fórmula obstétrica (GPA) ---
+        # Intentar obtener gestas, partos, cesáreas, abortos
+        g = self._to_int(self.d.get('gestas'))
+        p = self._to_int(self.d.get('partos'))
+        c = self._to_int(self.d.get('cesareas'))
+        a = self._to_int(self.d.get('abortos'))
+        e = self._to_int(self.d.get('ectopicos'))
+        m = self._to_int(self.d.get('molares'))
 
-        # Si no hay gestas pero sí partos/cesáreas, asumir suma
+        # Si no hay gestas pero sí partos/cesáreas, asumir que gestas es la suma
         if g == 0 and (p > 0 or c > 0):
             g = p + c + a
 
-        # --- Construir fórmula en romanos ---
+        # Construir fórmula en romanos
         if g == 0 and p == 0 and c == 0 and a == 0:
-            # Usar obstetric_history_type si existe
-            tipo = self.d.get('obstetric_history_type', '')
-            if tipo:
-                partes.append(f"Paciente {tipo.lower()}.")
+            # Verificar si es nuligesta por el campo obstetric_history_type
+            if self.d.get('obstetric_history_type') == 'Nuligesta':
+                partes.append("Paciente nuligesta.")
             else:
                 partes.append("Nuligesta.")
         else:
@@ -206,20 +192,6 @@ class GeneradorResumenes:
             if m > 0:
                 romanos.append(f"{_to_roman(m)}M")
             partes.append(f"Paciente con {' '.join(romanos)}.")
-
-        # --- Detalles de nacimientos (children) ---
-        children = self.ho.get('children', [])
-        if children and isinstance(children, list):
-            birth_parts = []
-            for child in children:
-                year = child.get('year', 'N/A')
-                weight = child.get('weight', 'N/A')
-                height = child.get('height', 'N/A')
-                comp = child.get('complications', 'Sin complicaciones')
-                prefix = "con " if comp and comp.lower() != 'sin complicaciones' else ""
-                birth_parts.append(f"{year} {weight}kg / {height}cm, que cursó {prefix}{comp}")
-            if birth_parts:
-                partes.append("Detalles de nacimientos: " + "; ".join(birth_parts) + ".")
 
         # --- Menarquia y sexarquia ---
         men = self.d.get('gyn_menarche')
@@ -260,7 +232,8 @@ class GeneradorResumenes:
             partes.append(f"Su FUM fue el {fur}.")
 
         # --- Método anticonceptivo ---
-        if self.d.get('gyn_mac_bool'):
+        mac = self.d.get('gyn_mac_bool')
+        if mac:
             metodos = self.d.get('gyn_mac', [])
             if metodos:
                 partes.append(f"Utiliza como método anticonceptivo: {_normalize_value(metodos).lower()}.")
@@ -280,13 +253,16 @@ class GeneradorResumenes:
             partes.append("No mantiene actividad sexual actualmente.")
 
         # --- Últimos controles ---
+        ult_gine = self.d.get('gyn_previous_checkups')
+        ult_pap = self.d.get('gyn_last_pap_smear')
+
         def form_fecha(val):
             if val and str(val).lower() not in ['nunca', 'no recuerdo']:
                 return _format_date_for_summary(str(val))
             return None
 
-        f_gine = form_fecha(self.d.get('gyn_previous_checkups'))
-        f_pap = form_fecha(self.d.get('gyn_last_pap_smear'))
+        f_gine = form_fecha(ult_gine)
+        f_pap = form_fecha(ult_pap)
 
         if f_gine and f_pap and f_gine == f_pap:
             partes.append(f"Su último control ginecológico y citología fueron en {f_gine}.")
@@ -297,6 +273,12 @@ class GeneradorResumenes:
                 partes.append(f"Su última citología fue realizada en {f_pap}.")
 
         return " ".join(partes)
+
+    def _to_int(self, val) -> int:
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            return 0
 
     # -------------------------------------------------------------------------
     # Examen funcional (mejorado)
@@ -314,7 +296,7 @@ class GeneradorResumenes:
         partes = []
 
         # 1. Dispareunia
-        if _es_si(self.d.get('functional_dispareunia')):
+        if self._es_si(self.d.get('functional_dispareunia')):
             tipo = self.d.get('functional_dispareunia_type')
             escala = self.d.get('functional_dispareunia_deep_scale')
             tipo_str = _normalize_value(tipo)
@@ -345,7 +327,7 @@ class GeneradorResumenes:
             partes.append("Niega dispareunia.")
 
         # 2. Dolor piernas
-        if _es_si(self.d.get('functional_leg_pain')):
+        if self._es_si(self.d.get('functional_leg_pain')):
             tipo = self.d.get('functional_leg_pain_type')
             zona = self.d.get('functional_leg_pain_zone')
             tipo_str = _normalize_value(tipo)
@@ -387,6 +369,7 @@ class GeneradorResumenes:
             gastro_text += "."
 
             if bowel_freq and bowel_freq != 'N/A':
+                # Si solo hay disquecia eventual sin otros síntomas, omitir "de"
                 if not lista_sint and tiene_dischezia and 'eventual' in str(dischezia).lower():
                     gastro_text += f" Su frecuencia evacuatoria {_normalize_value(bowel_freq).lower()}."
                 else:
@@ -397,9 +380,9 @@ class GeneradorResumenes:
                 partes.append(f"A nivel gastrointestinal, no refiere síntomas significativos, con una frecuencia evacuatoria {_normalize_value(bowel_freq).lower()}.")
 
         # 4. Urinario
-        if _es_si(self.d.get('functional_urinary_problem')):
+        if self._es_si(self.d.get('functional_urinary_problem')):
             urinario_parts = []
-            if _es_si(self.d.get('functional_urinary_pain')):
+            if self._es_si(self.d.get('functional_urinary_pain')):
                 escala = self.d.get('functional_urinary_pain_scale')
                 if escala:
                     try:
@@ -417,11 +400,11 @@ class GeneradorResumenes:
                     urinario_parts.append("dolor al orinar")
 
             otros = []
-            if _es_si(self.d.get('functional_urinary_irritation')):
+            if self._es_si(self.d.get('functional_urinary_irritation')):
                 otros.append("irritación")
-            if _es_si(self.d.get('functional_urinary_incontinence')):
+            if self._es_si(self.d.get('functional_urinary_incontinence')):
                 otros.append("incontinencia")
-            if _es_si(self.d.get('functional_urinary_nocturia')):
+            if self._es_si(self.d.get('functional_urinary_nocturia')):
                 otros.append("nocturia")
             if otros:
                 urinario_parts.append("acompañado de " + " y ".join(otros))
@@ -435,6 +418,14 @@ class GeneradorResumenes:
 
         return " ".join(partes)
 
+    def _es_si(self, valor) -> bool:
+        """Determina si un valor representa 'sí'."""
+        if valor is None:
+            return False
+        if isinstance(valor, bool):
+            return valor is True
+        return str(valor).lower() in ['sí', 'si', 'true', '1']
+
     # -------------------------------------------------------------------------
     # Estilo de vida
     # -------------------------------------------------------------------------
@@ -442,11 +433,13 @@ class GeneradorResumenes:
         """Resume actividad física y hábitos."""
         partes = []
 
-        if _es_si(self.d.get('habits_physical_activity')):
+        # Actividad física
+        if self._es_si(self.d.get('habits_physical_activity')):
             partes.append("La paciente refiere realizar actividad física de forma regular.")
         else:
             partes.append("Niega realizar actividad física de forma regular.")
 
+        # Hábitos: tabaco, alcohol, sustancias
         fuma = _normalize_value(self.d.get('habits_smoking', 'no'))
         alcohol = _normalize_value(self.d.get('habits_alcohol', 'no'))
         sustancias = _normalize_value(self.d.get('habits_substance_use', 'no'))
@@ -484,7 +477,76 @@ class GeneradorResumenes:
             "general": self.generar_general(nombre_paciente),
             "antecedentes": self.generar_antecedentes().capitalize(),
             "gineco": self.generar_gineco(),
-            "funcional": self.generar_funcional() or "",
+            "funcional": self.generar_funcional() or "",  # puede ser None
             "estilo_vida": self.generar_estilo_vida().capitalize()
         }
 
+
+# -----------------------------------------------------------------------------
+# Ejemplo de uso con los datos de Ana
+# -----------------------------------------------------------------------------
+if __name__ == "__main__":
+    # Datos de la paciente (tal como vienen de la BD)
+    ana_data = {
+        "full_name": "Ana",
+        "phone": "04129972355",
+        "occupation": "medico",
+        "address": "caracas",
+        "family_history_mother_bool": True,
+        "family_history_mother": ["Diabetes"],
+        "family_history_father_bool": True,
+        "family_history_father": ["Alergias"],
+        "personal_history_bool": True,
+        "personal_history": ["Tiroides"],
+        "supplements_bool": True,
+        "supplements": "calcio",
+        "surgical_history_bool": True,
+        "surgical_history": "cesarea",
+        "gyn_menarche": "15",
+        "gyn_sexarche": "17",
+        "obstetric_history_type": "Primigesta",
+        "sexually_active": True,
+        "gyn_fertility_intent": "No tiene deseo de fertilidad",
+        "gyn_cycles": "Irregulares",
+        "gyn_cycles_duration": "27",
+        "gyn_dysmenorrhea": "Sí",
+        "gyn_dysmenorrhea_scale_value": 9,
+        "gyn_fum": "2026-02-25",
+        "gyn_mac_bool": True,
+        "gyn_mac": ["Implante"],
+        "gyn_previous_checkups": "2025-05-01",
+        "gyn_last_pap_smear": "No recuerdo",
+        "functional_dispareunia": True,
+        "functional_dispareunia_type": "Profunda",
+        "functional_dispareunia_deep_scale": 10,
+        "functional_leg_pain": True,
+        "functional_leg_pain_type": ["Quemante"],
+        "functional_leg_pain_zone": ["Muslos"],
+        "functional_gastro_before_bool": True,
+        "functional_gastro_before": ["Estreñimiento"],
+        "functional_gastro_during": ["Distensión"],
+        "functional_dischezia": "Sí",
+        "functional_dischezia_scale": 9,
+        "functional_bowel_freq": "Diario",
+        "functional_urinary_problem": True,
+        "functional_urinary_pain": True,
+        "functional_urinary_pain_scale": 8,
+        "functional_urinary_irritation": True,
+        "functional_urinary_incontinence": True,
+        "functional_urinary_nocturia": True,
+        "habits_physical_activity": "No",
+        "habits_smoking": "Sí",
+        "habits_alcohol": "Ocasional",
+        "habits_substance_use": "No"
+    }
+
+    generador = ResumenClinico(ana_data)
+    resumenes = generador.generar_todo(nombre_paciente=ana_data.get("full_name", "Paciente"))
+
+    print("=" * 60)
+    print("RESUMEN CLÍNICO GENERADO")
+    print("=" * 60)
+    for seccion, texto in resumenes.items():
+        if texto:
+            print(f"\n[{seccion.upper()}]")
+            print(texto)
