@@ -83,6 +83,7 @@ async def create_consultation(
     current_user: Doctor = Depends(get_current_user)
 ):
     try:
+        # Security: Force doctor_id from current session
         db_consultation = ConsultationService.create(
             db=db,
             consultation_in=consultation,
@@ -104,9 +105,20 @@ async def create_consultation(
 def get_consultations(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=0),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
 ):
-    consultations = db.query(Consultation).order_by(Consultation.created_at.desc()).offset(skip).limit(limit).all()
+    """
+    Get all consultations for the authenticated doctor.
+    """
+    consultations = (
+        db.query(Consultation)
+        .filter(Consultation.doctor_id == current_user.id)
+        .order_by(Consultation.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return consultations
 
 @router.get("/patient/all", response_model=list)
@@ -259,11 +271,15 @@ def delete_consultation_asset(
 def update_consultation(
     consultation_id: int,
     consultation_update: ConsultationUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
 ):
-    db_consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+    db_consultation = db.query(Consultation).filter(
+        Consultation.id == consultation_id,
+        Consultation.doctor_id == current_user.id
+    ).first()
     if not db_consultation:
-        raise HTTPException(status_code=404, detail="Consultation not found")
+        raise HTTPException(status_code=404, detail="Consultation not found or not authorized")
     
     update_data = consultation_update.dict(exclude_unset=True)
     
@@ -317,15 +333,30 @@ def update_consultation(
 @router.delete("/{consultation_id}")
 def delete_consultation(
     consultation_id: int,
-    db: Session = Depends(get_db)
+    delete_all: bool = Query(False, description="If true, delete all consultations for this patient CI"),
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
 ):
-    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
-    if not consultation:
-        raise HTTPException(status_code=404, detail="Consultation not found")
+    consultation = db.query(Consultation).filter(
+        Consultation.id == consultation_id,
+        Consultation.doctor_id == current_user.id
+    ).first()
     
-    db.delete(consultation)
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+    
+    if delete_all and consultation.patient_ci:
+        # Delete ALL consultations for this patient by this doctor
+        db.query(Consultation).filter(
+            Consultation.patient_ci == consultation.patient_ci,
+            Consultation.doctor_id == current_user.id
+        ).delete(synchronize_session=False)
+    else:
+        # Delete only this specific consultation
+        db.delete(consultation)
+        
     db.commit()
-    return {"status": "success", "message": "Consultation deleted"}
+    return {"status": "success", "message": "History deleted" if delete_all else "Consultation deleted"}
 
 @router.get("/{id}/pdf")
 def get_consultation_pdf(

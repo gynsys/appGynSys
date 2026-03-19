@@ -355,12 +355,24 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   const confirmDelete = async () => {
     if (!consultationToDelete) return;
+    
+    // Find the CI of the patient we are deleting to clean up local state
+    const target = consultations.find(c => c.id === consultationToDelete);
+    const targetCi = target?.patient_ci;
+
     try {
-      await api.delete(`/consultations/${consultationToDelete}`);
-      showToast('Consulta eliminada exitosamente', 'success');
-      setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
+      // Use delete_all=true because this view manages "Patients" (grouped consultations)
+      await api.delete(`/consultations/${consultationToDelete}?delete_all=true`);
+      showToast('Historia clínica eliminada exitosamente', 'success');
+      
+      // Filter out ANY consultation with the same CI from local state
+      if (targetCi) {
+        setConsultations(prev => prev.filter(c => c.patient_ci !== targetCi));
+      } else {
+        setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
+      }
     } catch (error) {
-      showToast('Error al eliminar la consulta', 'error');
+      showToast('Error al eliminar la historia', 'error');
     } finally {
       setDeleteModalOpen(false);
       setConsultationToDelete(null);
