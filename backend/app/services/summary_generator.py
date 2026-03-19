@@ -99,6 +99,67 @@ class GeneradorResumenes:
                 self.ho = json.loads(self.ho)
             except:
                 self.ho = {}
+        
+    @staticmethod
+    def inyectar_dinamicamente(db, data: dict, patient_ci: str, doctor_id: int, patient_name: str = "Paciente"):
+        """
+        Busca las respuestas crudas de preconsulta para un paciente e inyecta
+        los resúmenes generados dinámicamente en el diccionario 'data'.
+        """
+        try:
+            from app.db.models.appointment import Appointment
+            import json
+            
+            # Busqueda robusta del appointment con respuestas
+            # 1. Intento por CI exacto
+            appointment = db.query(Appointment).filter(
+                Appointment.doctor_id == doctor_id,
+                Appointment.patient_dni == patient_ci,
+                Appointment.preconsulta_answers.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            
+            # 2. Intento por CI normalizado (si falló el primero)
+            if not appointment and patient_ci:
+                clean_ci = str(patient_ci).strip().replace(".", "").replace("-", "")
+                # Buscamos appointments y comparamos en memoria o con ILIKE si es posible
+                # (Para simplicidad y rapidez, probamos ILIKE flexible)
+                appointment = db.query(Appointment).filter(
+                    Appointment.doctor_id == doctor_id,
+                    Appointment.patient_dni.ilike(f"%{clean_ci}%"),
+                    Appointment.preconsulta_answers.is_not(None)
+                ).order_by(Appointment.created_at.desc()).first()
+                
+            # 3. Intento por Nombre (Fuzzy suave) si seguimos sin encontrar y tenemos nombre
+            if not appointment and patient_name and patient_name != "Paciente":
+                first_name = patient_name.split()[0]
+                appointment = db.query(Appointment).filter(
+                    Appointment.doctor_id == doctor_id,
+                    Appointment.patient_name.ilike(f"%{first_name}%"),
+                    Appointment.preconsulta_answers.is_not(None)
+                ).order_by(Appointment.created_at.desc()).first()
+
+            if appointment and appointment.preconsulta_answers:
+                ans = appointment.preconsulta_answers
+                if isinstance(ans, str):
+                    ans = json.loads(ans)
+                
+                gen = GeneradorResumenes(ans)
+                resumenes = gen.generar_todo(patient_name)
+                
+                # Inyección de resúmenes (usando ambas convenciones de nombres)
+                data['summary_gyn_obstetric'] = resumenes['gineco']
+                data['obstetric_history_summary'] = resumenes['gineco']
+                data['summary_functional_exam'] = resumenes['funcional']
+                data['functional_exam_summary'] = resumenes['funcional']
+                data['summary_habits'] = resumenes['estilo_vida']
+                data['habits_summary'] = resumenes['estilo_vida']
+                data['summary_medical'] = resumenes['antecedentes']
+                data['summary_general'] = resumenes['general']
+                
+                return True
+        except Exception as e:
+            print(f"Error en inyección dinámica de resúmenes: {e}")
+        return False
 
     # -------------------------------------------------------------------------
     # Resumen general

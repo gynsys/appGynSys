@@ -474,33 +474,10 @@ def send_consultation_email(
 
 def _map_consultation_to_data(consultation, db: Session = None):
     # --- DYNAMIC SUMMARY REGENERATION ---
-    dyn_summaries = {}
-    if db:
-        try:
-            from app.db.models.appointment import Appointment
-            from app.services.summary_generator import GeneradorResumenes
-            import json
-            
-            appointment = db.query(Appointment).filter(
-                Appointment.patient_dni == consultation.patient_ci,
-                Appointment.preconsulta_answers.is_not(None)
-            ).order_by(Appointment.created_at.desc()).first()
-            
-            if appointment and appointment.preconsulta_answers:
-                ans = appointment.preconsulta_answers
-                if isinstance(ans, str):
-                    ans = json.loads(ans)
-                gen = GeneradorResumenes(ans)
-                resumenes = gen.generar_todo(consultation.patient_name)
-                dyn_summaries = {
-                    "summary_gyn_obstetric": resumenes['gineco'],
-                    "summary_functional_exam": resumenes['funcional'],
-                    "summary_habits": resumenes['estilo_vida']
-                }
-        except Exception as e:
-            print(f"Error regenerating dynamic summary for PDF mapping: {e}")
-
-    return {
+    from app.services.summary_generator import GeneradorResumenes
+    
+    # Base data from DB
+    data = {
         "full_name": consultation.patient_name,
         "ci": consultation.patient_ci,
         "age": consultation.patient_age,
@@ -511,9 +488,9 @@ def _map_consultation_to_data(consultation, db: Session = None):
         "personal_history": consultation.personal_history,
         "supplements": consultation.supplements,
         "surgical_history": consultation.surgical_history,
-        "summary_gyn_obstetric": dyn_summaries.get("summary_gyn_obstetric") or consultation.obstetric_history_summary,
-        "summary_functional_exam": dyn_summaries.get("summary_functional_exam") or consultation.functional_exam_summary,
-        "summary_habits": dyn_summaries.get("summary_habits") or consultation.habits_summary,
+        "summary_gyn_obstetric": consultation.obstetric_history_summary,
+        "summary_functional_exam": consultation.functional_exam_summary,
+        "summary_habits": consultation.habits_summary,
         "admin_physical_exam": consultation.physical_exam,
         "admin_ultrasound": consultation.ultrasound,
         "admin_diagnosis": consultation.diagnosis,
@@ -524,3 +501,14 @@ def _map_consultation_to_data(consultation, db: Session = None):
         "occupation": "",
         "created_at": consultation.created_at,
     }
+
+    # Inject dynamic summaries (overwrites stale data if found)
+    GeneradorResumenes.inyectar_dinamicamente(
+        db=db,
+        data=data,
+        patient_ci=consultation.patient_ci,
+        doctor_id=consultation.doctor_id,
+        patient_name=consultation.patient_name
+    )
+
+    return data

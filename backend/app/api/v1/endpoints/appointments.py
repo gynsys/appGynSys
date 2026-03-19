@@ -122,13 +122,34 @@ async def get_appointments(
             Appointment.doctor_id == current_actor.id
         ).all()
     else:
-        # For CycleUser, search by email or CI
-        # Usually CycleUser.email is the best link
         appointments = db.query(Appointment).filter(
             (Appointment.patient_email == current_actor.email) | 
             (Appointment.patient_dni == current_actor.ci)
         ).all()
-    
+
+    # --- DYNAMIC SUMMARY INJECTION ---
+    from app.services.summary_generator import GeneradorResumenes
+    for app in appointments:
+        if app.preconsulta_answers:
+            try:
+                if isinstance(app.preconsulta_answers, str):
+                    answers = json.loads(app.preconsulta_answers)
+                else:
+                    answers = app.preconsulta_answers or {}
+                
+                # For the list, we only inject if it hasn't been done or to ensure freshness
+                # We use the appointment's own data for the match
+                GeneradorResumenes.inyectar_dinamicamente(
+                    db=db,
+                    data=answers,
+                    patient_ci=app.patient_dni,
+                    doctor_id=app.doctor_id,
+                    patient_name=app.patient_name
+                )
+                app.preconsulta_answers = json.dumps(answers)
+            except:
+                continue
+
     return appointments
 
 
@@ -154,34 +175,29 @@ async def get_appointment(
         )
     
     # --- DYNAMIC SUMMARY INJECTION ---
-    if appointment.preconsulta_answers:
-        try:
-            # Parse existing answers
-            if isinstance(appointment.preconsulta_answers, str):
-                answers = json.loads(appointment.preconsulta_answers)
-            else:
-                answers = appointment.preconsulta_answers
-            
-            # Generate fresh summaries
-            from app.services.summary_generator import GeneradorResumenes
-            gen = GeneradorResumenes(answers)
-            resumenes = gen.generar_todo(appointment.patient_name)
-            
-            # Inject into answers (frontend expects these keys)
-            answers['summary_gyn_obstetric'] = resumenes['gineco']
-            answers['obstetric_history_summary'] = resumenes['gineco']
-            answers['summary_functional_exam'] = resumenes['funcional']
-            answers['functional_exam_summary'] = resumenes['funcional']
-            answers['summary_habits'] = resumenes['estilo_vida']
-            answers['habits_summary'] = resumenes['estilo_vida']
-            answers['summary_general'] = resumenes['general']
-            answers['summary_medical'] = resumenes['antecedentes']
-            
-            # Re-serialize into a transient field (we don't save to DB here)
-            # Since the model expects a string, we re-stringify
-            appointment.preconsulta_answers = json.dumps(answers)
-        except Exception as e:
-            logger.error(f"Error injecting dynamic summaries: {e}")
+    # We create a dictionary to inject data, then update the DB object's transient field
+    try:
+        from app.services.summary_generator import GeneradorResumenes
+        
+        # Parse existing answers to work on them
+        if isinstance(appointment.preconsulta_answers, str):
+            answers = json.loads(appointment.preconsulta_answers)
+        else:
+            answers = appointment.preconsulta_answers or {}
+        
+        # Inject dynamic summaries into the 'answers' dict
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db,
+            data=answers,
+            patient_ci=appointment.patient_dni,
+            doctor_id=appointment.doctor_id,
+            patient_name=appointment.patient_name
+        )
+        
+        # Update the object with the enriched answers (serializes back to JSON string)
+        appointment.preconsulta_answers = json.dumps(answers)
+    except Exception as e:
+        logger.error(f"Error injecting dynamic summaries in get_appointment: {e}")
     
     return appointment
 

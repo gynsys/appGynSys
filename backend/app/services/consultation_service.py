@@ -101,30 +101,10 @@ class ConsultationService:
         
         # --- DYNAMIC SUMMARY REGENERATION ---
         # Try to find raw answers from Appointment to regenerate summaries
-        dyn_summaries = {}
-        try:
-            appointment = db.query(Appointment).filter(
-                Appointment.patient_dni == latest.patient_ci,
-                Appointment.preconsulta_answers.is_not(None)
-            ).order_by(Appointment.created_at.desc()).first()
-            
-            if appointment and appointment.preconsulta_answers:
-                from app.services.summary_generator import GeneradorResumenes
-                ans = appointment.preconsulta_answers
-                if isinstance(ans, str):
-                    ans = json.loads(ans)
-                gen = GeneradorResumenes(ans)
-                resumenes = gen.generar_todo(latest.patient_name)
-                dyn_summaries = {
-                    "summary_gyn_obstetric": resumenes['gineco'],
-                    "summary_functional_exam": resumenes['funcional'],
-                    "summary_habits": resumenes['estilo_vida']
-                }
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Error regenerating dynamic history summaries: {e}")
-
-        return {
+        from app.services.summary_generator import GeneradorResumenes
+        
+        # We build the response dictionary first with stored data
+        res = {
             "id": latest.id,
             "full_name": latest.patient_name,
             "ci": latest.patient_ci,
@@ -136,9 +116,9 @@ class ConsultationService:
             "personal_history": latest.personal_history,
             "supplements": latest.supplements,
             "surgical_history": latest.surgical_history,
-            "summary_gyn_obstetric": dyn_summaries.get("summary_gyn_obstetric") or latest.obstetric_history_summary,
-            "summary_functional_exam": dyn_summaries.get("summary_functional_exam") or latest.functional_exam_summary,
-            "summary_habits": dyn_summaries.get("summary_habits") or latest.habits_summary,
+            "summary_gyn_obstetric": latest.obstetric_history_summary,
+            "summary_functional_exam": latest.functional_exam_summary,
+            "summary_habits": latest.habits_summary,
             "habits_smoking": latest.habits_smoking,
             "habits_alcohol": latest.habits_alcohol,
             "habits_physical_activity": latest.habits_physical_activity,
@@ -169,6 +149,17 @@ class ConsultationService:
             ]
         }
 
+        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db, 
+            data=res, 
+            patient_ci=latest.patient_ci, 
+            doctor_id=latest.doctor_id,
+            patient_name=latest.patient_name
+        )
+
+        return res
+
     @staticmethod
     def get_consultation_data(db: Session, consultation_id: int) -> dict:
         """
@@ -180,30 +171,9 @@ class ConsultationService:
             return None
 
         # --- DYNAMIC SUMMARY REGENERATION ---
-        dyn_summaries = {}
-        try:
-            appointment = db.query(Appointment).filter(
-                Appointment.patient_dni == consultation.patient_ci,
-                Appointment.preconsulta_answers.is_not(None)
-            ).order_by(Appointment.created_at.desc()).first()
-            
-            if appointment and appointment.preconsulta_answers:
-                from app.services.summary_generator import GeneradorResumenes
-                ans = appointment.preconsulta_answers
-                if isinstance(ans, str):
-                    ans = json.loads(ans)
-                gen = GeneradorResumenes(ans)
-                resumenes = gen.generar_todo(consultation.patient_name)
-                dyn_summaries = {
-                    "summary_gyn_obstetric": resumenes['gineco'],
-                    "summary_functional_exam": resumenes['funcional'],
-                    "summary_habits": resumenes['estilo_vida']
-                }
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Error regenerating dynamic consultation summaries: {e}")
-
-        return {
+        from app.services.summary_generator import GeneradorResumenes
+        
+        res = {
             "id": consultation.id,
             "full_name": consultation.patient_name,
             "ci": consultation.patient_ci,
@@ -215,9 +185,9 @@ class ConsultationService:
             "personal_history": consultation.personal_history,
             "supplements": consultation.supplements,
             "surgical_history": consultation.surgical_history,
-            "summary_gyn_obstetric": dyn_summaries.get("summary_gyn_obstetric") or consultation.obstetric_history_summary,
-            "summary_functional_exam": dyn_summaries.get("summary_functional_exam") or consultation.functional_exam_summary,
-            "summary_habits": dyn_summaries.get("summary_habits") or consultation.habits_summary,
+            "summary_gyn_obstetric": consultation.obstetric_history_summary,
+            "summary_functional_exam": consultation.functional_exam_summary,
+            "summary_habits": consultation.habits_summary,
             "habits_smoking": consultation.habits_smoking,
             "habits_alcohol": consultation.habits_alcohol,
             "habits_physical_activity": consultation.habits_physical_activity,
@@ -252,18 +222,32 @@ class ConsultationService:
             "plan": consultation.plan,
             "observations": consultation.observations,
             "created_at": consultation.created_at,
-            "is_single_report": True,
-            **build_narrative_summary({
-                "full_name": consultation.patient_name,
-                "ci": consultation.patient_ci,
-                "age": consultation.patient_age,
-                "reason_for_visit": consultation.reason_for_visit,
-                "admin_ultrasound": consultation.ultrasound,
-                "admin_physical_exam": consultation.physical_exam,
-                "admin_diagnosis": consultation.diagnosis,
-                "admin_plan": consultation.plan,
-                "admin_observations": consultation.observations,
-                "gyn_dysmenorrhea": getattr(consultation, 'gyn_dysmenorrhea', 'no'), # Fallback if missing
-                "gyn_fertility_intent": getattr(consultation, 'gyn_fertility_intent', 'no')
-            })
+            "is_single_report": True
         }
+
+        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db, 
+            data=res, 
+            patient_ci=consultation.patient_ci, 
+            doctor_id=consultation.doctor_id,
+            patient_name=consultation.patient_name
+        )
+
+        # Build narrative summary (individual report only)
+        # Note: we use our 'res' dict to benefit from injected summaries
+        res.update(build_narrative_summary({
+            "full_name": res["full_name"],
+            "ci": res["ci"],
+            "age": res["age"],
+            "reason_for_visit": res["reason_for_visit"],
+            "admin_ultrasound": res["ultrasound"],
+            "admin_physical_exam": res["physical_exam"],
+            "admin_diagnosis": res["diagnosis"],
+            "admin_plan": res["plan"],
+            "admin_observations": res["observations"],
+            "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
+            "summary_functional_exam": res.get("summary_functional_exam"),
+        }))
+
+        return res
