@@ -56,68 +56,78 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
         else:
             narrative_parts.append(f"Paciente quien acude a consulta por presentar {reason}.")
 
-    # 2. Hallazgos Funcionales
-    findings_parts = []
+    # 2. Resúmenes Dinámicos (Preferir los inyectados por GeneradorResumenes)
+    gyn_summary = report_data.get('summary_gyn_obstetric') or report_data.get('obstetric_history_summary')
+    func_summary = report_data.get('summary_functional_exam') or report_data.get('functional_exam_summary')
 
-    # Verificar si el examen funcional fue realizado (hay datos) Y está habilitado en la configuración
-    has_functional_data = include_functional_exam and any(
-        report_data.get(key) for key in [
-            'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
-            'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
-            'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
-            'functional_urinary_incontinence', 'functional_urinary_nocturia'
-        ]
-    )
-
-    # Dismenorrea (siempre se incluye, es parte de antecedentes ginecológicos)
-    dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
-    if not dismenorrhea or dismenorrhea.lower() == 'no':
-        findings_parts.append("no presentar dismenorrea")
+    if gyn_summary:
+        narrative_parts.append(gyn_summary)
+    
+    if func_summary:
+        narrative_parts.append(f"Al interrogatorio, manifiesta: {func_summary}")
     else:
-        eva_match = re.search(r'intensidad: (\d+)/10', dismenorrhea)
-        score = int(eva_match.group(1)) if eva_match else 0
-        intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-        findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
+        # Fallback to legacy builder if no dynamic summary for functional exam
+        findings_parts = []
 
-    # Solo incluir información del examen funcional si hay datos (fue habilitado)
-    if has_functional_data:
-        # Dispareunia
-        dispareunia = report_data.get('functional_dispareunia', '')
-        if not dispareunia or dispareunia.lower() == 'no':
-            findings_parts.append("niega dispareunia")
-        else:
-            eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dispareunia)
-            if eva_match:
-                score = int(eva_match.group(1).split('/')[0])
-                intensity_desc = "de alta intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-                findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
-                
-        # Disquecia
-        dischezia = report_data.get('functional_dischezia', '')
-        if not dischezia or dischezia.lower() == 'no':
-            findings_parts.append("niega disquecia")
-        elif 'eventual' in dischezia.lower():
-            findings_parts.append("disquecia eventual")
-        else:
-            eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dischezia)
-            if eva_match:
-                score = int(eva_match.group(1).split('/')[0])
-                intensity_desc = "de máxima intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-                findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
+        # Verificar si el examen funcional fue realizado (hay datos) Y está habilitado en la configuración
+        has_functional_data = include_functional_exam and any(
+            report_data.get(key) for key in [
+                'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
+                'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
+                'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
+                'functional_urinary_incontinence', 'functional_urinary_nocturia'
+            ]
+        )
 
-    # Infertilidad
-    infertility = report_data.get('gyn_fertility_intent', '')
-    if infertility and "Con deseo" in infertility:
-        findings_parts.append("con deseo de fertilidad no logrado")
-    else:
-        findings_parts.append("sin deseo de fertilidad aparente")
-
-    if findings_parts:
-        if len(findings_parts) > 1:
-            findings_str = ", ".join(findings_parts[:-1]) + " y " + findings_parts[-1]
+        # Dismenorrea (siempre se incluye, es parte de antecedentes ginecológicos)
+        dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
+        if not dismenorrhea or dismenorrhea.lower() == 'no':
+            findings_parts.append("no presentar dismenorrea")
         else:
-            findings_str = findings_parts[0]
-        narrative_parts.append(f"Al interrogatorio, manifiesta {findings_str}.")
+            eva_match = re.search(r'intensidad: (\d+)/10', dismenorrhea)
+            score = int(eva_match.group(1)) if eva_match else 0
+            intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+            findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
+
+        # Solo incluir información del examen funcional si hay datos (fue habilitado)
+        if has_functional_data:
+            # Dispareunia
+            dispareunia = report_data.get('functional_dispareunia', '')
+            if not dispareunia or dispareunia.lower() == 'no':
+                findings_parts.append("niega dispareunia")
+            else:
+                eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dispareunia)
+                if eva_match:
+                    score = int(eva_match.group(1).split('/')[0])
+                    intensity_desc = "de alta intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+                    findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
+                    
+            # Disquecia
+            dischezia = report_data.get('functional_dischezia', '')
+            if not dischezia or dischezia.lower() == 'no':
+                findings_parts.append("niega disquecia")
+            elif 'eventual' in dischezia.lower():
+                findings_parts.append("disquecia eventual")
+            else:
+                eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dischezia)
+                if eva_match:
+                    score = int(eva_match.group(1).split('/')[0])
+                    intensity_desc = "de máxima intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+                    findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
+
+        # Infertilidad
+        infertility = report_data.get('gyn_fertility_intent', '')
+        if infertility and "Con deseo" in infertility:
+            findings_parts.append("con deseo de fertilidad no logrado")
+        else:
+            findings_parts.append("sin deseo de fertilidad aparente")
+
+        if findings_parts:
+            if len(findings_parts) > 1:
+                findings_str = ", ".join(findings_parts[:-1]) + " y " + findings_parts[-1]
+            else:
+                findings_str = findings_parts[0]
+            narrative_parts.append(f"Al interrogatorio, manifiesta {findings_str}.")
 
     # 3. Hallazgos del Médico
     ultrasound = report_data.get('admin_ultrasound')

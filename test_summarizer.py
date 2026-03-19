@@ -1,8 +1,11 @@
-#!/usr/bin/env python3
-# test_summarizer.py
-# Script para probar el generador de resúmenes con datos reales de la BD
+import sys
+import os
+import json
 
-from clinical_summary_generator import NarrativePreconsultaSummarizer, ClinicalSummaryGenerator
+# Add backend to path to import actual logic
+sys.path.append(os.path.join(os.getcwd(), 'backend'))
+
+from app.services.summary_generator import GeneradorResumenes
 
 def main():
     # Datos de la paciente Ana (extraídos de la BD)
@@ -61,43 +64,41 @@ def main():
 
     patient_name = ana_data.get("full_name", "Paciente")
 
-    # Instanciamos el generador narrativo con un template vacío (no tenemos los metadatos de las preguntas)
-    template_data = []  # Vacío, porque no tenemos la estructura de preguntas
-
-    summarizer = NarrativePreconsultaSummarizer(template_data)
+    # Usamos el generador REAL del backend
+    generador = GeneradorResumenes(ana_data)
 
     # Generar todas las secciones del resumen
-    sections = summarizer.generate_summary_sections(ana_data, patient_name)
+    sections = generador.generar_todo(patient_name)
 
     # Mostrar resultados
     print("=" * 60)
-    print("RESUMEN CLÍNICO GENERADO")
+    print("RESUMEN CLÍNICO GENERADO (VERSIÓN DINÁMICA)")
     print("=" * 60)
     print("\n[ GENERAL ]")
-    print(sections.get("summary_general", "No disponible"))
+    print(sections.get("general", "No disponible"))
 
     print("\n[ ANTECEDENTES MÉDICOS ]")
-    print(sections.get("summary_medical", "No disponible"))
+    print(sections.get("antecedentes", "No disponible"))
 
     print("\n[ HISTORIA GINECO-OBSTÉTRICA ]")
-    print(sections.get("summary_obstetric", "No disponible"))
+    print(sections.get("gineco", "No disponible"))
 
     print("\n[ EXAMEN FUNCIONAL ]")
-    func = sections.get("summary_functional")
+    func = sections.get("funcional")
     if func:
         print(func)
     else:
         print("No hay datos de examen funcional.")
 
     print("\n[ ESTILO DE VIDA ]")
-    print(sections.get("summary_lifestyle", "No disponible"))
+    print(sections.get("estilo_vida", "No disponible"))
 
-    # También podemos generar el HTML completo usando el método legacy (opcional)
     print("\n" + "=" * 60)
-    print("VISTA HTML COMPLETA")
+    print("FIN DE LA PRUEBA")
     print("=" * 60)
-    html = ClinicalSummaryGenerator._generate_narrative_html(sections)
-    print(html)
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
