@@ -83,21 +83,6 @@ const LegacyDoctorRedirect = () => {
 function App() {
   const [isInitializing, setIsInitializing] = useState(true)
 
-  // CRITICAL DEBUG PING
-  useEffect(() => {
-    import('./lib/axios').then(({ default: api }) => {
-      api.post('/notifications/track', {
-        notification_id: 0,
-        event: 'debug',
-        metadata: { 
-          message: 'APP_COMPONENT_MOUNTED_API',
-          ua: navigator.userAgent,
-          isCapacitor: isCapacitor()
-        }
-      }).catch(() => {});
-    });
-  }, []);
-
   // Global theme effect & Auth Init
   useEffect(() => {
     // IMMEDIATE platform detection for zero-jump positioning

@@ -8,25 +8,30 @@ const api = axios.create({
   },
 })
 
+// Helper to determine if an endpoint is public
+const isPublicEndpoint = (url) => {
+  if (!url) return false;
+  return url.includes('/public') ||
+    url.includes('/profiles/') ||
+    url.includes('/auth/register') ||
+    url.includes('/auth/token') ||
+    url.includes('/auth/login/google') ||
+    url.includes('/preconsultation/by-appointment') ||
+    url.includes('/preconsultation/config') ||
+    url.includes('/appointments/') && url.includes('/preconsulta') || // Submit preconsultation
+    url.includes('/cycle-users/register') ||
+    url.includes('/cycle-users/login') ||
+    url.includes('/cycle-users/password-recovery') ||
+    url.includes('/auth/patient/activation-info') ||
+    url.includes('/auth/patient/activate') ||
+    url.includes('/notifications/track'); // Debug and tracking pings
+};
+
 // Request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
     // Solo agregar token si no es un endpoint público
-    const isPublicEndpoint = config.url?.includes('/public') ||
-      config.url?.includes('/profiles/') ||
-      config.url?.includes('/auth/register') ||
-      config.url?.includes('/auth/token') ||
-      config.url?.includes('/auth/login/google') ||
-      config.url?.includes('/preconsultation/by-appointment') ||
-      config.url?.includes('/preconsultation/by-appointment') ||
-      config.url?.includes('/preconsultation/config') || // Allow config to be public
-      config.url?.includes('/cycle-users/register') ||
-      config.url?.includes('/cycle-users/login') ||
-      config.url?.includes('/cycle-users/password-recovery') ||
-      config.url?.includes('/auth/patient/activation-info') ||
-      config.url?.includes('/auth/patient/activate')
-
-    if (!isPublicEndpoint) {
+    if (!isPublicEndpoint(config.url)) {
       // Check if it's a cycle-related request
       const isCycleRequest = config.url?.includes('/cycle-users') ||
         config.url?.includes('/cycle-predictor') ||
@@ -103,12 +108,7 @@ api.interceptors.response.use(
       }
     }
     // Solo redirigir a login si no es un endpoint público
-    const isPublicEndpoint = error.config?.url?.includes('/public') ||
-      error.config?.url?.includes('/profiles/') ||
-      error.config?.url?.includes('/auth/register') ||
-      error.config?.url?.includes('/auth/token')
-
-    if (error.response?.status === 401 && !isPublicEndpoint) {
+    if (error.response?.status === 401 && !isPublicEndpoint(error.config?.url)) {
       // Token expired or invalid
 
       // Determine if it was a cycle request based on URL or previous logic
