@@ -219,6 +219,12 @@ export const DoctorConsultationPage = () => {
               email: answers.email || appointment.patient_email || "",
               reason_for_visit: appointment.reason_for_visit || answers.reason_for_visit || answers.gyn_reason,
 
+              // Normalize habit fields if they are in numeric keys
+              habits_smoking: answers.habits_smoking || answers['15'] || "No reportado",
+              habits_alcohol: answers.habits_alcohol || answers['16'] || "No reportado",
+              habits_physical_activity: answers.habits_physical_activity || answers['17'] || "No reportado",
+              habits_substance_use: answers.habits_substance_use || answers['18'] || "No reportado",
+
               // BACKFILL: Generate text summaries if missing
               summary_functional_exam: answers.summary_functional_exam || answers.functional_exam_summary || generateFunctionalExamSummary(answers),
               habits_summary: answers.summary_habits || answers.habits_summary || generateHabitsSummary(answers),
@@ -249,7 +255,13 @@ export const DoctorConsultationPage = () => {
               surgical_history: loadedHistory.surgical_history,
               gyn_obstetric_history: loadedHistory.obstetric_history_summary,
               functional_exam: loadedHistory.functional_exam_summary,
-              habits: loadedHistory.habits_summary
+              summary_functional_exam: loadedHistory.functional_exam_summary,
+              summary_habits: loadedHistory.habits_summary,
+              habits_summary: loadedHistory.habits_summary,
+              habits_smoking: loadedHistory.habits_smoking,
+              habits_alcohol: loadedHistory.habits_alcohol,
+              habits_physical_activity: loadedHistory.habits_physical_activity,
+              habits_substance_use: loadedHistory.habits_substance_use
             };
           } else {
             // Case C: No Answers & No History (New, empty)
@@ -535,10 +547,10 @@ export const DoctorConsultationPage = () => {
 
         {/* Hábitos (Full Width) */}
         <ModernCard title="Hábitos Psicobiológicos" icon={FaRunning} headerColor="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300" borderColor="border-green-200 dark:border-green-800">
-          <Field label="Tabaco" value={patientData.habits_smoking || patientData.preconsulta_answers?.habits_smoking || patientData.preconsulta_answers?.['15'] || "No reportado"} />
-          <Field label="Alcohol" value={patientData.habits_alcohol || patientData.preconsulta_answers?.habits_alcohol || patientData.preconsulta_answers?.['16'] || "No reportado"} />
-          <Field label="Actividad Física" value={patientData.habits_physical_activity || patientData.preconsulta_answers?.habits_physical_activity || patientData.preconsulta_answers?.['17'] || "No reportado"} />
-          <Field label="Sustancias" value={patientData.habits_substance_use || patientData.preconsulta_answers?.habits_substance_use || patientData.preconsulta_answers?.['18'] || "No reportado"} />
+          <Field label="Tabaco" value={patientData.habits_smoking || "No reportado"} />
+          <Field label="Alcohol" value={patientData.habits_alcohol || "No reportado"} />
+          <Field label="Actividad Física" value={patientData.habits_physical_activity || "No reportado"} />
+          <Field label="Sustancias" value={patientData.habits_substance_use || "No reportado"} />
         </ModernCard>
       </div>
     );
