@@ -495,7 +495,7 @@ class NarrativePreconsultaSummarizer:
         
         # 1. Dispareunia
         dispareunia = patient_data.get('functional_dispareunia')
-        if dispareunia and str(dispareunia).lower() == 'sí':
+        if dispareunia in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(dispareunia, str) and dispareunia.lower().startswith('sí')):
             d_type = patient_data.get('functional_dispareunia_type')
             d_scale = patient_data.get('functional_dispareunia_deep_scale')
             
@@ -504,19 +504,19 @@ class NarrativePreconsultaSummarizer:
                 summary_parts.append(f"La paciente refiere dispareunia de tipo {str(d_type).lower()}{intensity_text}.")
             else:
                 summary_parts.append("Refiere dispareunia.")
-        elif dispareunia and str(dispareunia).lower() == 'no':
+        elif dispareunia in [False, 'No', 'no', 'NO'] or (isinstance(dispareunia, str) and dispareunia.lower().startswith('no')):
             summary_parts.append("Niega dispareunia.")
 
         # 2. Dolor en miembros inferiores
         leg_pain = patient_data.get('functional_leg_pain')
-        if leg_pain and str(leg_pain).lower() == 'sí':
+        if leg_pain in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(leg_pain, str) and leg_pain.lower().startswith('sí')):
             p_type = patient_data.get('functional_leg_pain_type')
             p_zone = patient_data.get('functional_leg_pain_zone')
             
             type_text = f", descrito como '{p_type}'" if p_type else ""
             zone_text = f" en la {p_zone}" if p_zone else ""
             summary_parts.append(f"Presenta dolor en miembros inferiores durante la menstruación{type_text}{zone_text}.")
-        elif leg_pain and str(leg_pain).lower() == 'no':
+        elif leg_pain in [False, 'No', 'no', 'NO'] or (isinstance(leg_pain, str) and leg_pain.lower().startswith('no')):
             summary_parts.append("Niega dolor en miembros inferiores durante la menstruación.")
 
         # 3. Gastrointestinal
@@ -564,18 +564,18 @@ class NarrativePreconsultaSummarizer:
 
         # 4. Urinario
         u_prob = patient_data.get('functional_urinary_problem')
-        if u_prob and str(u_prob).lower() == 'sí':
+        if u_prob in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(u_prob, str) and u_prob.lower().startswith('sí')):
             urinary_info = []
             u_pain = patient_data.get('functional_urinary_pain')
-            if u_pain and str(u_pain).lower() == 'sí':
+            if u_pain in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(u_pain, str) and u_pain.lower().startswith('sí')):
                 u_scale = patient_data.get('functional_urinary_pain_scale')
                 scale_text = f" ({u_scale}/10)" if u_scale else ""
                 urinary_info.append(f"dolor al orinar{scale_text}")
             
             others = []
-            if str(patient_data.get('functional_urinary_irritation')).lower() == 'sí': others.append("irritación")
-            if str(patient_data.get('functional_urinary_incontinence')).lower() == 'sí': others.append("incontinencia")
-            if str(patient_data.get('functional_urinary_nocturia')).lower() == 'sí': others.append("nocturia")
+            if patient_data.get('functional_urinary_irritation') in [True, 'Sí', 'sí', 'SÍ']: others.append("irritación")
+            if patient_data.get('functional_urinary_incontinence') in [True, 'Sí', 'sí', 'SÍ']: others.append("incontinencia")
+            if patient_data.get('functional_urinary_nocturia') in [True, 'Sí', 'sí', 'SÍ']: others.append("nocturia")
             
             if others:
                 urinary_info.append(" y ".join(others))
@@ -584,7 +584,7 @@ class NarrativePreconsultaSummarizer:
                 summary_parts.append(f"En el sistema urinario, confirma problemas, específicamente con {', '.join(urinary_info)}.")
             else:
                 summary_parts.append("En el sistema urinario, confirma problemas no especificados.")
-        elif u_prob and str(u_prob).lower() == 'no':
+        elif u_prob in [False, 'No', 'no', 'NO'] or (isinstance(u_prob, str) and u_prob.lower().startswith('no')):
             summary_parts.append("Hábito miccional conservado.")
 
         return " ".join(summary_parts)
@@ -598,15 +598,20 @@ class NarrativePreconsultaSummarizer:
         
         # 1. Physical Activity
         activity = patient_data.get('habits_physical_activity')
-        if activity and str(activity).lower() == 'sí':
+        if activity in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(activity, str) and activity.lower().startswith('sí')):
              summary_parts.append("La paciente refiere realizar actividad física de forma regular.")
-        elif activity and str(activity).lower() == 'no':
+        elif activity in [False, 'No', 'no', 'NO'] or (isinstance(activity, str) and activity.lower().startswith('no')):
              summary_parts.append("Niega realizar actividad física de forma regular.")
 
         # 2. Habits (Smoking, Alcohol, Substances)
-        smoking = str(patient_data.get('habits_smoking') or 'No').lower()
-        alcohol = str(patient_data.get('habits_alcohol') or 'No').lower()
-        substances = str(patient_data.get('habits_substance_use') or 'No').lower()
+        smoking_val = patient_data.get('habits_smoking')
+        smoking = str(smoking_val).lower() if smoking_val not in [True, False, None] else ('sí' if smoking_val is True else 'no')
+        
+        alcohol_val = patient_data.get('habits_alcohol')
+        alcohol = str(alcohol_val).lower() if alcohol_val not in [True, False, None] else ('sí' if alcohol_val is True else 'no')
+        
+        substances_val = patient_data.get('habits_substance_use')
+        substances = str(substances_val).lower() if substances_val not in [True, False, None] else ('sí' if substances_val is True else 'no')
 
         habits_text = ""
         if smoking == 'no' and alcohol == 'no':
@@ -1350,7 +1355,7 @@ class ClinicalSummaryGenerator:
         
         # 1. Dispareunia
         dispareunia = text_map.get('functional_dispareunia')
-        if dispareunia and str(dispareunia).lower() == 'sí':
+        if dispareunia in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(dispareunia, str) and dispareunia.lower().startswith('sí')):
             d_type = text_map.get('functional_dispareunia_type')
             d_scale = text_map.get('functional_dispareunia_deep_scale')
             
@@ -1359,19 +1364,19 @@ class ClinicalSummaryGenerator:
                 summary_parts.append(f"La paciente refiere dispareunia de tipo {str(d_type).lower()}{intensity_text}.")
             else:
                 summary_parts.append("Refiere dispareunia.")
-        elif dispareunia and str(dispareunia).lower() == 'no':
+        elif dispareunia in [False, 'No', 'no', 'NO'] or (isinstance(dispareunia, str) and dispareunia.lower().startswith('no')):
             summary_parts.append("Niega dispareunia.")
 
         # 2. Dolor en piernas
         leg_pain = text_map.get('functional_leg_pain')
-        if leg_pain and str(leg_pain).lower() == 'sí':
+        if leg_pain in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(leg_pain, str) and leg_pain.lower().startswith('sí')):
             p_type = text_map.get('functional_leg_pain_type')
             p_zone = text_map.get('functional_leg_pain_zone')
             
             type_text = f", descrito como '{p_type}'" if p_type else ""
             zone_text = f" en la {p_zone}" if p_zone else ""
             summary_parts.append(f"Presenta dolor en miembros inferiores durante la menstruación{type_text}{zone_text}.")
-        elif leg_pain and str(leg_pain).lower() == 'no':
+        elif leg_pain in [False, 'No', 'no', 'NO'] or (isinstance(leg_pain, str) and leg_pain.lower().startswith('no')):
             summary_parts.append("Niega dolor en miembros inferiores durante la menstruación.")
 
         # 3. Gastrointestinal
@@ -1419,18 +1424,18 @@ class ClinicalSummaryGenerator:
 
         # 4. Urinario
         u_prob = text_map.get('functional_urinary_problem')
-        if u_prob and str(u_prob).lower() == 'sí':
+        if u_prob in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(u_prob, str) and u_prob.lower().startswith('sí')):
             urinary_info = []
             u_pain = text_map.get('functional_urinary_pain')
-            if u_pain and str(u_pain).lower() == 'sí':
+            if u_pain in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(u_pain, str) and u_pain.lower().startswith('sí')):
                 u_scale = text_map.get('functional_urinary_pain_scale')
                 scale_text = f" ({u_scale}/10)" if u_scale else ""
                 urinary_info.append(f"dolor al orinar{scale_text}")
             
             others = []
-            if str(text_map.get('functional_urinary_irritation')).lower() == 'sí': others.append("irritación")
-            if str(text_map.get('functional_urinary_incontinence')).lower() == 'sí': others.append("incontinencia")
-            if str(text_map.get('functional_urinary_nocturia')).lower() == 'sí': others.append("nocturia")
+            if text_map.get('functional_urinary_irritation') in [True, 'Sí', 'sí', 'SÍ']: others.append("irritación")
+            if text_map.get('functional_urinary_incontinence') in [True, 'Sí', 'sí', 'SÍ']: others.append("incontinencia")
+            if text_map.get('functional_urinary_nocturia') in [True, 'Sí', 'sí', 'SÍ']: others.append("nocturia")
             
             if others:
                 urinary_info.append(" y ".join(others))
@@ -1439,7 +1444,7 @@ class ClinicalSummaryGenerator:
                 summary_parts.append(f"En el sistema urinario, confirma problemas, específicamente con {', '.join(urinary_info)}.")
             else:
                 summary_parts.append("En el sistema urinario, confirma problemas no especificados.")
-        elif u_prob and str(u_prob).lower() == 'no':
+        elif u_prob in [False, 'No', 'no', 'NO'] or (isinstance(u_prob, str) and u_prob.lower().startswith('no')):
             summary_parts.append("Hábito miccional conservado.")
 
         return " ".join(summary_parts)
@@ -1451,15 +1456,20 @@ class ClinicalSummaryGenerator:
         
         # 1. Physical Activity
         activity = text_map.get('habits_physical_activity')
-        if activity and str(activity).lower() == 'sí':
+        if activity in [True, 'Sí', 'sí', 'SÍ'] or (isinstance(activity, str) and activity.lower().startswith('sí')):
              summary_parts.append("La paciente refiere realizar actividad física de forma regular.")
-        elif activity and str(activity).lower() == 'no':
+        elif activity in [False, 'No', 'no', 'NO'] or (isinstance(activity, str) and activity.lower().startswith('no')):
              summary_parts.append("Niega realizar actividad física de forma regular.")
 
         # 2. Habits (Smoking, Alcohol, Substances)
-        smoking = str(text_map.get('habits_smoking') or 'No').lower()
-        alcohol = str(text_map.get('habits_alcohol') or 'No').lower()
-        substances = str(text_map.get('habits_substance_use') or 'No').lower()
+        smoking_val = text_map.get('habits_smoking')
+        smoking = str(smoking_val).lower() if smoking_val not in [True, False, None] else ('sí' if smoking_val is True else 'no')
+        
+        alcohol_val = text_map.get('habits_alcohol')
+        alcohol = str(alcohol_val).lower() if alcohol_val not in [True, False, None] else ('sí' if alcohol_val is True else 'no')
+        
+        substances_val = text_map.get('habits_substance_use')
+        substances = str(substances_val).lower() if substances_val not in [True, False, None] else ('sí' if substances_val is True else 'no')
 
         habits_text = ""
         if smoking == 'no' and alcohol == 'no':

@@ -8,16 +8,29 @@ export const generateHabitsSummary = (answers) => {
     
     // 1. Actividad Física
     const activity = answers.habits_physical_activity || answers['17'];
-    if (activity && String(activity).toLowerCase() === 'sí') {
+    const isActivityYes = activity === true || (typeof activity === 'string' && (activity.toLowerCase() === 'sí' || activity.toLowerCase().startsWith('sí')));
+    const isActivityNo = activity === false || (typeof activity === 'string' && (activity.toLowerCase() === 'no' || activity.toLowerCase().startsWith('no')));
+    
+    if (isActivityYes) {
          summaryParts.push("La paciente refiere realizar actividad física de forma regular.");
-    } else if (activity && String(activity).toLowerCase() === 'no') {
+    } else if (isActivityNo) {
          summaryParts.push("Niega realizar actividad física de forma regular.");
     }
 
     // 2. Hábitos (Tabaco, Alcohol, Sustancias)
-    const smoking = String(answers.habits_smoking || answers['15'] || 'No').toLowerCase();
-    const alcohol = String(answers.habits_alcohol || answers['16'] || 'No').toLowerCase();
-    const substances = String(answers.habits_substance_use || answers['18'] || 'No').toLowerCase();
+    const smokingVal = answers.habits_smoking || answers['15'];
+    const alcoholVal = answers.habits_alcohol || answers['16'];
+    const substancesVal = answers.habits_substance_use || answers['18'];
+
+    const getHabitStr = (val) => {
+        if (val === true) return 'sí';
+        if (val === false) return 'no';
+        return String(val || 'No').toLowerCase();
+    };
+
+    const smoking = getHabitStr(smokingVal);
+    const alcohol = getHabitStr(alcoholVal);
+    const substances = getHabitStr(substancesVal);
 
     let habitsText = "";
     if (smoking === 'no' && alcohol === 'no') {
@@ -29,10 +42,10 @@ export const generateHabitsSummary = (answers) => {
         }
     } else {
         const parts = [];
-        if (smoking !== 'no') parts.push(`fuma (${smoking})`);
+        if (smoking !== 'no' && smoking !== 'false') parts.push(`fuma (${smoking})`);
         else parts.push("no fuma");
             
-        if (alcohol !== 'no') parts.push(`consume alcohol (${alcohol})`);
+        if (alcohol !== 'no' && alcohol !== 'false') parts.push(`consume alcohol (${alcohol})`);
         else parts.push("no consume alcohol");
             
         habitsText = "Refiere que " + parts.join(' y ');
@@ -55,7 +68,10 @@ export const generateFunctionalExamSummary = (answers) => {
         'functional_urinary_incontinence', 'functional_urinary_nocturia'
     ];
     
-    const hasData = functionalKeys.some(k => answers[k] && String(answers[k]).toLowerCase() !== 'no' && String(answers[k]).toLowerCase() !== 'niega');
+    const isYes = (val) => val === true || (typeof val === 'string' && (val.toLowerCase() === 'sí' || val.toLowerCase().startsWith('sí')));
+    const isNo = (val) => val === false || (typeof val === 'string' && (val.toLowerCase() === 'no' || val.toLowerCase().startsWith('no')));
+    
+    const hasData = functionalKeys.some(k => isYes(answers[k]));
     
     if (!hasData) {
         return "Sin síntomas relevantes.";
@@ -65,7 +81,7 @@ export const generateFunctionalExamSummary = (answers) => {
 
     // 1. Dispareunia
     const dispareunia = answers.functional_dispareunia;
-    if (dispareunia && String(dispareunia).toLowerCase() === 'sí') {
+    if (isYes(dispareunia)) {
         const dType = answers.functional_dispareunia_type;
         const dScale = answers.functional_dispareunia_deep_scale;
         
@@ -75,20 +91,20 @@ export const generateFunctionalExamSummary = (answers) => {
         } else {
             summaryParts.push("Refiere dispareunia.");
         }
-    } else if (dispareunia && String(dispareunia).toLowerCase() === 'no') {
+    } else if (isNo(dispareunia)) {
         summaryParts.push("Niega dispareunia.");
     }
 
     // 2. Dolor en miembros inferiores
     const legPain = answers.functional_leg_pain;
-    if (legPain && String(legPain).toLowerCase() === 'sí') {
+    if (isYes(legPain)) {
         const pType = answers.functional_leg_pain_type;
         const pZone = answers.functional_leg_pain_zone;
         
         const typeText = pType ? `, descrito como '${pType}'` : "";
         const zoneText = pZone ? ` en la ${pZone}` : "";
         summaryParts.push(`Presenta dolor en miembros inferiores durante la menstruación${typeText}${zoneText}.`);
-    } else if (legPain && String(legPain).toLowerCase() === 'no') {
+    } else if (isNo(legPain)) {
         summaryParts.push("Niega dolor en miembros inferiores durante la menstruación.");
     }
 
@@ -113,47 +129,50 @@ export const generateFunctionalExamSummary = (answers) => {
         else sDuring.split(',').forEach(s => symptomsSet.add(s.trim().toLowerCase()));
     }
     
-    if (symptomsSet.size > 0 || sDischezia.toLowerCase() !== 'no') {
+    if (symptomsSet.size > 0 || !isNo(sDischezia)) {
         let gastroSummary = "A nivel gastrointestinal, manifiesta";
         if (symptomsSet.has("dolor al evacuar")) symptomsSet.delete("dolor al evacuar");
         
         const symptomsText = Array.from(symptomsSet).sort().join(', ');
         let finalSymptoms = "";
+        const sDischeziaLow = String(sDischezia).toLowerCase();
+
         if (symptomsText) {
             finalSymptoms = ` síntomas como ${symptomsText}`;
-            if (sDischezia.toLowerCase() !== 'no') {
-                finalSymptoms += ` y dolor al evacuar (disquecia ${sDischezia.toLowerCase()})`;
+            if (!isNo(sDischezia)) {
+                finalSymptoms += ` y dolor al evacuar (disquecia ${sDischeziaLow})`;
             }
-        } else if (sDischezia.toLowerCase() !== 'no') {
-            finalSymptoms = ` dolor al evacuar (disquecia ${sDischezia.toLowerCase()})`;
+        } else if (!isNo(sDischezia)) {
+            finalSymptoms = ` dolor al evacuar (disquecia ${sDischeziaLow})`;
         }
         
         gastroSummary += finalSymptoms + ".";
         
         if (sBowelFreq !== 'N/A') {
-            gastroSummary += ` Su frecuencia evacuatoria es de ${sBowelFreq.toLowerCase()}.`;
+            gastroSummary += ` Su frecuencia evacuatoria es de ${String(sBowelFreq).toLowerCase()}.`;
         }
         summaryParts.push(gastroSummary);
+    } else {
         if (sBowelFreq !== 'N/A') {
-             summaryParts.push(`A nivel gastrointestinal, no refiere síntomas significativos, con una frecuencia evacuatoria ${sBowelFreq.toLowerCase()}.`);
+             summaryParts.push(`A nivel gastrointestinal, no refiere síntomas significativos, con una frecuencia evacuatoria ${String(sBowelFreq).toLowerCase()}.`);
         }
     }
 
     // 4. Urinario
     const uProb = answers.functional_urinary_problem;
-    if (uProb && String(uProb).toLowerCase() === 'sí') {
+    if (isYes(uProb)) {
         const urinaryInfo = [];
         const uPain = answers.functional_urinary_pain;
-        if (uPain && String(uPain).toLowerCase() === 'sí') {
+        if (isYes(uPain)) {
             const uScale = answers.functional_urinary_pain_scale;
             const scaleText = uScale ? ` (${uScale}/10)` : "";
             urinaryInfo.push(`dolor al orinar${scaleText}`);
         }
         
         const others = [];
-        if (String(answers.functional_urinary_irritation).toLowerCase() === 'sí') others.push("irritación");
-        if (String(answers.functional_urinary_incontinence).toLowerCase() === 'sí') others.push("incontinencia");
-        if (String(answers.functional_urinary_nocturia).toLowerCase() === 'sí') others.push("nocturia");
+        if (isYes(answers.functional_urinary_irritation)) others.push("irritación");
+        if (isYes(answers.functional_urinary_incontinence)) others.append("incontinencia");
+        if (isYes(answers.functional_urinary_nocturia)) others.append("nocturia");
         
         if (others.length > 0) {
             urinaryInfo.push(others.join(' y '));
@@ -164,7 +183,7 @@ export const generateFunctionalExamSummary = (answers) => {
         } else {
             summaryParts.push("En el sistema urinario, confirma problemas no especificados.");
         }
-    } else if (uProb && String(uProb).toLowerCase() === 'no') {
+    } else if (isNo(uProb)) {
         summaryParts.push("Hábito miccional conservado.");
     }
 
