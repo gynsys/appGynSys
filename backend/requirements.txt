@@ -4,6 +4,8 @@ psycopg2-binary==2.9.9
 requests==2.31.0
 pytz==2023.3.post1
 pywebpush==1.14.0
+resend==0.8.0
+pymupdf==1.23.5
 aiofiles==23.2.1
     # via appgynsys-backend (pyproject.toml)
 alembic==1.12.1
