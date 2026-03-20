@@ -5,6 +5,9 @@ Este documento centraliza el proceso de depuración del sistema de notificacione
 ## 🛠 Herramienta Unificada V2
 El script definitivo se encuentra en `readme/diagnose_unified.py`. Es una herramienta inteligente que detecta si el email pertenece a una **Doctora** o a una **Usuaria (Mi Ciclo)** y aplica el diagnóstico correspondiente.
 
+> [!TIP]
+> **¿Notificaciones sin cuerpo o vacías?** Consulta la [Guía de Diagnóstico Rápido](guia_diagnostico_rapido.md) y usa el script unificado de backend para una solución inmediata.
+
 ### 🚀 Cómo ejecutarlo
 
 Hay dos formas dependiendo de dónde estés:

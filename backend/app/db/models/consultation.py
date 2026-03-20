@@ -39,11 +39,6 @@ class Consultation(Base):
     functional_exam_summary = Column(Text, nullable=True)
     habits_summary = Column(Text, nullable=True)
     
-    # Individual Habits (Brute force for UI)
-    habits_smoking = Column(String, nullable=True)
-    habits_alcohol = Column(String, nullable=True)
-    habits_physical_activity = Column(String, nullable=True)
-    habits_substance_use = Column(String, nullable=True)
     
     # Doctor Consultation Data
     physical_exam = Column(Text, nullable=True)
