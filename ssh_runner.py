@@ -33,6 +33,11 @@ def upload_file(local_path: str, remote_path: str) -> bool:
         return False
 
 if __name__ == "__main__":
+    # Fix for Windows console encoding issues
+    if sys.stdout.encoding != 'utf-8':
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
     if len(sys.argv) < 2:
         print("Usage: python ssh_runner.py <command> OR python ssh_runner.py --upload <local> <remote>")
         sys.exit(1)
