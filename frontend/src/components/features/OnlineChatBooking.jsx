@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuthStore } from '../../store/authStore';
 import { isCapacitor } from '../../utils/platform';
 import { getImageUrl } from '../../lib/imageUtils';
 import PropTypes from 'prop-types';
@@ -107,7 +108,9 @@ SimpleInput.propTypes = {
     primaryColor: PropTypes.string.isRequired,
 };
 
-export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOpen = true, settings: propSettings }) {
+export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOpen = true, settings: propSettings, onRequireAuth }) {
+    // Auth Store
+    const { isCycleAuthenticated, cycleUser } = useAuthStore();
     // Brand Color
     const primaryColor = doctor?.theme_primary_color || '#4F46E5';
 
@@ -117,6 +120,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         EXPLAIN_ONLINE: 'EXPLAIN_ONLINE',
         ONLINE_PRICING: 'ONLINE_PRICING',
         FAREWELL_MESSAGE: 'FAREWELL_MESSAGE',
+        AUTH_REQUIRED: 'AUTH_REQUIRED',
         NAME: 'NAME',
         DNI: 'DNI',
         AGE: 'AGE',
@@ -401,15 +405,28 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         if (response === 'YES') {
             addMessage("📆 Sí, agendar", 'user');
             setTimeout(() => {
-                addMessage(
-                    `<p class="mb-2">¡Perfecto! 🎉</p>
-          <p class="mb-2">Procederemos a agendar tu Consulta Online.</p>
-          <p class="mb-2">Necesitaré algunos datos básicos para crear tu expediente.</p>
-          <p class="font-semibold">Para comenzar, ¿podrías indicarme tu nombre completo?</p>`,
-                    'bot'
-                );
-                setStep(STEPS.NAME);
-                setShowOptions(true);
+                if (isCycleAuthenticated && cycleUser) {
+                    addMessage(
+                        `<p class="mb-2">¡Perfecto Sra. ${cycleUser.nombre_completo}! 🎉</p>
+                        <p class="mb-2">Procederemos a agendar tu Consulta Online.</p>
+                        <p class="font-semibold">Para continuar, ¿podrías indicarme tu número de cédula o DNI?</p>`,
+                        'bot'
+                    );
+                    setStep(STEPS.DNI);
+                    setFormData(prev => ({
+                        ...prev,
+                        patient_name: cycleUser.nombre_completo,
+                        patient_email: cycleUser.email
+                    }));
+                    setShowOptions(true);
+                } else {
+                    addMessage(
+                        `<p class="mb-2">¡Excelente decisión! 🎉</p>
+                        <p class="mb-2">Para poder agendar tu Consulta Online es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`,
+                        'bot'
+                    );
+                    setStep(STEPS.AUTH_REQUIRED);
+                }
             }, 500);
         } else {
             addMessage("En otra ocasión", 'user');
@@ -656,18 +673,29 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         }
         setFormData(prev => ({ ...prev, patient_phone: value }));
         addMessage(value, 'user');
+
         setTimeout(() => {
-            addMessage(
-                `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span>:</p>
-        <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
-        <div class="ml-2 mb-3">
-            <p class="text-[10px] mb-1">• Link de la videollamada</p>
-            <p class="text-[10px] mb-1">• Datos para el pago</p>
-        </div>
-        <p class="font-semibold">Correo electrónico:</p>`,
-                'bot'
-            );
-            setStep(STEPS.EMAIL);
+            // Check if email is needed
+            setFormData(currentData => {
+                if (currentData.patient_email) {
+                    // Si ya tenemos email (usuario autenticado), saltamos directamente al siguiente paso
+                    addMessage("¿Qué tipo de consulta necesitas?", 'bot');
+                    setStep(STEPS.CONSULTATION_TYPE);
+                } else {
+                    addMessage(
+                        `<p class="mb-2">⚠️ <span class="font-bold">IMPORTANTE</span>:</p>
+                        <p class="mb-2 text-sm">Por favor indica tu correo electrónico donde recibirás:</p>
+                        <div class="ml-2 mb-3">
+                            <p class="text-[10px] mb-1">• Link de la videollamada</p>
+                            <p class="text-[10px] mb-1">• Datos para el pago</p>
+                        </div>
+                        <p class="font-semibold">Correo electrónico:</p>`,
+                        'bot'
+                    );
+                    setStep(STEPS.EMAIL);
+                }
+                return currentData;
+            });
         }, 500);
     };
 
@@ -981,6 +1009,18 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         </div>
 
                         <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
+                            {step === STEPS.AUTH_REQUIRED && (
+                                <div className="flex justify-center w-full">
+                                    <button
+                                        onClick={() => onRequireAuth?.()}
+                                        className="w-full py-3 px-6 text-white rounded-full font-bold shadow-md transition transform hover:scale-[1.02]"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Crear Cuenta / Iniciar Sesión
+                                    </button>
+                                </div>
+                            )}
+
                             {/* UNIFIED TEXT INPUTS */}
                             {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.EMAIL].includes(step) && (
                                 <SimpleInput

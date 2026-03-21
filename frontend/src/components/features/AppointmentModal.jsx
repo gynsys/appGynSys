@@ -4,7 +4,7 @@ import { MdClose } from 'react-icons/md'
 import { isCapacitor } from '../../utils/platform'
 import ChatBooking from './ChatBooking'
 
-export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, primaryColor = '#4F46E5' }) {
+export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, primaryColor = '#4F46E5', onRequireAuth }) {
   return (
     <Transition show={isOpen} as={Fragment}>
       <div className="relative z-[100]">
@@ -45,7 +45,7 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
             </div>
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col pt-2">
-              <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} />
+              <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} onRequireAuth={onRequireAuth} />
             </div>
           </div>
         </Transition.Child>

@@ -65,6 +65,8 @@ email-validator==2.3.0
     #   pydantic
 fastapi==0.104.1
     # via appgynsys-backend (pyproject.toml)
+firebase-admin==6.4.0
+    # via appgynsys-backend (push notifications)
 greenlet==3.3.0
     # via sqlalchemy
 h11==0.16.0

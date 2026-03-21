@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuthStore } from '../../store/authStore';
 import { getImageUrl } from '../../lib/imageUtils';
 import PropTypes from 'prop-types';
 import Button from '../common/Button';
@@ -225,12 +226,16 @@ SimpleInput.propTypes = {
   primaryColor: PropTypes.string.isRequired,
 };
 
-export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
+export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireAuth }) {
+  // Auth Store
+  const { isCycleAuthenticated, cycleUser } = useAuthStore();
+
   // Brand Color
   const primaryColor = doctor?.theme_primary_color || '#4F46E5';
 
   // Constants
   const STEPS = {
+    AUTH_REQUIRED: 'AUTH_REQUIRED',
     NAME: 'NAME',
     DNI: 'DNI',        // Moved up
     AGE: 'AGE',
@@ -300,13 +305,29 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
       finalPrefix = 'del';
     }
 
-    setHistory([
-      {
-        type: 'bot',
-        text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para comenzar a agendar tu cita,</p><p class="font-bold">¿podrías indicarme tu nombre completo?</p>`
-      }
-    ]);
-  }, [doctor, history.length]);
+    if (isCycleAuthenticated && cycleUser) {
+      setHistory([
+        {
+          type: 'bot',
+          text: `<p class="mb-1">Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.</p><p class="mb-1">Para comenzar a agendar tu cita,</p><p class="font-bold">¿podrías indicarme tu número de cédula o DNI?</p>`
+        }
+      ]);
+      setStep(STEPS.DNI);
+      setFormData(prev => ({
+        ...prev,
+        patient_name: cycleUser.nombre_completo,
+        patient_email: cycleUser.email
+      }));
+    } else {
+      setHistory([
+        {
+          type: 'bot',
+          text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para agendar tu cita es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`
+        }
+      ]);
+      setStep(STEPS.AUTH_REQUIRED);
+    }
+  }, [doctor, history.length, isCycleAuthenticated, cycleUser]);
 
   // Fetch Locations on Mount
   useEffect(() => {
@@ -797,6 +818,18 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose }) {
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
+        {step === STEPS.AUTH_REQUIRED && (
+          <div className="flex justify-center w-full">
+            <button
+              onClick={() => onRequireAuth?.()}
+              className="w-full py-3 px-6 text-white rounded-full font-bold shadow-md transition transform hover:scale-[1.02]"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Crear Cuenta / Iniciar Sesión
+            </button>
+          </div>
+        )}
+
         {/* UNIFIED TEXT INPUTS (To prevent unmounting and keyboard flicker) */}
         {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.OCCUPATION, STEPS.EMAIL, STEPS.LOCATION].includes(step) && (locations.length === 0 || step !== STEPS.LOCATION) && (
           <SimpleInput
