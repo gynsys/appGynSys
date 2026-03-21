@@ -39,6 +39,26 @@ _INFRA_MOCKS = [
     "app.core.email",
     "app.tasks.email_tasks",
     "app.tasks",
+    # Módulos de base de datos y modelos ORM
+    # (processor.py importa app.db.base.SessionLocal y app.cycle_predictor.logic)
+    "app.db.base",
+    "app.db.models.notification",
+    "app.db.models.cycle_user",
+    "app.db.models.doctor",
+    "app.db.models.appointment",
+    "app.db.models.consultation",
+    "app.db.models.push_subscription",
+    "app.db.models.cycle_predictor",
+    "app.db.models.tenant_module",
+    # Motor de predicción de ciclo (importado por processor.py)
+    "app.cycle_predictor.logic",
+    "app.cycle_predictor",
+    "app.cycle_predictor.router",
+    # Schemas (importados por __init__.py)
+    "app.schemas.notification",
+    "app.schemas.cycle_predictor",
+    # SQLAlchemy dialectos
+    "sqlalchemy.dialects.postgresql",
 ]
 
 for _mod_name in _INFRA_MOCKS:
