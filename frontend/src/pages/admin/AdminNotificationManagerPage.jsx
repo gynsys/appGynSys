@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { toast } from 'sonner'
 import useNotificationStore from '../../stores/notificationStore'
+import api from '../../lib/axios'
 
 const CONFIG_TABS = [
     {
@@ -114,17 +115,8 @@ export default function NotificationManagerPage() {
     const fetchAuditData = async () => {
         try {
             setLoadingAudit(true)
-            const token = localStorage.getItem('access_token')
-            if (!token) return
-
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/detailed-users-devices`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                setAuditData(data.users || [])
-            }
+            const { data } = await api.get('/push-test/detailed-users-devices')
+            setAuditData(data.users || [])
         } catch (error) {
             console.error('Failed to load audit data:', error)
             toast.error('Error al cargar auditoría de dispositivos')
@@ -156,21 +148,13 @@ export default function NotificationManagerPage() {
         try {
             setLoadingDiag(true)
             setDiagResult(null)
-            const token = localStorage.getItem('access_token')
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/diagnose?email=${encodeURIComponent(email)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-
-            const data = await response.json()
-            if (response.ok) {
-                setDiagResult(data)
-                toast.success("Diagnóstico completado")
-            } else {
-                toast.error(data.detail || "Error en el diagnóstico")
-            }
+            const { data } = await api.get(`/push-test/diagnose?email=${encodeURIComponent(email)}`)
+            setDiagResult(data)
+            toast.success("Diagnóstico completado")
         } catch (error) {
             console.error("Diagnostic error:", error)
-            toast.error("Fallo de conexión al servidor")
+            const detail = error.response?.data?.detail
+            toast.error(detail || "Error en el diagnóstico")
         } finally {
             setLoadingDiag(false)
         }
@@ -200,17 +184,8 @@ export default function NotificationManagerPage() {
     const fetchUsersWithPush = async () => {
         try {
             setLoadingUsers(true)
-            const token = localStorage.getItem('access_token')
-            if (!token) return
-
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/users-with-push`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                setAvailableUsers(data.users || [])
-            }
+            const { data } = await api.get('/push-test/users-with-push')
+            setAvailableUsers(data.users || [])
         } catch (error) {
             console.error('Failed to load users:', error)
             toast.error('Error al cargar usuarios')
@@ -224,40 +199,18 @@ export default function NotificationManagerPage() {
 
         try {
             setIsSendingTest(true)
-
-            // Get admin token from localStorage
-            const token = localStorage.getItem('access_token')
-            if (!token) {
-                toast.error('No autenticado')
-                return
-            }
-
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/push-test/test-push`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_email: testEmail,
-                    title: selectedRule.title_template || 'Notificación de Prueba',
-                    body: selectedRule.message_text_template || selectedRule.message_template || 'Mensaje de prueba'
-                })
+            const { data: result } = await api.post('/push-test/test-push', {
+                user_email: testEmail,
+                title: selectedRule.title_template || 'Notificación de Prueba',
+                body: selectedRule.message_text_template || selectedRule.message_template || 'Mensaje de prueba'
             })
-
-            const result = await response.json()
-
-            if (response.ok) {
-                toast.success(result.message || 'Notificación de prueba enviada')
-                setTestEmail('')
-                setIsTestModalOpen(false)
-            } else {
-                toast.error(result.detail || 'Error al enviar notificación de prueba')
-            }
-
+            toast.success(result.message || 'Notificación de prueba enviada')
+            setTestEmail('')
+            setIsTestModalOpen(false)
         } catch (error) {
             console.error('Error sending test:', error)
-            toast.error('Error al enviar notificación de prueba')
+            const detail = error.response?.data?.detail
+            toast.error(detail || 'Error al enviar notificación de prueba')
         } finally {
             setIsSendingTest(false)
         }
