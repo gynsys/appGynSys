@@ -105,13 +105,6 @@ NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
     { "type": "contraceptive_daily", "category": "contraceptive", "priority": 10, "title": "💊 Recordatorio Anticonceptivo", "message": "Hola {patient_name}, es hora de tomar tu pastilla anticonceptiva.", "logic": lambda c: c.get("type") == "contraceptive" and c.get("subtype") == "active_pill" },
     { "type": "contraceptive_rest_start", "category": "contraceptive", "priority": 11, "title": "💊 Inicio de Descanso", "message": "Hoy comienzas tus días de descanso o placebo.", "logic": lambda c: c.get("type") == "contraceptive" and c.get("subtype") == "placebo" },
 
-    # ===== SYSTEM =====
-    { "type": "system_welcome", "category": "system", "priority": 300, "title": "👋 Bienvenida a la App", "message": "¡Bienvenida! Completa tu perfil para comenzar.", "logic": lambda c: has_event(c, "user_registered") },
-    { "type": "system_profile_incomplete", "category": "system", "priority": 301, "title": "📝 Completa tu Perfil", "message": "Completa tu perfil para obtener predicciones más precisas.", "logic": lambda c: has_event(c, "profile_incomplete") },
-    { "type": "system_log_period", "category": "system", "priority": 302, "title": "🩸 Registra tu Periodo", "message": "¿Ya te llegó el periodo? Regístralo.", "logic": lambda c: has_event(c, "period_not_logged") },
-    { "type": "system_appointment_reminder", "category": "system", "priority": 306, "title": "📅 Cita Médica Mañana", "message": "Recuerda: Tienes cita médica mañana a las {appointment_time}.", "logic": lambda c: has_event(c, "appointment_tomorrow") },
-    { "type": "system_medication_reminder", "category": "system", "priority": 307, "title": "💊 Hora de Medicamento", "message": "Hora de tomar tu medicamento: {medication_name}.", "logic": lambda c: has_event(c, "medication_time") },
-    { "type": "system_annual_checkup", "category": "system", "priority": 308, "title": "🩺 Chequeo Anual", "message": "Ha pasado un año desde tu último chequeo ginecológico.", "logic": lambda c: has_event(c, "annual_checkup") },
 ]
 
 NOTIFICATION_MAP = { n["type"]: n for n in NOTIFICATION_REGISTRY }
@@ -175,7 +168,7 @@ class _RuleData:
         self.send_time: Optional[str] = rule.send_time
         self.channel: str = rule.channel
         self.title_template: Optional[str] = rule.title_template
-        self.message_template: Optional[str] = rule.message_template
+        self.message_template: Optional[str] = getattr(rule, 'message_template', None)
         self.message_text_template: Optional[str] = rule.message_text_template
         self.is_active: bool = rule.is_active
         self.priority: int = rule.priority if rule.priority is not None else 99
