@@ -827,7 +827,10 @@ export default function DoctorProfilePage() {
         doctorId={doctor?.id}
         doctor={doctor}
         primaryColor={primaryColor}
-        onRequireAuth={() => setIsRegisterModalOpen(true)}
+        onRequireAuth={() => {
+          setIsAppointmentModalOpen(false);
+          setIsRegisterModalOpen(true);
+        }}
       />
 
       <PreconsultaWidget
