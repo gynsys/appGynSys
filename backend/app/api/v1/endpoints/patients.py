@@ -48,15 +48,45 @@ def get_patient_by_email(
 ):
     """
     Fetch the most recent patient data by their email address.
+    Also checks if the user's account is verified to enforce 1-appointment grace period.
     Useful for auto-filling chatbots for returning patients.
     """
-    appointment = db.query(Appointment).filter(
-        Appointment.patient_email == email
-    ).order_by(Appointment.id.desc()).first()
+    from app.db.models.cycle_user import CycleUser
+    import secrets
+    from app.tasks.email_tasks import send_cycle_user_verification_email
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Priority 1: Check CycleUser verification status
+    cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
+    needs_verification = False
     
-    if appointment:
+    # Priority 2: Get most recent appointment data
+    appointments = db.query(Appointment).filter(
+        Appointment.patient_email == email
+    ).order_by(Appointment.id.desc()).all()
+    
+    recent_appointment = appointments[0] if appointments else None
+    
+    if cycle_user and not cycle_user.is_verified and len(appointments) >= 1:
+        needs_verification = True
+        # Auto-resend the email since they are hitting the chatbot again
+        new_token = secrets.token_urlsafe(32)
+        cycle_user.verification_token = new_token
+        db.commit()
+        try:
+            send_cycle_user_verification_email.delay(
+                cycle_user.email, 
+                cycle_user.nombre_completo, 
+                new_token
+            )
+        except Exception as e:
+            logger.error(f"Failed to auto-resend verification email on /by-email: {e}")
+            
+    if recent_appointment:
         return {
             "exists": True,
+            "needs_verification": needs_verification,
             "patient_data": {
                 "patient_name": appointment.patient_name,
                 "patient_dni": appointment.patient_dni,

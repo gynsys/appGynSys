@@ -408,9 +408,17 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             if (isCycleAuthenticated && cycleUser) {
                 try {
                     const res = await appointmentService.getPatientByEmail(cycleUser.email);
-                    if (res.exists && res.patient_data.patient_dni) {
-                        const pd = res.patient_data;
-                        const firstName = pd.patient_name.split(' ')[0];
+                    
+                    if (res.exists) {
+                        if (res.needs_verification) {
+                            addMessage("⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!", 'bot');
+                            setStep('BLOCKED_VERIFICATION');
+                            return;
+                        }
+
+                        if (res.patient_data.patient_dni) {
+                            const pd = res.patient_data;
+                            const firstName = pd.patient_name.split(' ')[0];
                         setFormData(prev => ({
                             ...prev,
                             patient_name: pd.patient_name,
@@ -428,10 +436,11 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                             setStep(STEPS.CONSULTATION_TYPE);
                         }, 500);
                         return; // Exit early branch
-                    }
-                } catch (err) {
-                    console.error("Error fetching returning patient data", err);
-                }
+                    } // closes if (res.patient_data.patient_dni)
+                } // closes if (res.exists)
+            } catch (err) {
+                console.error("Error fetching returning patient data", err);
+            }
 
                 setTimeout(() => {
                     let greeting = '¡Perfecto! 🎉';
