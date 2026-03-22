@@ -116,9 +116,13 @@ export default function AppointmentManager() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Intl.DateTimeFormat('es-ES', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
+    return new Intl.DateTimeFormat('es-VE', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
     }).format(new Date(dateString));
   };
 
