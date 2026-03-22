@@ -45,7 +45,7 @@ export default function CycleAuthDialog({ open, onOpenChange, initialView = 'reg
     const handleGoogleSuccess = async (tokenResponse) => {
         setIsLoading(true)
         try {
-            await loginCycleUserWithGoogle(tokenResponse.access_token)
+            await loginWithGoogle(tokenResponse.access_token)
             handleAuthSuccess()
         } catch (err) {
             console.error("Google Login error:", err)
