@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/common/Button';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
