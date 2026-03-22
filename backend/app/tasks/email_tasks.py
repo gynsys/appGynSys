@@ -609,17 +609,14 @@ def send_cycle_user_verification_email(self, email: str, name: str, token: str):
         html_content = f"""
         <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #7c3aed;">Bienvenida a Mi Ciclo</h2>
                 <p>Hola <strong>{name}</strong>,</p>
-                <p>Gracias por registrarte. Para agendar futuras citas y acceder de forma segura a tu historial médico, debes verificar tu dirección de correo electrónico.</p>
+                <p>Gracias por usar el sistema de citas. Para agendar futuras consultas y acceder de forma segura a tu historial médico, debes verificar tu cuenta haciendo clic en el siguiente enlace:</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="{verification_link}" style="background-color: #7c3aed; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verificar mi cuenta</a>
                 </div>
                 <p>O si el botón no funciona, copia y pega este enlace en tu navegador:</p>
                 <p style="font-size: 12px; color: #666; word-wrap: break-word;"><a href="{verification_link}">{verification_link}</a></p>
-                <p>Si no has creado esta cuenta, puedes ignorar este correo de forma segura.</p>
-                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 12px; color: #999;">Esta es una notificación automática enviada por el sistema Mi Ciclo.</p>
+                <p>Si no has solicitado este correo, puedes ignorarlo de forma segura.</p>
             </body>
         </html>
         """
