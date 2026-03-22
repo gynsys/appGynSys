@@ -774,10 +774,14 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
       console.error("Error booking", error);
       setLoading(false);
       
-      // Handle Double Booking (409 Conflict)
+      const detail = error.response?.data?.detail;
+
       if (error.response && error.response.status === 409) {
         addMessage("⚠️ Lo siento, ese horario acaba de ser ocupado. Por favor, selecciona otra hora.", 'bot');
         setStep(STEPS.TIME_SUGGESTION);
+      } else if (error.response && error.response.status === 403 && detail === "unverified_second_appointment") {
+        addMessage("⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!", 'bot');
+        // Mantener en un estado donde deba cerrar o reintentar
       } else {
         addMessage("Hubo un error al agendar tu cita. Por favor intenta nuevamente.", 'bot');
       }

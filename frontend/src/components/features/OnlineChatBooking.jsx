@@ -792,9 +792,13 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             console.error("Error booking online consultation", error);
             setLoading(false);
             
+            const detail = error.response?.data?.detail;
+
             if (error.response && error.response.status === 409) {
                 addMessage("⚠️ Lo siento, ese horario acaba de ser ocupado. Por favor, selecciona otra hora.", 'bot');
                 setStep(STEPS.TIME_SUGGESTION);
+            } else if (error.response && error.response.status === 403 && detail === "unverified_second_appointment") {
+                addMessage("⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!", 'bot');
             } else {
                 addMessage("Hubo un error al agendar tu consulta. Por favor intenta nuevamente.", 'bot');
             }

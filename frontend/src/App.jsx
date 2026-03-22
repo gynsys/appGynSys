@@ -39,6 +39,7 @@ import CycleDashboard from './pages/cycle-predictor/CycleDashboard'
 import CycleLogsPage from './pages/cycle-predictor/CycleLogsPage'
 import NotificationsPage from './pages/cycle-predictor/NotificationsPage'
 import ProfilePage from './pages/cycle-predictor/ProfilePage'
+import VerifyEmailPage from './pages/cycle-predictor/VerifyEmailPage'
 
 import LocationsManager from './pages/dashboard/LocationsManager'
 import ServicesManager from './pages/dashboard/ServicesManager'
@@ -187,6 +188,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
 
 

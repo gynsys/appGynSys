@@ -596,6 +596,56 @@ def apply_doctor_template_async(doctor_id: int):
         db.close()
 
 
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+def send_cycle_user_verification_email(self, email: str, name: str, token: str):
+    """
+    Send an email with a 1-click verification link to the cycle user.
+    """
+    try:
+        subject = "Confirma tu cuenta de Mi Ciclo"
+        verification_link = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+        
+        # Professional HTML template for Verification
+        html_content = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #7c3aed;">Bienvenida a Mi Ciclo</h2>
+                <p>Hola <strong>{name}</strong>,</p>
+                <p>Gracias por registrarte. Para agendar futuras citas y acceder de forma segura a tu historial médico, debes verificar tu dirección de correo electrónico.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_link}" style="background-color: #7c3aed; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verificar mi cuenta</a>
+                </div>
+                <p>O si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                <p style="font-size: 12px; color: #666; word-wrap: break-word;"><a href="{verification_link}">{verification_link}</a></p>
+                <p>Si no has creado esta cuenta, puedes ignorar este correo de forma segura.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #999;">Esta es una notificación automática enviada por el sistema Mi Ciclo.</p>
+            </body>
+        </html>
+        """
+        
+        # Dispatch using the unified sender logic
+        success = _send_integrated_email(
+            to_email=email,
+            subject=subject,
+            html_content=html_content
+        )
+        if not success:
+            raise Exception("Email service returned failure")
+            
+        logger.info(f"Verification email sent to {email}")
+        return {"status": "success", "email": email}
+        
+    except Exception as exc:
+        logger.warning(f"Error sending verification email to {email}: {exc}")
+        if self.request.retries < self.max_retries:
+            logger.info(f"Retrying sending verification email to {email} (Attempt {self.request.retries + 1}/{self.max_retries})")
+            raise self.retry(exc=exc, countdown=60)
+        else:
+            logger.error(f"Failed to send verification email after {self.request.retries} retries: {exc}", exc_info=True)
+        raise exc
+
+
 @celery_app.task(bind=True, max_retries=3)
 def send_tenant_approval_email(self, email: str, doctor_name: str, slug: str):
     """

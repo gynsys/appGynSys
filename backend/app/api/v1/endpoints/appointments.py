@@ -84,6 +84,39 @@ async def create_public_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Doctor is not accepting appointments"
         )
+        
+    # Check if patient is registered and enforce 1-appointment verification grace period
+    from app.db.models.cycle_user import CycleUser
+    import secrets
+    from app.tasks.email_tasks import send_cycle_user_verification_email
+    
+    email_lower = appointment_data.patient_email.lower().strip() if appointment_data.patient_email else None
+    if email_lower:
+        cycle_user = db.query(CycleUser).filter(CycleUser.email == email_lower).first()
+        if cycle_user and not cycle_user.is_verified:
+            appointment_count = db.query(Appointment).filter(
+                Appointment.patient_email == email_lower
+            ).count()
+            
+            if appointment_count >= 1:
+                # Generate new token and resend verification email automatically
+                new_token = secrets.token_urlsafe(32)
+                cycle_user.verification_token = new_token
+                db.commit()
+                
+                try:
+                    send_cycle_user_verification_email.delay(
+                        cycle_user.email, 
+                        cycle_user.nombre_completo, 
+                        new_token
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to auto-resend verification email: {e}")
+                    
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="unverified_second_appointment"
+                )
     
     # Check for double booking (exact match of timestamp)
     existing_appointment = db.query(Appointment).filter(

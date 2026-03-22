@@ -17,9 +17,10 @@ from app.schemas.cycle_user import CycleUserCreate, CycleUserResponse, CycleUser
 from app.schemas.token import Token, PasswordResetRequest, PasswordResetConfirm
 from app.core.security import hash_password, create_access_token, verify_access_token, verify_password
 from app.core.email import send_welcome_email
-from app.tasks.email_tasks import send_cycle_user_reset_password_email, send_welcome_dual_task
+from app.tasks.email_tasks import send_cycle_user_reset_password_email, send_welcome_dual_task, send_cycle_user_verification_email
 from app.services.notifications import trigger_immediate_evaluation
 from app.core.config import settings
+from pydantic import BaseModel
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
@@ -148,12 +149,16 @@ async def register_cycle_user(
     # Crear usuario
     try:
         hashed_password = hash_password(user_data.password)
+        verification_token = secrets.token_urlsafe(32)
+        
         db_user = CycleUser(
             email=email_lower,
             password_hash=hashed_password,
             nombre_completo=user_data.nombre_completo,
             doctor_id=doctor_id,
-            is_active=True
+            is_active=True,
+            is_verified=False,
+            verification_token=verification_token
         )
         
         db.add(db_user)
@@ -183,10 +188,41 @@ async def register_cycle_user(
     # Enviar notificaciones de bienvenida (Email + Push) via Celery
     send_welcome_dual_task.delay(db_user.id, db_user.email, db_user.nombre_completo)
     
+    # Enviar correo de verificación de cuenta de forma silenciosa
+    # Nota: También se enviará cuando intenten agendar su segunda cita si no lo han hecho
+    try:
+        send_cycle_user_verification_email.delay(db_user.email, db_user.nombre_completo, db_user.verification_token)
+    except Exception as verify_err:
+        logger.error(f"Failed to queue verification email: {verify_err}")
+    
     # Evaluar y programar notificaciones del día actual inmediatamente
     trigger_immediate_evaluation(db_user.id, db)
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+@router.post("/verify-email")
+async def verify_email(
+    request: VerifyEmailRequest,
+    db: Session = Depends(get_db)
+):
+    """Verify email address using token."""
+    user = db.query(CycleUser).filter(CycleUser.verification_token == request.token).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token inválido o cuenta ya verificada."
+        )
+        
+    user.is_verified = True
+    user.verification_token = None
+    db.commit()
+    
+    return {"message": "Cuenta verificada exitosamente"}
 
 
 @router.get("/me", response_model=CycleUserResponse)

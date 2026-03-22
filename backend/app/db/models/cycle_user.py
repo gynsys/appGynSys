@@ -20,6 +20,8 @@ class CycleUser(Base):
     photo_url = Column(String(255), nullable=True)
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True)
     is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
+    verification_token = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
