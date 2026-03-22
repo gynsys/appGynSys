@@ -24,6 +24,43 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.get("/public/booked-times")
+async def get_booked_times(
+    doctor_id: int,
+    date: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get booked time slots for a specific doctor and date.
+    Returns ISO strings so the frontend can correctly parse them into local time.
+    """
+    try:
+        from datetime import datetime, time, timedelta, timezone
+        target_date = datetime.strptime(date, "%Y-%m-%d").date()
+        
+        # Fetch loosely (-1 to +1 days) to account for UTC timezone shifts
+        start_dt = datetime.combine(target_date - timedelta(days=1), time.min)
+        end_dt = datetime.combine(target_date + timedelta(days=1), time.max)
+        
+        appts = db.query(Appointment).filter(
+            Appointment.doctor_id == doctor_id,
+            Appointment.appointment_date >= start_dt,
+            Appointment.appointment_date <= end_dt,
+            Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
+        ).all()
+        
+        slots = []
+        for app in appts:
+            if app.appointment_date:
+                dt = app.appointment_date
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                slots.append(dt.isoformat())
+                
+        return slots
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
 
 @router.post("/public", response_model=AppointmentInDB, status_code=status.HTTP_201_CREATED)
 async def create_public_appointment(

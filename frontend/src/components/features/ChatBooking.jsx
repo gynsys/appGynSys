@@ -549,23 +549,44 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
 
   // --- Date Handling ---
 
-  const handleSmartDateSelect = (dateObj) => {
+  const handleSmartDateSelect = async (dateObj) => {
     const readable = dateObj.toLocaleDateString();
     const isoDate = dateObj.toISOString().split('T')[0];
 
     addMessage(readable, 'user');
     setFormData(prev => ({ ...prev, date_part: isoDate }));
 
-    // Generate Smart Times
-    const smartTimes = generateSmartTimes(formData._tempSchedule);
-    setSuggestedTimes(smartTimes);
+    // Show searching feedback
+    addMessage("🔍 Verificando disponibilidad...", 'bot');
 
-    setTimeout(() => {
-      const nameParts = formData.patient_name.split(' ');
-      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0];
-      addMessage(`Perfecto Sra. ${lastName}, ¿A qué hora le gustaría su cita?`, 'bot');
+    try {
+      const bookedIsoStrings = await appointmentService.getBookedTimes(doctorId, isoDate);
+      
+      // Parse booked times to local HH:mm
+      const bookedTimesLocal = bookedIsoStrings.map(isoString => {
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      });
+
+      // Generate Smart Times
+      const smartTimes = generateSmartTimes(formData._tempSchedule);
+      
+      setSuggestedTimes(smartTimes);
+      setFormData(prev => ({ ...prev, booked_times: bookedTimesLocal })); // store to disable them
+
+      setTimeout(() => {
+        const nameParts = formData.patient_name.split(' ');
+        const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0];
+        addMessage(`Perfecto Sra. ${lastName}, ¿A qué hora le gustaría su cita?`, 'bot');
+        setStep(STEPS.TIME_SUGGESTION);
+      }, 600);
+
+    } catch (err) {
+      console.error("Error fetching available times", err);
+      // Fallback
+      setSuggestedTimes(generateSmartTimes(formData._tempSchedule));
       setStep(STEPS.TIME_SUGGESTION);
-    }, 600);
+    }
   };
 
   const handleManualDateTrigger = () => {
@@ -991,18 +1012,24 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
         {/* SMART TIME SELECTION */}
         {step === STEPS.TIME_SUGGESTION && (
           <div className="flex flex-wrap gap-2">
-            {suggestedTimes.map((time, idx) => (
+            {suggestedTimes.map((time, idx) => {
+              const isBooked = formData.booked_times && formData.booked_times.includes(time);
+              return (
               <button
                 key={idx}
-                onClick={() => handleSmartTimeSelect(time)}
-                className="px-4 py-3 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white flex items-center gap-2"
-                style={{
-                  backgroundColor: primaryColor,
-                }}
+                onClick={() => !isBooked && handleSmartTimeSelect(time)}
+                disabled={isBooked}
+                className={`px-4 py-3 rounded-xl transition-all text-sm font-bold shadow-sm flex items-center gap-2 ${
+                  isBooked 
+                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed line-through' 
+                    : 'text-white hover:shadow-md hover:scale-105 active:scale-95'
+                }`}
+                style={isBooked ? {} : { backgroundColor: primaryColor }}
+                title={isBooked ? "Horario ocupado" : "Seleccionar horario"}
               >
                 <MdAccessTime /> {time}
               </button>
-            ))}
+            )})}
             <button
               onClick={handleManualTimeTrigger}
               className="px-4 py-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm border border-gray-200 dark:border-gray-600"

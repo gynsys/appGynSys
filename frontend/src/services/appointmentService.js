@@ -13,6 +13,11 @@ export const appointmentService = {
     return response.data
   },
 
+  async getBookedTimes(doctorId, date) {
+    const response = await api.get(`/appointments/public/booked-times?doctor_id=${doctorId}&date=${date}`);
+    return response.data;
+  },
+
   async checkPatient(name, dni) {
     const response = await api.post('/patients/check-existence', { name, dni })
     return response.data
