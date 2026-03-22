@@ -310,12 +310,17 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
         try {
           const res = await appointmentService.getPatientByEmail(cycleUser.email);
           
+          let greeting = '¡Hola!';
+          if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
+            greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
+          }
+
           if (res.exists) {
             if (res.needs_verification) {
               setHistory([
                 {
                   type: 'bot',
-                  text: '⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!'
+                  text: `<p class="mb-2">${greeting}</p><p>⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!</p>`
                 }
               ]);
               setStep('BLOCKED_VERIFICATION');
@@ -325,34 +330,51 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
             if (res.patient_data.patient_dni) {
               const pd = res.patient_data;
               const firstName = pd.patient_name.split(' ')[0];
-            setFormData(prev => ({
-              ...prev,
-              patient_name: pd.patient_name,
-              patient_email: pd.patient_email,
-              patient_dni: pd.patient_dni,
-              patient_age: pd.patient_age,
-              patient_phone: pd.patient_phone,
-              residence: pd.residence || '',
-              occupation: pd.occupation || ''
-            }));
-            
-            setHistory([
-              {
-                type: 'bot',
-                text: `<p class="mb-1">¡Qué gusto verte de nuevo Sra. <span class="font-bold">${firstName}</span>! 🎉</p><p class="mb-1">Ya tengo tus datos básicos en el sistema.</p><p class="font-bold">Para agilizar, ¿Qué tipo de consulta precisas hoy?</p>`
+              
+              setFormData(prev => ({
+                ...prev,
+                patient_name: pd.patient_name,
+                patient_email: pd.patient_email,
+                patient_dni: pd.patient_dni,
+                patient_age: pd.patient_age,
+                patient_phone: pd.patient_phone,
+                residence: pd.residence || '',
+                occupation: pd.occupation || ''
+              }));
+              
+              // Check if we have all basic data to skip to TYPE
+              if (pd.patient_phone && pd.occupation && pd.patient_email) {
+                setHistory([
+                  {
+                    type: 'bot',
+                    text: `<p class="mb-1">¡Qué gusto verte de nuevo Sra. <span class="font-bold">${firstName}</span>! 🎉</p><p class="mb-1">Ya tengo tus datos básicos en el sistema.</p><p class="font-bold">Para agilizar, ¿Qué tipo de consulta precisas hoy?</p>`
+                  }
+                ]);
+                setStep(STEPS.TYPE);
+              } else {
+                // Return to normal flow from the first missing piece
+                setHistory([
+                  {
+                    type: 'bot',
+                    text: `<p class="mb-1">¡Qué gusto verte de nuevo Sra. <span class="font-bold">${firstName}</span>! 🎉</p><p class="mb-1">Veo que nos faltan algunos datos en tu perfil. Vamos a completarlos rápidamente.</p>`
+                  }
+                ]);
+                if (!pd.patient_phone) {
+                  addMessage("Por favor indica tu número de teléfono (mínimo 11 dígitos).", 'bot');
+                  setStep(STEPS.PHONE);
+                } else if (!pd.occupation) {
+                  addMessage("¿Cuál es su ocupación actual?", 'bot');
+                  setStep(STEPS.OCCUPATION);
+                } else {
+                  addMessage("Finalmente, ¿cuál es tu correo electrónico?", 'bot');
+                  setStep(STEPS.EMAIL);
+                }
               }
-            ]);
-            setStep(STEPS.TYPE);
-            return;
-          } // closes if (res.patient_data.patient_dni)
-        } // closes if (res.exists)
-      } catch (err) {
-        console.error("Error fetching returning patient data", err);
-      }
-
-        let greeting = '¡Hola!';
-        if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
-          greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching returning patient data", err);
         }
 
         setHistory([
@@ -364,7 +386,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
         setStep(STEPS.NAME);
         setFormData(prev => ({
           ...prev,
-          patient_email: cycleUser.email // Still auto-fill email to skip it later
+          patient_email: cycleUser.email
         }));
       } else {
         setHistory([
@@ -483,6 +505,13 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
     }
 
     if (recurrentData) {
+      if (result.needs_verification) {
+        addMessage(`¡Bienvenida nuevamente Sra. ${recurrentData.patient_name}!`, 'bot');
+        addMessage(`⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!`, 'bot');
+        setStep('BLOCKED_VERIFICATION');
+        return;
+      }
+
       // Store found data temporarily
       setFormData(prev => ({ ...prev, _tempData: recurrentData }));
 
@@ -664,7 +693,11 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
   const handleSmartTimeSelect = (timeStr) => {
     addMessage(timeStr, 'user');
     setFormData(prev => ({ ...prev, time_part: timeStr }));
-    triggerPhoneStep();
+    setTimeout(() => {
+      addMessage("¡Perfecto! Ya tengo tus datos de la cita.", 'bot');
+      addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+      setStep(STEPS.CONFIRM);
+    }, 600);
   }
 
   const handleManualTimeTrigger = () => {
@@ -678,27 +711,15 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
   const handleManualTimeSubmit = (val) => {
     addMessage(val, 'user');
     setFormData(prev => ({ ...prev, time_part: val }));
-    triggerPhoneStep();
+    setTimeout(() => {
+      addMessage("¡Perfecto! Ya tengo tus datos de la cita.", 'bot');
+      addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+      setStep(STEPS.CONFIRM);
+    }, 600);
   }
 
   /* --- CONTACT FLOW LOGIC --- */
 
-  const triggerPhoneStep = () => {
-    // Check if we already have the contact info (Recurrent Patient who kept data)
-    if (formData.patient_phone && formData.occupation && formData.patient_email) {
-      setTimeout(() => {
-        addMessage("¡Perfecto! Ya tengo tus datos de contacto.", 'bot');
-        addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-        setStep(STEPS.CONFIRM);
-      }, 600);
-      return;
-    }
-
-    setTimeout(() => {
-      addMessage("Entendido. Por favor indica tu número de teléfono (mínimo 11 dígitos).", 'bot');
-      setStep(STEPS.PHONE);
-    }, 600);
-  }
 
   // --- Contact Info ---
 
@@ -749,16 +770,40 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
     }, 400);
   };
 
-  const handleEmailSubmit = (value) => {
+  const handleEmailSubmit = async (value) => {
     const val = typeof value === 'string' ? value : value;
     if (typeof value !== 'string') {
       addMessage(val, 'user');
     }
 
     setFormData(prev => ({ ...prev, patient_email: val }));
+
+    // Check verification before continuing
+    try {
+      const res = await appointmentService.getPatientByEmail(val);
+      if (res.exists && res.needs_verification) {
+        setHistory(prev => [
+            ...prev,
+            {
+                type: 'bot',
+                text: '⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!'
+            }
+        ]);
+        setStep('BLOCKED_VERIFICATION');
+        return;
+      }
+    } catch (error) {
+       console.error("Error checking verification on email submit:", error);
+    }
+
     setTimeout(() => {
-      addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
-      setStep(STEPS.TYPE);
+      if (formData.date_part && formData.time_part) {
+        addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+        setStep(STEPS.CONFIRM);
+      } else {
+        addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
+        setStep(STEPS.TYPE);
+      }
     }, 600);
   };
 

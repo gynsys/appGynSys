@@ -134,6 +134,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         PHONE: 'PHONE',
         PAYMENT_METHOD: 'PAYMENT_METHOD',
         EMAIL: 'EMAIL',
+        RECURRENT_CONFIRM: 'RECURRENT_CONFIRM',
         CONFIRM: 'CONFIRM',
         SUCCESS: 'SUCCESS'
     };
@@ -235,47 +236,78 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
 
     // Initialize chat with welcome
     useEffect(() => {
-        if (isOpen && !prevIsOpenRef.current) {
-            // Reset State for fresh session (ONLY when opening for the first time)
-            setStep(STEPS.WELCOME_ONLINE);
-            setFormData({
-                patient_name: '',
-                patient_dni: '',
-                patient_age: '',
-                residence: '',
-                appointment_type: 'Consulta Online',
-                consultation_category: '',
-                reason_for_visit: '',
-                location: 'Online (Videollamada)',
-                date_part: '',
-                time_part: '',
-                patient_phone: '',
-                payment_method: '',
-                patient_email: ''
-            });
+        const runInit = async () => {
+            if (isOpen && !prevIsOpenRef.current) {
+                // Reset State for fresh session
+                setFormData({
+                    patient_name: '',
+                    patient_dni: '',
+                    patient_age: '',
+                    residence: '',
+                    appointment_type: 'Consulta Online',
+                    consultation_category: '',
+                    reason_for_visit: '',
+                    location: 'Online (Videollamada)',
+                    date_part: '',
+                    time_part: '',
+                    patient_phone: '',
+                    payment_method: '',
+                    patient_email: ''
+                });
 
-            // Slight delay for entrance animation
-            setTimeout(() => setIsVisible(true), 50);
+                // Check Early Verification Block
+                if (isCycleAuthenticated && cycleUser) {
+                    try {
+                        const res = await appointmentService.getPatientByEmail(cycleUser.email);
+                        
+                        let greeting = '¡Hola!';
+                        if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
+                            greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
+                        }
 
-            // Initial Welcome Message
-            const name = doctor?.nombre_completo || 'Doctor';
-            setHistory([
-                {
-                    type: 'bot',
-                    text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalid?</p>`
+                        if (res.exists && res.needs_verification) {
+                            setHistory([
+                                {
+                                    type: 'bot',
+                                    text: `<p class="mb-2">${greeting}</p><p>⚠️ Para poder agendar más consultas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!</p>`
+                                }
+                            ]);
+                            setStep('BLOCKED_VERIFICATION');
+                            setTimeout(() => setIsVisible(true), 50);
+                            return; // Halts the normal flow
+                        }
+                    } catch (err) {
+                        console.error("Error fetching patient auth block", err);
+                    }
                 }
-            ]);
 
-            // Show options after message "appears"
-            setShowOptions(false);
-            setTimeout(() => {
-                setShowOptions(true);
-            }, 1000);
-        } else if (!isOpen) {
-            setIsVisible(false);
-        }
-        prevIsOpenRef.current = isOpen;
-    }, [doctor, isOpen]);
+                setStep(STEPS.WELCOME_ONLINE);
+                
+                // Slight delay for entrance animation
+                setTimeout(() => setIsVisible(true), 50);
+
+                // Initial Welcome Message
+                const name = doctor?.nombre_completo || 'Doctor';
+                setHistory([
+                    {
+                        type: 'bot',
+                        text: `<p class="mb-1">👋 ¡Hola! Soy el asistente virtual de la ${name}.</p><p class="mb-1">Has seleccionado <span class="font-bold">CONSULTAS ONLINE</span>.</p><p>¿Deseas que te explique cómo funciona esta modalidad?</p>`
+                    }
+                ]);
+
+                // Show options after message "appears"
+                setShowOptions(false);
+                setTimeout(() => {
+                    setShowOptions(true);
+                }, 1000);
+            } else if (!isOpen) {
+                setIsVisible(false);
+            }
+            prevIsOpenRef.current = isOpen;
+        };
+        
+        runInit();
+    }, [doctor, isOpen, isCycleAuthenticated, cycleUser]);
 
     const handleClose = () => {
         setIsVisible(false);
@@ -408,17 +440,9 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             if (isCycleAuthenticated && cycleUser) {
                 try {
                     const res = await appointmentService.getPatientByEmail(cycleUser.email);
-                    
-                    if (res.exists) {
-                        if (res.needs_verification) {
-                            addMessage("⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!", 'bot');
-                            setStep('BLOCKED_VERIFICATION');
-                            return;
-                        }
-
-                        if (res.patient_data.patient_dni) {
-                            const pd = res.patient_data;
-                            const firstName = pd.patient_name.split(' ')[0];
+                    if (res.exists && res.patient_data.patient_dni) {
+                        const pd = res.patient_data;
+                        const firstName = pd.patient_name.split(' ')[0];
                         setFormData(prev => ({
                             ...prev,
                             patient_name: pd.patient_name,
@@ -430,17 +454,30 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                             occupation: pd.occupation || ''
                         }));
                         
-                        setTimeout(() => {
-                            addMessage(`¡Perfecto Sra. ${firstName}! 🎉<br/>Ya tengo tus datos básicos en el sistema.`, 'bot');
-                            addMessage("Para agilizar, ¿Qué tipo de consulta precisas hoy?", 'bot');
-                            setStep(STEPS.CONSULTATION_TYPE);
-                        }, 500);
+                        // Check if we have all basic data to skip to CONSULTATION_TYPE
+                        if (pd.patient_phone && pd.patient_email) {
+                            setTimeout(() => {
+                                addMessage(`¡Perfecto Sra. ${firstName}! 🎉<br/>Ya tengo tus datos básicos en el sistema.`, 'bot');
+                                addMessage("Para agilizar, ¿Qué tipo de consulta precisas hoy?", 'bot');
+                                setStep(STEPS.CONSULTATION_TYPE);
+                            }, 500);
+                        } else {
+                            setTimeout(() => {
+                                addMessage(`¡Perfecto Sra. ${firstName}! 🎉<br/>Veo que nos faltan algunos datos en tu perfil. Vamos a completarlos rápidamente.`, 'bot');
+                                if (!pd.patient_phone) {
+                                    addMessage("Por favor indica tu número de teléfono (mínimo 11 dígitos).", 'bot');
+                                    setStep(STEPS.PHONE);
+                                } else {
+                                    addMessage("Por favor, indíqueme su correo electrónico.", 'bot');
+                                    setStep(STEPS.EMAIL);
+                                }
+                            }, 500);
+                        }
                         return; // Exit early branch
                     } // closes if (res.patient_data.patient_dni)
-                } // closes if (res.exists)
-            } catch (err) {
-                console.error("Error fetching returning patient data", err);
-            }
+                } catch (err) {
+                    console.error("Error fetching returning patient data", err);
+                }
 
                 setTimeout(() => {
                     let greeting = '¡Perfecto! 🎉';
@@ -514,7 +551,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     };
 
     // DNI
-    const handleDniSubmit = (value) => {
+    const handleDniSubmit = async (value) => {
         const digits = value.replace(/\D/g, '');
         if (digits.length < 7) {
             addMessage("La cédula debe tener al menos 7 dígitos (millones). Por favor revisa.", 'bot');
@@ -522,10 +559,68 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         }
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, patient_dni: value }));
+
+        try {
+            const res = await appointmentService.checkPatient(formData.patient_name, value);
+            if (res.exists && res.patient_data) {
+                if (res.needs_verification) {
+                    addMessage(`¡Bienvenida nuevamente Sra. ${res.patient_data.patient_name}!`, 'bot');
+                    addMessage(`⚠️ Para poder agendar más citas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!`, 'bot');
+                    setStep('BLOCKED_VERIFICATION');
+                    return;
+                }
+
+                setFormData(prev => ({ ...prev, _tempData: res.patient_data }));
+                setTimeout(() => {
+                    addMessage(`¡Bienvenida nuevamente Sra. ${res.patient_data.patient_name}!`, 'bot');
+                    addMessage(`Veo que ya tienes historia con nosotros, ¿Desea actualizar algún dato?`, 'bot');
+                    setStep(STEPS.RECURRENT_CONFIRM);
+                }, 600);
+                return;
+            }
+        } catch (err) {
+            console.warn("Patient check failed", err);
+        }
+
         setTimeout(() => {
             addMessage("¿Podría indicarme su edad?", 'bot');
             setStep(STEPS.AGE);
         }, 600);
+    };
+
+    const handleRecurrentResponse = (response) => {
+        if (response === 'KEEP') {
+            addMessage("No, mantener datos actuales", 'user');
+            setFormData(prev => {
+                const newData = {
+                    ...prev,
+                    ...prev._tempData
+                };
+                
+                setTimeout(() => {
+                    addMessage("¡Perfecto! Continuemos entonces.", 'bot');
+                    // Check logic similar to authenticated user
+                    if (newData.patient_phone && newData.patient_email) {
+                        addMessage("¿Qué tipo de consulta necesitas?", 'bot');
+                        setStep(STEPS.CONSULTATION_TYPE);
+                    } else if (!newData.patient_phone) {
+                        addMessage("Por favor indica tu número de teléfono (mínimo 11 dígitos).", 'bot');
+                        setStep(STEPS.PHONE);
+                    } else {
+                        addMessage("Por favor, indíqueme su correo electrónico.", 'bot');
+                        setStep(STEPS.EMAIL);
+                    }
+                }, 600);
+                
+                return newData;
+            });
+        } else {
+            addMessage("Sí, quiero actualizar", 'user');
+            setTimeout(() => {
+                addMessage("Entendido. Actualicemos su información. ¿Podría indicarme su edad?", 'bot');
+                setStep(STEPS.AGE);
+            }, 600);
+        }
     };
 
     // AGE
@@ -752,7 +847,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     };
 
     // EMAIL
-    const handleEmailSubmit = (value) => {
+    const handleEmailSubmit = async (value) => {
         // Basic email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
@@ -761,9 +856,33 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         }
         addMessage(value, 'user');
         setFormData(prev => ({ ...prev, patient_email: value }));
+
+        // Check verification before continuing
+        try {
+            const res = await appointmentService.getPatientByEmail(value);
+            if (res.exists && res.needs_verification) {
+                setHistory(prev => [
+                    ...prev,
+                    {
+                        type: 'bot',
+                        text: '⚠️ Para poder agendar más consultas, tu cuenta debe estar verificada. Acabamos de enviarte un correo nuevo con el enlace de confirmación. ¡Haz clic en él para continuar!'
+                    }
+                ]);
+                setStep('BLOCKED_VERIFICATION');
+                return;
+            }
+        } catch (error) {
+            console.error("Error checking verification on email submit:", error);
+        }
+
         setTimeout(() => {
-            addMessage("¿Qué tipo de consulta necesitas?", 'bot');
-            setStep(STEPS.CONSULTATION_TYPE);
+            if (formData.date_part && formData.time_part) {
+                addMessage("¡Gracias! Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
+                setStep(STEPS.CONFIRM);
+            } else {
+                addMessage("¿Qué tipo de consulta necesitas?", 'bot');
+                setStep(STEPS.CONSULTATION_TYPE);
+            }
         }, 600);
     };
 
@@ -1107,6 +1226,25 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                     autoFocus={canFocus}
                                     key="unified-online-input"
                                 />
+                            )}
+
+                            {/* RECURRENT_CONFIRM buttons */}
+                            {step === STEPS.RECURRENT_CONFIRM && (
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => handleRecurrentResponse('KEEP')}
+                                        className="px-4 py-1.5 text-xs text-white rounded-full font-medium shadow-md hover:scale-105 transition-transform"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Mantener datos
+                                    </button>
+                                    <button
+                                        onClick={() => handleRecurrentResponse('UPDATE')}
+                                        className="px-4 py-1.5 text-xs bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300 transition"
+                                    >
+                                        Actualizar
+                                    </button>
+                                </div>
                             )}
 
                             {/* CONSULTATION_TYPE buttons */}
