@@ -291,46 +291,78 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
 
   // Initialize Chat
   useEffect(() => {
-    // Only initialize if history is empty to prevent resets when doctor data updates
-    if (history.length > 0) return;
+    const initFlow = async () => {
+      // Only initialize if history is empty to prevent resets when doctor data updates
+      if (history.length > 0) return;
 
-    let name = doctor?.nombre_completo || 'Doctor';
-    const hasTitle = name.toLowerCase().startsWith('dr');
-    const isFemale = name.toLowerCase().includes('dra.');
-    // Use dynamic prefix and enforce 4 lines for aesthetics
-    let finalPrefix = 'de';
-    if (isFemale) {
-      finalPrefix = 'de la';
-    } else if (hasTitle) {
-      finalPrefix = 'del';
-    }
-
-    if (isCycleAuthenticated && cycleUser) {
-      let greeting = '¡Hola!';
-      if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
-        greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
+      let name = doctor?.nombre_completo || 'Doctor';
+      const hasTitle = name.toLowerCase().startsWith('dr');
+      const isFemale = name.toLowerCase().includes('dra.');
+      // Use dynamic prefix and enforce 4 lines for aesthetics
+      let finalPrefix = 'de';
+      if (isFemale) {
+        finalPrefix = 'de la';
+      } else if (hasTitle) {
+        finalPrefix = 'del';
       }
 
-      setHistory([
-        {
-          type: 'bot',
-          text: `<p class="mb-1">${greeting}</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
+      if (isCycleAuthenticated && cycleUser) {
+        try {
+          const res = await appointmentService.getPatientByEmail(cycleUser.email);
+          if (res.exists && res.patient_data.patient_dni) {
+            const pd = res.patient_data;
+            const firstName = pd.patient_name.split(' ')[0];
+            setFormData(prev => ({
+              ...prev,
+              patient_name: pd.patient_name,
+              patient_email: pd.patient_email,
+              patient_dni: pd.patient_dni,
+              patient_age: pd.patient_age,
+              patient_phone: pd.patient_phone,
+              residence: pd.residence || '',
+              occupation: pd.occupation || ''
+            }));
+            
+            setHistory([
+              {
+                type: 'bot',
+                text: `<p class="mb-1">¡Qué gusto verte de nuevo Sra. <span class="font-bold">${firstName}</span>! 🎉</p><p class="mb-1">Ya tengo tus datos básicos en el sistema.</p><p class="font-bold">Para agilizar, ¿Qué tipo de consulta precisas hoy?</p>`
+              }
+            ]);
+            setStep(STEPS.TYPE);
+            return;
+          }
+        } catch (err) {
+          console.error("Error fetching returning patient data", err);
         }
-      ]);
-      setStep(STEPS.NAME);
-      setFormData(prev => ({
-        ...prev,
-        patient_email: cycleUser.email // Still auto-fill email to skip it later
-      }));
-    } else {
-      setHistory([
-        {
-          type: 'bot',
-          text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para agendar tu cita es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`
+
+        let greeting = '¡Hola!';
+        if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
+          greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
         }
-      ]);
-      setStep(STEPS.AUTH_REQUIRED);
-    }
+
+        setHistory([
+          {
+            type: 'bot',
+            text: `<p class="mb-1">${greeting}</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
+          }
+        ]);
+        setStep(STEPS.NAME);
+        setFormData(prev => ({
+          ...prev,
+          patient_email: cycleUser.email // Still auto-fill email to skip it later
+        }));
+      } else {
+        setHistory([
+          {
+            type: 'bot',
+            text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para agendar tu cita es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`
+          }
+        ]);
+        setStep(STEPS.AUTH_REQUIRED);
+      }
+    };
+    initFlow();
   }, [doctor, history.length, isCycleAuthenticated, cycleUser]);
 
   // Fetch Locations on Mount

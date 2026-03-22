@@ -400,12 +400,40 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
         }
     }, [step, settings, STEPS.ONLINE_PRICING]);
 
-    const handlePricingResponse = (response) => {
+    const handlePricingResponse = async (response) => {
         setShowOptions(false); // Hide immediately
         if (response === 'YES') {
             addMessage("📆 Sí, agendar", 'user');
-            setTimeout(() => {
-                if (isCycleAuthenticated && cycleUser) {
+            
+            if (isCycleAuthenticated && cycleUser) {
+                try {
+                    const res = await appointmentService.getPatientByEmail(cycleUser.email);
+                    if (res.exists && res.patient_data.patient_dni) {
+                        const pd = res.patient_data;
+                        const firstName = pd.patient_name.split(' ')[0];
+                        setFormData(prev => ({
+                            ...prev,
+                            patient_name: pd.patient_name,
+                            patient_email: pd.patient_email,
+                            patient_dni: pd.patient_dni,
+                            patient_age: pd.patient_age,
+                            patient_phone: pd.patient_phone,
+                            residence: pd.residence || '',
+                            occupation: pd.occupation || ''
+                        }));
+                        
+                        setTimeout(() => {
+                            addMessage(`¡Perfecto Sra. ${firstName}! 🎉<br/>Ya tengo tus datos básicos en el sistema.`, 'bot');
+                            addMessage("Para agilizar, ¿Qué tipo de consulta precisas hoy?", 'bot');
+                            setStep(STEPS.CONSULTATION_TYPE);
+                        }, 500);
+                        return; // Exit early branch
+                    }
+                } catch (err) {
+                    console.error("Error fetching returning patient data", err);
+                }
+
+                setTimeout(() => {
                     let greeting = '¡Perfecto! 🎉';
                     if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
                         greeting = `¡Perfecto Sra. ${cycleUser.nombre_completo}! 🎉`;
@@ -422,19 +450,21 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                         patient_email: cycleUser.email
                     }));
                     setShowOptions(true);
-                } else {
+                }, 500);
+            } else {
+                setTimeout(() => {
                     addMessage(
                         `<p class="mb-2">¡Excelente decisión! 🎉</p>
                         <p class="mb-2">Para poder agendar tu Consulta Online es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`,
                         'bot'
                     );
                     setStep(STEPS.AUTH_REQUIRED);
-                }
-            }, 500);
+                }, 500);
+            }
         } else {
-            addMessage("En otra ocasión", 'user');
+            addMessage("❌ No, en otra ocasión", 'user');
             setTimeout(() => {
-                handleClose();
+                onClose();
             }, 500);
         }
     };

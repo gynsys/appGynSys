@@ -23,6 +23,11 @@ export const appointmentService = {
     return response.data
   },
 
+  async getPatientByEmail(email) {
+    const response = await api.get(`/patients/by-email?email=${encodeURIComponent(email)}`)
+    return response.data
+  },
+
   async getAppointments() {
     const response = await api.get('/appointments/')
     return response.data

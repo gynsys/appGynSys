@@ -40,3 +40,32 @@ def check_patient_existence(
         }
     
     return {"exists": False}
+
+@router.get("/by-email")
+def get_patient_by_email(
+    email: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch the most recent patient data by their email address.
+    Useful for auto-filling chatbots for returning patients.
+    """
+    appointment = db.query(Appointment).filter(
+        Appointment.patient_email == email
+    ).order_by(Appointment.id.desc()).first()
+    
+    if appointment:
+        return {
+            "exists": True,
+            "patient_data": {
+                "patient_name": appointment.patient_name,
+                "patient_dni": appointment.patient_dni,
+                "patient_age": appointment.patient_age,
+                "patient_phone": appointment.patient_phone,
+                "patient_email": appointment.patient_email,
+                "occupation": appointment.occupation,
+                "residence": appointment.residence
+            }
+        }
+    
+    return {"exists": False}
