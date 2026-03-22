@@ -741,19 +741,34 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
     };
 
     const submitAppointment = async (status = 'pending') => {
-        const fullDate = `${formData.date_part}T${formData.time_part}`;
-        const appointmentPayload = {
-            doctor_id: doctorId,
-            ...formData,
-            appointment_date: fullDate,
-            status: status
-        };
-        await appointmentService.createAppointment(appointmentPayload);
-        setLoading(false);
-        setStep(STEPS.SUCCESS);
-        setTimeout(() => {
-            onClose();
-        }, 5000);
+        try {
+            // Convert local date/time string to a true ISO string (which shifts it to UTC)
+            const localDateObj = new Date(`${formData.date_part}T${formData.time_part}:00`);
+            const fullDate = localDateObj.toISOString();
+
+            const appointmentPayload = {
+                doctor_id: doctorId,
+                ...formData,
+                appointment_date: fullDate,
+                status: status
+            };
+            await appointmentService.createAppointment(appointmentPayload);
+            setLoading(false);
+            setStep(STEPS.SUCCESS);
+            setTimeout(() => {
+                onClose();
+            }, 5000);
+        } catch (error) {
+            console.error("Error booking online consultation", error);
+            setLoading(false);
+            
+            if (error.response && error.response.status === 409) {
+                addMessage("⚠️ Lo siento, ese horario acaba de ser ocupado. Por favor, selecciona otra hora.", 'bot');
+                setStep(STEPS.TIME_SUGGESTION);
+            } else {
+                addMessage("Hubo un error al agendar tu consulta. Por favor intenta nuevamente.", 'bot');
+            }
+        }
     }
 
     // ========== RENDER ==========

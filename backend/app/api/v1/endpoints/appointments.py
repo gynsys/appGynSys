@@ -48,6 +48,19 @@ async def create_public_appointment(
             detail="Doctor is not accepting appointments"
         )
     
+    # Check for double booking (exact match of timestamp)
+    existing_appointment = db.query(Appointment).filter(
+        Appointment.doctor_id == appointment_data.doctor_id,
+        Appointment.appointment_date == appointment_data.appointment_date,
+        Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
+    ).first()
+    
+    if existing_appointment:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The selected time slot is already booked."
+        )
+    
     db_appointment = Appointment(**appointment_data.model_dump())
     db.add(db_appointment)
     db.commit()
@@ -97,6 +110,19 @@ async def create_appointment(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cannot create appointment for another doctor"
+        )
+    
+    # Check for double booking (exact match of timestamp)
+    existing_appointment = db.query(Appointment).filter(
+        Appointment.doctor_id == appointment_data.doctor_id,
+        Appointment.appointment_date == appointment_data.appointment_date,
+        Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
+    ).first()
+    
+    if existing_appointment:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The selected time slot is already booked."
         )
     
     db_appointment = Appointment(**appointment_data.model_dump())

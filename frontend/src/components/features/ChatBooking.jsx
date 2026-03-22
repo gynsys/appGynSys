@@ -698,7 +698,11 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const fullDate = `${formData.date_part}T${formData.time_part}`;
+      // Convert local date/time string to a true ISO string (which shifts it to UTC)
+      // The browser natively interprets "YYYY-MM-DDTHH:mm:00" as local time.
+      const localDateObj = new Date(`${formData.date_part}T${formData.time_part}:00`);
+      const fullDate = localDateObj.toISOString(); // e.g., "2026-03-28T12:00:00.000Z"
+
       const appointmentPayload = {
         doctor_id: doctorId,
         ...formData,
@@ -716,7 +720,14 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
     } catch (error) {
       console.error("Error booking", error);
       setLoading(false);
-      addMessage("Hubo un error al agendar tu cita. Por favor intenta nuevamente.", 'bot');
+      
+      // Handle Double Booking (409 Conflict)
+      if (error.response && error.response.status === 409) {
+        addMessage("⚠️ Lo siento, ese horario acaba de ser ocupado. Por favor, selecciona otra hora.", 'bot');
+        setStep(STEPS.TIME_SUGGESTION);
+      } else {
+        addMessage("Hubo un error al agendar tu cita. Por favor intenta nuevamente.", 'bot');
+      }
     }
   };
 
