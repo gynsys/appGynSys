@@ -406,16 +406,19 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
             addMessage("📆 Sí, agendar", 'user');
             setTimeout(() => {
                 if (isCycleAuthenticated && cycleUser) {
+                    let greeting = '¡Perfecto! 🎉';
+                    if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
+                        greeting = `¡Perfecto Sra. ${cycleUser.nombre_completo}! 🎉`;
+                    }
                     addMessage(
-                        `<p class="mb-2">¡Perfecto Sra. ${cycleUser.nombre_completo}! 🎉</p>
+                        `<p class="mb-2">${greeting}</p>
                         <p class="mb-2">Procederemos a agendar tu Consulta Online.</p>
-                        <p class="font-semibold">Para continuar, ¿podrías indicarme tu número de cédula o DNI?</p>`,
+                        <p class="font-semibold">Para tu historial médico, por favor escribe tu nombre y apellido completo:</p>`,
                         'bot'
                     );
-                    setStep(STEPS.DNI);
+                    setStep(STEPS.NAME);
                     setFormData(prev => ({
                         ...prev,
-                        patient_name: cycleUser.nombre_completo,
                         patient_email: cycleUser.email
                     }));
                     setShowOptions(true);

@@ -306,17 +306,21 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
     }
 
     if (isCycleAuthenticated && cycleUser) {
+      let greeting = '¡Hola!';
+      if (cycleUser.nombre_completo && cycleUser.nombre_completo.trim() !== '') {
+        greeting = `Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.`;
+      }
+
       setHistory([
         {
           type: 'bot',
-          text: `<p class="mb-1">Hola Sra. <span class="font-bold">${cycleUser.nombre_completo}</span>.</p><p class="mb-1">Para comenzar a agendar tu cita,</p><p class="font-bold">¿podrías indicarme tu número de cédula o DNI?</p>`
+          text: `<p class="mb-1">${greeting}</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
         }
       ]);
-      setStep(STEPS.DNI);
+      setStep(STEPS.NAME);
       setFormData(prev => ({
         ...prev,
-        patient_name: cycleUser.nombre_completo,
-        patient_email: cycleUser.email
+        patient_email: cycleUser.email // Still auto-fill email to skip it later
       }));
     } else {
       setHistory([
