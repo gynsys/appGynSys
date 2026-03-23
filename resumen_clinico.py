@@ -442,37 +442,41 @@ class GeneradorResumenes:
         """Resume actividad física y hábitos."""
         partes = []
 
+        # 1. Actividad física
         if _es_si(self.d.get('habits_physical_activity')):
-            partes.append("La paciente refiere realizar actividad física de forma regular.")
+            partes.append("Realiza actividad física de forma regular.")
         else:
             partes.append("Niega realizar actividad física de forma regular.")
 
-        fuma = _normalize_value(self.d.get('habits_smoking', 'no'))
-        alcohol = _normalize_value(self.d.get('habits_alcohol', 'no'))
-        sustancias = _normalize_value(self.d.get('habits_substance_use', 'no'))
+        fuma = _normalize_value(self.d.get('habits_smoking', 'no')).lower()
+        alcohol = _normalize_value(self.d.get('habits_alcohol', 'no')).lower()
+        sustancias = _normalize_value(self.d.get('habits_substance_use', 'no')).lower()
 
-        if fuma == 'no' and alcohol == 'no':
-            texto = "Manifiesta no fumar y tampoco consume alcohol"
-            if sustancias == 'no':
-                texto += ", y niega el uso de otras sustancias."
-            else:
-                texto += f", y refiere uso de otras sustancias ({sustancias})."
+        habitos_lista = []
+        
+        # 2. Fumar
+        if _es_si(fuma):
+            habitos_lista.append("es fumadora")
         else:
-            lista = []
-            lista.append("no fuma" if fuma == 'no' else f"fuma ({fuma})")
-            if alcohol == 'no':
-                lista.append("no consume alcohol")
-            elif alcohol == 'ocasional':
-                lista.append("consume alcohol ocasionalmente")
-            else:
-                lista.append(f"consume alcohol ({alcohol})")
-            if sustancias == 'no':
-                lista.append("niega el uso de otras sustancias")
-            else:
-                lista.append(f"refiere uso de otras sustancias ({sustancias})")
-            texto = "En cuanto a hábitos: " + ", ".join(lista) + "."
+            habitos_lista.append("no es fumadora")
+            
+        # 3. Alcohol
+        if alcohol == 'ocasional' or alcohol == 'ocasionalmente':
+            habitos_lista.append("consume alcohol ocasionalmente")
+        elif _es_si(alcohol):
+            habitos_lista.append("consume bebidas alcohólicas")
+        else:
+            habitos_lista.append("no consume bebidas alcohólicas")
+            
+        # 4. Sustancias
+        if _es_si(sustancias):
+            habitos_lista.append("refiere uso de otras sustancias")
+        else:
+            habitos_lista.append("niega uso de otras sustancias")
 
-        partes.append(texto)
+        texto_habitos = "En cuanto a hábitos: " + ", ".join(habitos_lista) + "."
+        partes.append(texto_habitos)
+        
         return " ".join(partes)
 
     # -------------------------------------------------------------------------
