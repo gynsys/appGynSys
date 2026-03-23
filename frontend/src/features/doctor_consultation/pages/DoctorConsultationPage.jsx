@@ -1047,44 +1047,65 @@ export const DoctorConsultationPage = () => {
         {renderPatientSummary()}
 
 
-        {allPreviousConsultations.length > 0 && allPreviousConsultations.map((history, index) => (
-          <div key={history.created_at} className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800 mb-8 shadow-sm">
-            <h3 className="text-lg font-bold text-amber-800 dark:text-amber-300 mb-4 flex items-center gap-2">
-              <FaHistory /> Consulta #{allPreviousConsultations.length - index} ({new Date(history.created_at).toLocaleDateString()})
-            </h3>
-            <div className="flex flex-col gap-6">
-              {/* Row 1: Examen Físico */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Examen Físico Anterior</h4>
-                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line text-sm leading-relaxed">{history.physical_exam || "Sin registro"}</p>
-              </div>
+        {allPreviousConsultations.length > 0 && allPreviousConsultations.map((history, index) => {
+          const isPlaceholder = (val) => 
+            !val || 
+            val.toLowerCase().includes('no registrado') || 
+            val.toLowerCase().includes('no realizado') ||
+            val.toLowerCase().includes('sin registro');
+            
+          const hasData = !isPlaceholder(history.physical_exam) || 
+                          !isPlaceholder(history.ultrasound) || 
+                          !isPlaceholder(history.diagnosis) || 
+                          !isPlaceholder(history.plan) || 
+                          !isPlaceholder(history.observations);
 
-              {/* Row 2: Ultrasonido */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Ultrasonido Anterior</h4>
-                <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed text-justify">{history.ultrasound || "Sin registro"}</p>
-              </div>
+          if (!hasData) return null;
 
-              {/* Row 3: Diagnóstico */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Diagnóstico Anterior</h4>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">{history.diagnosis || "Sin registro"}</p>
-              </div>
+          return (
+            <div key={history.created_at} className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800 mb-8 shadow-sm">
+              <h3 className="text-lg font-bold text-amber-800 dark:text-amber-300 mb-4 flex items-center gap-2">
+                <FaHistory /> Consulta #{allPreviousConsultations.length - index} ({new Date(history.created_at).toLocaleDateString()})
+              </h3>
+              <div className="flex flex-col gap-6">
+                {!isPlaceholder(history.physical_exam) && (
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                    <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Examen Físico Anterior</h4>
+                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line text-sm leading-relaxed">{history.physical_exam}</p>
+                  </div>
+                )}
 
-              {/* Row 4: Plan */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Plan Anterior</h4>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">{history.plan || "Sin registro"}</p>
-              </div>
+                {!isPlaceholder(history.ultrasound) && (
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                    <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Ultrasonido Anterior</h4>
+                    <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed text-justify">{history.ultrasound}</p>
+                  </div>
+                )}
 
-              {/* Row 5: Observaciones */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
-                <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Observaciones Anteriores</h4>
-                <p className="text-gray-800 dark:text-gray-200 text-sm">{history.observations || "Sin registro"}</p>
+                {!isPlaceholder(history.diagnosis) && (
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                    <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Diagnóstico Anterior</h4>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">{history.diagnosis}</p>
+                  </div>
+                )}
+
+                {!isPlaceholder(history.plan) && (
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                    <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Plan Anterior</h4>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">{history.plan}</p>
+                  </div>
+                )}
+
+                {!isPlaceholder(history.observations) && (
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
+                    <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Observaciones Anteriores</h4>
+                    <p className="text-gray-800 dark:text-gray-200 text-sm">{history.observations}</p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div className="space-y-8">
           {/* 1. Examen Físico */}

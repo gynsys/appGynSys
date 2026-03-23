@@ -11,6 +11,12 @@ import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platfor
 const HistoryHtmlView = ({ data, downloadUrl }) => {
   if (!data) return null;
 
+  const isPlaceholder = (val) => 
+    !val || 
+    val.toLowerCase().includes('no registrado') || 
+    val.toLowerCase().includes('no realizado') ||
+    val.toLowerCase().includes('sin registro');
+
   const consultations = data.is_single_report
     ? [{
       created_at: data.created_at,
@@ -142,8 +148,18 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
           {data.is_single_report ? 'Detalles de la Consulta' : 'Evolución Médica (Consultas)'}
         </h4>
         <div className={`space-y-8 relative ${!data.is_single_report ? "before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700" : ""}`}>
-          {consultations.map((c, idx) => (
-            <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
+          {consultations.map((c, idx) => {
+            const hasData = 
+              !isPlaceholder(c.diagnosis) || 
+              !isPlaceholder(c.plan) || 
+              !isPlaceholder(c.physical_exam) || 
+              !isPlaceholder(c.ultrasound) || 
+              !isPlaceholder(c.observations);
+
+            if (!hasData) return null;
+
+            return (
+              <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
               {!data.is_single_report && (
                 <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 z-10 flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
@@ -158,27 +174,27 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                 </div>
 
                 <div className="space-y-4">
-                  {c.diagnosis && (
+                  {!isPlaceholder(c.diagnosis) && (
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase">Diagnóstico</p>
                       <p className="text-sm font-medium">{c.diagnosis}</p>
                     </div>
                   )}
-                  {c.plan && (
+                  {!isPlaceholder(c.plan) && (
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
                       <p className="text-sm whitespace-pre-line">{c.plan}</p>
                     </div>
                   )}
-                  {(c.physical_exam || c.ultrasound) && (
+                  {(!isPlaceholder(c.physical_exam) || !isPlaceholder(c.ultrasound)) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50 dark:border-gray-700">
-                      {c.physical_exam && (
+                      {!isPlaceholder(c.physical_exam) && (
                         <div>
                           <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">{c.physical_exam}</p>
                         </div>
                       )}
-                      {c.ultrasound && (
+                      {!isPlaceholder(c.ultrasound) && (
                         <div>
                           <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
@@ -186,7 +202,7 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                       )}
                     </div>
                   )}
-                  {c.observations && (
+                  {!isPlaceholder(c.observations) && (
                     <div className="pt-2 border-t border-gray-50 dark:border-gray-700">
                       <p className="text-[10px] font-bold text-gray-400 uppercase">Observaciones</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">{c.observations}</p>
@@ -195,7 +211,8 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                 </div>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </div>
 
