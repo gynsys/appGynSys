@@ -57,12 +57,6 @@ export default function VerifyEmailPage() {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">¡Cuenta Verificada!</h2>
             <p className="text-slate-600 mb-8">{message}</p>
             
-            <Button 
-              onClick={() => navigate('/cycle/dashboard')}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-6 text-lg"
-            >
-              Ir a Mi Perfil
-            </Button>
             <p className="mt-4 text-sm text-slate-500">
               Ya puedes regresar al Chatbot y continuar agendando tus consultas libremente.
             </p>
