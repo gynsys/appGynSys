@@ -127,7 +127,7 @@ class ConsultationService:
                 .filter(Appointment.patient_email.is_not(None)).first() else ""
             ),
             "doctor_id": latest.doctor_id,
-            "all_consultations": self.merge_consultations(all_consultations, newest_first=True)
+            "all_consultations": ConsultationService.merge_consultations(all_consultations, newest_first=True)
         }
 
         # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
