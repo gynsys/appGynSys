@@ -20,7 +20,7 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
       ultrasound: data.ultrasound,
       observations: data.observations
     }]
-    : (data.all_consultations || []).slice().reverse();
+    : (data.all_consultations || []);
 
   return (
     <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">

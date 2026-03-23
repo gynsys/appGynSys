@@ -127,18 +127,10 @@ class ConsultationService:
                 .filter(Appointment.patient_email.is_not(None)).first() else ""
             ),
             "doctor_id": latest.doctor_id,
-            "all_consultations": [
-                {
-                    "created_at": c.created_at,
-                    "physical_exam": c.physical_exam,
-                    "ultrasound": c.ultrasound,
-                    "diagnosis": c.diagnosis,
-                    "plan": c.plan,
-                    "observations": c.observations,
-                }
-                for c in all_consultations
-            ]
+            "all_consultations": self.merge_consultations(all_consultations, newest_first=True)
         }
+
+        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
 
         # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
         GeneradorResumenes.inyectar_dinamicamente(
@@ -238,3 +230,51 @@ class ConsultationService:
         }))
 
         return res
+
+    @staticmethod
+    def merge_consultations(consultations_list: list, newest_first: bool = False) -> list:
+        """
+        Groups consultation records within a 3-day window into unified 'sessions'.
+        Useful for cleaning up fragmented history views.
+        Expects consultations_list sorted by created_at ASC (SQLAlchemy objects or dicts with created_at).
+        """
+        merged = []
+        for c in consultations_list:
+            is_merged = False
+            
+            # Extract values handle both Obj and Dict
+            c_data = {
+                "created_at": getattr(c, 'created_at', None) or (c.get('created_at') if isinstance(c, dict) else None),
+                "physical_exam": getattr(c, 'physical_exam', None) or (c.get('physical_exam') if isinstance(c, dict) else None),
+                "ultrasound": getattr(c, 'ultrasound', None) or (c.get('ultrasound') if isinstance(c, dict) else None),
+                "diagnosis": getattr(c, 'diagnosis', None) or (c.get('diagnosis') if isinstance(c, dict) else None),
+                "plan": getattr(c, 'plan', None) or (c.get('plan') if isinstance(c, dict) else None),
+                "observations": getattr(c, 'observations', None) or (c.get('observations') if isinstance(c, dict) else None),
+            }
+
+            if merged:
+                last = merged[-1]
+                diff = abs((c_data["created_at"] - last["created_at"]).total_seconds())
+                if diff < 3 * 24 * 60 * 60: # 3 days threshold
+                    
+                    def is_placeholder(val):
+                        if not val: return True
+                        v = str(val).lower()
+                        return "no registrado" in v or "no realizado" in v or "sin registro" in v
+
+                    if is_placeholder(last.get("diagnosis")): last["diagnosis"] = c_data["diagnosis"]
+                    if is_placeholder(last.get("plan")): last["plan"] = c_data["plan"]
+                    if is_placeholder(last.get("physical_exam")): last["physical_exam"] = c_data["physical_exam"]
+                    if is_placeholder(last.get("ultrasound")): last["ultrasound"] = c_data["ultrasound"]
+                    if not last.get("observations") or is_placeholder(last.get("observations")): 
+                        last["observations"] = c_data["observations"]
+                    
+                    if c_data["created_at"] > last["created_at"]:
+                        last["created_at"] = c_data["created_at"]
+                    
+                    is_merged = True
+            
+            if not is_merged:
+                merged.append(c_data)
+        
+        return merged[::-1] if newest_first else merged

@@ -134,16 +134,9 @@ def get_all_consultations_by_patient(
     consultations = db.query(Consultation).filter(
         Consultation.patient_ci == dni,
         Consultation.doctor_id == current_user.id
-    ).order_by(Consultation.created_at.desc()).all()
+    ).order_by(Consultation.created_at.asc()).all()
     
-    return [{
-        "diagnosis": c.diagnosis,
-        "plan": c.plan,
-        "physical_exam": c.physical_exam,
-        "observations": c.observations,
-        "ultrasound": c.ultrasound,
-        "created_at": c.created_at,
-    } for c in consultations]
+    return ConsultationService.merge_consultations(consultations, newest_first=True)
 
 @router.get("/patient/latest", response_model=dict)
 def get_latest_consultation_by_patient(
