@@ -24,6 +24,59 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+def _trigger_patient_appointment_notifications(db: Session, appointment: Appointment, doctor: Doctor):
+    """
+    Centralized helper to send status-based emails to patients.
+    Currently handles 'confirmed' and 'cancelled' statuses.
+    Includes logic for pre-consultation link based on patient recurrence.
+    """
+    if appointment.status not in ["confirmed", "cancelled", "paid"]:
+        return
+
+    # Map 'paid' to 'confirmed' for email template purposes
+    email_status = "confirmed" if appointment.status in ["confirmed", "paid"] else appointment.status
+    
+    # Check for recurrence logic
+    is_recurrent = False
+
+    # Check 1: Current appointment already has answers
+    if appointment.preconsulta_answers and len(appointment.preconsulta_answers.strip()) > 5:
+        is_recurrent = True
+
+    # Check 2: History with same doctor
+    if not is_recurrent and appointment.patient_dni:
+        has_previous_answers = db.query(Appointment).filter(
+            Appointment.patient_dni == appointment.patient_dni,
+            Appointment.doctor_id == appointment.doctor_id,
+            Appointment.id != appointment.id,
+            Appointment.preconsulta_answers.is_not(None)
+        ).first()
+        
+        if has_previous_answers:
+             if len(has_previous_answers.preconsulta_answers.strip()) > 5:
+                 is_recurrent = True
+
+    # Generate preconsulta link ONLY if NOT recurrent
+    preconsulta_link = None
+    if not is_recurrent and email_status == "confirmed":
+        preconsulta_link = f"{settings.FRONTEND_URL}/{doctor.slug_url}/preconsulta?appointment_id={appointment.id}"
+    
+    # Format date safely
+    date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
+
+    if appointment.patient_email:
+        try:
+            send_appointment_status_update.delay(
+                patient_email=appointment.patient_email,
+                patient_name=appointment.patient_name,
+                status=email_status,
+                appointment_date=date_str,
+                doctor_name=doctor.nombre_completo,
+                preconsulta_link=preconsulta_link,
+            )
+        except Exception as e:
+            logger.error(f"Error triggering patient notification task: {e}")
+
 @router.get("/public/booked-times")
 async def get_booked_times(
     doctor_id: int,
@@ -162,6 +215,10 @@ async def create_public_appointment(
     except Exception as e:
         logger.error(f"Error triggering doctor notification for new appointment: {e}")
     
+    # NEW: Trigger patient confirmation email if born confirmed (e.g. PayPal)
+    if db_appointment.status in ["confirmed", "paid"]:
+        _trigger_patient_appointment_notifications(db, db_appointment, doctor)
+    
     return db_appointment
 
 
@@ -200,6 +257,10 @@ async def create_appointment(
     db.commit()
     db.refresh(db_appointment)
     
+    # NEW: Trigger patient confirmation email if born confirmed
+    if db_appointment.status in ["confirmed", "paid"]:
+        _trigger_patient_appointment_notifications(db, db_appointment, current_user)
+        
     return db_appointment
 
 
@@ -332,43 +393,7 @@ async def update_appointment(
     
     # Send email if status changed
     if "status" in update_data and update_data["status"] != old_status:
-        # Check for recurrence logic (If patient has previous history, don't send preconsulta link)
-        is_recurrent = False
-
-        # Check 0: Current appointment already has answers (pre-filled by chatbot)
-        if appointment.preconsulta_answers is not None:
-            is_recurrent = True
-
-        if not is_recurrent and appointment.patient_dni:
-            from app.db.models.consultation import Consultation  # Import strictly here
-            
-            # Check for Previous Answers (Scoped to THIS doctor)
-            has_answers = db.query(Appointment).filter(
-                Appointment.patient_dni == appointment.patient_dni,
-                Appointment.doctor_id == appointment.doctor_id,
-                Appointment.id != appointment.id,
-                Appointment.preconsulta_answers.is_not(None)
-            ).count() > 0
-
-            if has_answers:
-                is_recurrent = True
-
-        # Generate preconsulta link ONLY if NOT recurrent
-        preconsulta_link = None
-        if not is_recurrent:
-            preconsulta_link = f"{settings.FRONTEND_URL}/{current_user.slug_url}/preconsulta?appointment_id={appointment.id}"
-        
-        # Format date safely
-        date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
-
-        send_appointment_status_update.delay(
-            patient_email=appointment.patient_email,
-            patient_name=appointment.patient_name,
-            status=appointment.status,
-            appointment_date=date_str,
-            doctor_name=current_user.nombre_completo,
-            preconsulta_link=preconsulta_link,
-        )
+        _trigger_patient_appointment_notifications(db, appointment, current_user)
 
     return appointment
 
