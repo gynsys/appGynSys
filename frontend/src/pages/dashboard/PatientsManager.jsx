@@ -177,13 +177,13 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                   {!isPlaceholder(c.diagnosis) && (
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase">Diagnóstico</p>
-                      <p className="text-sm font-medium">{c.diagnosis}</p>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{c.diagnosis}</p>
                     </div>
                   )}
                   {!isPlaceholder(c.plan) && (
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase">Plan de Tratamiento</p>
-                      <p className="text-sm whitespace-pre-line">{c.plan}</p>
+                      <p className="text-sm whitespace-pre-line text-gray-700 dark:text-gray-300">{c.plan}</p>
                     </div>
                   )}
                   {(!isPlaceholder(c.physical_exam) || !isPlaceholder(c.ultrasound)) && (
