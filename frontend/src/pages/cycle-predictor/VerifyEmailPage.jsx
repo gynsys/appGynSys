@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/lib/axios';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/common/Button';
 
@@ -21,7 +21,7 @@ export default function VerifyEmailPage() {
 
     const verifyToken = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/cycle-users/verify-email`, {
+        const response = await api.post('/cycle-users/verify-email', {
           token
         });
         

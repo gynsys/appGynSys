@@ -20,6 +20,7 @@ const isPublicEndpoint = (url) => {
     url.includes('/preconsultation/config') ||
     url.includes('/appointments/') && url.includes('/preconsulta') || // Submit preconsultation
     url.includes('/cycle-users/register') ||
+    url.includes('/cycle-users/verify-email') ||
     url.includes('/cycle-users/login') ||
     url.includes('/cycle-users/password-recovery') ||
     url.includes('/auth/patient/activation-info') ||

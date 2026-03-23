@@ -40,15 +40,18 @@ def check_patient_existence(
             
             if cycle_user and not cycle_user.is_verified and count >= 1:
                 needs_verification = True
-                # Auto-resend token
-                new_token = secrets.token_urlsafe(32)
-                cycle_user.verification_token = new_token
-                db.commit()
+                # Reuse existing token if it exists to avoid invalidating previous link
+                token_to_send = cycle_user.verification_token
+                if not token_to_send:
+                    token_to_send = secrets.token_urlsafe(32)
+                    cycle_user.verification_token = token_to_send
+                    db.commit()
+                
                 try:
                     send_cycle_user_verification_email.delay(
                         cycle_user.email, 
                         cycle_user.nombre_completo, 
-                        new_token
+                        token_to_send
                     )
                 except Exception as e:
                     logger.error(f"Failed to auto-resend verification email on /check-existence: {e}")
@@ -78,45 +81,53 @@ def get_patient_by_email(
     Fetch the most recent patient data by their email address.
     Also checks if the user's account is verified to enforce 1-appointment grace period.
     """
-    # Priority 1: Check CycleUser verification status
-    cycle_user = db.query(CycleUser).filter(CycleUser.email == email).first()
-    needs_verification = False
-    
-    # Priority 2: Get most recent appointment data
-    appointments = db.query(Appointment).filter(
-        Appointment.patient_email == email
-    ).order_by(Appointment.id.desc()).all()
-    
-    recent_appointment = appointments[0] if appointments else None
-    
-    if cycle_user and not cycle_user.is_verified and len(appointments) >= 1:
-        needs_verification = True
-        # Auto-resend the email since they are hitting the chatbot again
-        new_token = secrets.token_urlsafe(32)
-        cycle_user.verification_token = new_token
-        db.commit()
-        try:
-            send_cycle_user_verification_email.delay(
-                cycle_user.email, 
-                cycle_user.nombre_completo, 
-                new_token
-            )
-        except Exception as e:
-            logger.error(f"Failed to auto-resend verification email on /by-email: {e}")
-            
-    if recent_appointment:
-        return {
-            "exists": True,
-            "needs_verification": needs_verification,
-            "patient_data": {
-                "patient_name": recent_appointment.patient_name,
-                "patient_dni": recent_appointment.patient_dni,
-                "patient_age": recent_appointment.patient_age,
-                "patient_phone": recent_appointment.patient_phone,
-                "patient_email": recent_appointment.patient_email,
-                "occupation": recent_appointment.occupation,
-                "residence": recent_appointment.residence
+    try:
+        # Priority 1: Check CycleUser verification status
+        email_lower = email.lower().strip()
+        cycle_user = db.query(CycleUser).filter(CycleUser.email == email_lower).first()
+        needs_verification = False
+        
+        # Priority 2: Get most recent appointment data
+        appointments = db.query(Appointment).filter(
+            Appointment.patient_email == email_lower
+        ).order_by(Appointment.id.desc()).all()
+        
+        recent_appointment = appointments[0] if appointments else None
+        
+        if cycle_user and not cycle_user.is_verified and len(appointments) >= 1:
+            needs_verification = True
+            # Reuse existing token if it exists to avoid invalidating previous link
+            token_to_send = cycle_user.verification_token
+            if not token_to_send:
+                token_to_send = secrets.token_urlsafe(32)
+                cycle_user.verification_token = token_to_send
+                db.commit()
+                
+            try:
+                send_cycle_user_verification_email.delay(
+                    cycle_user.email, 
+                    cycle_user.nombre_completo, 
+                    token_to_send
+                )
+            except Exception as e:
+                logger.error(f"Failed to auto-resend verification email on /by-email: {e}")
+                
+        if recent_appointment:
+            return {
+                "exists": True,
+                "needs_verification": needs_verification,
+                "patient_data": {
+                    "patient_name": recent_appointment.patient_name,
+                    "patient_dni": recent_appointment.patient_dni,
+                    "patient_age": recent_appointment.patient_age,
+                    "patient_phone": recent_appointment.patient_phone,
+                    "patient_email": recent_appointment.patient_email,
+                    "occupation": recent_appointment.occupation,
+                    "residence": recent_appointment.residence
+                }
             }
-        }
-    
-    return {"exists": False}
+        
+        return {"exists": False}
+    except Exception as e:
+        logger.error(f"Error in get_patient_by_email: {e}", exc_info=True)
+        raise e

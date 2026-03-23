@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import api from '../../lib/axios';
 import { useAuthStore } from '../../store/authStore';
 import { isCapacitor } from '../../utils/platform';
 import { getImageUrl } from '../../lib/imageUtils';
@@ -1072,7 +1073,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                                 style={{ layout: "vertical" }}
                                                 createOrder={async (data, actions) => {
                                                     try {
-                                                        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/create-order`, {
+                                                        const response = await api.post('/payment/create-order', {
                                                             doctor_id: doctorId,
                                                             patient_dni: formData.patient_dni
                                                         });
@@ -1084,7 +1085,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                                 }}
                                                 onApprove={async (data, actions) => {
                                                     try {
-                                                        await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/payment/capture-order/${data.orderID}`);
+                                                        await api.post(`/payment/capture-order/${data.orderID}`);
                                                         await submitAppointment('confirmed'); // Mark as confirmed/paid
                                                     } catch (err) {
                                                         console.error("Capture error", err);
