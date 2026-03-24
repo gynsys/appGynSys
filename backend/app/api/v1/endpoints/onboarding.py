@@ -9,7 +9,9 @@ from app.schemas.appointment import AppointmentCreate
 from app.core.encryption import decrypt_text
 from datetime import datetime
 from typing import Any, Dict
-from app.core.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
