@@ -4,7 +4,9 @@ from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.db.models.patient import Patient
 from app.db.models.appointment import Appointment
+from app.db.models.preconsultation import PreconsultationQuestion as PQ
 from app.schemas.appointment import AppointmentCreate
+from app.core.encryption import decrypt_text
 from datetime import datetime
 from typing import Any, Dict
 from app.core.logging import logger
@@ -21,12 +23,40 @@ def get_onboarding_config(slug: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Doctor not found")
     
     return {
+        "id": doctor.id,
+        "slug_url": doctor.slug_url,
         "doctor_name": doctor.nombre_completo,
         "doctor_photo": doctor.photo_url or doctor.logo_url,
         "theme_primary_color": doctor.theme_primary_color or "#4F46E5",
         "specialty": doctor.especialidad,
         "pdf_config": doctor.pdf_config or {}
     }
+
+@router.get("/questions/{slug}")
+def get_onboarding_questions(slug: str, db: Session = Depends(get_db)):
+    """
+    Public endpoint to get pre-consultation questions by doctor slug.
+    """
+    doctor = db.query(Doctor).filter(Doctor.slug_url == slug).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    
+    questions = db.query(PQ).filter(PQ.doctor_id == doctor.id).order_by(PQ.order).all()
+    
+    # Decrypt
+    results = []
+    for q in questions:
+        results.append({
+            "id": q.id,
+            "text": decrypt_text(q.text),
+            "type": q.type,
+            "category": q.category,
+            "required": q.required,
+            "options": [decrypt_text(opt) for opt in q.options] if q.options else [],
+            "order": q.order
+        })
+        
+    return results
 
 @router.post("/submit/{slug}")
 def submit_unified_onboarding(
