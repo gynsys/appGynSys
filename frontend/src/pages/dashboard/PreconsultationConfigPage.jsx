@@ -466,13 +466,13 @@ export default function PreconsultationConfigPage() {
               Comparte este link con tus pacientes para que completen sus datos personales e historia médica antes de la consulta. Ahorra 15-20 minutos por paciente.
             </p>
             <div className="mt-4 inline-flex items-center gap-2 bg-indigo-700/50 px-4 py-2 rounded-xl text-xs font-mono border border-indigo-400/30 break-all">
-              {window.location.origin}/{user?.slug_url}/onboarding
+              {window.location.origin}/{user?.slug_url}?onboarding=true
             </div>
           </div>
           
           <button
             onClick={() => {
-              const url = `${window.location.origin}/${user?.slug_url}/onboarding`;
+              const url = `${window.location.origin}/${user?.slug_url}?onboarding=true`;
               navigator.clipboard.writeText(url);
               toast.success('¡Link de Onboarding copiado!');
             }}

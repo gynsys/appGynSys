@@ -266,6 +266,7 @@ export default function DoctorProfilePage() {
   }
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
+  const [isUnifiedOnboarding, setIsUnifiedOnboarding] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isOnlineConsultationModalOpen, setIsOnlineConsultationModalOpen] = useState(false)
   const [onlineSettings, setOnlineSettings] = useState(null)
@@ -275,12 +276,16 @@ export default function DoctorProfilePage() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const appointmentId = searchParams.get('appointment_id')
+  const onboardingParam = searchParams.get('onboarding')
   const [isPreconsultaOpen, setIsPreconsultaOpen] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
 
   // Modal Handlers
   const handleOpenTest = () => setIsTestModalOpen(true)
-  const handleOpenAppointment = () => setIsAppointmentModalOpen(true)
+  const handleOpenAppointment = () => {
+    setIsUnifiedOnboarding(false) // Standard button click
+    setIsAppointmentModalOpen(true)
+  }
 
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
   useEffect(() => {
@@ -296,7 +301,12 @@ export default function DoctorProfilePage() {
     if (location.pathname.includes('/preconsulta') && appointmentId) {
       setIsPreconsultaOpen(true)
     }
-  }, [location.pathname, appointmentId])
+    // Auto-open unified onboarding if ?onboarding=true
+    if (onboardingParam === 'true') {
+        setIsUnifiedOnboarding(true)
+        setIsAppointmentModalOpen(true)
+    }
+  }, [location.pathname, appointmentId, onboardingParam])
 
   const handleLogout = () => {
     // Show success message first
@@ -823,10 +833,8 @@ export default function DoctorProfilePage() {
         doctorId={doctor?.id}
         doctor={doctor}
         primaryColor={primaryColor}
-        onRequireAuth={() => {
-          setIsAppointmentModalOpen(false);
-          setIsRegisterModalOpen(true);
-        }}
+        onRequireAuth={() => setIsLoginModalOpen(true)}
+        isUnified={isUnifiedOnboarding}
       />
 
       <PreconsultaWidget

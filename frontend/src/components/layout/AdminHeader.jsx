@@ -72,7 +72,7 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
             {/* Copy Onboarding Link Button */}
             <button
               onClick={() => {
-                const url = `${window.location.origin}/${doctor?.slug_url}/onboarding`;
+                const url = `${window.location.origin}/${doctor?.slug_url}?onboarding=true`;
                 navigator.clipboard.writeText(url);
                 toast.success('¡Link de Onboarding copiado!');
               }}

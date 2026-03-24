@@ -3,8 +3,17 @@ import { Transition } from '@headlessui/react'
 import { MdClose } from 'react-icons/md'
 import { isCapacitor } from '../../utils/platform'
 import ChatBooking from './ChatBooking'
+import UnifiedOnboardingChat from './UnifiedOnboardingChat'
 
-export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, primaryColor = '#4F46E5', onRequireAuth }) {
+export default function AppointmentModal({ 
+  isOpen, 
+  onClose, 
+  doctorId, 
+  doctor, 
+  primaryColor = '#4F46E5', 
+  onRequireAuth,
+  isUnified = false
+}) {
   return (
     <Transition show={isOpen} as={Fragment}>
       <div className="relative z-[100]">
@@ -38,14 +47,20 @@ export default function AppointmentModal({ isOpen, onClose, doctorId, doctor, pr
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 z-10 shadow-sm">
-              <h3 className="font-bold text-gray-800 dark:text-white text-sm">Agendar Cita</h3>
+              <h3 className="font-bold text-gray-800 dark:text-white text-sm">
+                {isUnified ? 'Agendar Cita y Preconsulta' : 'Agendar Cita'}
+              </h3>
               <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                 <MdClose className="text-gray-500" />
               </button>
             </div>
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col pt-2">
-              <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} onRequireAuth={onRequireAuth} />
+              {isUnified ? (
+                <UnifiedOnboardingChat doctorId={doctorId} doctor={doctor} onClose={onClose} onRequireAuth={onRequireAuth} />
+              ) : (
+                <ChatBooking doctorId={doctorId} doctor={doctor} onClose={onClose} onRequireAuth={onRequireAuth} />
+              )}
             </div>
           </div>
         </Transition.Child>

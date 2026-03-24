@@ -47,7 +47,7 @@ import RecommendationsManager from './pages/dashboard/RecommendationsManager'
 import PdfConfigurationPage from './pages/dashboard/PdfConfigurationPage'
 import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPage'
 import PatientsManager from './pages/dashboard/PatientsManager'
-import OnboardingPage from './pages/public/OnboardingPage'
+// Removed OnboardingPage import
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
@@ -75,6 +75,11 @@ const RootRedirector = () => {
   // Regular browser users always see the Landing Page (avoids loop)
   // We use key=slug to force remounting when slug changes if needed, but here it's simple
   return <LandingPage />;
+};
+
+const OnboardingRedirect = () => {
+    const { slug } = useParams();
+    return <Navigate to={`/${slug}?onboarding=true`} replace />;
 };
 
 const LegacyDoctorRedirect = () => {
@@ -172,7 +177,7 @@ function App() {
 
         <Route path="/preconsulta" element={<PreconsultaPage />} />
         <Route path="/:slug/preconsulta" element={<DoctorProfilePage />} />
-        <Route path="/:slug/onboarding" element={<OnboardingPage />} />
+        <Route path="/:slug/onboarding" element={<OnboardingRedirect />} />
         <Route path="/cycle-report" element={<CycleReportPage />} />
 
         {/* Cycle Predictor Routes */}
