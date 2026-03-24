@@ -366,7 +366,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
                   addMessage("¿Cuál es su ocupación actual?", 'bot');
                   setStep(STEPS.OCCUPATION);
                 } else {
-                  addMessage("Finalmente, ¿cuál es tu correo electrónico?", 'bot');
+                  addMessage("¿Cuál es tu correo electrónico?", 'bot');
                   setStep(STEPS.EMAIL);
                 }
               }
@@ -765,7 +765,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
 
     // Proceed to Email
     setTimeout(() => {
-      addMessage("Finalmente, ¿cuál es tu correo electrónico?", 'bot');
+      addMessage("¿Cuál es tu correo electrónico?", 'bot');
       setStep(STEPS.EMAIL);
     }, 400);
   };
