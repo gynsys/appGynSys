@@ -190,22 +190,22 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50 dark:border-gray-700">
                       {!isPlaceholder(c.physical_exam) && (
                         <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.physical_exam}</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase">Examen Físico</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{c.physical_exam}</p>
                         </div>
                       )}
                       {!isPlaceholder(c.ultrasound) && (
                         <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{c.ultrasound}</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase">Ecografía</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{c.ultrasound}</p>
                         </div>
                       )}
                     </div>
                   )}
                   {!isPlaceholder(c.observations) && (
                     <div className="pt-2 border-t border-gray-50 dark:border-gray-700">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">Observaciones</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{c.observations}</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase">Observaciones</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{c.observations}</p>
                     </div>
                   )}
                 </div>

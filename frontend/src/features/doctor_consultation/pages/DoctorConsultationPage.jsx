@@ -1071,35 +1071,35 @@ export const DoctorConsultationPage = () => {
                 {!isPlaceholder(history.physical_exam) && (
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
                     <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Examen Físico Anterior</h4>
-                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line text-sm leading-relaxed">{history.physical_exam}</p>
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm leading-relaxed">{history.physical_exam}</p>
                   </div>
                 )}
 
                 {!isPlaceholder(history.ultrasound) && (
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
                     <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Ultrasonido Anterior</h4>
-                    <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed text-justify">{history.ultrasound}</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed text-justify">{history.ultrasound}</p>
                   </div>
                 )}
 
                 {!isPlaceholder(history.diagnosis) && (
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
                     <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Diagnóstico Anterior</h4>
-                    <p className="text-gray-700 dark:text-gray-400 font-medium">{history.diagnosis}</p>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">{history.diagnosis}</p>
                   </div>
                 )}
 
                 {!isPlaceholder(history.plan) && (
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
                     <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Plan Anterior</h4>
-                    <p className="text-gray-700 dark:text-gray-400 font-medium">{history.plan}</p>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">{history.plan}</p>
                   </div>
                 )}
 
                 {!isPlaceholder(history.observations) && (
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 shadow-sm">
                     <h4 className="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1">Observaciones Anteriores</h4>
-                    <p className="text-gray-800 dark:text-gray-200 text-sm">{history.observations}</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm">{history.observations}</p>
                   </div>
                 )}
               </div>
