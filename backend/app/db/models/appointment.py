@@ -1,7 +1,7 @@
 """
 Appointment model - represents patient appointments with doctors.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -33,6 +33,7 @@ class Appointment(Base):
     appointment_date = Column(DateTime(timezone=True), nullable=False)
     appointment_type = Column(String, nullable=True)  # e.g., "Ginecológica", "Prenatal"
     reason_for_visit = Column(String, nullable=True)  # e.g., "Control Ginecológico", "Dolor pélvico"
+    location = Column(String, nullable=True)          # Location/Branch name
     notes = Column(Text, nullable=True)
     
     # Status & Reminders
@@ -40,7 +41,7 @@ class Appointment(Base):
     reminder_sent = Column(Boolean, default=False)
     
     # Pre-consultation Data
-    preconsulta_answers = Column(Text, nullable=True)  # JSON string of answers
+    preconsulta_answers = Column(JSON, nullable=True)  # JSON object of answers
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
