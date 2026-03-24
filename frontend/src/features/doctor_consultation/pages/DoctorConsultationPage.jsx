@@ -1111,7 +1111,7 @@ export const DoctorConsultationPage = () => {
           {/* 1. Examen Físico */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>1</span>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>1</span>
               Examen Físico
             </h2>
             {renderExamContent()}
@@ -1120,7 +1120,7 @@ export const DoctorConsultationPage = () => {
           {/* 2. Ultrasonido Transvaginal */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>2</span>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>2</span>
               Ultrasonido Transvaginal
             </h2>
             <textarea
@@ -1134,7 +1134,7 @@ export const DoctorConsultationPage = () => {
           {/* 3. Diagnóstico */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>3</span>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>3</span>
               Diagnóstico
             </h2>
             <ListBuilder
@@ -1147,7 +1147,7 @@ export const DoctorConsultationPage = () => {
           {/* 4. Plan */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>4</span>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>4</span>
               Plan
             </h2>
             <ListBuilder
@@ -1160,7 +1160,7 @@ export const DoctorConsultationPage = () => {
           {/* 5. Observaciones */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>5</span>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>5</span>
               Observaciones
             </h2>
             <ListBuilder
@@ -1173,7 +1173,7 @@ export const DoctorConsultationPage = () => {
           {/* 6. Soportes (Imágenes y Videos) */}
           <section className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 dark:text-white">
-              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: primaryColor }}>
+              <span className="text-white w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ backgroundColor: primaryColor }}>
                 <FiImage className="w-4 h-4" />
               </span>
               Soportes y Exámenes (Imágenes, Resonancias, Videos)
