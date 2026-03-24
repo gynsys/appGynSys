@@ -17,7 +17,9 @@ import { FaUser, FaIdCard, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaBriefcase, 
 import { FiCheck, FiX, FiCircle } from 'react-icons/fi';
 
 // Dynamic Flow Data
-import jsonDataFlow from '../../features/preconsulta/data/personal_info_flow.json'; // New import
+import jsonDataFlow from '../../features/preconsulta/data/personal_info_flow.json';
+import { PRECONSULTA_OPTIONS } from '../../features/preconsulta/data/options';
+import { preconsultaTexts } from '../../features/preconsulta/data/texts'; // Added
 
 // Helper: Parse Schedule String to Allowed Days (0=Sun, 1=Mon, ..., 6=Sat)
 const parseAllowedDays = (scheduleString) => {
@@ -1230,6 +1232,39 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     setHistory(prev => [...prev, { type, text }]);
   };
 
+  // Automated Bot Messages for Medical Flow
+  useEffect(() => {
+    if (step === STEPS.PRECONSULTA_QUESTION && preconsultaState.currentNodeId) {
+      const node = jsonDataFlow.nodes[preconsultaState.currentNodeId];
+      if (!node) return;
+
+      // Skip action nodes
+      if (node.type === 'action') {
+        // handleActionNode needs pendingAnswers, but here we probably just want to advance
+        const result = handleActionNode(node, {});
+        // Since we are inside a useEffect, we should be careful about calling goToNextPreconsulta
+        // which updates the same state. But for action nodes it's necessary.
+        const nextId = result.nextId;
+        if (nextId) {
+          setPreconsultaState(prev => ({ ...prev, currentNodeId: nextId }));
+        }
+        return;
+      }
+
+      // Get text for the node
+      const text = node.text_raw || preconsultaTexts[node.text_key] || "Por favor responde:";
+      
+      // Prevent duplicate messages for the same node
+      const lastMsg = history[history.length - 1];
+      if (lastMsg?.text === text && lastMsg.type === 'bot') return;
+
+      const timer = setTimeout(() => {
+        addMessage(text, 'bot');
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [preconsultaState.currentNodeId, step]);
+
   /* --- Step Handlers --- */
 
   const handleNameSubmit = (value) => {
@@ -1989,11 +2024,14 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
                 case 'yes_no': 
                   return <YesNoInput {...common} />;
                 case 'buttons': case 'loop_buttons':
-                  return <ButtonSelection {...common} options={node.options || []} />;
+                  const btnOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
+                  return btnOptions.length > 0 ? <ButtonSelection {...common} options={btnOptions} /> : null;
                 case 'dropdown':
-                  return <SelectInput {...common} label={label} options={node.options || []} />;
+                  const dropOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
+                  return dropOptions.length > 0 ? <SelectInput {...common} label={label} options={dropOptions} /> : null;
                 case 'checklist': case 'loop_checklist':
-                  return <ChecklistInput {...common} options={node.options || []} keyboardType={node.keyboard_type} />;
+                  const checkOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
+                  return checkOptions.length > 0 ? <ChecklistInput {...common} options={checkOptions} keyboardType={node.keyboard_type} /> : null;
                 case 'scale':
                   return <ScaleInput {...common} />;
                 case 'date': case 'calendar':
