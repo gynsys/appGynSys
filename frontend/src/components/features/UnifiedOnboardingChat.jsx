@@ -717,9 +717,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     addMessage(timeStr, 'user');
     setFormData(prev => ({ ...prev, time_part: timeStr }));
     setTimeout(() => {
-      addMessage("¡Perfecto! Ya tengo tus datos de la cita.", 'bot');
-      addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-      setStep(STEPS.CONFIRM);
+      handleConfirm();
     }, 600);
   }
 
@@ -735,9 +733,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     addMessage(val, 'user');
     setFormData(prev => ({ ...prev, time_part: val }));
     setTimeout(() => {
-      addMessage("¡Perfecto! Ya tengo tus datos de la cita.", 'bot');
-      addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-      setStep(STEPS.CONFIRM);
+      handleConfirm();
     }, 600);
   }
 
@@ -821,8 +817,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
     setTimeout(() => {
       if (formData.date_part && formData.time_part) {
-        addMessage("Aquí tienes el resumen de tu solicitud. Por favor confirma si todos los datos son correctos.", 'bot');
-        setStep(STEPS.CONFIRM);
+        handleConfirm();
       } else {
         addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
         setStep(STEPS.TYPE);
@@ -981,34 +976,6 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
           </div>
         ))}
 
-        {/* Confirmation Summary */}
-        {step === STEPS.CONFIRM && (
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mx-4 animate-fade-in">
-            <h3 className="font-bold text-gray-900 dark:text-white mb-3 text-sm border-b pb-2">Resumen de la Cita</h3>
-            <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Nombre:</span> {formData.patient_name}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Cédula:</span> {formData.patient_dni}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Edad:</span> {formData.patient_age} años</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Ciudad:</span> {formData.residence}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Tipo:</span> {formData.appointment_type}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Motivo:</span> {formData.reason_for_visit}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Sede:</span> {formData.location}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Fecha:</span> {new Date(`${formData.date_part}T${formData.time_part}`).toLocaleString()}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Teléfono:</span> {formData.patient_phone}</li>
-              <li><span className="font-medium text-gray-900 dark:text-gray-100">Email:</span> {formData.patient_email}</li>
-            </ul>
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={handleConfirm}
-                disabled={loading}
-                className="w-full py-2 text-white rounded-lg font-medium hover:opacity-90 transition-opacity shadow-sm"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Confirmar Cita
-              </button>
-            </div>
-          </div>
-        )}
 
         <div ref={messagesEndRef} />
       </div>
