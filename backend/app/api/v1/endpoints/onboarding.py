@@ -89,26 +89,8 @@ def submit_unified_onboarding(
     if not full_name or not dni:
         raise HTTPException(status_code=400, detail="Nombre y Cédula son obligatorios")
     
-    # 2. Find or Create Patient
-    patient = db.query(Patient).filter(Patient.dni == dni).first()
-    if not patient:
-        patient = Patient(
-            nombre_completo=full_name,
-            dni=dni,
-            telefono=phone,
-            email=email,
-            edad=age,
-            residencia=address,
-            ocupacion=occupation
-        )
-        db.add(patient)
-        db.flush()
-    else:
-        # Update existing patient data if missing
-        if not patient.telefono: patient.telefono = phone
-        if not patient.email: patient.email = email
-        if not patient.residencia: patient.residencia = address
-        if not patient.ocupacion: patient.ocupacion = occupation
+    # 2. Extract Patient Data
+    # GynSys stores patient info (name, dni, phone, email, etc.) directly in the Appointment record.
     
     # 3. Create Appointment (Fast Track Onboarding)
     app_date_str = a_data.get("appointment_date")
