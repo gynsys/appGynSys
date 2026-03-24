@@ -6,6 +6,8 @@ import {
   FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
+import { toast } from 'sonner';
+import { FiLink } from 'react-icons/fi';
 
 export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', counts = {}, isDarkTheme }) => {
   const navigate = useNavigate();
@@ -19,6 +21,15 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
         { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
         { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
         { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
+        { 
+          icon: FiLink, 
+          label: 'Link Onboarding', 
+          action: () => {
+            const url = `${window.location.origin}/${user?.slug_url}/onboarding`;
+            navigator.clipboard.writeText(url);
+            toast.success('¡Link de Onboarding copiado!');
+          }
+        },
       ]
     },
     {
@@ -88,7 +99,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
                       return (
                         <button
                           key={index}
-                          onClick={() => handleNavigation(item.path)}
+                          onClick={item.action ? item.action : () => handleNavigation(item.path)}
                           className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
                             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
                             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'

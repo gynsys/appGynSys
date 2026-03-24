@@ -47,6 +47,7 @@ import RecommendationsManager from './pages/dashboard/RecommendationsManager'
 import PdfConfigurationPage from './pages/dashboard/PdfConfigurationPage'
 import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPage'
 import PatientsManager from './pages/dashboard/PatientsManager'
+import OnboardingPage from './pages/public/OnboardingPage'
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
@@ -171,6 +172,7 @@ function App() {
 
         <Route path="/preconsulta" element={<PreconsultaPage />} />
         <Route path="/:slug/preconsulta" element={<DoctorProfilePage />} />
+        <Route path="/:slug/onboarding" element={<OnboardingPage />} />
         <Route path="/cycle-report" element={<CycleReportPage />} />
 
         {/* Cycle Predictor Routes */}

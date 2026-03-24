@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AdminHeader } from './AdminHeader';
 import { Sidebar } from './Sidebar';
 import { appointmentService } from '../../services/appointmentService';
 import { authService } from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
+import { BottomNav } from '../common/BottomNav';
+import { FiLink, FiCalendar, FiUsers, FiClipboard } from 'react-icons/fi';
+import { toast } from 'sonner';
 // We won't strictly use PROFILE_THEMES constants for layout classes yet, but we will use the ID
 // import { PROFILE_THEMES } from '../../lib/profileThemes'; 
 
 export const DashboardLayout = () => {
+  const navigate = useNavigate();
   const { user: authUser } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0);
@@ -84,9 +88,46 @@ export const DashboardLayout = () => {
           primaryColor={doctor?.theme_primary_color}
         />
 
-        <main className="no-scrollbar flex-1 overflow-y-auto p-4 transition-all duration-500 ease-in-out dark:text-gray-200">
+        <main className="no-scrollbar flex-1 overflow-y-auto p-4 pb-20 md:pb-4 transition-all duration-500 ease-in-out dark:text-gray-200">
           <Outlet context={{ isSidebarOpen, setIsSidebarOpen, doctor, isDarkTheme }} />
         </main>
+      </div>
+
+      {/* Mobile Bottom Nav for Doctors */}
+      <div className="md:hidden flex">
+        <BottomNav
+          theme={doctor?.theme_primary_color || '#4F46E5'}
+          items={[
+            {
+              icon: <FiLink className="w-5 h-5" />,
+              label: 'Copiar Link',
+              action: () => {
+                const url = `${window.location.origin}/${doctor.slug_url}/onboarding`;
+                navigator.clipboard.writeText(url);
+                toast.success('Link de Onboarding copiado!');
+              },
+              isActive: false
+            },
+            {
+              icon: <FiCalendar className="w-5 h-5" />,
+              label: 'Citas',
+              action: () => navigate('/dashboard/appointments'),
+              isActive: location.pathname.includes('/appointments')
+            },
+            {
+              icon: <FiClipboard className="w-5 h-5" />,
+              label: 'Consultas',
+              action: () => navigate('/dashboard/consultation'),
+              isActive: location.pathname.includes('/consultation')
+            },
+            {
+              icon: <FiUsers className="w-5 h-5" />,
+              label: 'Pacientes',
+              action: () => navigate('/dashboard/patients'),
+              isActive: location.pathname.includes('/patients')
+            }
+          ]}
+        />
       </div>
     </div>
   );
