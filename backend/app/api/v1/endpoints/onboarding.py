@@ -72,17 +72,20 @@ def submit_unified_onboarding(
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
     
-    # 1. Extract Administrative Data
-    full_name = payload.get("full_name")
-    dni = payload.get("ci") or payload.get("patient_dni")
-    phone = payload.get("phone") or payload.get("patient_phone")
-    email = payload.get("email") or payload.get("patient_email")
-    age = payload.get("age")
-    address = payload.get("address")
-    occupation = payload.get("occupation")
+    # 1. Extract Data from Nested Payload
+    p_data = payload.get("patient_data", {})
+    a_data = payload.get("appointment_data", {})
+    
+    full_name = p_data.get("patient_name") or p_data.get("full_name")
+    dni = p_data.get("patient_dni") or p_data.get("ci")
+    phone = p_data.get("patient_phone") or p_data.get("phone")
+    email = p_data.get("patient_email") or p_data.get("email")
+    age = p_data.get("patient_age") or p_data.get("age")
+    address = p_data.get("residence") or p_data.get("address")
+    occupation = p_data.get("occupation")
     
     if not full_name or not dni:
-        raise ValueError("Nombre y Cédula son obligatorios")
+        raise HTTPException(status_code=400, detail="Nombre y Cédula son obligatorios")
     
     # 2. Find or Create Patient
     patient = db.query(Patient).filter(Patient.dni == dni).first()
@@ -106,8 +109,15 @@ def submit_unified_onboarding(
         if not patient.ocupacion: patient.ocupacion = occupation
     
     # 3. Create Appointment (Fast Track Onboarding)
-    # We create a "Pending Confirmation" appointment with current date/time as placeholder
-    # OR we can leave date/time empty if the model allows it.
+    app_date_str = a_data.get("appointment_date")
+    app_date = datetime.now() # Fallback
+    if app_date_str:
+        try:
+            # Handle ISO format "2026-03-24T14:00:00.000Z"
+            app_date = datetime.fromisoformat(app_date_str.replace("Z", "+00:00"))
+        except Exception as e:
+            logger.warning(f"Error parsing date {app_date_str}: {e}")
+
     new_appointment = Appointment(
         doctor_id=doctor.id,
         patient_name=full_name,
@@ -117,11 +127,12 @@ def submit_unified_onboarding(
         patient_age=age,
         residence=address,
         occupation=occupation,
-        appointment_type="Consulta Médica (Onboarding)",
-        reason_for_visit="Primer Interrogatorio Unificado",
+        appointment_type=a_data.get("appointment_type", "Consulta Médica (Onboarding)"),
+        reason_for_visit=a_data.get("reason_for_visit", "Primer Interrogatorio Unificado"),
+        location=a_data.get("location"),
         status="pending_confirmation",
-        appointment_date=datetime.now(), # Placeholder
-        preconsulta_answers=payload # Save all data here
+        appointment_date=app_date,
+        preconsulta_answers=payload.get("answers", {}) # Save answers separately
     )
     
     db.add(new_appointment)
@@ -130,9 +141,7 @@ def submit_unified_onboarding(
         db.commit()
         db.refresh(new_appointment)
         
-        # 4. Trigger Notifications (Optional but recommended)
-        # TODO: Trigger email to doctor/secretary
-        
+        # 4. Success response
         return {
             "status": "success",
             "appointment_id": new_appointment.id,

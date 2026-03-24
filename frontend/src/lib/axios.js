@@ -25,6 +25,7 @@ const isPublicEndpoint = (url) => {
     url.includes('/cycle-users/password-recovery') ||
     url.includes('/auth/patient/activation-info') ||
     url.includes('/auth/patient/activate') ||
+    url.includes('/onboarding/') ||
     url.includes('/notifications/track'); // Debug and tracking pings
 };
 

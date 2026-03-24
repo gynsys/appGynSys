@@ -717,7 +717,8 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     addMessage(timeStr, 'user');
     setFormData(prev => ({ ...prev, time_part: timeStr }));
     setTimeout(() => {
-      handleConfirm();
+      // Use the value just set to avoid stale closure issues
+      handleConfirm({ ...formData, time_part: timeStr });
     }, 600);
   }
 
@@ -733,7 +734,8 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     addMessage(val, 'user');
     setFormData(prev => ({ ...prev, time_part: val }));
     setTimeout(() => {
-      handleConfirm();
+      // Use the value just set to avoid stale closure issues
+      handleConfirm({ ...formData, time_part: val });
     }, 600);
   }
 
@@ -825,7 +827,10 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     }, 600);
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (currentData = formData) => {
+    // Ensure we have the latest data for next steps
+    setFormData(currentData);
+
     // Instead of finishing, we check if there are pre-consultation questions
     if (preconsultationQuestions.length > 0) {
       addMessage("¡Datos básicos listos! Ahora, para ahorrar unos 20 minutos de tiempo en tu consulta, te haré unas preguntas sobre tus antecedentes médicos:", 'bot');
@@ -839,7 +844,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       }, 800);
     } else {
       // If no questions, proceed to final submit (appointment only)
-      handleFinalSubmit();
+      handleFinalSubmit(preconsultationAnswers, currentData);
     }
   };
 
@@ -868,28 +873,37 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     }
   };
 
-  const handleFinalSubmit = async (finalAnswers = preconsultationAnswers) => {
+  const handleFinalSubmit = async (finalAnswers = preconsultationAnswers, currentData = formData) => {
     setLoading(true);
     try {
-      // Convert local date/time string to a true ISO string (which shifts it to UTC)
-      const localDateObj = new Date(`${formData.date_part}T${formData.time_part}:00`);
-      const fullDate = localDateObj.toISOString(); 
+      // Robust date conversion
+      let fullDate = null;
+      if (currentData.date_part && currentData.time_part) {
+        try {
+          const localDateObj = new Date(`${currentData.date_part}T${currentData.time_part}:00`);
+          if (!isNaN(localDateObj.getTime())) {
+            fullDate = localDateObj.toISOString();
+          }
+        } catch (dErr) {
+          console.error("Date construction error", dErr);
+        }
+      }
 
       const payload = {
         patient_data: {
-          patient_name: formData.patient_name,
-          patient_dni: formData.patient_dni,
-          patient_age: parseInt(formData.patient_age),
-          patient_phone: formData.patient_phone,
-          patient_email: formData.patient_email,
-          occupation: formData.occupation,
-          residence: formData.residence
+          patient_name: currentData.patient_name,
+          patient_dni: currentData.patient_dni,
+          patient_age: parseInt(currentData.patient_age) || 0,
+          patient_phone: currentData.patient_phone,
+          patient_email: currentData.patient_email,
+          occupation: currentData.occupation,
+          residence: currentData.residence
         },
         appointment_data: {
           appointment_date: fullDate,
-          appointment_type: formData.appointment_type,
-          reason_for_visit: formData.reason_for_visit,
-          location: formData.location
+          appointment_type: currentData.appointment_type,
+          reason_for_visit: currentData.reason_for_visit,
+          location: currentData.location
         },
         answers: finalAnswers
       };
