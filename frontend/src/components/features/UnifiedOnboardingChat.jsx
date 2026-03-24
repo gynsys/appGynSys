@@ -413,22 +413,31 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
   // Fetch Locations and Questions on Mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLocations = async () => {
       if (doctor?.slug_url) {
         try {
-          const [locData, questionsData] = await Promise.all([
-            locationService.getPublicLocations(doctor.slug_url),
-            axios.get(`/onboarding/questions/${doctor.slug_url}`).then(res => res.data)
-          ]);
+          const locData = await locationService.getPublicLocations(doctor.slug_url);
           setLocations(locData || []);
-          setPreconsultationQuestions(questionsData || []);
         } catch (err) {
-          console.error("Error fetching onboarding data", err);
+          console.error("Error fetching locations for onboarding", err);
         }
       }
     };
-    fetchData();
-  }, [doctor]);
+
+    const fetchQuestions = async () => {
+      if (doctor?.slug_url) {
+        try {
+          const res = await axios.get(`/onboarding/questions/${doctor.slug_url}`);
+          setPreconsultationQuestions(res.data || []);
+        } catch (err) {
+          console.error("Error fetching preconsultation questions", err);
+        }
+      }
+    };
+
+    fetchLocations();
+    fetchQuestions();
+  }, [doctor?.slug_url]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1026,6 +1035,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
               step === STEPS.RESIDENCE ? handleResidenceSubmit :
               step === STEPS.PHONE ? handlePhoneSubmit :
               step === STEPS.OCCUPATION ? handleOccupationSubmit :
+              step === STEPS.LOCATION ? handleLocationSelect :
               handleEmailSubmit
             }
             type={step === STEPS.EMAIL ? "email" : step === STEPS.PHONE ? "tel" : "text"}
