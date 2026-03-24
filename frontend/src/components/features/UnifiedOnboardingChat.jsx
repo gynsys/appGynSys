@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { parseISO, format } from 'date-fns';
 import { useAuthStore } from '../../store/authStore';
 import { getImageUrl } from '../../lib/imageUtils';
 import PropTypes from 'prop-types';
@@ -856,6 +857,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       }, 800);
     } else {
       // If no questions, proceed to final submit (appointment only)
+      addMessage("¡Perfecto! Ya tengo todos tus datos. Procesando tu agendamiento...", 'bot');
       handleFinalSubmit(preconsultationAnswers, currentData);
     }
   };
@@ -888,20 +890,15 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
   const handleFinalSubmit = async (finalAnswers = preconsultationAnswers, currentData = formData) => {
     setLoading(true);
     try {
-      // Robust date conversion
+      // Clean date conversion using template literal
       let fullDate = null;
       if (currentData.date_part && currentData.time_part) {
         try {
-          // Construct date string manually to avoid cross-browser issues
-          // date_part: YYYY-MM-DD, time_part: HH:mm
-          const [year, month, day] = currentData.date_part.split('-').map(Number);
-          const [hour, min] = currentData.time_part.split(':').map(Number);
+          // Standard parsing using date-fns for safety and cleanliness
+          const localDateObj = parseISO(`${currentData.date_part}T${currentData.time_part}:00`);
           
-          if (year && month && day) {
-              const localDateObj = new Date(year, month - 1, day, hour || 0, min || 0);
-              if (!isNaN(localDateObj.getTime())) {
-                fullDate = localDateObj.toISOString();
-              }
+          if (!isNaN(localDateObj.getTime())) {
+            fullDate = localDateObj.toISOString();
           }
         } catch (dErr) {
           console.error("Date construction error", dErr);
