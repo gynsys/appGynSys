@@ -494,7 +494,7 @@ export default function DoctorProfilePage() {
     }
   }
 
-  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isCycleModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
+  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
 
   // Bottom Navigation Handlers
   const scrollToTop = () => {
