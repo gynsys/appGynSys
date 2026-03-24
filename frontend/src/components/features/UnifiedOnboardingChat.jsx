@@ -229,6 +229,67 @@ SimpleInput.propTypes = {
   primaryColor: PropTypes.string.isRequired,
 };
 
+// Scale Input Component (Visual 1-10)
+const ScaleInput = ({ onSubmit, primaryColor }) => {
+  const handleSelect = (val) => {
+    onSubmit(val.toString());
+  };
+
+  const ScaleButton = ({ value }) => (
+    <button
+      onClick={() => handleSelect(value)}
+      className="bg-white dark:bg-gray-100 hover:bg-gray-200 dark:hover:bg-white text-gray-800 font-bold border-2 border-transparent hover:border-indigo-500 rounded-xl py-2 px-1 text-sm transition-all shadow-sm active:scale-95 flex-1"
+    >
+      {value}
+    </button>
+  );
+
+  return (
+    <div className="w-full max-w-sm animate-fade-in mx-auto">
+      <div
+        className="p-3 rounded-2xl shadow-xl space-y-3"
+        style={{ backgroundColor: primaryColor }}
+      >
+        {/* Leve: 1, 2, 3 */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <span className="text-[10px] font-black text-white uppercase tracking-wider w-16 text-center sm:text-left">Leve</span>
+          <div className="flex gap-1.5 flex-1">
+            <ScaleButton value={1} />
+            <ScaleButton value={2} />
+            <ScaleButton value={3} />
+          </div>
+        </div>
+
+        {/* Moderado: 4, 5, 6 */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <span className="text-[10px] font-black text-white uppercase tracking-wider w-16 text-center sm:text-left">Moderado</span>
+          <div className="flex gap-1.5 flex-1">
+            <ScaleButton value={4} />
+            <ScaleButton value={5} />
+            <ScaleButton value={6} />
+          </div>
+        </div>
+
+        {/* Intenso: 7, 8, 9, 10 */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <span className="text-[10px] font-black text-white uppercase tracking-wider w-16 text-center sm:text-left">Intenso</span>
+          <div className="flex gap-1.5 flex-1">
+            <ScaleButton value={7} />
+            <ScaleButton value={8} />
+            <ScaleButton value={9} />
+            <ScaleButton value={10} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ScaleInput.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  primaryColor: PropTypes.string.isRequired,
+};
+
 export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, onRequireAuth }) {
   // Auth Store
   const { isCycleAuthenticated, cycleUser } = useAuthStore();
@@ -1221,10 +1282,9 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
               const isNumeric = question.type === 'number' || 
                                question.type === 'numeric' || 
                                question.type === 'numeric_input' || 
-                               question.type === 'scale' ||
                                question.text.toLowerCase().includes('(numérico)');
               
-              const isSpecial = ['date', 'boolean', 'select', 'multiselect'].includes(question.type);
+              const isSpecial = ['date', 'boolean', 'select', 'multiselect', 'scale'].includes(question.type);
               
               if (!isSpecial) {
                 return (
@@ -1244,6 +1304,14 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
               }
               return null;
             })()}
+
+            {/* Scale Input (1-10) */}
+            {preconsultationQuestions[currentQuestionIndex].type === 'scale' && (
+              <ScaleInput 
+                onSubmit={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
             {preconsultationQuestions[currentQuestionIndex].type === 'date' && (
               <form onSubmit={(e) => { e.preventDefault(); const val = e.target.elements.qdate.value; if (val) handlePreconsultationAnswer(val); }} className="flex gap-2 w-full">
                 <input
