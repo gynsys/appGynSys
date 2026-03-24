@@ -10,8 +10,6 @@ import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 import ModernLoader from '../../components/common/ModernLoader';
 import { useAuthStore } from '../../store/authStore';
-import { FiLink } from 'react-icons/fi';
-import { toast } from 'sonner';
 
 export default function PreconsultationConfigPage() {
   const navigate = useNavigate();
@@ -454,39 +452,6 @@ export default function PreconsultationConfigPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-0 sm:px-4 py-8">
-      {/* Onboarding Link Card */}
-      <div className="mb-6 bg-indigo-600 rounded-none sm:rounded-2xl p-6 shadow-lg shadow-indigo-200 dark:shadow-none text-white overflow-hidden relative group">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex-1">
-            <h2 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
-              <FiLink className="w-5 h-5" />
-              Enlace de Onboarding Vía Rápida
-            </h2>
-            <p className="mt-2 text-indigo-100 text-sm max-w-xl">
-              Comparte este link con tus pacientes para que completen sus datos personales e historia médica antes de la consulta. Ahorra 15-20 minutos por paciente.
-            </p>
-            <div className="mt-4 inline-flex items-center gap-2 bg-indigo-700/50 px-4 py-2 rounded-xl text-xs font-mono border border-indigo-400/30 break-all">
-              {window.location.origin}/{user?.slug_url}?onboarding=true
-            </div>
-          </div>
-          
-          <button
-            onClick={() => {
-              const url = `${window.location.origin}/${user?.slug_url}?onboarding=true`;
-              navigator.clipboard.writeText(url);
-              toast.success('¡Link de Onboarding copiado!');
-            }}
-            className="bg-white text-indigo-600 px-6 py-3 rounded-2xl font-bold text-sm hover:bg-indigo-50 transition-all flex items-center justify-center gap-2 shadow-md group-hover:scale-105"
-          >
-            <FiLink className="w-4 h-4" />
-            Copiar Enlace
-          </button>
-        </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-        <div className="absolute -left-10 -top-10 w-40 h-40 bg-indigo-400/20 rounded-full blur-3xl"></div>
-      </div>
       {/* Page Header with Actions */}
       {/* Page Header Card */}
       {/* Header hidden by user request */}

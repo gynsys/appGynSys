@@ -1216,22 +1216,34 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         {/* PRECONSULTATION INPUTS */}
         {step === STEPS.PRECONSULTA_QUESTION && (
           <div className="w-full">
-            {(preconsultationQuestions[currentQuestionIndex].type === 'text' || 
-              preconsultationQuestions[currentQuestionIndex].type === 'number' ||
-              preconsultationQuestions[currentQuestionIndex].type === 'email') && (
-              <SimpleInput
-                type={preconsultationQuestions[currentQuestionIndex].type === 'email' ? 'email' : 'text'}
-                placeholder={
-                  preconsultationQuestions[currentQuestionIndex].type === 'number' ? "Escribe el número..." : 
-                  preconsultationQuestions[currentQuestionIndex].type === 'email' ? "ejemplo@correo.com" :
-                  "Escribe tu respuesta..."
-                }
-                onSubmit={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-                numericOnly={preconsultationQuestions[currentQuestionIndex].type === 'number'}
-                autoFocus={true}
-              />
-            )}
+            {(() => {
+              const question = preconsultationQuestions[currentQuestionIndex];
+              const isNumeric = question.type === 'number' || 
+                               question.type === 'numeric' || 
+                               question.type === 'numeric_input' || 
+                               question.type === 'scale' ||
+                               question.text.toLowerCase().includes('(numérico)');
+              
+              const isSpecial = ['date', 'boolean', 'select', 'multiselect'].includes(question.type);
+              
+              if (!isSpecial) {
+                return (
+                  <SimpleInput
+                    type={question.type === 'email' ? 'email' : 'text'}
+                    placeholder={
+                      isNumeric ? "Escribe el número..." : 
+                      question.type === 'email' ? "ejemplo@correo.com" :
+                      "Escribe tu respuesta..."
+                    }
+                    onSubmit={(val) => handlePreconsultationAnswer(val)}
+                    primaryColor={primaryColor}
+                    numericOnly={isNumeric}
+                    autoFocus={true}
+                  />
+                );
+              }
+              return null;
+            })()}
             {preconsultationQuestions[currentQuestionIndex].type === 'date' && (
               <form onSubmit={(e) => { e.preventDefault(); const val = e.target.elements.qdate.value; if (val) handlePreconsultationAnswer(val); }} className="flex gap-2 w-full">
                 <input
