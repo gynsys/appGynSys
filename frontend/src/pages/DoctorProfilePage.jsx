@@ -35,7 +35,7 @@ import OnlineConsultationSection from '../components/features/OnlineConsultation
 import PWAInstallButton from '../components/common/PWAInstallButton'
 import CycleMarketingSection from '../components/features/CycleMarketingSection'
 import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog'
-import { openExternalFile, isCapacitor } from '../utils/platform'
+import { openExternalFile, isCapacitor, copyToClipboard } from '../utils/platform'
 
 
 import whatsappLogo from '../assets/whatsapp-logo.png'
@@ -547,7 +547,7 @@ export default function DoctorProfilePage() {
       label: 'Link',
       action: () => {
         const url = `${window.location.origin}/${slug}/onboarding`;
-        navigator.clipboard.writeText(url);
+        copyToClipboard(url);
         toast.success('Link de Onboarding copiado!');
       },
       isActive: false

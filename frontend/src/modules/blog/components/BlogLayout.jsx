@@ -8,6 +8,9 @@ import CyclePredictorModal from '../../../components/cycle-predictor/CyclePredic
 import { getImageUrl } from '../../../lib/imageUtils'
 import { BottomNav, NavIcons } from '../../../components/common/BottomNav'
 import { useAuthStore } from '../../../store/authStore'
+import { FiLink } from 'react-icons/fi'
+import { useToastStore } from '../../../store/toastStore'
+import { copyToClipboard } from '../../../utils/platform'
 
 export default function BlogLayout({ children }) {
   const { slug } = useParams()
@@ -17,7 +20,10 @@ export default function BlogLayout({ children }) {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
+  const toast = useToastStore()
+  
+  const isOwner = isAuthenticated && user && doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id)
 
   useEffect(() => {
     if (slug) {
@@ -198,7 +204,16 @@ export default function BlogLayout({ children }) {
             action: () => doctor.whatsapp_url && window.open(doctor.whatsapp_url, '_blank', 'noopener,noreferrer'),
             isActive: false
           },
-          {
+          isOwner ? {
+            icon: <FiLink className="w-5 h-5" />,
+            label: 'Link',
+            action: () => {
+              const url = `${window.location.origin}/${doctor.slug_url}/onboarding`;
+              copyToClipboard(url);
+              toast.success('Link de Onboarding copiado!');
+            },
+            isActive: false
+          } : {
             icon: <NavIcons.Calendar />,
             label: 'Citas',
             action: () => setIsAppointmentModalOpen(true),

@@ -8,6 +8,7 @@ import { useAuthStore } from '../../store/authStore';
 import { BottomNav } from '../common/BottomNav';
 import { FiLink, FiCalendar, FiUsers, FiClipboard } from 'react-icons/fi';
 import { toast } from 'sonner';
+import { copyToClipboard } from '../../utils/platform';
 // We won't strictly use PROFILE_THEMES constants for layout classes yet, but we will use the ID
 // import { PROFILE_THEMES } from '../../lib/profileThemes'; 
 
@@ -103,7 +104,7 @@ export const DashboardLayout = () => {
               label: 'Copiar Link',
               action: () => {
                 const url = `${window.location.origin}/${doctor.slug_url}/onboarding`;
-                navigator.clipboard.writeText(url);
+                copyToClipboard(url);
                 toast.success('Link de Onboarding copiado!');
               },
               isActive: false

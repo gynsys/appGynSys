@@ -69,3 +69,52 @@ export const downloadFile = (url, filename = 'documento.pdf') => {
     link.click();
     document.body.removeChild(link);
 };
+
+/**
+ * Copies text to the clipboard with a robust fallback for non-secure contexts.
+ * Also triggers a native alert in Capacitor for better UX feedback.
+ * @param {string} text 
+ * @param {string} successMsg 
+ */
+export const copyToClipboard = async (text, successMsg = '¡Link de Onboarding copiado!') => {
+    let success = false;
+    
+    // 1. Try modern API
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            success = true;
+        }
+    } catch (err) {
+        console.error('[GynSys] Clipboard API failed:', err);
+    }
+    
+    // 2. Fallback for non-secure contexts (http://localhost in Capacitor)
+    if (!success) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            success = true;
+        } catch (err) {
+            console.error('[GynSys] Fallback copy failed:', err);
+        }
+        document.body.removeChild(textArea);
+    }
+
+    if (success) {
+        // Feedback
+        if (isCapacitor()) {
+            // For native app, use a standard alert so user receives feedback immediately
+            window.alert(successMsg);
+        }
+        return true;
+    }
+    return false;
+};
