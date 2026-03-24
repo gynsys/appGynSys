@@ -237,7 +237,6 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
   // Constants
   const STEPS = {
-    AUTH_REQUIRED: 'AUTH_REQUIRED',
     NAME: 'NAME',
     DNI: 'DNI',        // Moved up
     AGE: 'AGE',
@@ -399,13 +398,14 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
           patient_email: cycleUser.email
         }));
       } else {
+        // Frictionless: Don't block if not authenticated for Unified Onboarding
         setHistory([
           {
             type: 'bot',
-            text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para agendar tu cita es necesario iniciar sesión o crear una cuenta gratuita en "Mi Ciclo".</p>`
+            text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
           }
         ]);
-        setStep(STEPS.AUTH_REQUIRED);
+        setStep(STEPS.NAME);
       }
     };
     initFlow();
@@ -1006,18 +1006,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 w-full flex-shrink-0">
-        {step === STEPS.AUTH_REQUIRED && (
-          <div className="flex justify-center w-full">
-            <button
-              onClick={() => onRequireAuth?.()}
-              className="w-full py-3 px-6 text-white rounded-full font-bold shadow-md transition transform hover:scale-[1.02]"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Crear Cuenta / Iniciar Sesión
-            </button>
-          </div>
-        )}
-
+  
         {/* UNIFIED TEXT INPUTS (To prevent unmounting and keyboard flicker) */}
         {[STEPS.NAME, STEPS.DNI, STEPS.AGE, STEPS.RESIDENCE, STEPS.PHONE, STEPS.OCCUPATION, STEPS.EMAIL, STEPS.LOCATION].includes(step) && (locations.length === 0 || step !== STEPS.LOCATION) && (
           <SimpleInput
