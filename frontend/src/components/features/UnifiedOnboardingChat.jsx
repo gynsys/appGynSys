@@ -2014,7 +2014,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
             {(() => {
               const node = jsonDataFlow.nodes[preconsultaState.currentNodeId];
               const label = node.text_raw || (node.text_key && preconsultationQuestions?.find(q => q.text_key === node.text_key)?.text) || "Por favor responde:";
-              const common = { onNext: goToNextPreconsulta, primaryColor };
+              const common = { onNext: goToNextPreconsulta, onSubmit: goToNextPreconsulta, primaryColor };
               
               switch (node.type) {
                 case 'text_input': 
