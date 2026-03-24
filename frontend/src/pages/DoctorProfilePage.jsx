@@ -468,8 +468,11 @@ export default function DoctorProfilePage() {
   }
 
   // Check if current user owns this profile
-  // user comes from useAuthStore hook at the top
-  const isOwner = isAuthenticated && user && doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id)
+  const isOwner = isAuthenticated && user && (
+    (user.slug_url?.toLowerCase() === slug?.toLowerCase()) || 
+    (user.id?.toString() === slug) ||
+    (doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id))
+  )
 
   // Helper to check if a module is enabled (handles strings and objects)
   const isModuleEnabled = (code) => {

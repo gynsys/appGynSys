@@ -23,7 +23,11 @@ export default function BlogLayout({ children }) {
   const { isAuthenticated, user } = useAuthStore()
   const toast = useToastStore()
   
-  const isOwner = isAuthenticated && user && doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id)
+  const isOwner = isAuthenticated && user && (
+    (user.slug_url?.toLowerCase() === slug?.toLowerCase()) || 
+    (user.id?.toString() === slug) ||
+    (doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id))
+  )
 
   useEffect(() => {
     if (slug) {
@@ -208,7 +212,7 @@ export default function BlogLayout({ children }) {
             icon: <FiLink className="w-5 h-5" />,
             label: 'Link',
             action: () => {
-              const url = `${window.location.origin}/${doctor.slug_url}/onboarding`;
+              const url = `${window.location.origin}/${slug}/onboarding`;
               copyToClipboard(url);
               toast.success('Link de Onboarding copiado!');
             },
