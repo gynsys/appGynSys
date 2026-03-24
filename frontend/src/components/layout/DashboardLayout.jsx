@@ -116,13 +116,13 @@ export const DashboardLayout = () => {
             },
             {
               icon: <FiClipboard className="w-5 h-5" />,
-              label: 'Consultas',
+              label: 'Preconsultas',
               action: () => navigate('/dashboard/consultation'),
               isActive: location.pathname.includes('/consultation')
             },
             {
               icon: <FiUsers className="w-5 h-5" />,
-              label: 'Pacientes',
+              label: 'Historias',
               action: () => navigate('/dashboard/patients'),
               isActive: location.pathname.includes('/patients')
             }
