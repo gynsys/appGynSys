@@ -26,6 +26,7 @@ const isPublicEndpoint = (url) => {
     url.includes('/auth/patient/activation-info') ||
     url.includes('/auth/patient/activate') ||
     url.includes('/onboarding/') ||
+    url.includes('/locations/public/') ||
     url.includes('/notifications/track'); // Debug and tracking pings
 };
 

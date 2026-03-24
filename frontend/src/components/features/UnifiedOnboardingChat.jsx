@@ -417,11 +417,15 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     const fetchLocations = async () => {
       if (doctor?.slug_url) {
         try {
+          console.log("[UnifiedOnboarding] Fetching locations for slug:", doctor.slug_url);
           const locData = await locationService.getPublicLocations(doctor.slug_url);
+          console.log("[UnifiedOnboarding] Locations fetched:", locData?.length || 0);
           setLocations(locData || []);
         } catch (err) {
-          console.error("Error fetching locations for onboarding", err);
+          console.error("[UnifiedOnboarding] Error fetching locations for onboarding", err);
         }
+      } else {
+        console.warn("[UnifiedOnboarding] No slug_url available for locations", doctor);
       }
     };
 
