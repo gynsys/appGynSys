@@ -24,6 +24,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
         { 
           icon: FiLink, 
           label: 'Link Onboarding', 
+          className: 'hidden lg:flex',
           action: () => {
             const url = `${window.location.origin}/${user?.slug_url}/onboarding`;
             navigator.clipboard.writeText(url);
@@ -100,7 +101,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
                         <button
                           key={index}
                           onClick={item.action ? item.action : () => handleNavigation(item.path)}
-                          className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
+                          className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${item.className || ''} ${isActive
                             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
                             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                             }`}
