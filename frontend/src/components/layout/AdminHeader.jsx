@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { MdDashboard, MdLogout, MdHome, MdMenu, MdNotifications } from 'react-icons/md';
 import { useAuth } from '../../features/auth/useAuth';
 import { getImageUrl } from '../../lib/imageUtils';
+import { FiLink } from 'react-icons/fi';
+import { toast } from 'sonner';
 
 export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificationCount = 0, doctor }) => {
   const navigate = useNavigate();
@@ -66,6 +68,20 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
                 </span>
               )}
             </div>
+
+            {/* Copy Onboarding Link Button */}
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/${doctor?.slug_url}/onboarding`;
+                navigator.clipboard.writeText(url);
+                toast.success('¡Link de Onboarding copiado!');
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 transition-all text-xs font-bold uppercase tracking-tight"
+              title="Copiar Link de Onboarding Vía Rápida"
+            >
+              <FiLink className="w-3.5 h-3.5" />
+              <span>Link Bot</span>
+            </button>
 
             <button
               onClick={() => navigate(doctor?.slug_url ? `/${doctor.slug_url}` : '/')}
