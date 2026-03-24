@@ -888,6 +888,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     RECURRENT_CONFIRM: 'RECURRENT_CONFIRM', 
     PRECONSULTA_INTRO: 'PRECONSULTA_INTRO', // New
     PRECONSULTA_QUESTION: 'PRECONSULTA_QUESTION', // New
+    PRECONSULTA_FINISH: 'PRECONSULTA_FINISH',
     CONFIRM: 'CONFIRM',
     SUCCESS: 'SUCCESS'
   };
@@ -945,7 +946,6 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
   const handleActionNode = (node, pendingAnswers) => {
     const { handler } = node;
     const answers = { ...preconsultaState.answers, ...pendingAnswers };
-    const doctorConfig = doctor; // Assuming doctor object contains config like include_functional_exam
 
     switch (handler) {
       case 'calculate_imc': {
@@ -957,19 +957,44 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         }
         return { nextId: node.next_node || null };
       }
+      
       case 'decide_if_ask_frequency':
         return { nextId: answers.gyn_cycles === 'Regulares' ? node.next_if_regular : node.next_if_irregular };
       
+      case 'check_if_pregnant_for_fertility':
+        const obstetricType = answers.obstetric_history_type;
+        const hasBeenPregnant = obstetricType === 'Primigesta' || obstetricType === 'Multigesta';
+        return { nextId: hasBeenPregnant ? node.next_if_skip_fertility : node.next_if_ask_fertility };
+
+      case 'decide_if_ask_mac_checklist':
+        return { nextId: answers.gyn_mac_bool === 'Sí' ? node.next_if_yes : node.next_if_no };
+
       case 'check_functional_exam_enabled':
-        const enabled = doctorConfig.include_functional_exam !== false; // Default true
+        const doctorConfig = doctor;
+        const enabled = doctorConfig.include_functional_exam !== false;
         return { nextId: enabled ? node.next_if_enabled : node.next_if_disabled };
 
-      case 'calculate_ho_action':
-        // Simplified summary for chatbot
-        const g = parseInt(answers.ho_table_results?.gestas) || 0;
-        const p = parseInt(answers.ho_table_results?.partos) || 0;
-        const summary = `${g}G ${p}P`;
-        return { nextId: node.next_node || 'ASK_SEXUALLY_ACTIVE', sideEffect: { obstetric_history_summary: summary } };
+      case 'calculate_ho_action': {
+        const type = answers.obstetric_history_type;
+        const ho = answers.ho_table_results || {};
+        const g = parseInt(ho.gestas) || 0;
+        const p = parseInt(ho.partos) || 0;
+        const c = parseInt(ho.cesareas) || 0;
+        const a = parseInt(ho.abortos) || 0;
+        
+        const summary = g > 0 ? `${g}G ${p}P ${c}C ${a}A` : (type || 'Nuligesta');
+        return { 
+          nextId: node.next_node || 'ASK_SEXUALLY_ACTIVE', 
+          sideEffect: { obstetric_history_summary: summary } 
+        };
+      }
+
+      case 'combine_irregular_cycle_info':
+      case 'combine_regular_cycle_info':
+        return { nextId: node.next_node || 'ASK_DYSMENORRHEA_BOOL' };
+
+      case 'combine_dysmenorrhea_info':
+        return { nextId: node.next_node || 'ASK_FUM' };
 
       case 'finish_preconsultation':
       case 'generate_summaries':
@@ -1264,6 +1289,14 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       return () => clearTimeout(timer);
     }
   }, [preconsultaState.currentNodeId, step]);
+
+  // Transition to Preconsulta Finish
+  useEffect(() => {
+    if (preconsultaState.isFinished && step === STEPS.PRECONSULTA_QUESTION) {
+      setStep(STEPS.PRECONSULTA_FINISH);
+      addMessage("¡Excelente! He recopilado toda la información necesaria para tu consulta médica.", 'bot');
+    }
+  }, [preconsultaState.isFinished, step]);
 
   /* --- Step Handlers --- */
 
@@ -1718,11 +1751,9 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
           location: currentData.location,
           appointment_date: fullDate
         },
-        preconsultation_data: {
-          answers: {
-            ...preconsultaState.answers,
-            ...finalAnswers
-          }
+        answers: {
+          ...preconsultaState.answers,
+          ...finalAnswers
         }
       };
 
@@ -2046,6 +2077,25 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
                   return <div className="text-xs text-red-400">Tipo no soportado: {node.type} <button onClick={() => goToNextPreconsulta('Saltado')} className="underline">Saltar</button></div>;
               }
             })()}
+          </div>
+        )}
+
+        {step === STEPS.PRECONSULTA_FINISH && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-xl mt-2 max-w-sm mx-auto text-center animate-fade-in">
+             <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+               <MdCheckCircle size={32} className="text-green-500" />
+             </div>
+             <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2 uppercase tracking-wide">¡Todo listo!</h3>
+             <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+               He recopilado toda la información necesaria. Haz clic abajo para confirmar y agendar tu cita oficial.
+             </p>
+             <button 
+               onClick={() => handleFinalSubmit()}
+               style={{ backgroundColor: primaryColor }}
+               className="w-full py-4 rounded-2xl text-white font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+             >
+               CONFIRMAR Y AGENDAR CITA
+             </button>
           </div>
         )}
       </div>
