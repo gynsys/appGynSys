@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { parseISO, format } from 'date-fns';
+import { es } from 'date-fns/locale'; // New import
 import { useAuthStore } from '../../store/authStore';
 import { getImageUrl } from '../../lib/imageUtils';
 import PropTypes from 'prop-types';
@@ -7,10 +8,16 @@ import Button from '../common/Button';
 import { appointmentService } from '../../services/appointmentService';
 import { locationService } from '../../services/locationService';
 import { preconsultationService } from '../../services/preconsultationService';
-import axios from '../../lib/axios';
+import axios from '../../lib/axios'; // Existing axios import
 import ModernLoader from '../common/ModernLoader';
-import { MdSend, MdCalendarToday, MdAccessTime, MdCheckCircle } from 'react-icons/md';
+// Merged and updated react-icons imports
+import { MdSend, MdHistory, MdCalendarToday, MdAccessTime, MdLocationOn, MdCategory, MdCheckCircle, MdArrowBack } from 'react-icons/md';
+import { IoMdClose, IoMdArrowBack } from 'react-icons/io';
+import { FaUser, FaIdCard, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaBriefcase, FaEnvelope, FaStethoscope } from 'react-icons/fa';
 import { FiCheck, FiX, FiCircle } from 'react-icons/fi';
+
+// Dynamic Flow Data
+import jsonDataFlow from '../../features/preconsulta/data/personal_info_flow.json'; // New import
 
 // Helper: Parse Schedule String to Allowed Days (0=Sun, 1=Mon, ..., 6=Sat)
 const parseAllowedDays = (scheduleString) => {
@@ -647,6 +654,212 @@ const ChecklistInput = ({ options, keyboardType, onNext, primaryColor }) => {
   );
 };
 
+ChecklistInput.propTypes = {
+  options: PropTypes.array.isRequired,
+  keyboardType: PropTypes.string,
+  onNext: PropTypes.func.isRequired,
+  primaryColor: PropTypes.string.isRequired,
+};
+
+// Year Input Component
+const YearInput = ({ label, onNext, primaryColor }) => {
+  const currentYear = new Date().getFullYear();
+  const [viewYear, setViewYear] = useState(currentYear);
+  const [selectedYear, setSelectedYear] = useState(null);
+
+  const handlePrev = () => setViewYear(y => y - 6);
+  const handleNext = () => setViewYear(y => Math.min(currentYear, y + 6));
+
+  const years = Array.from({ length: 6 }, (_, i) => viewYear - 5 + i);
+
+  return (
+    <div className="w-full max-w-sm mx-auto animate-fade-in text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4">
+        <label className="block text-xs font-black text-gray-400 uppercase mb-4 tracking-widest">{label}</label>
+        <div className="flex items-center justify-between mb-4 px-2">
+          <button onClick={handlePrev} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <span className="text-xl font-black text-gray-800 dark:text-white">{viewYear}</span>
+          <button 
+            onClick={handleNext} 
+            disabled={viewYear >= currentYear}
+            className="p-2 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-100 disabled:opacity-10"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {years.map((y) => (
+            <button
+              key={y}
+              onClick={() => setSelectedYear(y)}
+              style={selectedYear === y ? { backgroundColor: primaryColor, color: '#fff' } : {}}
+              className={`py-4 text-sm font-black rounded-xl border transition-all ${selectedYear === y ? 'shadow-md scale-105' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50'}`}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button
+        onClick={() => onNext(selectedYear.toString())}
+        disabled={!selectedYear}
+        style={{ backgroundColor: selectedYear ? primaryColor : undefined }}
+        className={`mt-4 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg text-white disabled:bg-gray-200 disabled:text-gray-500`}
+      >
+        CONTINUAR
+      </button>
+    </div>
+  );
+};
+
+// Select Input Component (Dropdown)
+const SelectInput = ({ label, options, onNext, primaryColor }) => {
+  const handleChange = (e) => {
+    const val = e.target.value;
+    if (val) onNext(val);
+  };
+
+  return (
+    <div className="w-full max-w-sm mx-auto animate-fade-in">
+      <div className="relative">
+        <select
+          defaultValue=""
+          onChange={handleChange}
+          className="w-full p-4 pr-10 bg-white dark:bg-gray-800 border-2 border-gray-400 dark:border-gray-600 rounded-xl text-sm font-bold text-gray-800 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm focus:outline-none"
+          style={{ borderColor: primaryColor }}
+        >
+          <option value="" disabled>Selecciona una opción</option>
+          {options.map((opt, index) => {
+            const labelStr = typeof opt === 'string' ? opt : opt.label;
+            const valueStr = typeof opt === 'string' ? opt : (opt.value || opt.label);
+            return (
+              <option key={index} value={valueStr}>{labelStr}</option>
+            );
+          })}
+        </select>
+        <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7-7-7-7" /></svg>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Obstetric Table Component
+const ObstetricTable = ({ onNext, primaryColor }) => {
+  const [counts, setCounts] = useState({ gestas: '', partos: '', cesareas: '', abortos: '' });
+  const [step, setStep] = useState('counters');
+  const [childrenDetails, setChildrenDetails] = useState([]);
+
+  const totalBirths = (parseInt(counts.partos) || 0) + (parseInt(counts.cesareas) || 0);
+
+  useEffect(() => {
+    if (childrenDetails.length !== totalBirths) {
+      const newDetails = Array(totalBirths).fill(null).map((_, i) => ({
+        id: `child_${Date.now()}_${i}`,
+        year: '',
+        type: i < (parseInt(counts.partos) || 0) ? 'Parto' : 'Cesarea',
+        weight: '',
+        height: '',
+        complications: 'Sin complicaciones'
+      }));
+      setChildrenDetails(newDetails);
+    }
+  }, [totalBirths]);
+
+  const handleCountChange = (field, val) => {
+    if (val === '' || /^\d+$/.test(val)) setCounts(prev => ({ ...prev, [field]: val }));
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    const updated = [...childrenDetails];
+    updated[index] = { ...updated[index], [field]: value };
+    setChildrenDetails(updated);
+  };
+
+  const toRoman = (num) => {
+    if (num <= 0) return '0';
+    const val = [10, 9, 5, 4, 1];
+    const syb = ["X", "IX", "V", "IV", "I"];
+    let roman = '';
+    let i = 0, n = num;
+    while (n > 0) {
+      while (n >= val[i]) { roman += syb[i]; n -= val[i]; }
+      i++;
+    }
+    return roman;
+  };
+
+  const handleSubmit = () => {
+    const g = parseInt(counts.gestas) || 0, p = parseInt(counts.partos) || 0, c = parseInt(counts.cesareas) || 0, a = parseInt(counts.abortos) || 0;
+    let parts = [];
+    if (g > 0) parts.push(`${toRoman(g)}G`);
+    if (p > 0) parts.push(`${toRoman(p)}P`);
+    if (c > 0) parts.push(`${toRoman(c)}C`);
+    if (a > 0) parts.push(`${toRoman(a)}A`);
+    const summary = parts.length > 0 ? parts.join(' ') : 'Nuligesta';
+    onNext({ ...counts, children: childrenDetails, summary });
+  };
+
+  if (step === 'counters') {
+    return (
+      <div className="w-full max-w-sm mx-auto animate-fade-in p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl">
+        <h4 className="text-[10px] font-black text-gray-500 uppercase mb-4 text-center tracking-widest">RESUMEN OBSTÉTRICO</h4>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {['gestas', 'partos', 'cesareas', 'abortos'].map(field => (
+            <div key={field} className="flex flex-col items-center">
+              <span className="text-[10px] font-black text-gray-400 uppercase mb-1">{field}</span>
+              <input
+                type="number"
+                value={counts[field]}
+                onChange={(e) => handleCountChange(field, e.target.value)}
+                className="w-16 h-12 text-center text-xl font-black border-2 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                style={{ borderColor: counts[field] ? primaryColor : undefined }}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => totalBirths > 0 ? setStep('details') : handleSubmit()}
+          className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all"
+          style={{ backgroundColor: primaryColor }}
+        >
+          {totalBirths > 0 ? 'SIGUIENTE: DETALLAR HIJOS' : 'FINALIZAR'}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-sm mx-auto animate-fade-in p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-y-auto max-h-[400px]">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">DETALLE DE NACIMIENTOS</h4>
+        <button onClick={() => setStep('counters')} className="text-[10px] font-black text-indigo-500 underline">VOLVER</button>
+      </div>
+      <div className="space-y-4 mb-6">
+        {childrenDetails.map((child, index) => (
+          <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
+            <p className="text-[10px] font-black mb-2 text-indigo-500 uppercase">Hijo #{index + 1} ({child.type})</p>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input placeholder="Año" type="number" value={child.year} onChange={(e) => handleDetailChange(index, 'year', e.target.value)} className="p-2 text-[10px] border rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none" />
+              <input placeholder="Peso (kg)" value={child.weight} onChange={(e) => handleDetailChange(index, 'weight', e.target.value)} className="p-2 text-[10px] border rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none" />
+            </div>
+            <select value={child.complications} onChange={(e) => handleDetailChange(index, 'complications', e.target.value)} className="w-full p-2 text-[10px] border rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none">
+              <option value="Sin complicaciones">Sin complicaciones</option>
+              {['Preeclampsia', 'Hemorragia', 'Distocia', 'Infección', 'Placenta previa', 'Otras'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+      <button onClick={handleSubmit} className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all" style={{ backgroundColor: primaryColor }}>
+        GUARDAR HISTORIAL
+      </button>
+    </div>
+  );
+};
+
 export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, onRequireAuth }) {
   // Auth Store
   const { isCycleAuthenticated, cycleUser } = useAuthStore();
@@ -683,6 +896,143 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
   const [canFocus, setCanFocus] = useState(false); 
+
+  // 4. Preconsultation State (Dynamic Engine)
+  const [preconsultaState, setPreconsultaState] = useState({
+    currentNodeId: null,
+    history: [],
+    answers: {},
+    isFinished: false,
+    loopState: null
+  });
+
+  // Helper to sync booking data to preconsulta answers
+  const syncFormDataToAnswers = (data) => {
+    return {
+      full_name: data.patient_name || '',
+      ci: data.patient_dni || '',
+      age: data.patient_age || '',
+      phone: data.patient_phone || '',
+      address: data.residence || '',
+      occupation: data.occupation || '',
+      email: data.patient_email || ''
+    };
+  };
+
+  // Logic to determine the next node (Ported from usePreconsultaEngine)
+  const getNextNodeId = (node, value, currentAnswers) => {
+    if (node.next_if_contains && Array.isArray(value)) {
+      if (value.includes(node.next_if_contains.value)) {
+        return node.next_if_contains.next_node;
+      }
+    }
+    if (node.type === 'yes_no') {
+      const isYes = value === true || value === 'Sí' || value === 'Yes' || value === 'Si';
+      if (isYes && node.next_on_yes) return node.next_on_yes;
+      if (!isYes && node.next_on_no) return node.next_on_no;
+    }
+    if ((node.type === 'buttons' || node.type === 'dropdown' || node.type === 'loop_buttons' || node.type === 'select') && node.options) {
+      const selectedOption = node.options.find((opt) => opt.label === value || opt.value === value || opt === value);
+      if (selectedOption && selectedOption.next_node) return selectedOption.next_node;
+    }
+    if (node.next_node) return node.next_node;
+    return null;
+  };
+
+  // Mock logic for "Action" nodes (Ported from usePreconsultaEngine)
+  const handleActionNode = (node, pendingAnswers) => {
+    const { handler } = node;
+    const answers = { ...preconsultaState.answers, ...pendingAnswers };
+    const doctorConfig = doctor; // Assuming doctor object contains config like include_functional_exam
+
+    switch (handler) {
+      case 'calculate_imc': {
+        const peso = parseFloat(answers.peso_kg || 0);
+        const altura = parseFloat(answers.altura_m || 0);
+        if (peso > 0 && altura > 0) {
+          const imc = (peso / (altura * altura)).toFixed(2);
+          return { nextId: node.next_node || null, sideEffect: { imc_calculado: imc } };
+        }
+        return { nextId: node.next_node || null };
+      }
+      case 'decide_if_ask_frequency':
+        return { nextId: answers.gyn_cycles === 'Regulares' ? node.next_if_regular : node.next_if_irregular };
+      
+      case 'check_functional_exam_enabled':
+        const enabled = doctorConfig.include_functional_exam !== false; // Default true
+        return { nextId: enabled ? node.next_if_enabled : node.next_if_disabled };
+
+      case 'calculate_ho_action':
+        // Simplified summary for chatbot
+        const g = parseInt(answers.ho_table_results?.gestas) || 0;
+        const p = parseInt(answers.ho_table_results?.partos) || 0;
+        const summary = `${g}G ${p}P`;
+        return { nextId: node.next_node || 'ASK_SEXUALLY_ACTIVE', sideEffect: { obstetric_history_summary: summary } };
+
+      case 'finish_preconsultation':
+      case 'generate_summaries':
+        return { nextId: null, isFinished: true };
+
+      default:
+        return { nextId: node.next_node || null };
+    }
+  };
+
+  const goToNextPreconsulta = (value) => {
+    const currentNode = jsonDataFlow.nodes[preconsultaState.currentNodeId];
+    let pendingAnswers = {};
+
+    if (currentNode.save_to && value !== undefined) {
+      let finalValue = value;
+      if (currentNode.type === 'yes_no') {
+        if (value === true || value === 'Sí' || value === 'Si') finalValue = currentNode.value_on_yes || 'Sí';
+        if (value === false || value === 'No') finalValue = currentNode.value_on_no || 'No';
+      }
+      pendingAnswers[currentNode.save_to] = finalValue;
+    }
+
+    let nextId = getNextNodeId(currentNode, value, { ...preconsultaState.answers, ...pendingAnswers });
+    let totalSideEffects = { ...pendingAnswers };
+
+    // Process Actions
+    while (nextId && jsonDataFlow.nodes[nextId]?.type === 'action') {
+      const result = handleActionNode(jsonDataFlow.nodes[nextId], totalSideEffects);
+      if (result.sideEffect) totalSideEffects = { ...totalSideEffects, ...result.sideEffect };
+      if (result.isFinished) {
+        setPreconsultaState(prev => ({ 
+          ...prev, 
+          answers: { ...prev.answers, ...totalSideEffects },
+          isFinished: true 
+        }));
+        // handleFinalSubmit({ ...preconsultaState.answers, ...totalSideEffects }); // Assuming this is called elsewhere
+        return;
+      }
+      nextId = result.nextId;
+    }
+
+    if (!nextId) {
+      setPreconsultaState(prev => ({ 
+        ...prev, 
+        answers: { ...prev.answers, ...totalSideEffects },
+        isFinished: true 
+      }));
+      // handleFinalSubmit({ ...preconsultaState.answers, ...totalSideEffects }); // Assuming this is called elsewhere
+      return;
+    }
+
+    setPreconsultaState(prev => ({
+      ...prev,
+      history: [...prev.history, prev.currentNodeId],
+      currentNodeId: nextId,
+      answers: { ...prev.answers, ...totalSideEffects }
+    }));
+
+    // Add message to chat
+    const displayValue = Array.isArray(value) ? value.join(', ') : (typeof value === 'object' && value?.summary ? value.summary : value);
+    addMessage(displayValue, 'user');
+    
+    // Usually the engine waits for user input or handles actions.
+  };
 
   // Pre-consultation specific state
   const [preconsultationQuestions, setPreconsultationQuestions] = useState(null); // Use null for loading state
@@ -1257,31 +1607,20 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
   };
 
   const handleConfirm = async (currentData = formData) => {
-    // Ensure we have the latest data for next steps
     setFormData(currentData);
 
-    // If still loading questions, wait or show loader
-    if (preconsultationQuestions === null) {
-        addMessage("⌛ Cargando cuestionario médico...", 'bot');
-        return; 
-    }
+    // Sync initial data to preconsulta answers
+    const initialMedicalAnswers = syncFormDataToAnswers(currentData);
+    
+    addMessage("¡Datos básicos listos! Ahora, para ahorrar unos 20 minutos de tiempo en tu consulta, te haré unas preguntas sobre tus antecedentes médicos:", 'bot');
+    
+    setPreconsultaState(prev => ({
+      ...prev,
+      answers: { ...prev.answers, ...initialMedicalAnswers },
+      currentNodeId: 'ASK_MOTHER_HISTORY_BOOL' // STARTING MEDICAL NODE
+    }));
 
-    // Instead of finishing, we check if there are pre-consultation questions
-    if (preconsultationQuestions.length > 0) {
-      addMessage("¡Datos básicos listos! Ahora, para ahorrar unos 20 minutos de tiempo en tu consulta, te haré unas preguntas sobre tus antecedentes médicos:", 'bot');
-      setCurrentQuestionIndex(0);
-      setStep(STEPS.PRECONSULTA_QUESTION);
-      
-      // Post the first question immediately after a short delay
-      setTimeout(() => {
-        const firstQ = preconsultationQuestions[0];
-        addMessage(firstQ.text, 'bot');
-      }, 800);
-    } else {
-      // If no questions, proceed to final submit (appointment only)
-      addMessage("¡Perfecto! Ya tengo todos tus datos. Procesando tu agendamiento...", 'bot');
-      handleFinalSubmit(preconsultationAnswers, currentData);
-    }
+    setStep(STEPS.PRECONSULTA_QUESTION);
   };
 
   const handlePreconsultationAnswer = (value, displayValue) => {
@@ -1331,32 +1670,35 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         patient_data: {
           patient_name: currentData.patient_name,
           patient_dni: currentData.patient_dni,
-          patient_age: parseInt(currentData.patient_age) || 0,
+          patient_age: currentData.patient_age,
           patient_phone: currentData.patient_phone,
           patient_email: currentData.patient_email,
-          occupation: currentData.occupation,
-          residence: currentData.residence
+          residence: currentData.residence,
+          occupation: currentData.occupation
         },
         appointment_data: {
-          appointment_date: fullDate,
+          doctor_id: doctorId,
           appointment_type: currentData.appointment_type,
           reason_for_visit: currentData.reason_for_visit,
-          location: currentData.location
+          location: currentData.location,
+          appointment_date: fullDate
         },
-        answers: finalAnswers
+        preconsultation_data: {
+          answers: {
+            ...preconsultaState.answers,
+            ...finalAnswers
+          }
+        }
       };
 
-      await axios.post(`/onboarding/submit/${doctor.slug_url}`, payload);
-
-      setLoading(false);
+      console.log("[UnifiedOnboarding] Final Payload:", payload);
+      await axios.post(`/onboarding/submit/${doctor?.slug_url || doctorId}`, payload);
       setStep(STEPS.SUCCESS);
-      setTimeout(() => {
-        onClose();
-      }, 5000);
-    } catch (error) {
-      console.error("Error in final onboarding submission", error);
+    } catch (err) {
+      console.error("Submission error:", err);
+      addMessage("Lo siento, hubo un error al procesar tu solicitud. Por favor intenta de nuevo.", 'bot');
+    } finally {
       setLoading(false);
-      addMessage("Hubo un error al guardar tu información. Por favor intenta nuevamente.", 'bot');
     }
   };
 
@@ -1632,139 +1974,40 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         )}
 
         {/* PRECONSULTATION INPUTS */}
-        {step === STEPS.PRECONSULTA_QUESTION && (
-          <div className="w-full">
+        {step === STEPS.PRECONSULTA_QUESTION && preconsultaState.currentNodeId && jsonDataFlow.nodes[preconsultaState.currentNodeId] && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 shadow-xl mt-2 max-w-sm mx-auto">
             {(() => {
-              const question = preconsultationQuestions[currentQuestionIndex];
-              const isNumeric = question.type === 'number' || 
-                               question.type === 'numeric' || 
-                               question.type === 'numeric_input' || 
-                               question.text.toLowerCase().includes('(numérico)');
+              const node = jsonDataFlow.nodes[preconsultaState.currentNodeId];
+              const label = node.text_raw || (node.text_key && preconsultationQuestions?.find(q => q.text_key === node.text_key)?.text) || "Por favor responde:";
+              const common = { onNext: goToNextPreconsulta, primaryColor };
               
-              const isSpecial = ['date', 'boolean', 'select', 'multiselect', 'scale'].includes(question.type);
-              
-              if (!isSpecial) {
-                return (
-                  <SimpleInput
-                    type={question.type === 'email' ? 'email' : 'text'}
-                    placeholder={
-                      isNumeric ? "Escribe el número..." : 
-                      question.type === 'email' ? "ejemplo@correo.com" :
-                      "Escribe tu respuesta..."
-                    }
-                    onSubmit={(val) => handlePreconsultationAnswer(val)}
-                    primaryColor={primaryColor}
-                    numericOnly={isNumeric}
-                    autoFocus={true}
-                  />
-                );
+              switch (node.type) {
+                case 'text_input': 
+                  return <SimpleInput {...common} placeholder="Escribe aquí..." />;
+                case 'numeric_input': case 'loop_numeric_input': case 'number_grid': case 'sexarche_picker':
+                  return <SimpleInput {...common} placeholder="0" numericOnly />;
+                case 'yes_no': 
+                  return <YesNoInput {...common} />;
+                case 'buttons': case 'loop_buttons':
+                  return <ButtonSelection {...common} options={node.options || []} />;
+                case 'dropdown':
+                  return <SelectInput {...common} label={label} options={node.options || []} />;
+                case 'checklist': case 'loop_checklist':
+                  return <ChecklistInput {...common} options={node.options || []} keyboardType={node.keyboard_type} />;
+                case 'scale':
+                  return <ScaleInput {...common} />;
+                case 'date': case 'calendar':
+                  return <DatePicker {...common} />;
+                case 'month_year_picker': case 'month_picker':
+                  return <MonthYearPicker {...common} />;
+                case 'year_picker':
+                  return <YearInput {...common} label={label} />;
+                case 'ho_table':
+                  return <ObstetricTable {...common} />;
+                default:
+                  return <div className="text-xs text-red-400">Tipo no soportado: {node.type} <button onClick={() => goToNextPreconsulta('Saltado')} className="underline">Saltar</button></div>;
               }
-              return null;
             })()}
-
-            {/* Scale Input (1-10) */}
-            {preconsultationQuestions[currentQuestionIndex].type === 'scale' && (
-              <ScaleInput 
-                onSubmit={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-
-            {/* YES/NO Input */}
-            {preconsultationQuestions[currentQuestionIndex].type === 'boolean' && (
-              <YesNoInput 
-                onNext={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-
-            {/* Single Select / Buttons */}
-            {preconsultationQuestions[currentQuestionIndex].type === 'select' && (
-              <ButtonSelection 
-                options={preconsultationQuestions[currentQuestionIndex].options || []}
-                onNext={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-
-            {/* Checklist / MultiSelect */}
-            {preconsultationQuestions[currentQuestionIndex].type === 'multiselect' && (
-              <ChecklistInput 
-                options={preconsultationQuestions[currentQuestionIndex].options || []}
-                keyboardType={preconsultationQuestions[currentQuestionIndex].keyboard_type}
-                onNext={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-
-            {/* Date Picker (Calendar) */}
-            {(preconsultationQuestions[currentQuestionIndex].type === 'date' || 
-              preconsultationQuestions[currentQuestionIndex].type === 'calendar') && (
-              <DatePicker 
-                onSubmit={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-
-            {/* Month Year Picker */}
-            {(preconsultationQuestions[currentQuestionIndex].type === 'month' || 
-              preconsultationQuestions[currentQuestionIndex].type === 'month_picker' ||
-              preconsultationQuestions[currentQuestionIndex].type === 'month_year_picker') && (
-              <MonthYearPicker 
-                onSubmit={(val) => handlePreconsultationAnswer(val)}
-                primaryColor={primaryColor}
-              />
-            )}
-            {preconsultationQuestions[currentQuestionIndex].type === 'date' && (
-              <form onSubmit={(e) => { e.preventDefault(); const val = e.target.elements.qdate.value; if (val) handlePreconsultationAnswer(val); }} className="flex gap-2 w-full">
-                <input
-                  name="qdate"
-                  type="date"
-                  className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 w-full dark:text-white"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="p-3 text-white rounded-lg flex items-center justify-center shadow-md"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <MdSend size={20} />
-                </button>
-              </form>
-            )}
-            {preconsultationQuestions[currentQuestionIndex].type === 'boolean' && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handlePreconsultationAnswer('Si')}
-                  className="flex-1 py-3 bg-white dark:bg-gray-800 border-2 rounded-xl font-bold transition-all hover:border-indigo-500 text-gray-700 dark:text-gray-200"
-                  style={{ borderColor: `${primaryColor}44` }}
-                >
-                  Sí
-                </button>
-                <button
-                  onClick={() => handlePreconsultationAnswer('No')}
-                  className="flex-1 py-3 bg-white dark:bg-gray-800 border-2 rounded-xl font-bold transition-all hover:border-indigo-500 text-gray-700 dark:text-gray-200"
-                  style={{ borderColor: `${primaryColor}44` }}
-                >
-                  No
-                </button>
-              </div>
-            )}
-            {(preconsultationQuestions[currentQuestionIndex].type === 'select' || preconsultationQuestions[currentQuestionIndex].type === 'multiselect') && (
-              <div className="flex flex-wrap gap-2">
-                {preconsultationQuestions[currentQuestionIndex].options.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => handlePreconsultationAnswer(opt)}
-                    className="px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>
