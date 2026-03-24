@@ -1216,13 +1216,39 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         {/* PRECONSULTATION INPUTS */}
         {step === STEPS.PRECONSULTA_QUESTION && (
           <div className="w-full">
-            {preconsultationQuestions[currentQuestionIndex].type === 'text' && (
+            {(preconsultationQuestions[currentQuestionIndex].type === 'text' || 
+              preconsultationQuestions[currentQuestionIndex].type === 'number' ||
+              preconsultationQuestions[currentQuestionIndex].type === 'email') && (
               <SimpleInput
-                placeholder="Escribe tu respuesta..."
+                type={preconsultationQuestions[currentQuestionIndex].type === 'email' ? 'email' : 'text'}
+                placeholder={
+                  preconsultationQuestions[currentQuestionIndex].type === 'number' ? "Escribe el número..." : 
+                  preconsultationQuestions[currentQuestionIndex].type === 'email' ? "ejemplo@correo.com" :
+                  "Escribe tu respuesta..."
+                }
                 onSubmit={(val) => handlePreconsultationAnswer(val)}
                 primaryColor={primaryColor}
+                numericOnly={preconsultationQuestions[currentQuestionIndex].type === 'number'}
                 autoFocus={true}
               />
+            )}
+            {preconsultationQuestions[currentQuestionIndex].type === 'date' && (
+              <form onSubmit={(e) => { e.preventDefault(); const val = e.target.elements.qdate.value; if (val) handlePreconsultationAnswer(val); }} className="flex gap-2 w-full">
+                <input
+                  name="qdate"
+                  type="date"
+                  className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 w-full dark:text-white"
+                  style={{ '--tw-ring-color': primaryColor }}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="p-3 text-white rounded-lg flex items-center justify-center shadow-md"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <MdSend size={20} />
+                </button>
+              </form>
             )}
             {preconsultationQuestions[currentQuestionIndex].type === 'boolean' && (
               <div className="flex gap-2">
