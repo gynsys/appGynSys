@@ -10,6 +10,7 @@ import { preconsultationService } from '../../services/preconsultationService';
 import axios from '../../lib/axios';
 import ModernLoader from '../common/ModernLoader';
 import { MdSend, MdCalendarToday, MdAccessTime, MdCheckCircle } from 'react-icons/md';
+import { FiCheck, FiX, FiCircle } from 'react-icons/fi';
 
 // Helper: Parse Schedule String to Allowed Days (0=Sun, 1=Mon, ..., 6=Sat)
 const parseAllowedDays = (scheduleString) => {
@@ -288,6 +289,362 @@ const ScaleInput = ({ onSubmit, primaryColor }) => {
 ScaleInput.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   primaryColor: PropTypes.string.isRequired,
+};
+
+// Date Picker Component (Visual Calendar)
+const DatePicker = ({ onSubmit, primaryColor }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+
+  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+
+  const changeMonth = (offset) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + offset);
+    setCurrentDate(newDate);
+  };
+
+  const handleDateClick = (day) => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    setSelectedDate(newDate);
+  };
+
+  const handleSubmit = () => {
+    if (selectedDate) {
+      const offset = selectedDate.getTimezoneOffset();
+      const date = new Date(selectedDate.getTime() - (offset * 60 * 1000));
+      onSubmit(date.toISOString().split('T')[0]);
+    }
+  };
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  const days = [];
+
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={`empty-${i}`} />);
+  }
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const isSelected = selectedDate?.getDate() === i &&
+      selectedDate?.getMonth() === month &&
+      selectedDate?.getFullYear() === year;
+
+    days.push(
+      <button
+        key={i}
+        onClick={() => handleDateClick(i)}
+        style={isSelected ? { backgroundColor: primaryColor, color: '#fff' } : {}}
+        className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isSelected
+          ? ''
+          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+      >
+        {i}
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-sm mx-auto animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-3">
+        <div className="flex items-center justify-between mb-2">
+          <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <h4 className="text-sm font-black text-gray-900 dark:text-white capitalize">
+            {months[month]} <span className="text-gray-500 font-normal">{year}</span>
+          </h4>
+          <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-7 mb-1">
+          {daysOfWeek.map(day => (
+            <div key={day} className="text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-y-1 place-items-center">
+          {days}
+        </div>
+      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={!selectedDate}
+        style={{ backgroundColor: selectedDate ? primaryColor : undefined }}
+        className={`mt-3 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg ${!selectedDate ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
+      >
+        CONTINUAR
+      </button>
+    </div>
+  );
+};
+
+DatePicker.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  primaryColor: PropTypes.string.isRequired,
+};
+
+// Month Year Picker Component (Visual Month Grid)
+const MonthYearPicker = ({ onSubmit, primaryColor }) => {
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+  const handleMonthClick = (index) => {
+    if (year === currentYear && index > new Date().getMonth()) return;
+    setSelectedMonth(index);
+  };
+
+  const handleSubmit = () => {
+    if (selectedMonth !== null) {
+      const dateStr = `${year}-${String(selectedMonth + 1).padStart(2, '0')}-01`;
+      onSubmit(dateStr);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-sm mx-auto animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex items-center justify-between mb-4 px-2">
+          <button onClick={() => setYear(prev => prev - 1)} className="text-xl font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">&lt;</button>
+          <h4 className="text-lg font-black text-gray-800 dark:text-white tracking-wide">{year}</h4>
+          <button 
+            onClick={() => setYear(prev => prev + 1)} 
+            disabled={year >= currentYear}
+            className="text-xl font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-10 disabled:cursor-not-allowed transition-colors"
+          >&gt;</button>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {months.map((m, index) => {
+            const isFuture = year === currentYear && index > new Date().getMonth();
+            const isSelected = selectedMonth === index;
+            return (
+              <button
+                key={m}
+                disabled={isFuture}
+                onClick={() => handleMonthClick(index)}
+                style={isSelected ? { backgroundColor: primaryColor, color: '#fff' } : {}}
+                className={`py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${isSelected ? '' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'} ${isFuture ? 'opacity-20 cursor-not-allowed' : ''}`}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button onClick={() => onSubmit('No recuerdo')} className="py-3 px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all">No recuerdo</button>
+        <button onClick={() => onSubmit('Nunca')} className="py-3 px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all">Nunca</button>
+      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={selectedMonth === null}
+        style={{ backgroundColor: selectedMonth !== null ? primaryColor : undefined }}
+        className={`mt-2 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg ${selectedMonth === null ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
+      >
+        CONTINUAR
+      </button>
+    </div>
+  );
+};
+
+MonthYearPicker.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  primaryColor: PropTypes.string.isRequired,
+};
+
+// Selection Option for Buttons
+const SelectionOption = ({ label, onClick, primaryColor }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const getIcon = (text) => {
+    const t = text.toLowerCase();
+    if (t === 'sí' || t === 'si' || t.startsWith('sí,') || t.startsWith('si,')) return <FiCheck className="text-lg" />;
+    if (t === 'no' || t.startsWith('no,')) return <FiX className="text-lg" />;
+    return <FiCircle className="text-xs opacity-40" />;
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="flex items-center justify-center gap-2 border transition-all shadow-sm py-2 px-4 text-xs sm:text-sm rounded-full font-bold transform hover:scale-105 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-200 border-gray-200 dark:border-gray-700 active:scale-95"
+      style={{
+        borderColor: isHovered ? primaryColor : undefined,
+        backgroundColor: isHovered ? `${primaryColor}1a` : undefined,
+        color: isHovered ? primaryColor : undefined,
+      }}
+    >
+      {getIcon(label)}
+      <span>{label}</span>
+    </button>
+  );
+};
+
+// Button Selection Component
+const ButtonSelection = ({ options, onNext, primaryColor }) => {
+  return (
+    <div className="w-full max-w-sm animate-fade-in mx-auto">
+      <div className="flex flex-wrap gap-2 justify-center">
+        {options.map((option, index) => {
+          const optLabel = typeof option === 'string' ? option : option.label;
+          const optValue = typeof option === 'string' ? option : (option.value || option.label);
+          return (
+            <SelectionOption
+              key={index}
+              label={optLabel}
+              onClick={() => onNext(optValue)}
+              primaryColor={primaryColor}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Yes/No Input Component
+const YesNoInput = ({ onNext, primaryColor }) => {
+  const [isYesHovered, setIsYesHovered] = useState(false);
+  return (
+    <div className="w-full max-w-sm animate-fade-in mx-auto">
+      <div className="flex flex-wrap gap-3 justify-center">
+        <button
+          onClick={() => onNext('Sí')}
+          onMouseEnter={() => setIsYesHovered(true)}
+          onMouseLeave={() => setIsYesHovered(false)}
+          className="flex items-center gap-2 border py-3 px-8 rounded-full font-black text-sm transition-all shadow-md hover:scale-105 active:scale-95"
+          style={{
+            borderColor: `${primaryColor}4d`,
+            backgroundColor: isYesHovered ? `${primaryColor}33` : `${primaryColor}1a`,
+            color: primaryColor,
+          }}
+        >
+          <FiCheck className="text-lg" />
+          Sí
+        </button>
+        <button
+          onClick={() => onNext('No')}
+          className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 py-3 px-8 rounded-full font-black text-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white hover:scale-105 active:scale-95 transition-all shadow-md"
+        >
+          <FiX className="text-lg" />
+          No
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Checklist Input Component
+const ChecklistInput = ({ options, keyboardType, onNext, primaryColor }) => {
+  const [selected, setSelected] = useState([]);
+  const [otherValue, setOtherValue] = useState('');
+
+  const toggleOption = (option) => {
+    const exclusiveOptions = ['Sin complicaciones', 'Ninguna', 'Ninguno'];
+    if (exclusiveOptions.includes(option)) {
+      if (selected.includes(option)) {
+        setSelected(selected.filter(s => s !== option));
+      } else {
+        setSelected([option]);
+      }
+      return;
+    }
+    let newSelected = selected.includes(option)
+      ? selected.filter(s => s !== option)
+      : [...selected, option];
+    newSelected = newSelected.filter(s => !exclusiveOptions.includes(s));
+    setSelected(newSelected);
+  };
+
+  const handleSubmit = () => {
+    let finalValues = selected.map(s => {
+      if (s === 'Otro' && otherValue.trim()) return `Otro: ${otherValue.trim()}`;
+      return s;
+    });
+    onNext(finalValues.join(', '));
+  };
+
+  if (keyboardType === 'radiales_mama') {
+    const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    return (
+      <div className="w-full max-w-sm animate-fade-in flex flex-col items-center mx-auto">
+        <div className="relative w-40 h-40 mb-6 bg-gray-50 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-inner">
+          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          {hours.map((hour) => {
+            const isSelected = selected.includes(hour.toString());
+            const angle = (hour * 30 - 90) * (Math.PI / 180);
+            const radius = 65; 
+            const x = radius * Math.cos(angle);
+            const y = radius * Math.sin(angle);
+            return (
+              <button
+                key={hour}
+                onClick={() => toggleOption(hour.toString())}
+                className={`absolute w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] transition-all transform -translate-x-1/2 -translate-y-1/2 active:scale-90 ${isSelected ? 'text-white shadow-lg scale-110' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50'}`}
+                style={{ top: `calc(50% + ${y}px)`, left: `calc(50% + ${x}px)`, backgroundColor: isSelected ? primaryColor : undefined, borderColor: isSelected ? primaryColor : undefined, zIndex: isSelected ? 10 : 1 }}
+              >
+                {hour}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={selected.length === 0}
+          className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+          style={{ backgroundColor: primaryColor }}
+        >
+          CONTINUAR <MdSend size={18} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-sm animate-fade-in mx-auto">
+      <div className="flex flex-col gap-2 mb-4">
+        {options.map((option) => (
+          <button
+            key={option}
+            onClick={() => toggleOption(option)}
+            className={`w-full py-2.5 px-4 rounded-xl border text-left transition-all text-xs font-bold active:scale-95 ${selected.includes(option) ? 'bg-opacity-10 border-transparent' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'}`}
+            style={selected.includes(option) ? { backgroundColor: `${primaryColor}1A`, color: primaryColor, border: `1px solid ${primaryColor}` } : {}}
+          >
+            {selected.includes(option) ? '✓ ' : ''}{option}
+          </button>
+        ))}
+        {selected.includes('Otro') && (
+          <input
+            type="text"
+            value={otherValue}
+            onChange={(e) => setOtherValue(e.target.value)}
+            placeholder="Especificar..."
+            className="w-full p-2.5 text-xs border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none ring-1 ring-transparent focus:ring-indigo-500"
+            autoFocus
+          />
+        )}
+      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={selected.length === 0}
+        className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+        style={{ backgroundColor: primaryColor }}
+      >
+        CONTINUAR <MdSend size={18} />
+      </button>
+    </div>
+  );
 };
 
 export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, onRequireAuth }) {
@@ -1308,6 +1665,52 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
             {/* Scale Input (1-10) */}
             {preconsultationQuestions[currentQuestionIndex].type === 'scale' && (
               <ScaleInput 
+                onSubmit={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
+
+            {/* YES/NO Input */}
+            {preconsultationQuestions[currentQuestionIndex].type === 'boolean' && (
+              <YesNoInput 
+                onNext={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
+
+            {/* Single Select / Buttons */}
+            {preconsultationQuestions[currentQuestionIndex].type === 'select' && (
+              <ButtonSelection 
+                options={preconsultationQuestions[currentQuestionIndex].options || []}
+                onNext={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
+
+            {/* Checklist / MultiSelect */}
+            {preconsultationQuestions[currentQuestionIndex].type === 'multiselect' && (
+              <ChecklistInput 
+                options={preconsultationQuestions[currentQuestionIndex].options || []}
+                keyboardType={preconsultationQuestions[currentQuestionIndex].keyboard_type}
+                onNext={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
+
+            {/* Date Picker (Calendar) */}
+            {(preconsultationQuestions[currentQuestionIndex].type === 'date' || 
+              preconsultationQuestions[currentQuestionIndex].type === 'calendar') && (
+              <DatePicker 
+                onSubmit={(val) => handlePreconsultationAnswer(val)}
+                primaryColor={primaryColor}
+              />
+            )}
+
+            {/* Month Year Picker */}
+            {(preconsultationQuestions[currentQuestionIndex].type === 'month' || 
+              preconsultationQuestions[currentQuestionIndex].type === 'month_picker' ||
+              preconsultationQuestions[currentQuestionIndex].type === 'month_year_picker') && (
+              <MonthYearPicker 
                 onSubmit={(val) => handlePreconsultationAnswer(val)}
                 primaryColor={primaryColor}
               />
