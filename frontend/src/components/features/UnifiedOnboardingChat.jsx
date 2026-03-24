@@ -266,7 +266,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
   const [canFocus, setCanFocus] = useState(false); 
 
   // Pre-consultation specific state
-  const [preconsultationQuestions, setPreconsultationQuestions] = useState([]);
+  const [preconsultationQuestions, setPreconsultationQuestions] = useState(null); // Use null for loading state
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [preconsultationAnswers, setPreconsultationAnswers] = useState({});
 
@@ -427,11 +427,17 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     const fetchQuestions = async () => {
       if (doctor?.slug_url) {
         try {
+          console.log("[UnifiedOnboarding] Fetching questions for slug:", doctor.slug_url);
           const res = await axios.get(`/onboarding/questions/${doctor.slug_url}`);
+          console.log("[UnifiedOnboarding] Questions fetched:", res.data?.length || 0);
           setPreconsultationQuestions(res.data || []);
         } catch (err) {
-          console.error("Error fetching preconsultation questions", err);
+          console.error("[UnifiedOnboarding] Error fetching preconsultation questions", err);
+          // Fallback to empty to allow the rest of the flow to continue
+          setPreconsultationQuestions([]);
         }
+      } else {
+        console.warn("[UnifiedOnboarding] No slug_url available for doctor", doctor);
       }
     };
 
@@ -831,6 +837,12 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     // Ensure we have the latest data for next steps
     setFormData(currentData);
 
+    // If still loading questions, wait or show loader
+    if (preconsultationQuestions === null) {
+        addMessage("⌛ Cargando cuestionario médico...", 'bot');
+        return; 
+    }
+
     // Instead of finishing, we check if there are pre-consultation questions
     if (preconsultationQuestions.length > 0) {
       addMessage("¡Datos básicos listos! Ahora, para ahorrar unos 20 minutos de tiempo en tu consulta, te haré unas preguntas sobre tus antecedentes médicos:", 'bot');
@@ -880,9 +892,16 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       let fullDate = null;
       if (currentData.date_part && currentData.time_part) {
         try {
-          const localDateObj = new Date(`${currentData.date_part}T${currentData.time_part}:00`);
-          if (!isNaN(localDateObj.getTime())) {
-            fullDate = localDateObj.toISOString();
+          // Construct date string manually to avoid cross-browser issues
+          // date_part: YYYY-MM-DD, time_part: HH:mm
+          const [year, month, day] = currentData.date_part.split('-').map(Number);
+          const [hour, min] = currentData.time_part.split(':').map(Number);
+          
+          if (year && month && day) {
+              const localDateObj = new Date(year, month - 1, day, hour || 0, min || 0);
+              if (!isNaN(localDateObj.getTime())) {
+                fullDate = localDateObj.toISOString();
+              }
           }
         } catch (dErr) {
           console.error("Date construction error", dErr);
