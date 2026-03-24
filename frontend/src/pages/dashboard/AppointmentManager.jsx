@@ -273,7 +273,7 @@ export default function AppointmentManager() {
       >
         <form onSubmit={handleReschedule} className="space-y-4">
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Selecciona la nueva fecha y hora para la cita de <strong>{selectedAppointment?.patient_name}</strong>.
             </p>
             <Input
@@ -311,7 +311,7 @@ export default function AppointmentManager() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             ¿Estás seguro de que deseas eliminar la cita de <strong>{appointmentToDelete?.patient_name}</strong>? Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end space-x-3 pt-4">
