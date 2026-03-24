@@ -1298,6 +1298,16 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     }
   }, [preconsultaState.isFinished, step]);
 
+  // Auto-close modal on success
+  useEffect(() => {
+    if (step === STEPS.SUCCESS && onClose) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, onClose]);
+
   /* --- Step Handlers --- */
 
   const handleNameSubmit = (value) => {
