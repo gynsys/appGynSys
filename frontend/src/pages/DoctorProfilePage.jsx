@@ -267,7 +267,6 @@ export default function DoctorProfilePage() {
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
-  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const [isOnlineConsultationModalOpen, setIsOnlineConsultationModalOpen] = useState(false)
   const [onlineSettings, setOnlineSettings] = useState(null)
   const [latestBlogPost, setLatestBlogPost] = useState(null)
@@ -282,7 +281,6 @@ export default function DoctorProfilePage() {
   // Modal Handlers
   const handleOpenTest = () => setIsTestModalOpen(true)
   const handleOpenAppointment = () => setIsAppointmentModalOpen(true)
-  const handleOpenCycle = () => navigate('/cycle/dashboard')
 
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
   useEffect(() => {
@@ -561,7 +559,6 @@ export default function DoctorProfilePage() {
         primaryColor={primaryColor}
         onAppointmentClick={handleOpenAppointment}
         onTestClick={handleOpenTest}
-        onCycleClick={handleOpenCycle}
         onLoginClick={() => setIsLoginModalOpen(true)}
         onRegisterClick={() => setIsNavbarRegisterOpen(true)}
         onMedicalHistoryClick={handleMedicalHistoryClick}
@@ -819,7 +816,6 @@ export default function DoctorProfilePage() {
         doctorPhoto={doctor?.photo_url}
         isDarkMode={isDarkTheme}
         onSchedule={handleOpenAppointment}
-        onCycle={handleOpenCycle}
       />
       <AppointmentModal
         isOpen={isAppointmentModalOpen}
@@ -858,8 +854,6 @@ export default function DoctorProfilePage() {
         </div>
       </footer>
 
-      {/* Cycle Predictor Modal */}
-      <CyclePredictorModal open={isCycleModalOpen} onOpenChange={setIsCycleModalOpen} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} primaryColor={primaryColor} darkMode={isDarkTheme} onRegisterClick={() => { setIsLoginModalOpen(false); setIsRegisterModalOpen(true) }} />
       <CycleAuthDialog
         open={isRegisterModalOpen}

@@ -31,8 +31,7 @@ export default function EndometriosisTestModal({
 
   // isDarkMode prop now handled explicitly to respect parent theme
   isDarkMode: propIsDarkMode, // Renamed to avoid conflict with hook or local var
-  onSchedule = null,
-  onCycle = null
+  onSchedule = null
 }) {
   const [hookIsDarkMode] = useDarkMode()
   // Prioritize prop if strictly boolean (defined), otherwise use hook
@@ -417,22 +416,6 @@ export default function EndometriosisTestModal({
                                       </motion.button>
                                     )}
 
-                                    {/* Secondary Action: Cycle Predictor */}
-                                    {onCycle && (
-                                      <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => {
-                                          handleClose()
-                                          onCycle()
-                                        }}
-                                        className={`w-full inline-flex justify-center items-center rounded-2xl border-2 px-5 py-4 font-bold focus:outline-none transition-all ${isDarkMode ? 'border-gray-600 hover:border-gray-500 text-white' : 'border-gray-200 hover:border-gray-300 text-gray-700'}`}
-                                        style={!isDarkMode ? { color: primaryColor, borderColor: primaryColor } : {}}
-                                      >
-                                        <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                                        Ver Calculadora Menstrual
-                                      </motion.button>
-                                    )}
 
                                     {/* Tertiary Action: Close */}
                                     <motion.button
