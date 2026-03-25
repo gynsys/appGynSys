@@ -4,7 +4,7 @@ import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
-import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload } from 'react-icons/fi';
+import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload, FiEye } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
 
@@ -265,15 +265,8 @@ export default function PatientsManager({ isEmbedded = false }) {
     try {
       setLoading(true);
       const response = await api.get('/consultations/');
-      const data = response.data;
-      const grouped = {};
-      data.forEach(consultation => {
-        const ci = consultation.patient_ci;
-        if (!grouped[ci] || new Date(consultation.created_at) > new Date(grouped[ci].created_at)) {
-          grouped[ci] = consultation;
-        }
-      });
-      setConsultations(Object.values(grouped));
+      // Dejamos de agrupar para ver todas las consultas e informes independientes
+      setConsultations(response.data);
     } catch (error) {
       console.error('Error fetching consultations:', error);
     } finally {
@@ -348,6 +341,8 @@ export default function PatientsManager({ isEmbedded = false }) {
         : `/consultations/${consultationToEdit.id}`;
       
       const method = isClone ? 'post' : 'put';
+      
+      console.log(`[DEBUG] handleUpdate - isClone: ${isClone}, endpoint: ${endpoint}, method: ${method}`);
       
       await api[method](endpoint, editFormData);
       
@@ -554,15 +549,23 @@ export default function PatientsManager({ isEmbedded = false }) {
                   </div>
                 </div>
                 <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700">
-                    HISTORIA
+                  <button 
+                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-indigo-600 text-white shadow-sm"
+                    title="Ver Informe Médico"
+                  >
+                    <FiEye size={16} className="mr-2" /> INFORME
                   </button>
-                  <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-green-50 text-green-700">
-                    INFORME
+                  <button 
+                    onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700"
+                    title="Ver Historia Completa"
+                  >
+                    HISTORIA
                   </button>
                   <button 
                     onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                    className="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"
+                    className="p-2.5 bg-gray-50 text-gray-600 rounded-xl flex items-center justify-center border border-gray-100"
                     title="Ver Soportes Digitales"
                   >
                     <FiImage size={18} />
@@ -602,17 +605,29 @@ export default function PatientsManager({ isEmbedded = false }) {
                     <td className="px-6 py-4 text-xs font-bold">{formatDate(consultation.created_at)}</td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-2 justify-center">
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)} className="px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black">HISTORIA</button>
-                        <button onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)} className="px-3 py-2 bg-green-50 text-green-700 rounded-xl text-[10px] font-black">INFORME</button>
+                        <button 
+                          onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`)}
+                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black shadow-sm hover:bg-indigo-700 transition-all"
+                          title="Ver Informe Médico"
+                        >
+                          <FiEye size={14} /> INFORME
+                        </button>
+                        <button 
+                          onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
+                          className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black hover:bg-blue-100 transition-all"
+                          title="Ver Historia Clínica"
+                        >
+                          HISTORIA
+                        </button>
                          <button 
                           onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                          className="p-2 text-blue-500 rounded-xl hover:bg-blue-50 transition-colors"
+                          className="p-2 text-gray-400 rounded-xl hover:bg-gray-50 transition-colors"
                           title="Ver Soportes Digitales"
                         >
                           <FiImage size={18} />
                         </button>
-                        <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl"><FiEdit /></button>
-                        <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl"><FiTrash2 /></button>
+                        <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl hover:bg-indigo-50"><FiEdit size={18} /></button>
+                        <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl hover:bg-red-50"><FiTrash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>
