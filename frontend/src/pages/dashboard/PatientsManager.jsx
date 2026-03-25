@@ -713,7 +713,14 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {patientReports.map((report) => {
                   const isSelected = String(report.id) === String(currentConsultationId);
                   return (
-                    <div key={report.id} className="relative group">
+                    <div 
+                      key={report.id} 
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl transition-all border-2 ${
+                        isSelected 
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
+                          : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
+                      }`}
+                    >
                       <button
                         onClick={() => {
                           setCurrentConsultationId(report.id);
@@ -721,23 +728,21 @@ export default function PatientsManager({ isEmbedded = false }) {
                           setBasePdfUrl(`${API_BASE}/consultations/${report.id}/${suffix}`);
                           setHistoryData(null); // Force reload
                         }}
-                        className={`flex-shrink-0 px-4 py-2 rounded-2xl text-[11px] font-black transition-all border-2 ${
-                          isSelected 
-                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-md scale-105' 
-                            : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
-                        }`}
+                        className="text-[11px] font-black whitespace-nowrap"
                       >
-                        {new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                        Informe {new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteClick(report.id, false);
                         }}
-                        className="absolute -top-2 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 z-10"
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isSelected ? 'text-white/80 hover:bg-white/20' : 'text-red-400 hover:bg-red-50 hover:text-red-600'
+                        }`}
                         title="Eliminar esta copia"
                       >
-                        <FiTrash2 size={10} />
+                        <FiTrash2 size={12} />
                       </button>
                     </div>
                   );
