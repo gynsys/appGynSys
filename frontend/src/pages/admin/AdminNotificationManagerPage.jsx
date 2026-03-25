@@ -1249,7 +1249,7 @@ export default function NotificationManagerPage() {
                         </Button>
                         <Button
                             onClick={handleSave}
-                            className="bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 px-6"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 px-6"
                         >
                             Guardar Cambios
                         </Button>
