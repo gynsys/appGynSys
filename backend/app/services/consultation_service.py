@@ -237,8 +237,11 @@ class ConsultationService:
                     "admin_diagnosis": c_dict.get("diagnosis"),
                     "admin_plan": c_dict.get("plan"),
                     "admin_observations": c_dict.get("observations"),
-                    # Note: historical obstetric/functional/habits might be missing in merged dicts, 
-                    # but build_narrative_summary handles None gracefully.
+                    # Background summaries from main dict
+                    "summary_general": res.get("summary_general"),
+                    "summary_medical": res.get("summary_medical"),
+                    "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
+                    "summary_habits": res.get("summary_habits"),
                 })
                 
                 full_h_narrative = hist_narrative_data.get('narrative_summary', '')
@@ -303,6 +306,17 @@ class ConsultationService:
             "is_single_report": True
         }
 
+        # 4. Inject dynamic summaries (OVERWRITES stale data if raw answers found)
+        # MUST BE BEFORE build_narrative_summary to provide background strings
+        from app.services.summary_generator import GeneradorResumenes
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db, 
+            data=res, 
+            patient_ci=consultation.patient_ci, 
+            doctor_id=consultation.doctor_id,
+            patient_name=consultation.patient_name
+        )
+
         # --- NARRATIVE GENERATION ---
         from app.utils.medical_report_builder import build_narrative_summary
         narrative_data = build_narrative_summary({
@@ -315,11 +329,14 @@ class ConsultationService:
             "admin_diagnosis": res.get("diagnosis"),
             "admin_plan": res.get("plan"),
             "admin_observations": res.get("observations"),
+            "summary_general": res.get("summary_general"),
+            "summary_medical": res.get("summary_medical"),
             "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
+            "summary_habits": res.get("summary_habits"),
             "summary_functional_exam": res.get("summary_functional_exam"),
         })
 
-        # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO) ---
+        # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO COMPLETO) ---
         if not res.get("medical_report_content"):
             full_narrative = narrative_data.get('narrative_summary', '')
             obs = narrative_data.get('observations_formatted', '')
@@ -333,7 +350,7 @@ class ConsultationService:
         # Add the rest of narrative data to response
         res.update(narrative_data)
 
-        # 4. Get patient email if not in consultation
+        # 5. Get patient email if not in consultation
         email = getattr(consultation, 'patient_email', "") or ""
         if not email:
             appt = db.query(Appointment).filter(
@@ -343,16 +360,6 @@ class ConsultationService:
             if appt:
                 email = appt.patient_email
         res["email"] = email
-
-        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
-        from app.services.summary_generator import GeneradorResumenes
-        GeneradorResumenes.inyectar_dinamicamente(
-            db=db, 
-            data=res, 
-            patient_ci=consultation.patient_ci, 
-            doctor_id=consultation.doctor_id,
-            patient_name=consultation.patient_name
-        )
 
         return res
 
