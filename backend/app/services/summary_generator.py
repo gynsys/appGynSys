@@ -166,6 +166,37 @@ class GeneradorResumenes:
                 if ans.get('gyn_dysmenorrhea_scale_value'):
                     data['gyn_dysmenorrhea'] = f"Sí, intensidad: {ans['gyn_dysmenorrhea_scale_value']}/10"
                 
+                # REFINAMIENTO: Paridad con el Bot para Hallazgos Funcionales
+                # 1. Asegurar que siempre existan las claves básicas para que building_narrative no las ignore
+                claves_basicas = [
+                    'functional_dispareunia', 'functional_dischezia', 'gyn_fertility_intent',
+                    'functional_leg_pain', 'functional_urinary_problem'
+                ]
+                for cb in claves_basicas:
+                    if cb not in data or data[cb] is None:
+                        # Valores por defecto para 'niega...'
+                        if cb == 'gyn_fertility_intent':
+                            data[cb] = "No tiene deseo de fertilidad"
+                        else:
+                            data[cb] = "No"
+
+                # 2. Formatear Dispareunia con su escala si es 'Sí'
+                if str(ans.get('functional_dispareunia')).lower() in ['sí', 'si', 'true', 'yes']:
+                    escala = ans.get('functional_dispareunia_deep_scale')
+                    if escala:
+                        data['functional_dispareunia'] = f"Sí (Intensidad: {escala}/10)"
+                    else:
+                        data['functional_dispareunia'] = "Sí"
+
+                # 3. Formatear Disquecia con su escala si es 'Sí'
+                dischezia_val = ans.get('functional_dischezia')
+                if dischezia_val and str(dischezia_val).lower() not in ['no', 'false', 'none']:
+                    escala = ans.get('functional_dischezia_scale') or ans.get('functional_dischezia_scale_value')
+                    if escala:
+                        data['functional_dischezia'] = f"{dischezia_val} (Intensidad: {escala}/10)"
+                    else:
+                        data['functional_dischezia'] = str(dischezia_val)
+                
                 return True
         except Exception as e:
             print(f"Error en inyección dinámica de resúmenes: {e}")

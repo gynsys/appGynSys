@@ -59,15 +59,8 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     # 2. Hallazgos Funcionales
     findings_parts = []
 
-    # Verificar si el examen funcional fue realizado (hay datos) Y está habilitado en la configuración
-    has_functional_data = include_functional_exam and any(
-        report_data.get(key) for key in [
-            'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
-            'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
-            'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
-            'functional_urinary_incontinence', 'functional_urinary_nocturia'
-        ]
-    )
+    # Verificar si el examen funcional debe incluirse
+    has_functional_data = include_functional_exam
 
     # Dismenorrea (siempre se incluye, es parte de antecedentes ginecológicos)
     dismenorrhea = report_data.get('gyn_dysmenorrhea', '')

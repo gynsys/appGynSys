@@ -101,6 +101,123 @@ async def create_consultation(
         "pdf_report_url": f"/api/v1/consultations/{db_consultation.id}/pdf"
     }
 
+from app.schemas.consultation import BotSyncPayload
+from typing import Dict, Any
+
+@router.post("/sync-bot")
+async def sync_bot_consultation(
+    payload: BotSyncPayload,
+    db: Session = Depends(get_db)
+):
+    """
+    Automated endpoint for Telegram Bot to sync new medical histories.
+    Ingests raw preconsulta answers and creates a completed consultation.
+    """
+    try:
+        # 1. Ensure an appointment exists for this data (to hold preconsulta_answers)
+        # We look for a recent appointment for this CI to avoid duplication if bot retries
+        appointment = db.query(Appointment).filter(
+            Appointment.patient_dni == payload.ci,
+            Appointment.status != "completed"
+        ).order_by(Appointment.appointment_date.desc()).first()
+
+        if not appointment:
+            # Create a virtual appointment to hold the bot data
+            from datetime import datetime
+            appointment = Appointment(
+                doctor_id=payload.doctor_id,
+                patient_name=payload.full_name,
+                patient_dni=payload.ci,
+                patient_email=payload.email,
+                patient_phone=payload.phone,
+                appointment_date=datetime.now(),
+                appointment_type="Bot Sync",
+                status="completed",
+                preconsulta_answers=payload.preconsulta_answers
+            )
+            db.add(appointment)
+            db.commit()
+            db.refresh(appointment)
+        else:
+            appointment.preconsulta_answers = payload.preconsulta_answers
+            appointment.status = "completed"
+            db.add(appointment)
+            db.commit()
+
+        # 2. Prepare Consultation data
+        # We use inyectar_dinamicamente to build the summaries from the bot answers
+        from app.services.summary_generator import GeneradorResumenes
+        
+        # Initial dictionary for injection
+        report_data = {
+            "full_name": payload.full_name,
+            "ci": payload.ci,
+            "age": payload.age,
+            "phone": payload.phone,
+            "address": payload.address,
+            "occupation": payload.occupation,
+            "email": payload.email,
+            "reason_for_visit": payload.preconsulta_answers.get('reason_for_visit', 'Consulta desde Bot'),
+            "family_history_mother": payload.preconsulta_answers.get('family_history_mother', 'No'),
+            "family_history_father": payload.preconsulta_answers.get('family_history_father', 'No'),
+            "personal_history": payload.preconsulta_answers.get('personal_history', 'No'),
+            "supplements": payload.preconsulta_answers.get('supplements', 'No'),
+            "surgical_history": payload.preconsulta_answers.get('surgical_history', 'No'),
+            "appointment_id": appointment.id
+        }
+
+        # Inject summaries
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db,
+            data=report_data,
+            patient_ci=payload.ci,
+            doctor_id=payload.doctor_id,
+            patient_name=payload.full_name
+        )
+
+        # 3. Create the Consultation using existing Service
+        # We need to map the dict back to ConsultationCreate schema
+        consultation_in = ConsultationCreate(
+            full_name=report_data["full_name"],
+            ci=report_data["ci"],
+            age=report_data["age"],
+            phone=report_data["phone"],
+            address=report_data["address"],
+            occupation=report_data["occupation"],
+            email=report_data["email"],
+            reason_for_visit=report_data["reason_for_visit"],
+            family_history_mother=report_data["family_history_mother"],
+            family_history_father=report_data["family_history_father"],
+            personal_history=report_data["personal_history"],
+            supplements=report_data["supplements"],
+            surgical_history=report_data["surgical_history"],
+            summary_gyn_obstetric=report_data.get("summary_gyn_obstetric", "Cargado desde Bot"),
+            summary_functional_exam=report_data.get("summary_functional_exam", "Cargado desde Bot"),
+            summary_habits=report_data.get("summary_habits", "Cargado desde Bot"),
+            admin_physical_exam="Evaluado vía Bot",
+            admin_ultrasound=payload.preconsulta_answers.get('admin_ultrasound', 'No realizado'),
+            admin_diagnosis=payload.preconsulta_answers.get('admin_diagnosis', 'Pendiente evaluación'),
+            admin_plan=payload.preconsulta_answers.get('admin_plan', 'Seguimiento por App'),
+            admin_observations="Registro sincronizado automáticamente desde Telegram Bot",
+            appointment_id=appointment.id
+        )
+
+        db_consultation = ConsultationService.create(
+            db=db,
+            consultation_in=consultation_in,
+            doctor_id=payload.doctor_id
+        )
+
+        return {
+            "status": "success",
+            "message": "History synced successfully",
+            "consultation_id": db_consultation.id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Sync error: {str(e)}")
+
 @router.get("/")
 def get_consultations(
     skip: int = Query(0, ge=0),

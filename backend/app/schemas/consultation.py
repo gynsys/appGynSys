@@ -103,5 +103,25 @@ class ConsultationInDBBase(BaseModel):
     class Config:
         orm_mode = True
 
+class BotSyncPayload(BaseModel):
+    # Patient Info
+    full_name: str
+    ci: str
+    age: str
+    phone: str
+    address: str = "No especificada"
+    occupation: str = "No especificada"
+    email: Optional[str] = None
+    
+    # Pre-consultation raw answers (Dict)
+    preconsulta_answers: Dict[str, Any]
+    
+    # Doctor specific info (which doctor this belongs to)
+    doctor_id: int = 1
+    
+    # Optional metadata
+    appointment_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+
 class Consultation(ConsultationInDBBase):
     pass
