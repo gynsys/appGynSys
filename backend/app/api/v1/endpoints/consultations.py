@@ -119,7 +119,7 @@ def get_consultations(
         .limit(limit)
         .all()
     )
-    return ConsultationService.merge_consultations(consultations, newest_first=True)
+    return ConsultationService.merge_consultations(db, consultations, newest_first=True)
 
 @router.get("/patient/all", response_model=list)
 def get_all_consultations_by_patient(
@@ -136,7 +136,7 @@ def get_all_consultations_by_patient(
         Consultation.doctor_id == current_user.id
     ).order_by(Consultation.created_at.asc()).all()
     
-    return ConsultationService.merge_consultations(consultations, newest_first=True)
+    return ConsultationService.merge_consultations(db, consultations, newest_first=True)
 
 @router.get("/patient/{dni}/raw", response_model=List[ConsultationSchema])
 def get_raw_consultations_by_patient(

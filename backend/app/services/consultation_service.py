@@ -197,7 +197,7 @@ class ConsultationService:
             "address": getattr(latest, 'address', "") or "", 
             "occupation": getattr(latest, 'occupation', "") or "",
             "doctor_id": latest.doctor_id,
-            "all_consultations": ConsultationService.merge_consultations(all_consultations, newest_first=True)
+            "all_consultations": ConsultationService.merge_consultations(db, all_consultations, newest_first=True)
         }
 
         # 4. Get patient email if not in latest consultation
@@ -222,32 +222,8 @@ class ConsultationService:
             patient_name=latest.patient_name
         )
 
-        # 5. Ensure all consultations in the list have a narrative fallback if unified content is missing
-        from app.utils.medical_report_builder import build_narrative_summary
-        for c_dict in res.get("all_consultations", []):
-            if not c_dict.get("medical_report_content"):
-                # Build narrative for this specific historical entry
-                hist_narrative_data = build_narrative_summary({
-                    "full_name": res.get("full_name"),
-                    "ci": res.get("ci"),
-                    "age": res.get("age"),
-                    "reason_for_visit": res.get("reason_for_visit"), # Fallback to current reason if hist missing
-                    "admin_ultrasound": c_dict.get("ultrasound"),
-                    "admin_physical_exam": c_dict.get("physical_exam"),
-                    "admin_diagnosis": c_dict.get("diagnosis"),
-                    "admin_plan": c_dict.get("plan"),
-                    "admin_observations": c_dict.get("observations"),
-                    # Background summaries from main dict
-                    "summary_general": res.get("summary_general"),
-                    "summary_medical": res.get("summary_medical"),
-                    "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
-                    "summary_habits": res.get("summary_habits"),
-                })
-                
-                full_h_narrative = hist_narrative_data.get('narrative_summary', '')
-                
-                # ACTUAL FIX: Assign it back to the dictionary so the frontend sees it
-                c_dict["medical_report_content"] = full_h_narrative.replace('<br/>', '\n')
+        # all_consultations now has medical_report_content populated by merge_consultations(db, ...)
+        return res
 
         return res
 
@@ -334,10 +310,25 @@ class ConsultationService:
             "summary_functional_exam": res.get("summary_functional_exam"),
         })
 
-        # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO COMPLETO) ---
+        # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO COMPLETO REPLICA BOT) ---
         if not res.get("medical_report_content"):
-            full_narrative = narrative_data.get('narrative_summary', '')
-            
+            narr_data_fallback = build_narrative_summary({
+                "full_name": res.get("full_name"),
+                "ci": res.get("ci"),
+                "age": res.get("age"),
+                "reason_for_visit": res.get("reason_for_visit"),
+                "admin_ultrasound": res.get("ultrasound"),
+                "admin_physical_exam": res.get("physical_exam"),
+                "admin_diagnosis": res.get("diagnosis"),
+                "admin_plan": res.get("plan"),
+                "admin_observations": res.get("observations"),
+                # Functional exam keys (injected by inyectar_dinamicamente)
+                "functional_dispareunia": res.get("functional_dispareunia"),
+                "functional_dischezia": res.get("functional_dischezia"),
+                "gyn_dysmenorrhea": res.get("gyn_dysmenorrhea"),
+                "gyn_fertility_intent": res.get("gyn_fertility_intent"),
+            })
+            full_narrative = narr_data_fallback.get('narrative_summary', '')
             # Convert <br/> to \n for the editor/textarea
             res["medical_report_content"] = full_narrative.replace('<br/>', '\n')
 
@@ -358,13 +349,15 @@ class ConsultationService:
         return res
 
     @staticmethod
-    def merge_consultations(consultations_list: list, newest_first: bool = False) -> list:
+    def merge_consultations(db: Session, consultations_list: list, newest_first: bool = False) -> list:
         """
         Groups consultation records within a 3-day window into unified 'sessions'.
         Useful for cleaning up fragmented history views.
         Expects consultations_list sorted by created_at ASC (SQLAlchemy objects or dicts with created_at).
         """
         from app.utils.medical_report_builder import build_narrative_summary
+        from app.services.summary_generator import GeneradorResumenes
+        
         merged = []
         for c in consultations_list:
             is_merged = False
@@ -381,6 +374,7 @@ class ConsultationService:
                 "patient_ci": g(c, "patient_ci"),
                 "patient_age": g(c, "patient_age"),
                 "patient_phone": g(c, "patient_phone"),
+                "doctor_id": g(c, "doctor_id"),
                 "history_number": g(c, "history_number"),
                 "reason_for_visit": g(c, "reason_for_visit"),
                 "physical_exam": g(c, "physical_exam"),
@@ -393,6 +387,15 @@ class ConsultationService:
 
             # FALLBACK NARRATIVE (Only current consultation fields, no backgrounds as requested)
             if not c_data.get("medical_report_content"):
+                # REPLICA BOT LOGIC: Inject raw answers for "Interrogatorio"
+                GeneradorResumenes.inyectar_dinamicamente(
+                    db=db,
+                    data=c_data,
+                    patient_ci=c_data["patient_ci"],
+                    doctor_id=c_data["doctor_id"],
+                    patient_name=c_data["patient_name"]
+                )
+                
                 narr_data = build_narrative_summary({
                     "full_name": c_data["patient_name"],
                     "ci": c_data["patient_ci"],
@@ -403,6 +406,11 @@ class ConsultationService:
                     "admin_diagnosis": c_data["diagnosis"],
                     "admin_plan": c_data["plan"],
                     "admin_observations": c_data["observations"],
+                    # Functional exam keys (injected by inyectar_dinamicamente)
+                    "functional_dispareunia": c_data.get("functional_dispareunia"),
+                    "functional_dischezia": c_data.get("functional_dischezia"),
+                    "gyn_dysmenorrhea": c_data.get("gyn_dysmenorrhea"),
+                    "gyn_fertility_intent": c_data.get("gyn_fertility_intent"),
                 })
                 text = narr_data.get('narrative_summary', '')
                 c_data["medical_report_content"] = text.replace('<br/>', '\n')
