@@ -254,6 +254,8 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [choiceModalOpen, setChoiceModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(null); // 'history' or 'report'
   const [editFormData, setEditFormData] = useState({});
+  const [patientReports, setPatientReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(false);
 
   const { showToast } = useToastStore();
 
@@ -265,8 +267,15 @@ export default function PatientsManager({ isEmbedded = false }) {
     try {
       setLoading(true);
       const response = await api.get('/consultations/');
-      // Dejamos de agrupar para ver todas las consultas e informes independientes
-      setConsultations(response.data);
+      const data = response.data;
+      const grouped = {};
+      data.forEach(consultation => {
+        const ci = consultation.patient_ci;
+        if (!grouped[ci] || new Date(consultation.created_at) > new Date(grouped[ci].created_at)) {
+          grouped[ci] = consultation;
+        }
+      });
+      setConsultations(Object.values(grouped));
     } catch (error) {
       console.error('Error fetching consultations:', error);
     } finally {
@@ -398,6 +407,19 @@ export default function PatientsManager({ isEmbedded = false }) {
     });
   };
 
+  const fetchPatientReports = async (dni) => {
+    if (!dni) return;
+    try {
+      setLoadingReports(true);
+      const response = await api.get(`/consultations/patient/${dni}/raw`);
+      setPatientReports(response.data);
+    } catch (error) {
+      console.error('Error fetching patient reports:', error);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
   const handleViewPdf = (url) => {
     setIsAssetOnly(false); // Reset to PDF mode
     setBasePdfUrl(url);
@@ -407,7 +429,16 @@ export default function PatientsManager({ isEmbedded = false }) {
     
     // Extraer ID inmediatamente para evitar ruidos en AssetManager
     const match = url.match(/\/consultations\/(\d+)\//);
-    if (match) setCurrentConsultationId(match[1]);
+    if (match) {
+      const consultationId = match[1];
+      setCurrentConsultationId(consultationId);
+      
+      // Buscar el CI del paciente para esta consulta para cargar todos sus reportes
+      const consultation = consultations.find(c => String(c.id) === String(consultationId));
+      if (consultation && consultation.patient_ci) {
+        fetchPatientReports(consultation.patient_ci);
+      }
+    }
     
     setPdfModalOpen(true);
   };
@@ -652,6 +683,36 @@ export default function PatientsManager({ isEmbedded = false }) {
         fullScreenOnMobile
       >
         <div className="flex flex-col h-full">
+          {/* Explorador de Informes / Consultas */}
+          {patientReports.length > 1 && !isAssetOnly && (
+            <div className="mb-6">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Línea del tiempo / Seleccionar Consulta</p>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
+                {patientReports.map((report) => {
+                  const isSelected = String(report.id) === String(currentConsultationId);
+                  return (
+                    <button
+                      key={report.id}
+                      onClick={() => {
+                        setCurrentConsultationId(report.id);
+                        const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
+                        setBasePdfUrl(`${API_BASE}/consultations/${report.id}/${suffix}`);
+                        setHistoryData(null); // Force reload
+                      }}
+                      className={`flex-shrink-0 px-4 py-2 rounded-2xl text-[11px] font-black transition-all border-2 ${
+                        isSelected 
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md scale-105' 
+                          : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
+                      }`}
+                    >
+                      {new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Tabs Navigation - Ocultas en modo solo activos */}
           {currentConsultationId && !isAssetOnly && (
             <div className="border-b border-gray-200 dark:border-gray-700 mb-4 pb-4">

@@ -138,6 +138,24 @@ def get_all_consultations_by_patient(
     
     return ConsultationService.merge_consultations(consultations, newest_first=True)
 
+@router.get("/patient/{dni}/raw", response_model=list)
+def get_raw_consultations_by_patient(
+    dni: str,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Get ALL RAW consultations for a specific patient (by DNI), ordered newest first.
+    No merging applied. Used for the frontend Report Explorer.
+    """
+    consultations = db.query(Consultation).filter(
+        Consultation.patient_ci == dni,
+        Consultation.doctor_id == current_user.id
+    ).order_by(Consultation.created_at.desc()).all()
+    
+    return consultations
+    
+
 @router.get("/patient/latest", response_model=dict)
 def get_latest_consultation_by_patient(
     dni: str,
