@@ -395,23 +395,28 @@ export default function PatientsManager({ isEmbedded = false }) {
         } else {
           setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
         }
+        setPdfModalOpen(false); // Close if the whole history was deleted
       } else {
-        // If it was an individual delete, we need to refresh the report lists
-        if (targetCi) fetchPatientReports(targetCi);
-        fetchConsultations(); // Optional, to ensure dashboard is clean
-        
-        // If the deleted one was being viewed, switch to another one
-        if (String(consultationToDelete) === String(currentConsultationId)) {
-          const remaining = patientReports.filter(r => String(r.id) !== String(consultationToDelete));
-          if (remaining.length > 0) {
-             const next = remaining[0];
-             setCurrentConsultationId(next.id);
-             const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
-             setBasePdfUrl(`${API_BASE}/consultations/${next.id}/${suffix}`);
-          } else {
-             setPdfModalOpen(false);
+        // Individual delete: manually update local lists to avoid stale state issues
+        setPatientReports(prev => {
+          const updated = prev.filter(r => String(r.id) !== String(consultationToDelete));
+          
+          // If the deleted one was being viewed, switch to another one
+          if (String(consultationToDelete) === String(currentConsultationId)) {
+            if (updated.length > 0) {
+              const next = updated[0];
+              setCurrentConsultationId(next.id);
+              const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
+              setBasePdfUrl(`${API_BASE}/consultations/${next.id}/${suffix}`);
+            } else {
+              setPdfModalOpen(false);
+            }
           }
-        }
+          return updated;
+        });
+
+        if (targetCi) fetchPatientReports(targetCi); // Sync with server backup
+        fetchConsultations(); 
       }
     } catch (error) {
       showToast('Error al eliminar la historia', 'error');
