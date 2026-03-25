@@ -235,6 +235,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   // Delete State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [consultationToDelete, setConsultationToDelete] = useState(null);
+  const [isDeletingAll, setIsDeletingAll] = useState(true);
 
   // PDF Preview State
   const [isPdfModalOpen, setPdfModalOpen] = useState(false);
@@ -370,8 +371,9 @@ export default function PatientsManager({ isEmbedded = false }) {
     }
   };
 
-  const handleDeleteClick = (id) => {
+  const handleDeleteClick = (id, all = true) => {
     setConsultationToDelete(id);
+    setIsDeletingAll(all);
     setDeleteModalOpen(true);
   };
 
@@ -383,15 +385,33 @@ export default function PatientsManager({ isEmbedded = false }) {
     const targetCi = target?.patient_ci;
 
     try {
-      // Use delete_all=true because this view manages "Patients" (grouped consultations)
-      await api.delete(`/consultations/${consultationToDelete}?delete_all=true`);
-      showToast('Historia clínica eliminada exitosamente', 'success');
+      // Use delete_all query param based on isDeletingAll
+      await api.delete(`/consultations/${consultationToDelete}${isDeletingAll ? '?delete_all=true' : ''}`);
+      showToast(isDeletingAll ? 'Historia clínica eliminada exitosamente' : 'Consulta eliminada exitosamente', 'success');
       
-      // Filter out ANY consultation with the same CI from local state
-      if (targetCi) {
-        setConsultations(prev => prev.filter(c => c.patient_ci !== targetCi));
+      if (isDeletingAll) {
+        if (targetCi) {
+          setConsultations(prev => prev.filter(c => c.patient_ci !== targetCi));
+        } else {
+          setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
+        }
       } else {
-        setConsultations(prev => prev.filter(c => c.id !== consultationToDelete));
+        // If it was an individual delete, we need to refresh the report lists
+        if (targetCi) fetchPatientReports(targetCi);
+        fetchConsultations(); // Optional, to ensure dashboard is clean
+        
+        // If the deleted one was being viewed, switch to another one
+        if (String(consultationToDelete) === String(currentConsultationId)) {
+          const remaining = patientReports.filter(r => String(r.id) !== String(consultationToDelete));
+          if (remaining.length > 0) {
+             const next = remaining[0];
+             setCurrentConsultationId(next.id);
+             const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
+             setBasePdfUrl(`${API_BASE}/consultations/${next.id}/${suffix}`);
+          } else {
+             setPdfModalOpen(false);
+          }
+        }
       }
     } catch (error) {
       showToast('Error al eliminar la historia', 'error');
@@ -693,22 +713,33 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {patientReports.map((report) => {
                   const isSelected = String(report.id) === String(currentConsultationId);
                   return (
-                    <button
-                      key={report.id}
-                      onClick={() => {
-                        setCurrentConsultationId(report.id);
-                        const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
-                        setBasePdfUrl(`${API_BASE}/consultations/${report.id}/${suffix}`);
-                        setHistoryData(null); // Force reload
-                      }}
-                      className={`flex-shrink-0 px-4 py-2 rounded-2xl text-[11px] font-black transition-all border-2 ${
-                        isSelected 
-                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md scale-105' 
-                          : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
-                      }`}
-                    >
-                      {new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
-                    </button>
+                    <div key={report.id} className="relative group">
+                      <button
+                        onClick={() => {
+                          setCurrentConsultationId(report.id);
+                          const suffix = basePdfUrl.includes('history_pdf') ? 'history_pdf' : 'pdf';
+                          setBasePdfUrl(`${API_BASE}/consultations/${report.id}/${suffix}`);
+                          setHistoryData(null); // Force reload
+                        }}
+                        className={`flex-shrink-0 px-4 py-2 rounded-2xl text-[11px] font-black transition-all border-2 ${
+                          isSelected 
+                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-md scale-105' 
+                            : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
+                        }`}
+                      >
+                        {new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(report.id, false);
+                        }}
+                        className="absolute -top-2 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 z-10"
+                        title="Eliminar esta copia"
+                      >
+                        <FiTrash2 size={10} />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
