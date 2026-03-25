@@ -243,6 +243,7 @@ export default function NotificationManagerPage() {
         if (type.startsWith('doctor_new_appointment')) return "Se envía cuando una paciente agenda una cita pública presencial."
         if (type.startsWith('doctor_new_online_consultation')) return "Se envía cuando una paciente agenda una consulta online."
         if (type.startsWith('doctor_preconsulta_completed')) return "Se envía cuando una paciente completa la preconsulta."
+        if (type.startsWith('doctor_unified_onboarding')) return "Se envía cuando una paciente finaliza el proceso de Vía Rápida (Cita + Preconsulta)."
         if (type.startsWith('doctor_new_contact_message')) return "Se envía cuando alguien envía un mensaje de contacto."
         if (type.startsWith('system_')) return "Se envía por eventos del sistema."
 
@@ -310,6 +311,7 @@ export default function NotificationManagerPage() {
             'doctor_new_appointment': 'Nueva Cita Presencial',
             'doctor_new_online_consultation': 'Nueva Consulta Online',
             'doctor_preconsulta_completed': 'Preconsulta Completada',
+            'doctor_unified_onboarding': 'Onboarding Unificado Finalizado',
             'doctor_new_contact_message': 'Nuevo Mensaje de Contacto',
             'custom': 'Notificación Especial'
         }

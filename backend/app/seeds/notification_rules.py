@@ -870,6 +870,16 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "channel": "dual",
             "send_time": "08:00"
         },
+        {
+            "notification_type": "doctor_unified_onboarding",
+            "trigger_condition": {"role": "doctor", "event": "unified_onboarding"},
+            "priority": 57,
+            "title_template": "🚀 Onboarding Unificado Finalizado",
+            "message_template": "Hola {doctor_name}, {patient_name} ha finalizado el onboarding unificado (Cita + Preconsulta).",
+            "message_text_template": "Onboarding unificado finalizado por {patient_name}.",
+            "channel": "dual",
+            "send_time": "08:00"
+        },
     ]
 
     for rule_data in standard_rules:

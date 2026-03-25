@@ -76,6 +76,15 @@ async def startup_event():
     asyncio.create_task(backup_scheduler(interval_seconds=3600))
     logger.info("Tarea de backup automático programada.")
     
+    try:
+        from app.services.notifications import sync_notification_registry_to_db
+        from app.services.notifications.base import session_scope
+        with session_scope() as db:
+            sync_notification_registry_to_db(db)
+        logger.info("Sincronización de registro de notificaciones completada.")
+    except Exception as e:
+        logger.error(f"Error sincronizando registro de notificaciones: {e}")
+
     # Ensure S3 Bucket Exists
     try:
         from app.core.s3 import ensure_bucket_exists

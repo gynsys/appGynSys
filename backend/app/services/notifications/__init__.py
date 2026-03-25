@@ -35,6 +35,9 @@ from .processor import (
 from .health import (
     get_notification_system_health,
 )
+from .management import (
+    sync_notification_registry_to_db,
+)
 
 # CRUD (Viviendo en submodulos si es necesario, o re-implementados aqui para simplicidad)
 from sqlalchemy.orm import Session
