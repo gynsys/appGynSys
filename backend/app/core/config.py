@@ -6,7 +6,7 @@ Uses Pydantic BaseSettings to load environment variables.
 from pydantic_settings import BaseSettings
 from typing import Optional, List, Union
 import os
-from pydantic import AnyHttpUrl, validator
+from pydantic import AnyHttpUrl, field_validator
 
 
 
@@ -57,14 +57,15 @@ class Settings(BaseSettings):
         "http://localhost:5174", 
         "http://127.0.0.1:5174",
         "https://gynsys.netlify.app",
-        "https://appgynsys.onrender.com",
+        
         "https://gynsys.net",
         "https://www.gynsys.net",
         "https://api.gynsys.net"
     ]
 
-    @validator("CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v):
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
         origins = v
         if isinstance(v, str):
             # Permite formato JSON o CSV
@@ -79,7 +80,7 @@ class Settings(BaseSettings):
             "https://gynsys.net",
             "https://www.gynsys.net",
             "https://api.gynsys.net",
-            "https://appgynsys.onrender.com",
+           
             "http://localhost",
             "capacitor://localhost"
         ]

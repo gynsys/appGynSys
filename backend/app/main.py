@@ -25,9 +25,15 @@ async def log_user_agent(request, call_next):
     return await call_next(request)
 
 # Configure CORS (Must be added last to be the outer-most middleware)
+origins = settings.CORS_ORIGINS
+if isinstance(origins, str):
+    origins = [o.strip() for o in origins.split(",") if o.strip()]
+origins = [str(o).rstrip("/") for o in origins]
+print(f"[CORS-DEBUG] Configured Origins: {origins}", flush=True)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin).rstrip("/") for origin in settings.CORS_ORIGINS],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
