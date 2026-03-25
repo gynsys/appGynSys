@@ -684,7 +684,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       >
         <div className="flex flex-col h-full">
           {/* Explorador de Informes / Consultas */}
-          {patientReports.length > 1 && !isAssetOnly && (
+          {patientReports.length > 1 && !isAssetOnly && !basePdfUrl?.includes('history_pdf') && (
             <div className="mb-6">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Línea del tiempo / Seleccionar Consulta</p>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
