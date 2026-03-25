@@ -155,6 +155,16 @@ class GeneradorResumenes:
                 data['habits_summary'] = resumenes['estilo_vida']
                 data['summary_medical'] = resumenes['antecedentes']
                 data['summary_general'] = resumenes['general']
+
+                # Inyección de respuestas crudas para compatibilidad con build_narrative_summary (bot replica)
+                # Esto permite que la función encuentre campos como functional_dispareunia, gyn_dysmenorrhea, etc.
+                for k, v in ans.items():
+                    if k not in data or not data[k]:
+                        data[k] = v
+                
+                # Caso especial: Dismenorrea necesita el formato 'intensidad: X/10' para el regex del bot
+                if ans.get('gyn_dysmenorrhea_scale_value'):
+                    data['gyn_dysmenorrhea'] = f"Sí, intensidad: {ans['gyn_dysmenorrhea_scale_value']}/10"
                 
                 return True
         except Exception as e:

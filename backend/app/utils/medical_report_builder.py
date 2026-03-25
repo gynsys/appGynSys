@@ -56,78 +56,68 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
         else:
             narrative_parts.append(f"Paciente quien acude a consulta por presentar {reason}.")
 
-    # 2. Resúmenes Dinámicos (Preferir los inyectados por GeneradorResumenes)
-    gyn_summary = report_data.get('summary_gyn_obstetric') or report_data.get('obstetric_history_summary')
-    func_summary = report_data.get('summary_functional_exam') or report_data.get('functional_exam_summary')
+    # 2. Hallazgos Funcionales
+    findings_parts = []
 
-    if gyn_summary:
-        narrative_parts.append(gyn_summary)
-    
-    if func_summary:
-        narrative_parts.append(f"Al interrogatorio, manifiesta: {func_summary}")
+    # Verificar si el examen funcional fue realizado (hay datos) Y está habilitado en la configuración
+    has_functional_data = include_functional_exam and any(
+        report_data.get(key) for key in [
+            'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
+            'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
+            'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
+            'functional_urinary_incontinence', 'functional_urinary_nocturia'
+        ]
+    )
+
+    # Dismenorrea (siempre se incluye, es parte de antecedentes ginecológicos)
+    dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
+    if not dismenorrhea or dismenorrhea.lower() == 'no':
+        findings_parts.append("no presentar dismenorrea")
     else:
-        # Fallback to legacy builder if no dynamic summary for functional exam
-        findings_parts = []
+        eva_match = re.search(r'intensidad: (\d+)/10', dismenorrhea)
+        score = int(eva_match.group(1)) if eva_match else 0
+        intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+        findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
 
-        # Verificar si el examen funcional fue realizado (hay datos) Y está habilitado en la configuración
-        has_functional_data = include_functional_exam and any(
-            report_data.get(key) for key in [
-                'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
-                'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
-                'functional_urinary_problem', 'functional_urinary_pain', 'functional_urinary_irritation',
-                'functional_urinary_incontinence', 'functional_urinary_nocturia'
-            ]
-        )
-
-        # Dismenorrea (siempre se incluye, es parte de antecedentes ginecológicos)
-        dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
-        if not dismenorrhea or dismenorrhea.lower() == 'no':
-            findings_parts.append("no presentar dismenorrea")
+    # Solo incluir información del examen funcional si hay datos (fue habilitado)
+    if has_functional_data:
+        # Dispareunia
+        dispareunia = report_data.get('functional_dispareunia', '')
+        if not dispareunia or dispareunia.lower() == 'no':
+            findings_parts.append("niega dispareunia")
         else:
-            eva_match = re.search(r'intensidad: (\d+)/10', dismenorrhea)
-            score = int(eva_match.group(1)) if eva_match else 0
-            intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-            findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
-
-        # Solo incluir información del examen funcional si hay datos (fue habilitado)
-        if has_functional_data:
-            # Dispareunia
-            dispareunia = report_data.get('functional_dispareunia', '')
-            if not dispareunia or dispareunia.lower() == 'no':
-                findings_parts.append("niega dispareunia")
-            else:
-                eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dispareunia)
-                if eva_match:
-                    score = int(eva_match.group(1).split('/')[0])
-                    intensity_desc = "de alta intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-                    findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
-                    
-            # Disquecia
-            dischezia = report_data.get('functional_dischezia', '')
-            if not dischezia or dischezia.lower() == 'no':
-                findings_parts.append("niega disquecia")
-            elif 'eventual' in dischezia.lower():
-                findings_parts.append("disquecia eventual")
-            else:
-                eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dischezia)
-                if eva_match:
-                    score = int(eva_match.group(1).split('/')[0])
-                    intensity_desc = "de máxima intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-                    findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
-
-        # Infertilidad
-        infertility = report_data.get('gyn_fertility_intent', '')
-        if infertility and "Con deseo" in infertility:
-            findings_parts.append("con deseo de fertilidad no logrado")
+            eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dispareunia)
+            if eva_match:
+                score = int(eva_match.group(1).split('/')[0])
+                intensity_desc = "de alta intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+                findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
+                
+        # Disquecia
+        dischezia = report_data.get('functional_dischezia', '')
+        if not dischezia or dischezia.lower() == 'no':
+            findings_parts.append("niega disquecia")
+        elif 'eventual' in dischezia.lower():
+            findings_parts.append("disquecia eventual")
         else:
-            findings_parts.append("sin deseo de fertilidad aparente")
+            eva_match = re.search(r'\(Intensidad: (\d+)/10\)', dischezia)
+            if eva_match:
+                score = int(eva_match.group(1).split('/')[0])
+                intensity_desc = "de máxima intensidad" if score >= 10 else "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+                findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
 
-        if findings_parts:
-            if len(findings_parts) > 1:
-                findings_str = ", ".join(findings_parts[:-1]) + " y " + findings_parts[-1]
-            else:
-                findings_str = findings_parts[0]
-            narrative_parts.append(f"Al interrogatorio, manifiesta {findings_str}.")
+    # Infertilidad
+    infertility = report_data.get('gyn_fertility_intent', '')
+    if infertility and "Con deseo" in infertility:
+        findings_parts.append("con deseo de fertilidad no logrado")
+    else:
+        findings_parts.append("sin deseo de fertilidad aparente")
+
+    if findings_parts:
+        if len(findings_parts) > 1:
+            findings_str = ", ".join(findings_parts[:-1]) + " y " + findings_parts[-1]
+        else:
+            findings_str = findings_parts[0]
+        narrative_parts.append(f"Al interrogatorio, manifiesta {findings_str}.")
 
     # 3. Hallazgos del Médico
     ultrasound = report_data.get('admin_ultrasound')
@@ -136,20 +126,25 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
 
     diagnosis = report_data.get('admin_diagnosis')
     if diagnosis:
-        # Formatear diagnóstico con viñetas si hay múltiples líneas
+        # Formatear diagnóstico numerado si es necesario
         diag_items = [d.strip() for d in diagnosis.strip().split('\n') if d.strip()]
-        if len(diag_items) > 1:
-             bullet_list = []
-             for item in diag_items:
-                 # Limpiar marcadores existentes si los hay
-                 cleaned = re.sub(r'^[•*-]\s*|^\d+[.)]\s*', '', item)
-                 bullet_list.append(f"&bull; {cleaned}")
-             diagnosis_formatted = "<br/>".join(bullet_list)
+        if len(diag_items) > 1 or (diag_items and re.match(r'^\d+\)', diag_items[0])):
+             # Extraer la operación fuera del f-string (no se pueden usar backslashes en expresiones de f-strings)
+             diagnosis_formatted = diagnosis.replace('\n', '<br/>')
              narrative_parts.append(f"Se establecen los siguientes diagnósticos:<br/>{diagnosis_formatted}")
         else:
             narrative_parts.append(f"Se establece el diagnóstico de {diagnosis}.")
 
     plan = report_data.get('admin_plan')
+    '''if plan:
+        # Formatear plan con viñetas si es necesario
+        plan_items = [p.strip() for p in plan.strip().split('\n')]
+        if len(plan_items) > 1 or plan_items[0].startswith('•'):
+            # Extraer la operación fuera del f-string (no se pueden usar backslashes en expresiones de f-strings)
+            plan_formatted = plan.replace('\n', '<br/>')
+            narrative_parts.append(f"Se indica el siguiente plan:<br/>{plan_formatted}")
+        else:
+            narrative_parts.append(f"Se indica como plan: {plan}.")'''
     if plan:
         # Siempre introducimos el plan con un texto y un salto de línea.
         narrative_parts.append("Se indica como plan:")
@@ -197,17 +192,18 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
             # Dividir por saltos de línea, cada línea es un item
             plan_items = [line.strip() for line in plan.strip().split('\n') if line.strip()]
     
-        # Construimos una lista con viñetas
-        bullet_list_parts = []
-        for item in plan_items:
+        # Construimos una lista numerada (1., 2., etc.) en lugar de viñetas
+        # Esto es más confiable que las viñetas en ReportLab
+        numbered_list_parts = []
+        for i, item in enumerate(plan_items, 1):
             # Quitamos marcadores manuales si el usuario los puso (como '•', '-', o números)
             cleaned_item = re.sub(r'^[•*-]\s*|^\d+[.)]\s*', '', item)
-            # Agregar bullet con espacio
-            bullet_list_parts.append(f"&bull; {cleaned_item}")
+            # Agregar número con punto y espacio
+            numbered_list_parts.append(f"{i}.&nbsp;{cleaned_item}")
         
         # Unir los ítems con saltos de línea
-        # Usamos <br/> para separar cada ítem
-        plan_formatted_as_list = "<br/>".join(bullet_list_parts)
+        # Usamos <br/> para separar cada ítem y leftIndent se aplicará en el estilo
+        plan_formatted_as_list = "<br/>".join(numbered_list_parts)
         
         # Añadimos la lista formateada a nuestras partes narrativas.
         narrative_parts.append(plan_formatted_as_list)
@@ -223,16 +219,4 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     narrative_text = re.sub(r'<br/> +', '<br/>', narrative_text)
     
     context['narrative_summary'] = narrative_text
-
-    # Add Observations separately
-    observations = report_data.get('admin_observations')
-    if observations:
-        obs_items = [o.strip() for o in observations.strip().split('\n') if o.strip()]
-        if obs_items:
-             obs_bullets = []
-             for item in obs_items:
-                 cleaned = re.sub(r'^[•*-]\s*|^\d+[.)]\s*', '', item)
-                 obs_bullets.append(f"&bull; {cleaned}")
-             context['observations_formatted'] = "<br/>".join(obs_bullets)
-
     return context
