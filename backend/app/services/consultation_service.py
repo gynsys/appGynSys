@@ -418,7 +418,8 @@ class ConsultationService:
             if merged:
                 last = merged[-1]
                 diff = abs((c_data["created_at"] - last["created_at"]).total_seconds())
-                if diff < 3 * 24 * 60 * 60: # 3 days threshold
+                # CRITICAL: Only merge if it's the SAME patient AND within the 3-day window
+                if c_data.get("patient_ci") == last.get("patient_ci") and diff < 3 * 24 * 60 * 60: # 3 days threshold
                     
                     def is_placeholder(val):
                         if not val: return True
