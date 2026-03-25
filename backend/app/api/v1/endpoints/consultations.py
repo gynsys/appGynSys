@@ -319,6 +319,32 @@ def update_consultation(
 
     return {"status": "success", "message": "Consultation updated", "consultation": db_consultation}
 
+@router.post("/{consultation_id}/clone")
+def clone_consultation(
+    consultation_id: int,
+    consultation_update: ConsultationUpdate,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Clones a consultation and applies updates. Used for 'Save As'.
+    """
+    new_consultation = ConsultationService.clone(
+        db=db,
+        consultation_id=consultation_id,
+        consultation_update=consultation_update,
+        doctor_id=current_user.id
+    )
+    
+    if not new_consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+        
+    return {
+        "status": "success", 
+        "message": "Consultation cloned and saved as new", 
+        "consultation_id": new_consultation.id
+    }
+
 @router.delete("/{consultation_id}")
 def delete_consultation(
     consultation_id: int,

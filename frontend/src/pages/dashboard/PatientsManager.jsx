@@ -251,6 +251,8 @@ export default function PatientsManager({ isEmbedded = false }) {
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [consultationToEdit, setConsultationToEdit] = useState(null);
+  const [choiceModalOpen, setChoiceModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(null); // 'history' or 'report'
   const [editFormData, setEditFormData] = useState({});
 
   const { showToast } = useToastStore();
@@ -315,6 +317,12 @@ export default function PatientsManager({ isEmbedded = false }) {
       admin_observations: consultation.observations || '',
       history_number: consultation.history_number
     });
+    setChoiceModalOpen(true);
+  };
+
+  const handleChoice = (mode) => {
+    setEditMode(mode);
+    setChoiceModalOpen(false);
     setEditModalOpen(true);
   };
 
@@ -330,16 +338,29 @@ export default function PatientsManager({ isEmbedded = false }) {
     }));
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  const handleUpdate = async (e, isClone = false) => {
+    if (e) e.preventDefault();
     if (!consultationToEdit) return;
+    
     try {
-      const response = await api.put(`/consultations/${consultationToEdit.id}`, editFormData);
-      showToast('Historia actualizada exitosamente', 'success');
+      const endpoint = isClone 
+        ? `/consultations/${consultationToEdit.id}/clone`
+        : `/consultations/${consultationToEdit.id}`;
+      
+      const method = isClone ? 'post' : 'put';
+      
+      await api[method](endpoint, editFormData);
+      
+      showToast(
+        isClone ? 'Informe clonado exitosamente' : 'Cambios guardados exitosamente', 
+        'success'
+      );
+      
       fetchConsultations();
       setEditModalOpen(false);
+      setEditMode(null);
     } catch (error) {
-      showToast('Error al actualizar la historia', 'error');
+      showToast('Error al procesar la solicitud', 'error');
     }
   };
 
@@ -700,18 +721,54 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       </Modal>
 
+      <Modal 
+        isOpen={choiceModalOpen} 
+        onClose={() => setChoiceModalOpen(false)} 
+        title="¿Qué deseas editar?" 
+        size="md"
+      >
+        <div className="grid grid-cols-1 gap-4 p-4">
+          <button 
+            onClick={() => handleChoice('history')}
+            className="flex items-center gap-4 p-6 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-indigo-200 dark:hover:border-indigo-800"
+          >
+            <div className="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+              <FiUser size={24} />
+            </div>
+            <div>
+              <h4 className="font-black text-indigo-900 dark:text-indigo-100 text-lg uppercase tracking-tight">Historia Clínica</h4>
+              <p className="text-sm font-medium text-indigo-600/70 dark:text-indigo-400/70">Identificación, antecedentes y perfil permanente.</p>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => handleChoice('report')}
+            className="flex items-center gap-4 p-6 bg-teal-50 dark:bg-teal-900/20 hover:bg-teal-100 dark:hover:bg-teal-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-teal-200 dark:hover:border-teal-800"
+          >
+            <div className="h-14 w-14 bg-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+              <FiFileText size={24} />
+            </div>
+            <div>
+              <h4 className="font-black text-teal-900 dark:text-teal-100 text-lg uppercase tracking-tight">Informe Médico</h4>
+              <p className="text-sm font-medium text-teal-600/70 dark:text-teal-400/70">Hallazgos actuales, diagnóstico y plan de tratamiento.</p>
+            </div>
+          </button>
+        </div>
+      </Modal>
+
       {/* Edit Modal Refactored - Full Version */}
       <Modal 
         isOpen={editModalOpen} 
-        onClose={() => setEditModalOpen(false)} 
-        title="Editar Historia Clínica" 
+        onClose={() => { setEditModalOpen(false); setEditMode(null); }} 
+        title={editMode === 'history' ? "Editar Historia Clínica" : "Editar Informe Médico"} 
         size="story"
         fullScreenOnMobile
       >
         <form onSubmit={handleUpdate} className="flex flex-col h-full max-h-[85vh]">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-thin scrollbar-thumb-indigo-200">
             
-            {/* Sección: Datos de Identificación */}
+            {/* Sección: Datos de Identificación (Siempre visible en Historia, solo lectura o simplificada en Informe si se desea, pero la dejaremos para Historia) */}
+            {editMode === 'history' && (
             <div className="space-y-4">
               <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
                 <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
@@ -748,7 +805,10 @@ export default function PatientsManager({ isEmbedded = false }) {
                 </div>
               </div>
             </div>
+            )}
 
+            {editMode === 'history' && (
+            <>
             <hr className="border-gray-100" />
 
             {/* Sección: Antecedentes */}
@@ -808,16 +868,23 @@ export default function PatientsManager({ isEmbedded = false }) {
                 </div>
               </div>
             </div>
-
             <hr className="border-gray-100" />
+            </>
+            )}
 
-            {/* Sección: Hallazgos Médicos */}
+            {/* Sección: Hallazgos Médicos (Visible en Informe) */}
+            {editMode === 'report' && (
             <div className="space-y-4">
               <h3 className="text-sm font-black text-green-600 uppercase tracking-widest flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                 Consulta Médica Actual
               </h3>
               <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 font-black">Motivo de Consulta (Opcional en Informe)</label>
+                  <textarea name="reason_for_visit" value={editFormData.reason_for_visit || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Examen Físico</label>
@@ -851,21 +918,34 @@ export default function PatientsManager({ isEmbedded = false }) {
                 </div>
               </div>
             </div>
+            )}
 
           </div>
 
           {/* Footer del Modal */}
-          <div className="flex-shrink-0 p-6 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+          <div className="flex-shrink-0 p-6 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-end gap-3">
             <button 
               type="button" 
-              onClick={() => setEditModalOpen(false)} 
-              className="flex-1 md:flex-none px-6 py-3 border-2 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+              onClick={() => { setEditModalOpen(false); setEditMode(null); }} 
+              className="px-6 py-3 border-2 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
             >
               Cancelar
             </button>
+            
+            {editMode === 'report' && (
+              <button 
+                type="button"
+                onClick={(e) => handleUpdate(e, true)}
+                className="px-6 py-3 bg-teal-500 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-teal-200 dark:shadow-none hover:bg-teal-600 transition-all active:scale-95 flex items-center gap-2"
+              >
+                <FiDownload size={16} />
+                Guardar como
+              </button>
+            )}
+
             <button 
               type="submit" 
-              className="flex-1 md:flex-none px-10 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95"
+              className="px-10 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95"
             >
               Guardar
             </button>

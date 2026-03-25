@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.schemas.consultation import ConsultationCreate
+from app.schemas.consultation import ConsultationCreate, ConsultationUpdate
 from app.db.models.consultation import Consultation
 from app.db.models.appointment import Appointment
 from app.utils.history_number import get_or_create_history_number
@@ -73,6 +73,82 @@ class ConsultationService:
                 # but in a strict transaction, we might want to.
                 
         return db_consultation
+
+    @staticmethod
+    def clone(db: Session, consultation_id: int, consultation_update: ConsultationUpdate, doctor_id: int) -> Consultation:
+        """
+        Clones an existing consultation into a new record, applying updates.
+        Used for 'Save As' functionality.
+        """
+        # 1. Get original
+        original = db.query(Consultation).filter(
+            Consultation.id == consultation_id,
+            Consultation.doctor_id == doctor_id
+        ).first()
+        
+        if not original:
+            return None
+
+        # 2. Map schema updates to DB fields
+        update_data = consultation_update.dict(exclude_unset=True)
+        field_mapping = {
+            "full_name": "patient_name",
+            "ci": "patient_ci",
+            "age": "patient_age",
+            "phone": "patient_phone",
+            "summary_gyn_obstetric": "obstetric_history_summary",
+            "summary_functional_exam": "functional_exam_summary",
+            "summary_habits": "habits_summary",
+            "admin_physical_exam": "physical_exam",
+            "admin_ultrasound": "ultrasound",
+            "admin_diagnosis": "diagnosis",
+            "admin_plan": "plan",
+            "admin_observations": "observations"
+        }
+
+        # 3. Create new record based on original
+        new_consultation = Consultation(
+            doctor_id=doctor_id,
+            patient_id=original.patient_id,
+            patient_name=original.patient_name,
+            patient_ci=original.patient_ci,
+            patient_age=original.patient_age,
+            patient_phone=original.patient_phone,
+            patient_email=original.patient_email,
+            address=original.address,
+            occupation=original.occupation,
+            
+            reason_for_visit=original.reason_for_visit,
+            family_history_mother=original.family_history_mother,
+            family_history_father=original.family_history_father,
+            personal_history=original.personal_history,
+            supplements=original.supplements,
+            surgical_history=original.surgical_history,
+            obstetric_history_summary=original.obstetric_history_summary,
+            functional_exam_summary=original.functional_exam_summary,
+            habits_summary=original.habits_summary,
+            
+            physical_exam=original.physical_exam,
+            ultrasound=original.ultrasound,
+            diagnosis=original.diagnosis,
+            plan=original.plan,
+            observations=original.observations,
+            
+            history_number=original.history_number,
+            pdf_path="dynamic"
+        )
+
+        # 4. Apply updates
+        for key, value in update_data.items():
+            db_key = field_mapping.get(key, key)
+            if hasattr(new_consultation, db_key):
+                setattr(new_consultation, db_key, value)
+
+        db.add(new_consultation)
+        db.commit()
+        db.refresh(new_consultation)
+        
+        return new_consultation
 
     @staticmethod
     def get_history_data(db: Session, consultation_id: int) -> dict:
