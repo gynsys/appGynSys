@@ -58,6 +58,14 @@ DOCTOR_NOTIFICATION_REGISTRY: List[Dict[str, Any]] = [
         "title": "📹 Nueva Consulta Online",
         "message": "Hola {doctor_name}, tienes una nueva consulta online con {patient_name} para el {appointment_date}.",
         "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "new_online_consultation"
+    },
+    {
+        "type": "doctor_unified_onboarding",
+        "category": "doctor",
+        "priority": 57,
+        "title": "✨ Onboarding Unificado Finalizado",
+        "message": "¡Buenas noticias! {patient_name} ha completado el onboarding unificado (Cita + Preconsulta).",
+        "logic": lambda c: c.get("role") == "doctor" and c.get("event") == "unified_onboarding"
     }
 ]
 
