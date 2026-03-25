@@ -234,6 +234,7 @@ export default function PatientsManager({ isEmbedded = false }) {
 
   // Delete State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [internalDeleteModalOpen, setInternalDeleteModalOpen] = useState(false);
   const [consultationToDelete, setConsultationToDelete] = useState(null);
   const [isDeletingAll, setIsDeletingAll] = useState(true);
 
@@ -374,7 +375,11 @@ export default function PatientsManager({ isEmbedded = false }) {
   const handleDeleteClick = (id, all = true) => {
     setConsultationToDelete(id);
     setIsDeletingAll(all);
-    setDeleteModalOpen(true);
+    if (all) {
+      setDeleteModalOpen(true);
+    } else {
+      setInternalDeleteModalOpen(true);
+    }
   };
 
   const confirmDelete = async () => {
@@ -422,6 +427,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       showToast('Error al eliminar la historia', 'error');
     } finally {
       setDeleteModalOpen(false);
+      setInternalDeleteModalOpen(false);
       setConsultationToDelete(null);
     }
   };
@@ -835,9 +841,34 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
               </button>
             )}
-            <button onClick={() => { setPdfModalOpen(false); setHistoryData(null); }} className="px-4 py-2 border rounded-lg text-sm font-medium">Cerrar</button>
           </div>
         </div>
+
+        {/* Modal de Confirmación Interno para evitar cierre del padre */}
+        <Modal 
+          isOpen={internalDeleteModalOpen} 
+          onClose={() => setInternalDeleteModalOpen(false)} 
+          title="Confirmar"
+          size="sm"
+        >
+          <div className="p-4 text-center">
+            <p className="text-gray-600 dark:text-gray-300 font-medium mb-6">¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+            <div className="flex justify-center gap-3">
+              <button 
+                onClick={() => setInternalDeleteModalOpen(false)} 
+                className="px-6 py-2 border-2 border-gray-100 dark:border-gray-700 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+              >
+                No, cancelar
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                className="px-6 py-2 bg-red-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-100 dark:shadow-none hover:bg-red-600 transition-all"
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </Modal>
       </Modal>
 
       <Modal 
