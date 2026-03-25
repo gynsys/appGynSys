@@ -222,6 +222,32 @@ class ConsultationService:
             patient_name=latest.patient_name
         )
 
+        # 5. Ensure all consultations in the list have a narrative fallback if unified content is missing
+        from app.utils.medical_report_builder import build_narrative_summary
+        for c_dict in res.get("all_consultations", []):
+            if not c_dict.get("medical_report_content"):
+                # Build narrative for this specific historical entry
+                hist_narrative_data = build_narrative_summary({
+                    "full_name": res.get("full_name"),
+                    "ci": res.get("ci"),
+                    "age": res.get("age"),
+                    "reason_for_visit": res.get("reason_for_visit"), # Fallback to current reason if hist missing
+                    "admin_ultrasound": c_dict.get("ultrasound"),
+                    "admin_physical_exam": c_dict.get("physical_exam"),
+                    "admin_diagnosis": c_dict.get("diagnosis"),
+                    "admin_plan": c_dict.get("plan"),
+                    "admin_observations": c_dict.get("observations"),
+                    # Note: historical obstetric/functional/habits might be missing in merged dicts, 
+                    # but build_narrative_summary handles None gracefully.
+                })
+                
+                full_h_narrative = hist_narrative_data.get('narrative_summary', '')
+                h_obs = hist_narrative_data.get('observations_formatted', '')
+                if h_obs:
+                     full_h_narrative += f"\n\nObservaciones:\n{h_obs}"
+                
+                c_dict["medical_report_content"] = full_h_narrative.replace('<br/>', '\n')
+
         return res
 
     @staticmethod
@@ -343,12 +369,14 @@ class ConsultationService:
             
             # Extract values handle both Obj and Dict
             c_data = {
+                "id": getattr(c, 'id', None) or (c.get('id') if isinstance(c, dict) else None),
                 "created_at": getattr(c, 'created_at', None) or (c.get('created_at') if isinstance(c, dict) else None),
                 "physical_exam": getattr(c, 'physical_exam', None) or (c.get('physical_exam') if isinstance(c, dict) else None),
                 "ultrasound": getattr(c, 'ultrasound', None) or (c.get('ultrasound') if isinstance(c, dict) else None),
                 "diagnosis": getattr(c, 'diagnosis', None) or (c.get('diagnosis') if isinstance(c, dict) else None),
                 "plan": getattr(c, 'plan', None) or (c.get('plan') if isinstance(c, dict) else None),
                 "observations": getattr(c, 'observations', None) or (c.get('observations') if isinstance(c, dict) else None),
+                "medical_report_content": getattr(c, 'medical_report_content', None) or (c.get('medical_report_content') if isinstance(c, dict) else None),
             }
 
             if merged:
@@ -367,6 +395,10 @@ class ConsultationService:
                     if is_placeholder(last.get("ultrasound")): last["ultrasound"] = c_data["ultrasound"]
                     if not last.get("observations") or is_placeholder(last.get("observations")): 
                         last["observations"] = c_data["observations"]
+                    
+                    # Merge medical_report_content if missing
+                    if not last.get("medical_report_content"):
+                         last["medical_report_content"] = c_data["medical_report_content"]
                     
                     if c_data["created_at"] > last["created_at"]:
                         last["created_at"] = c_data["created_at"]
