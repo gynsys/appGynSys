@@ -47,26 +47,7 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     # --- Construcción del Párrafo Narrativo ---
     narrative_parts = []
     
-    # 1. Resumen General y Antecedentes (Bot Style)
-    bg_parts = []
-    
-    gen_sum = report_data.get('summary_general')
-    if gen_sum: bg_parts.append(gen_sum)
-    
-    med_sum = report_data.get('summary_medical')
-    if med_sum: bg_parts.append(f"ANTECEDENTES: {med_sum}")
-    
-    gyn_sum = report_data.get('summary_gyn_obstetric')
-    if gyn_sum: bg_parts.append(f"HISTORIA GINECO-OBSTÉTRICA: {gyn_sum}")
-    
-    hab_sum = report_data.get('summary_habits')
-    if hab_sum: bg_parts.append(f"ESTILO DE VIDA Y HÁBITOS: {hab_sum}")
-    
-    if bg_parts:
-        narrative_parts.append("\n\n".join(bg_parts))
-        narrative_parts.append("<br/>") # Separator before current visit
-    
-    # 2. Motivo de consulta
+    # 1. Motivo de consulta
     reason = str(report_data.get('reason_for_visit') or '').strip().lower()
     if reason:
         # Si es "control ginecológico" o similar, usar "a" en lugar de "por presentar"

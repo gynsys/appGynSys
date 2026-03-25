@@ -114,12 +114,12 @@ def get_consultations(
     consultations = (
         db.query(Consultation)
         .filter(Consultation.doctor_id == current_user.id)
-        .order_by(Consultation.created_at.desc())
+        .order_by(Consultation.created_at.asc()) # merge expects ASC
         .offset(skip)
         .limit(limit)
         .all()
     )
-    return consultations
+    return ConsultationService.merge_consultations(consultations, newest_first=True)
 
 @router.get("/patient/all", response_model=list)
 def get_all_consultations_by_patient(

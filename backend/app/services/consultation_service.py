@@ -249,6 +249,7 @@ class ConsultationService:
                 if h_obs:
                      full_h_narrative += f"\n\nObservaciones:\n{h_obs}"
                 
+                # ACTUAL FIX: Assign it back to the dictionary so the frontend sees it
                 c_dict["medical_report_content"] = full_h_narrative.replace('<br/>', '\n')
 
         return res
@@ -370,21 +371,51 @@ class ConsultationService:
         Useful for cleaning up fragmented history views.
         Expects consultations_list sorted by created_at ASC (SQLAlchemy objects or dicts with created_at).
         """
+        from app.utils.medical_report_builder import build_narrative_summary
         merged = []
         for c in consultations_list:
             is_merged = False
             
-            # Extract values handle both Obj and Dict
+            # Extraction helper
+            def g(obj, key):
+                return getattr(obj, key, None) or (obj.get(key) if isinstance(obj, dict) else None)
+
+            # Extract full data for both merging and narrative building
             c_data = {
-                "id": getattr(c, 'id', None) or (c.get('id') if isinstance(c, dict) else None),
-                "created_at": getattr(c, 'created_at', None) or (c.get('created_at') if isinstance(c, dict) else None),
-                "physical_exam": getattr(c, 'physical_exam', None) or (c.get('physical_exam') if isinstance(c, dict) else None),
-                "ultrasound": getattr(c, 'ultrasound', None) or (c.get('ultrasound') if isinstance(c, dict) else None),
-                "diagnosis": getattr(c, 'diagnosis', None) or (c.get('diagnosis') if isinstance(c, dict) else None),
-                "plan": getattr(c, 'plan', None) or (c.get('plan') if isinstance(c, dict) else None),
-                "observations": getattr(c, 'observations', None) or (c.get('observations') if isinstance(c, dict) else None),
-                "medical_report_content": getattr(c, 'medical_report_content', None) or (c.get('medical_report_content') if isinstance(c, dict) else None),
+                "id": g(c, "id"),
+                "created_at": g(c, "created_at"),
+                "patient_name": g(c, "patient_name"),
+                "patient_ci": g(c, "patient_ci"),
+                "patient_age": g(c, "patient_age"),
+                "patient_phone": g(c, "patient_phone"),
+                "history_number": g(c, "history_number"),
+                "reason_for_visit": g(c, "reason_for_visit"),
+                "physical_exam": g(c, "physical_exam"),
+                "ultrasound": g(c, "ultrasound"),
+                "diagnosis": g(c, "diagnosis"),
+                "plan": g(c, "plan"),
+                "observations": g(c, "observations"),
+                "medical_report_content": g(c, "medical_report_content"),
             }
+
+            # FALLBACK NARRATIVE (Only current consultation fields, no backgrounds as requested)
+            if not c_data.get("medical_report_content"):
+                narr_data = build_narrative_summary({
+                    "full_name": c_data["patient_name"],
+                    "ci": c_data["patient_ci"],
+                    "age": c_data["patient_age"],
+                    "reason_for_visit": c_data["reason_for_visit"],
+                    "admin_ultrasound": c_data["ultrasound"],
+                    "admin_physical_exam": c_data["physical_exam"],
+                    "admin_diagnosis": c_data["diagnosis"],
+                    "admin_plan": c_data["plan"],
+                    "admin_observations": c_data["observations"],
+                })
+                text = narr_data.get('narrative_summary', '')
+                obs = narr_data.get('observations_formatted', '')
+                if obs: 
+                    text += f"\n\nObservaciones:\n{obs}"
+                c_data["medical_report_content"] = text.replace('<br/>', '\n')
 
             if merged:
                 last = merged[-1]
