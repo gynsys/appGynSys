@@ -199,7 +199,7 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
             # Quitamos marcadores manuales si el usuario los puso (como '•', '-', o números)
             cleaned_item = re.sub(r'^[•*-]\s*|^\d+[.)]\s*', '', item)
             # Agregar número con punto y espacio
-            numbered_list_parts.append(f"{i}.&nbsp;{cleaned_item}")
+            numbered_list_parts.append(f"{i}. {cleaned_item}")
         
         # Unir los ítems con saltos de línea
         # Usamos <br/> para separar cada ítem y leftIndent se aplicará en el estilo
@@ -218,5 +218,11 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     # Asegurar que no haya espacios después de <br/>
     narrative_text = re.sub(r'<br/> +', '<br/>', narrative_text)
     
+    # --- Observaciones ---
+    observations = str(report_data.get('admin_observations') or '').strip()
+    if observations:
+        observations_formatted = observations.replace('\n', '<br/>')
+        context['observations_formatted'] = observations_formatted
+
     context['narrative_summary'] = narrative_text
     return context

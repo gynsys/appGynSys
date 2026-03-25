@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from reportlab.lib.pagesizes import legal, letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+import html
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 from reportlab.lib.units import inch
@@ -23,6 +24,24 @@ from app.utils.medical_report_builder import (
 )
 
 logger = logging.getLogger(__name__)
+
+def safe_p(text: str, style: ParagraphStyle) -> Paragraph:
+    """
+    Safely creates a ReportLab Paragraph by escaping HTML special characters,
+    but preserving specific clinical formatting tags like <br/>, <b>, and <u>.
+    """
+    if not text:
+        return Paragraph("", style)
+    
+    # Escape all HTML special chars (e.g., & -> &amp;)
+    escaped = html.escape(str(text))
+    
+    # Restore specific tags used for clinical formatting
+    escaped = escaped.replace("&lt;br/&gt;", "<br/>")
+    escaped = escaped.replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>")
+    escaped = escaped.replace("&lt;u&gt;", "<u>").replace("&lt;/u&gt;", "</u>")
+    
+    return Paragraph(escaped, style)
 
 # --- HELPERS ---
 
@@ -160,7 +179,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     # Header Table
     # Logo on left (col 0), Text on right (col 1)
-    header_data = [[logo_image if logo_image else "", Paragraph(header_text, styleN)]]
+    header_data = [[logo_image if logo_image else "", safe_p(header_text, styleN)]]
     header_table = Table(header_data, colWidths=[1.5*inch, 5.5*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -175,12 +194,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(Spacer(1, 0.25*inch))
     
     report_title = pdf_config.get('report_title') or "INFORME MÉDICO"
-    story.append(Paragraph(f"<u>{report_title}</u>", styleH1))
+    story.append(safe_p(f"<u>{report_title}</u>", styleH1))
     story.append(Spacer(1, 0.25*inch))
 
-    story.append(Paragraph(f"<b>Nombre y Apellidos:</b> {report_context.get('full_name')}", style_patient_data))
-    story.append(Paragraph(f"<b>Edad:</b> {report_context.get('age')}", style_patient_data))
-    story.append(Paragraph(f"<b>C.I.:</b> {report_context.get('ci')}", style_patient_data))
+    story.append(safe_p(f"<b>Nombre y Apellidos:</b> {report_context.get('full_name')}", style_patient_data))
+    story.append(safe_p(f"<b>Edad:</b> {report_context.get('age')}", style_patient_data))
+    story.append(safe_p(f"<b>C.I.:</b> {report_context.get('ci')}", style_patient_data))
     story.append(Spacer(1, 0.3*inch))
 
     narrative_content = report_context.get('narrative_summary')
@@ -203,18 +222,18 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             # Renderizar el texto "Se indica como plan:" y luego el plan
             if plan_text:
                 # Primero el texto introductorio
-                intro_paragraph = Paragraph("Se indica como plan:", style_narrative)
+                intro_paragraph = safe_p("Se indica como plan:", style_narrative)
                 story.append(intro_paragraph)
                 
                 # Renderizar cada item del plan por separado para asegurar sangría correcta
                 # Dividir por <br/> para obtener cada item
                 plan_items = [item.strip() for item in plan_text.split('<br/>') if item.strip()]
                 for item in plan_items:
-                    plan_item_paragraph = Paragraph(item, style_plan)
+                    plan_item_paragraph = safe_p(item, style_plan)
                     story.append(plan_item_paragraph)
         else:
             # No hay plan, solo texto narrativo
-            narrative_paragraph = Paragraph(narrative_content, style_narrative)
+            narrative_paragraph = safe_p(narrative_content, style_narrative)
             story.append(narrative_paragraph)
 
     # Render Observations
@@ -354,7 +373,11 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         
         story.append(img_table)
 
-    doc.build(story)
+    try:
+        doc.build(story)
+    except Exception as e:
+        logger.error(f"Error building summary PDF: {e}", exc_info=True)
+        raise
     buffer.seek(0)
     return buffer
 
@@ -410,7 +433,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     
     # Header Table
     # Logo on left (col 0), Text on right (col 1)
-    header_data = [[logo_image if logo_image else "", Paragraph(header_text, styleN)]]
+    header_data = [[logo_image if logo_image else "", safe_p(header_text, styleN)]]
     header_table = Table(header_data, colWidths=[1.5*inch, 5.5*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -425,14 +448,14 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
 
     # Patient Table
     patient_table_data = [
-        [Paragraph("<b>Nombre:</b>", styleB), Paragraph(get_str('full_name').title(), styleN),
-         Paragraph("<b>Edad:</b>", styleB), Paragraph(get_str('age'), styleN)],
-        [Paragraph("<b>C.I.:</b>", styleB), Paragraph(get_str('ci'), styleN),
-         Paragraph("<b>TLF:</b>", styleB), Paragraph(get_str('phone'), styleN)],
-        [Paragraph("<b>Dirección:</b>", styleB), Paragraph(get_str('address').title(), styleN),
-         Paragraph("<b>Ocupación:</b>", styleB), Paragraph(get_str('occupation').title(), styleN)],
-        [Paragraph("<b>N° Historia:</b>", styleB), Paragraph(get_str('history_number', 'Pendiente'), styleN),
-         Paragraph("", styleN), Paragraph("", styleN)],
+        [safe_p("<b>Nombre:</b>", styleB), safe_p(get_str('full_name').title(), styleN),
+         safe_p("<b>Edad:</b>", styleB), safe_p(get_str('age'), styleN)],
+        [safe_p("<b>C.I.:</b>", styleB), safe_p(get_str('ci'), styleN),
+         safe_p("<b>TLF:</b>", styleB), safe_p(get_str('phone'), styleN)],
+        [safe_p("<b>Dirección:</b>", styleB), safe_p(get_str('address').title(), styleN),
+         safe_p("<b>Ocupación:</b>", styleB), safe_p(get_str('occupation').title(), styleN)],
+        [safe_p("<b>N° Historia:</b>", styleB), safe_p(get_str('history_number', 'Pendiente'), styleN),
+         safe_p("", styleN), safe_p("", styleN)],
     ]
     patient_table = Table(patient_table_data, colWidths=[1.5*inch, 3.0*inch, 1.0*inch, 2.0*inch])
     patient_table.setStyle(TableStyle([
@@ -465,22 +488,22 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         if not content or content.isspace():
             continue
         
-        label_p = Paragraph(f"<b>{label}:</b>", styleB)
+        label_p = safe_p(f"<b>{label}:</b>", styleB)
         value_p_list = []
         
         if isinstance(style_or_type, ParagraphStyle):
             paragraphs = content.strip().split('<br/>')
             for p_text in paragraphs:
                 if p_text.strip():
-                    value_p_list.append(Paragraph(p_text, style_or_type))
+                    value_p_list.append(safe_p(p_text, style_or_type))
         else:
             items = [item.strip() for item in content.strip().split('\n') if item.strip()]
             list_style = ParagraphStyle(name='ListItem', parent=styleN, leftIndent=12)
             for item_text in items:
-                value_p_list.append(Paragraph(f"• {item_text}", list_style))
+                value_p_list.append(safe_p(f"• {item_text}", list_style))
         
         if not value_p_list:
-            value_p_list.append(Paragraph("No reportado.", styleN))
+            value_p_list.append(safe_p("No reportado.", styleN))
 
         body_rows.append([label_p, value_p_list])
 
@@ -540,7 +563,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
             ]
             
             for label, content, style_or_type in consultation_sections:
-                label_p = Paragraph(f"<b>{label}:</b>", styleB)
+                label_p = safe_p(f"<b>{label}:</b>", styleB)
                 value_p_list = []
                 
                 # Only process content if it exists and is not empty
@@ -549,17 +572,17 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
                         paragraphs = content.strip().split('<br/>')
                         for p_text in paragraphs:
                             if p_text.strip():
-                                value_p_list.append(Paragraph(p_text, style_or_type))
+                                value_p_list.append(safe_p(p_text, style_or_type))
                     else:
                         # List handling
                         items = [item.strip() for item in content.strip().split('\n') if item.strip()]
                         list_style = ParagraphStyle(name='ListItem', parent=styleN, leftIndent=12)
                         for item_text in items:
-                            value_p_list.append(Paragraph(f"• {item_text}", list_style))
+                            value_p_list.append(safe_p(f"• {item_text}", list_style))
                 
                 # Always show the field, even if empty
                 if not value_p_list:
-                    value_p_list.append(Paragraph("No reportado.", styleN))
+                    value_p_list.append(safe_p("No reportado.", styleN))
 
                 body_rows.append([label_p, value_p_list])
 
@@ -595,7 +618,11 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
 
     # Footer removed - medical history is cumulative document without signature
 
-    doc.build(story)
+    try:
+        doc.build(story)
+    except Exception as e:
+        logger.error(f"Error building medical history PDF: {e}", exc_info=True)
+        raise
     buffer.seek(0)
     return buffer
 
