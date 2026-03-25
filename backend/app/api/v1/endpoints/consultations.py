@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Query, UploadFile, File, Form
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from app.schemas.consultation import ConsultationCreate, ConsultationUpdate
+from app.schemas.consultation import ConsultationCreate, ConsultationUpdate, Consultation as ConsultationSchema
 from app.schemas.consultation_asset import ConsultationAsset as ConsultationAssetSchema, ConsultationAssetCreate
 from app.utils.pdf_generator import generate_medical_report, generate_summary_report
 from app.db.base import get_db
@@ -138,7 +138,7 @@ def get_all_consultations_by_patient(
     
     return ConsultationService.merge_consultations(consultations, newest_first=True)
 
-@router.get("/patient/{dni}/raw", response_model=list)
+@router.get("/patient/{dni}/raw", response_model=List[ConsultationSchema])
 def get_raw_consultations_by_patient(
     dni: str,
     db: Session = Depends(get_db),

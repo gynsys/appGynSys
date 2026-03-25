@@ -193,18 +193,20 @@ class ConsultationService:
             "history_number": latest.history_number,
             "address": getattr(latest, 'address', "") or "", 
             "occupation": getattr(latest, 'occupation', "") or "",
-            "email": (getattr(latest, 'patient_email', "") or "") or (
-                db.query(Appointment.patient_email)
-                .filter(Appointment.patient_dni == latest.patient_ci)
-                .filter(Appointment.patient_email.is_not(None))
-                .order_by(Appointment.created_at.desc())
-                .first()[0] if db.query(Appointment.patient_email)
-                .filter(Appointment.patient_dni == latest.patient_ci)
-                .filter(Appointment.patient_email.is_not(None)).first() else ""
-            ),
             "doctor_id": latest.doctor_id,
             "all_consultations": ConsultationService.merge_consultations(all_consultations, newest_first=True)
         }
+
+        # 4. Get patient email if not in latest consultation
+        email = getattr(latest, 'patient_email', "") or ""
+        if not email:
+            appt = db.query(Appointment).filter(
+                Appointment.patient_dni == latest.patient_ci,
+                Appointment.patient_email.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            if appt:
+                email = appt.patient_email
+        res["email"] = email
 
         # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
 
@@ -250,15 +252,6 @@ class ConsultationService:
             "history_number": consultation.history_number,
             "address": getattr(consultation, 'address', "") or "", 
             "occupation": getattr(consultation, 'occupation', "") or "",
-            "email": (getattr(consultation, 'patient_email', "") or "") or (
-                db.query(Appointment.patient_email)
-                .filter(Appointment.patient_dni == consultation.patient_ci)
-                .filter(Appointment.patient_email.is_not(None))
-                .order_by(Appointment.created_at.desc())
-                .first()[0] if db.query(Appointment.patient_email)
-                .filter(Appointment.patient_dni == consultation.patient_ci)
-                .filter(Appointment.patient_email.is_not(None)).first() else ""
-            ),
             "doctor_id": consultation.doctor_id,
             "assets": [
                 {
@@ -280,6 +273,17 @@ class ConsultationService:
             "is_single_report": True
         }
 
+        # Get patient email if not in consultation
+        email = getattr(consultation, 'patient_email', "") or ""
+        if not email:
+            appt = db.query(Appointment).filter(
+                Appointment.patient_dni == consultation.patient_ci,
+                Appointment.patient_email.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            if appt:
+                email = appt.patient_email
+        res["email"] = email
+
         # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
         GeneradorResumenes.inyectar_dinamicamente(
             db=db, 
@@ -291,16 +295,17 @@ class ConsultationService:
 
         # Build narrative summary (individual report only)
         # Note: we use our 'res' dict to benefit from injected summaries
+        from app.utils.medical_report_builder import build_narrative_summary
         res.update(build_narrative_summary({
-            "full_name": res["full_name"],
-            "ci": res["ci"],
-            "age": res["age"],
-            "reason_for_visit": res["reason_for_visit"],
-            "admin_ultrasound": res["ultrasound"],
-            "admin_physical_exam": res["physical_exam"],
-            "admin_diagnosis": res["diagnosis"],
-            "admin_plan": res["plan"],
-            "admin_observations": res["observations"],
+            "full_name": res.get("full_name"),
+            "ci": res.get("ci"),
+            "age": res.get("age"),
+            "reason_for_visit": res.get("reason_for_visit"),
+            "admin_ultrasound": res.get("ultrasound"),
+            "admin_physical_exam": res.get("physical_exam"),
+            "admin_diagnosis": res.get("diagnosis"),
+            "admin_plan": res.get("plan"),
+            "admin_observations": res.get("observations"),
             "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
             "summary_functional_exam": res.get("summary_functional_exam"),
         }))

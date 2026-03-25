@@ -40,15 +40,15 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     context = {}
     
     # --- Datos básicos que se usarán fuera del párrafo ---
-    context['full_name'] = report_data.get('full_name', '').title()
-    context['age'] = report_data.get('age', '')
-    context['ci'] = report_data.get('ci', '')
+    context['full_name'] = str(report_data.get('full_name') or '').title()
+    context['age'] = str(report_data.get('age') or '')
+    context['ci'] = str(report_data.get('ci') or '')
 
     # --- Construcción del Párrafo Narrativo ---
     narrative_parts = []
     
     # 1. Motivo de consulta
-    reason = report_data.get('reason_for_visit', '').lower()
+    reason = str(report_data.get('reason_for_visit') or '').strip().lower()
     if reason:
         # Si es "control ginecológico" o similar, usar "a" en lugar de "por presentar"
         if 'control' in reason or 'consulta' in reason or 'revisión' in reason:
