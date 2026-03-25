@@ -988,8 +988,6 @@ export default function PatientsManager({ isEmbedded = false }) {
                 </div>
               </div>
             </div>
-              </div>
-            </div>
             )}
 
           </div>
