@@ -245,9 +245,6 @@ class ConsultationService:
                 })
                 
                 full_h_narrative = hist_narrative_data.get('narrative_summary', '')
-                h_obs = hist_narrative_data.get('observations_formatted', '')
-                if h_obs:
-                     full_h_narrative += f"\n\nObservaciones:\n{h_obs}"
                 
                 # ACTUAL FIX: Assign it back to the dictionary so the frontend sees it
                 c_dict["medical_report_content"] = full_h_narrative.replace('<br/>', '\n')
@@ -340,10 +337,6 @@ class ConsultationService:
         # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO COMPLETO) ---
         if not res.get("medical_report_content"):
             full_narrative = narrative_data.get('narrative_summary', '')
-            obs = narrative_data.get('observations_formatted', '')
-            if obs:
-                # Add observations to the main text if they exist
-                full_narrative += f"\n\nObservaciones:\n{obs}"
             
             # Convert <br/> to \n for the editor/textarea
             res["medical_report_content"] = full_narrative.replace('<br/>', '\n')
@@ -412,9 +405,6 @@ class ConsultationService:
                     "admin_observations": c_data["observations"],
                 })
                 text = narr_data.get('narrative_summary', '')
-                obs = narr_data.get('observations_formatted', '')
-                if obs: 
-                    text += f"\n\nObservaciones:\n{obs}"
                 c_data["medical_report_content"] = text.replace('<br/>', '\n')
 
             if merged:

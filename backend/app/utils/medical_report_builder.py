@@ -218,11 +218,5 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
     # Asegurar que no haya espacios después de <br/>
     narrative_text = re.sub(r'<br/> +', '<br/>', narrative_text)
     
-    # --- Observaciones ---
-    observations = str(report_data.get('admin_observations') or '').strip()
-    if observations:
-        observations_formatted = observations.replace('\n', '<br/>')
-        context['observations_formatted'] = observations_formatted
-
     context['narrative_summary'] = narrative_text
     return context
