@@ -141,6 +141,9 @@ El sistema incluye un tablero de salud en el Super Admin y endpoints de recupera
 - **Limpieza de Suscripciones**: Útil cuando se cambian las llaves VAPID en el `.env`. Elimina suscripciones antiguas que dan error 403, forzando a los navegadores a pedir una llave nueva al próximo login.
 - **Forzar Evaluación**: Adelanta la generación de tareas de notificación del día.
 
+### Guía de Flujo Unificado
+Para entender cómo funciona el chatbot integral de agendamiento y preconsulta, consulte la [Guía de Onboarding Unificado](file:///c:/Users/pablo/Documents/appgynsys/readme/unified_onboarding.md).
+
 ### Comandos de Diagnóstico (Worker)
 Para ver si el sender está procesando:
 ```bash

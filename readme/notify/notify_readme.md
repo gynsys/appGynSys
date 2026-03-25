@@ -904,6 +904,56 @@ Si un desarrollador modificó las reglas en `backend/app/seeds/notification_rule
 ```bash
 cd /opt/appgynsys
 git pull origin main
-docker compose exec backend bash -c 'cd /app && PYTHONPATH=/app python scripts/force_clean.py'
+# La sincronización de nuevas reglas es AUTOMÁTICA en el startup. 
+# Solo usa force_clean si necesitas borrar reglas obsoletas.
+docker compose exec backend bash -c 'cd /app && PYTHONPATH=/app python scripts/force_clean.py' 
 docker compose restart backend celery_worker celery_beat
 ```
+
+---
+
+## 19. Sincronización Automática de Reglas ✨ NUEVO (Mar-2026)
+
+Para evitar la discrepancia entre el código (`doctor_registry.py`) y la base de datos (`notification_rules`), se ha implementado un servicio de sincronización automática.
+
+### Cómo funciona
+1. El archivo `backend/app/services/notifications/management.py` contiene la función `sync_notification_registry_to_db`.
+2. Esta función se ejecuta **cada vez que el servidor backend inicia** (evento `@app.on_event("startup")` en `main.py`).
+3. Compara las llaves de `DOCTOR_NOTIFICATION_REGISTRY` con los registros existentes en la BD.
+4. Si falta alguna regla, la inserta automáticamente usando los valores por defecto del código.
+
+---
+
+## 20. Guía: Cómo agregar una nueva notificación (Checklist)
+
+Para integrar una nueva notificación (Ej: `doctor_new_feature`) sigue estos pasos:
+
+### 1. Backend: Registro del Tipo
+En `backend/app/db/models/notification.py`, agrega el nuevo string a `VALID_NOTIFICATION_TYPES`.
+
+### 2. Backend: Definición de la Lógica
+En `backend/app/services/notifications/doctor_registry.py`, agrega la definición en `DOCTOR_NOTIFICATION_REGISTRY`:
+```python
+"doctor_new_feature": {
+    "name": "Nueva Funcionalidad",
+    "trigger_info": "Se envía cuando...",
+    "default_title": "¡Nueva función disponible!",
+    "default_message": "Hola {patient_name}, ..."
+}
+```
+
+### 3. Backend: Disparador (Trigger)
+Ubica el endpoint o servicio donde ocurre el evento y llama a:
+```python
+from app.services.notifications import trigger_doctor_event
+# ...
+trigger_doctor_event(db, doctor_id, "doctor_new_feature", {"patient_name": "Nombre"})
+```
+
+### 4. Frontend: Traducciones UI
+En `frontend/src/pages/admin/AdminNotificationManagerPage.jsx`:
+- Agrega el tipo a `translateType` para que tenga un nombre amigable en el listado.
+- Agrega la descripción a `getTriggerDescription` para que el admin sepa qué hace.
+
+### 5. Despliegue
+Sube los cambios y **reinicia el backend**. La regla aparecerá automáticamente en el Panel de Administración.
