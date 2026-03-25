@@ -13,6 +13,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
     '3xl': 'max-w-6xl',
     '4xl': 'max-w-7xl',
     '5xl': 'max-w-[90%]', // Custom extra wide
+    story: 'max-w-[700px]', // Special for medical history
     full: 'max-w-[98%]',  // Almost full width
   }
 

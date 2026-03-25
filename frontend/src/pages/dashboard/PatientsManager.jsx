@@ -705,7 +705,7 @@ export default function PatientsManager({ isEmbedded = false }) {
         isOpen={editModalOpen} 
         onClose={() => setEditModalOpen(false)} 
         title="Editar Historia Clínica" 
-        size="4xl"
+        size="story"
         fullScreenOnMobile
       >
         <form onSubmit={handleUpdate} className="flex flex-col h-full max-h-[85vh]">
