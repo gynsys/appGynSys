@@ -277,40 +277,9 @@ class ConsultationService:
             "is_single_report": True
         }
 
-        # --- FALLBACK PARA INFORME UNIFICADO ---
-        if not res.get("medical_report_content"):
-            content_parts = []
-            if res.get("physical_exam"): content_parts.append(f"EXAMEN FÍSICO:\n{res['physical_exam']}")
-            if res.get("ultrasound"): content_parts.append(f"ECOGRAFÍA:\n{res['ultrasound']}")
-            if res.get("diagnosis"): content_parts.append(f"DIAGNÓSTICO:\n{res['diagnosis']}")
-            if res.get("plan"): content_parts.append(f"PLAN:\n{res['plan']}")
-            if res.get("observations"): content_parts.append(f"OBSERVACIONES:\n{res['observations']}")
-            res["medical_report_content"] = "\n\n".join(content_parts)
-
-        # Get patient email if not in consultation
-        email = getattr(consultation, 'patient_email', "") or ""
-        if not email:
-            appt = db.query(Appointment).filter(
-                Appointment.patient_dni == consultation.patient_ci,
-                Appointment.patient_email.is_not(None)
-            ).order_by(Appointment.created_at.desc()).first()
-            if appt:
-                email = appt.patient_email
-        res["email"] = email
-
-        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
-        GeneradorResumenes.inyectar_dinamicamente(
-            db=db, 
-            data=res, 
-            patient_ci=consultation.patient_ci, 
-            doctor_id=consultation.doctor_id,
-            patient_name=consultation.patient_name
-        )
-
-        # Build narrative summary (individual report only)
-        # Note: we use our 'res' dict to benefit from injected summaries
+        # --- NARRATIVE GENERATION ---
         from app.utils.medical_report_builder import build_narrative_summary
-        res.update(build_narrative_summary({
+        narrative_data = build_narrative_summary({
             "full_name": res.get("full_name"),
             "ci": res.get("ci"),
             "age": res.get("age"),
@@ -322,7 +291,42 @@ class ConsultationService:
             "admin_observations": res.get("observations"),
             "summary_gyn_obstetric": res.get("summary_gyn_obstetric"),
             "summary_functional_exam": res.get("summary_functional_exam"),
-        }))
+        })
+
+        # --- FALLBACK PARA INFORME UNIFICADO (NARRATIVO) ---
+        if not res.get("medical_report_content"):
+            full_narrative = narrative_data.get('narrative_summary', '')
+            obs = narrative_data.get('observations_formatted', '')
+            if obs:
+                # Add observations to the main text if they exist
+                full_narrative += f"\n\nObservaciones:\n{obs}"
+            
+            # Convert <br/> to \n for the editor/textarea
+            res["medical_report_content"] = full_narrative.replace('<br/>', '\n')
+
+        # Add the rest of narrative data to response
+        res.update(narrative_data)
+
+        # 4. Get patient email if not in consultation
+        email = getattr(consultation, 'patient_email', "") or ""
+        if not email:
+            appt = db.query(Appointment).filter(
+                Appointment.patient_dni == consultation.patient_ci,
+                Appointment.patient_email.is_not(None)
+            ).order_by(Appointment.created_at.desc()).first()
+            if appt:
+                email = appt.patient_email
+        res["email"] = email
+
+        # Inject dynamic summaries (OVERWRITES stale data if raw answers found)
+        from app.services.summary_generator import GeneradorResumenes
+        GeneradorResumenes.inyectar_dinamicamente(
+            db=db, 
+            data=res, 
+            patient_ci=consultation.patient_ci, 
+            doctor_id=consultation.doctor_id,
+            patient_name=consultation.patient_name
+        )
 
         return res
 

@@ -321,23 +321,6 @@ export default function PatientsManager({ isEmbedded = false }) {
       history_number: consultation.history_number
     });
 
-    // If report content is empty, build it from parts as fallback
-    if (!consultation.medical_report_content) {
-      const parts = [];
-      if (consultation.physical_exam) parts.push(`EXAMEN FÍSICO:\n${consultation.physical_exam}`);
-      if (consultation.ultrasound) parts.push(`ECOGRAFÍA:\n${consultation.ultrasound}`);
-      if (consultation.diagnosis) parts.push(`DIAGNÓSTICO:\n${consultation.diagnosis}`);
-      if (consultation.plan) parts.push(`PLAN:\n${consultation.plan}`);
-      if (consultation.observations) parts.push(`OBSERVACIONES:\n${consultation.observations}`);
-      
-      if (parts.length > 0) {
-        setEditFormData(prev => ({
-          ...prev,
-          medical_report_content: parts.join('\n\n')
-        }));
-      }
-    }
-
     setChoiceModalOpen(true);
   };
 
