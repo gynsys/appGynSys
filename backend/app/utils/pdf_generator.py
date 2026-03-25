@@ -1,6 +1,5 @@
 import os
 import io
-import fitz  # PyMuPDF
 import json
 import logging
 from datetime import datetime
