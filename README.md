@@ -19,6 +19,7 @@ Bienvenido al repositorio de GynSys. Para facilitar el mantenimiento y la operac
 >
 > 4. **Si hay errores críticos tras un despliegue o reinicio**:
 >    - [**readme/guia_recuperacion_post_reinicio.md**](./readme/guia_recuperacion_post_reinicio.md): Pasos exactos para levantar el sistema.
+>    - [**readme/incidents/2026-03-25_cors_vps_sync_issue.md**](./readme/incidents/2026-03-25_cors_vps_sync_issue.md): Fallo crítico de CORS por desincronización de VPS (Post-mortem).
 
 ## Documentación Disponible en `/readme`:
 

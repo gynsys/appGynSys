@@ -46,6 +46,7 @@ class Consultation(Base):
     diagnosis = Column(Text, nullable=True)
     plan = Column(Text, nullable=True)
     observations = Column(Text, nullable=True)
+    medical_report_content = Column(Text, nullable=True)
     
     # Metadata
     history_number = Column(String, nullable=True)

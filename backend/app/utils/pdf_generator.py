@@ -201,48 +201,58 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(safe_p(f"<b>C.I.:</b> {report_context.get('ci')}", style_patient_data))
     story.append(Spacer(1, 0.3*inch))
 
-    narrative_content = report_context.get('narrative_summary')
-    if narrative_content:
-        # Separar el texto narrativo del plan (que tiene viñetas)
-        # El plan comienza después de "Se indica como plan:"
-        plan_marker = "Se indica como plan:"
-        
-        if plan_marker in narrative_content:
-            # Dividir en texto narrativo y plan
-            parts = narrative_content.split(plan_marker, 1)
-            narrative_text = parts[0].strip()
-            plan_text = parts[1].strip() if len(parts) > 1 else None
+    # Unified Report Content Priority
+    unified_content = report_data.get('medical_report_content')
+    if unified_content:
+        # Convert newlines to <br/> for ReportLab
+        formatted_content = str(unified_content).replace('\n', '<br/>')
+        story.append(safe_p(formatted_content, style_narrative))
+    else:
+        # Fallback to narrative building if no unified content
+        narrative_content = report_context.get('narrative_summary')
+        if narrative_content:
+            # Separar el texto narrativo del plan (que tiene viñetas)
+            # El plan comienza después de "Se indica como plan:"
+            plan_marker = "Se indica como plan:"
             
-            # Renderizar texto narrativo
-            if narrative_text:
-                narrative_paragraph = Paragraph(narrative_text, style_narrative)
+            if plan_marker in narrative_content:
+                # Dividir en texto narrativo y plan
+                parts = narrative_content.split(plan_marker, 1)
+                if len(parts) > 0:
+                    narrative_text = parts[0].strip()
+                    plan_text = parts[1].strip() if len(parts) > 1 else None
+                    
+                    # Renderizar texto narrativo
+                    if narrative_text:
+                        narrative_paragraph = Paragraph(narrative_text, style_narrative)
+                        story.append(narrative_paragraph)
+                    
+                    # Renderizar el texto "Se indica como plan:" y luego el plan
+                    if plan_text:
+                        # Primero el texto introductorio
+                        intro_paragraph = safe_p("Se indica como plan:", style_narrative)
+                        story.append(intro_paragraph)
+                        
+                        # Renderizar cada item del plan por separado para asegurar sangría correcta
+                        # Dividir por <br/> para obtener cada item
+                        plan_items = [item.strip() for item in plan_text.split('<br/>') if item.strip()]
+                        for item in plan_items:
+                            plan_item_paragraph = safe_p(item, style_plan)
+                            story.append(plan_item_paragraph)
+            else:
+                # No hay plan, solo texto narrativo
+                narrative_paragraph = safe_p(narrative_content, style_narrative)
                 story.append(narrative_paragraph)
-            
-            # Renderizar el texto "Se indica como plan:" y luego el plan
-            if plan_text:
-                # Primero el texto introductorio
-                intro_paragraph = safe_p("Se indica como plan:", style_narrative)
-                story.append(intro_paragraph)
-                
-                # Renderizar cada item del plan por separado para asegurar sangría correcta
-                # Dividir por <br/> para obtener cada item
-                plan_items = [item.strip() for item in plan_text.split('<br/>') if item.strip()]
-                for item in plan_items:
-                    plan_item_paragraph = safe_p(item, style_plan)
-                    story.append(plan_item_paragraph)
-        else:
-            # No hay plan, solo texto narrativo
-            narrative_paragraph = safe_p(narrative_content, style_narrative)
-            story.append(narrative_paragraph)
 
-    # Render Observations
-    observations_content = report_context.get('observations_formatted')
-    if observations_content:
-        story.append(Spacer(1, 0.1*inch))
-        story.append(Paragraph("Observaciones:", style_narrative))
-        obs_items = [item.strip() for item in observations_content.split('<br/>') if item.strip()]
-        for item in obs_items:
-            story.append(Paragraph(item, style_plan))
+    # Render Observations (Only if NOT using unified content, to avoid duplication)
+    if not unified_content:
+        observations_content = report_context.get('observations_formatted')
+        if observations_content:
+            story.append(Spacer(1, 0.1*inch))
+            story.append(Paragraph("Observaciones:", style_narrative))
+            obs_items = [item.strip() for item in observations_content.split('<br/>') if item.strip()]
+            for item in obs_items:
+                story.append(Paragraph(item, style_plan))
 
     story.append(Spacer(1, 0.3*inch))
     footer_city = pdf_config.get('footer_city') or "Guarenas"

@@ -560,6 +560,7 @@ def _map_consultation_to_data(consultation, db: Session = None):
         "admin_diagnosis": consultation.diagnosis,
         "admin_plan": consultation.plan,
         "admin_observations": consultation.observations,
+        "medical_report_content": consultation.medical_report_content,
         "history_number": consultation.history_number,
         "address": "", 
         "occupation": "",

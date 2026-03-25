@@ -317,8 +317,27 @@ export default function PatientsManager({ isEmbedded = false }) {
       admin_diagnosis: formatPlanWithBullets(consultation.diagnosis || ''),
       admin_plan: formatPlanWithBullets(consultation.plan || ''),
       admin_observations: consultation.observations || '',
+      medical_report_content: consultation.medical_report_content || '',
       history_number: consultation.history_number
     });
+
+    // If report content is empty, build it from parts as fallback
+    if (!consultation.medical_report_content) {
+      const parts = [];
+      if (consultation.physical_exam) parts.push(`EXAMEN FÍSICO:\n${consultation.physical_exam}`);
+      if (consultation.ultrasound) parts.push(`ECOGRAFÍA:\n${consultation.ultrasound}`);
+      if (consultation.diagnosis) parts.push(`DIAGNÓSTICO:\n${consultation.diagnosis}`);
+      if (consultation.plan) parts.push(`PLAN:\n${consultation.plan}`);
+      if (consultation.observations) parts.push(`OBSERVACIONES:\n${consultation.observations}`);
+      
+      if (parts.length > 0) {
+        setEditFormData(prev => ({
+          ...prev,
+          medical_report_content: parts.join('\n\n')
+        }));
+      }
+    }
+
     setChoiceModalOpen(true);
   };
 
@@ -957,41 +976,18 @@ export default function PatientsManager({ isEmbedded = false }) {
               </h3>
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 font-black">Motivo de Consulta (Opcional en Informe)</label>
-                  <textarea name="reason_for_visit" value={editFormData.reason_for_visit || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                   <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 font-black">Contenido del Informe Médico (Unificado)</label>
+                   <textarea 
+                    name="medical_report_content" 
+                    value={editFormData.medical_report_content || ''} 
+                    onChange={handleEditChange} 
+                    rows="15" 
+                    className="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-100 dark:border-indigo-900/30 focus:border-indigo-500 rounded-2xl text-sm transition-all outline-none font-medium dark:text-gray-100 shadow-inner"
+                    placeholder="Escribe el informe aquí..."
+                  />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Examen Físico</label>
-                    <textarea name="admin_physical_exam" value={editFormData.admin_physical_exam || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ultrasonido / Ecografía</label>
-                    <textarea name="admin_ultrasound" value={editFormData.admin_ultrasound || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Diagnóstico Integrado</label>
-                    <button type="button" onClick={() => addBullet('admin_diagnosis')} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">+ AÑADIR PUNTO</button>
-                  </div>
-                  <textarea name="admin_diagnosis" value={editFormData.admin_diagnosis || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-indigo-50/30 dark:bg-indigo-900/10 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Plan de Tratamiento</label>
-                    <button type="button" onClick={() => addBullet('admin_plan')} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">+ AÑADIR PUNTO</button>
-                  </div>
-                  <textarea name="admin_plan" value={editFormData.admin_plan || ''} onChange={handleEditChange} rows="5" className="w-full p-3 bg-indigo-50/30 dark:bg-indigo-900/10 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Observaciones Internas</label>
-                  <textarea name="admin_observations" value={editFormData.admin_observations || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
-                </div>
+              </div>
+            </div>
               </div>
             </div>
             )}

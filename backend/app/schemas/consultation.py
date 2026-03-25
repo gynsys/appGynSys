@@ -30,6 +30,7 @@ class ConsultationCreate(BaseModel):
     admin_diagnosis: str
     admin_plan: str
     admin_observations: str
+    medical_report_content: Optional[str] = None
     
     # Metadata
     doctor_id: int = 1
@@ -57,6 +58,7 @@ class ConsultationUpdate(BaseModel):
     admin_diagnosis: Optional[str] = None
     admin_plan: Optional[str] = None
     admin_observations: Optional[str] = None
+    medical_report_content: Optional[str] = None
     history_number: Optional[str] = None
 
 class ConsultationInDBBase(BaseModel):
@@ -91,6 +93,7 @@ class ConsultationInDBBase(BaseModel):
     diagnosis: Optional[str] = None
     plan: Optional[str] = None
     observations: Optional[str] = None
+    medical_report_content: Optional[str] = None
     
     history_number: Optional[str] = None
     pdf_path: Optional[str] = None

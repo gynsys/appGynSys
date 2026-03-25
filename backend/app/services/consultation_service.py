@@ -43,6 +43,7 @@ class ConsultationService:
             diagnosis=consultation_in.admin_diagnosis,
             plan=consultation_in.admin_plan,
             observations=consultation_in.admin_observations,
+            medical_report_content=consultation_in.medical_report_content,
             
             # Metadata - Auto-generate history number
             history_number=get_or_create_history_number(
@@ -103,7 +104,8 @@ class ConsultationService:
             "admin_ultrasound": "ultrasound",
             "admin_diagnosis": "diagnosis",
             "admin_plan": "plan",
-            "admin_observations": "observations"
+            "admin_observations": "observations",
+            "medical_report_content": "medical_report_content"
         }
 
         # 3. Create new record based on original
@@ -133,6 +135,7 @@ class ConsultationService:
             diagnosis=original.diagnosis,
             plan=original.plan,
             observations=original.observations,
+            medical_report_content=original.medical_report_content,
             
             history_number=original.history_number,
             pdf_path="dynamic"
@@ -269,9 +272,20 @@ class ConsultationService:
             "diagnosis": consultation.diagnosis,
             "plan": consultation.plan,
             "observations": consultation.observations,
+            "medical_report_content": consultation.medical_report_content,
             "created_at": consultation.created_at,
             "is_single_report": True
         }
+
+        # --- FALLBACK PARA INFORME UNIFICADO ---
+        if not res.get("medical_report_content"):
+            content_parts = []
+            if res.get("physical_exam"): content_parts.append(f"EXAMEN FÍSICO:\n{res['physical_exam']}")
+            if res.get("ultrasound"): content_parts.append(f"ECOGRAFÍA:\n{res['ultrasound']}")
+            if res.get("diagnosis"): content_parts.append(f"DIAGNÓSTICO:\n{res['diagnosis']}")
+            if res.get("plan"): content_parts.append(f"PLAN:\n{res['plan']}")
+            if res.get("observations"): content_parts.append(f"OBSERVACIONES:\n{res['observations']}")
+            res["medical_report_content"] = "\n\n".join(content_parts)
 
         # Get patient email if not in consultation
         email = getattr(consultation, 'patient_email', "") or ""
