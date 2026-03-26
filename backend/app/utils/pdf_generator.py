@@ -459,7 +459,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         story.append(img_table)
 
     try:
-        doc.build(story)
+        if use_color:
+            doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
+        else:
+            doc.build(story)
     except Exception as e:
         logger.error(f"Error building summary PDF: {e}", exc_info=True)
         raise
@@ -696,7 +699,10 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     # Footer removed - medical history is cumulative document without signature
 
     try:
-        doc.build(story)
+        if use_color:
+            doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
+        else:
+            doc.build(story)
     except Exception as e:
         logger.error(f"Error building medical history PDF: {e}", exc_info=True)
         raise
