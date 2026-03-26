@@ -180,7 +180,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     # Total width ~ 7.0 inches. 1.2 + 4.6 + 1.2 = 7.0
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # Left logo left-aligned
         ('ALIGN', (1, 0), (1, 0), 'CENTER'), # Text centered
         ('ALIGN', (2, 0), (2, 0), 'RIGHT'),  # Right logo right-aligned
@@ -461,7 +461,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     ]]
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('ALIGN', (0,0), (0,0), 'LEFT'),
         ('ALIGN', (1,0), (1,0), 'CENTER'),
         ('ALIGN', (2,0), (2,0), 'RIGHT'),
