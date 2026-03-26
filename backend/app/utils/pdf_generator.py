@@ -155,26 +155,26 @@ def draw_color_background(canvas, doc):
         # We draw the background explicitly to 100% of the page size
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
     
-    # 2. Watermark Logo (Center)
-    logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
-    if os.path.exists(logo_path):
-        canvas.saveState()
-        # Watermark sizing
-        w_width = 5*inch # Larger watermark
-        w_height = 5*inch
-        try:
-            img_reader = ImageReader(logo_path)
-            iw, ih = img_reader.getSize()
-            aspect = ih / float(iw)
-            w_height = w_width * aspect
-        except:
-            pass
-            
-        canvas.setFillAlpha(0.15) # Increased from 0.06 to 0.15 for visibility
-        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, 
-                         width=w_width, height=w_height, mask='auto', 
-                         preserveAspectRatio=True)
-        canvas.restoreState()
+    # 2. Watermark Logo (Center Vector implementation for sharpness)
+    canvas.saveState()
+    canvas.translate(width/2, height/2)
+    canvas.rotate(45)
+    
+    # "M" part
+    canvas.setFont("Times-BoldItalic", 180)
+    canvas.setFillColor(HexColor('#8B1D3B'))
+    canvas.setFillAlpha(0.06)
+    canvas.drawCentredString(-45, -20, "M")
+    
+    # "H" part
+    canvas.setFillColor(HexColor('#BC7B8B'))
+    canvas.drawCentredString(55, -20, "H")
+    
+    # Subtle "-" in between
+    canvas.setFont("Helvetica-Bold", 80)
+    canvas.drawCentredString(5, -10, "-")
+    
+    canvas.restoreState()
     
     canvas.restoreState()
 
@@ -387,7 +387,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         story.pop() # remove SignatureLine/Image
         
         # Build composite bottom table
-        footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=9, alignment=TA_RIGHT)
+        # 35% larger info: from 9 to 12
+        footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
         footer_col_left = [logo_image_right] if logo_image_right else [""]
         footer_col_right = [
             Paragraph(f"<b>{sig_name}</b>", footer_sig_style),
@@ -396,13 +397,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         ]
         
         footer_table_data = [[footer_col_left, footer_col_right]]
-        footer_table = Table(footer_table_data, colWidths=[3.5*inch, 3.5*inch])
+        footer_table = Table(footer_table_data, colWidths=[3.0*inch, 4.0*inch])
         footer_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
             ('ALIGN', (0,0), (0,0), 'LEFT'),
             ('ALIGN', (1,0), (1,0), 'RIGHT'),
-            # Add a signature line above the right column
-            ('LINEABOVE', (1,0), (1,0), 1, BRAND_LILAC_MEDIUM),
+            # LINE REMOVED as requested
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
         story.append(Spacer(1, 0.5*inch))
