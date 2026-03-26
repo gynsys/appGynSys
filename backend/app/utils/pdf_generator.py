@@ -136,42 +136,75 @@ def _get_header_logos(pdf_config, doctor):
     return logo_left, logo_right
 
 # --- Premium Color Layout Constants & Helpers ---
-BRAND_BURGUNDY = HexColor('#8B1D3B')
-BRAND_GOLD = HexColor('#D4AF37')
-BRAND_TEAL = HexColor('#008080') # From example image style
-BRAND_TEAL_LIGHT = HexColor('#E0F2F2')
+BRAND_TEAL_DARK = HexColor('#006666')
+BRAND_TEAL_MEDIUM = HexColor('#009999')
+BRAND_TEAL_LIGHT = HexColor('#B2DFDB')
+BRAND_TEAL_FADED = HexColor('#E0F2F2')
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
-    # Draw a curved header shape at the top
+    width, height = doc.pagesize
+    
+    # TOP ARCS (Upper Right to Left)
+    # Darkest Arc (Topmost)
+    canvas.setFillColor(BRAND_TEAL_DARK)
     p = canvas.beginPath()
-    p.moveTo(0, doc.pagesize[1])
-    p.lineTo(doc.pagesize[0], doc.pagesize[1])
-    p.lineTo(doc.pagesize[0], doc.pagesize[1] - 1.5*inch)
-    p.curveTo(doc.pagesize[0]*0.7, doc.pagesize[1] - 1.8*inch, 
-              doc.pagesize[0]*0.3, doc.pagesize[1] - 1.2*inch, 
-              0, doc.pagesize[1] - 1.5*inch)
+    p.moveTo(0, height)
+    p.lineTo(width, height)
+    p.lineTo(width, height - 1.2*inch)
+    p.curveTo(width*0.8, height - 1.5*inch, width*0.4, height - 0.5*inch, 0, height - 1.0*inch)
     p.close()
+    canvas.drawPath(p, stroke=0, fill=1)
     
-    canvas.setFillColor(BRAND_BURGUNDY)
-    canvas.setStrokeColor(BRAND_BURGUNDY)
-    canvas.drawPath(p, stroke=1, fill=1)
-    
-    # Add a secondary accent curve (lighter)
+    # Medium Arc 1
+    canvas.setFillColor(BRAND_TEAL_MEDIUM)
     p2 = canvas.beginPath()
-    p2.moveTo(0, doc.pagesize[1])
-    p2.lineTo(doc.pagesize[0], doc.pagesize[1])
-    p2.lineTo(doc.pagesize[0], doc.pagesize[1] - 1.2*inch)
-    p2.curveTo(doc.pagesize[0]*0.7, doc.pagesize[1] - 1.4*inch, 
-               doc.pagesize[0]*0.3, doc.pagesize[1] - 1.0*inch, 
-               0, doc.pagesize[1] - 1.2*inch)
+    p2.moveTo(0, height)
+    p2.lineTo(width, height)
+    p2.lineTo(width, height - 0.8*inch)
+    p2.curveTo(width*0.7, height - 1.8*inch, width*0.3, height - 1.2*inch, 0, height - 1.4*inch)
     p2.close()
-    canvas.setFillColor(Color(0.54, 0.11, 0.23, alpha=0.3)) # Faded burgundy
     canvas.drawPath(p2, stroke=0, fill=1)
     
-    # Footer accent
-    canvas.setFillColor(BRAND_BURGUNDY)
-    canvas.rect(0, 0, doc.pagesize[0], 0.1*inch, stroke=0, fill=1)
+    # Lightest Arc (Top)
+    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.3))
+    p3 = canvas.beginPath()
+    p3.moveTo(0, height)
+    p3.lineTo(width, height)
+    p3.lineTo(width, height - 0.5*inch)
+    p3.curveTo(width*0.6, height - 2.2*inch, width*0.2, height - 1.5*inch, 0, height - 1.8*inch)
+    p3.close()
+    canvas.drawPath(p3, stroke=0, fill=1)
+    
+    # BOTTOM ARCS
+    # Darkest (Bottom)
+    canvas.setFillColor(BRAND_TEAL_MEDIUM)
+    p4 = canvas.beginPath()
+    p4.moveTo(0, 0)
+    p4.lineTo(width, 0)
+    p4.lineTo(width, 0.6*inch)
+    p4.curveTo(width*0.7, 0.2*inch, width*0.3, 1.2*inch, 0, 0.8*inch)
+    p4.close()
+    canvas.drawPath(p4, stroke=0, fill=1)
+    
+    # Faded (Bottom)
+    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.2))
+    p5 = canvas.beginPath()
+    p5.moveTo(0, 0)
+    p5.lineTo(width, 0)
+    p5.lineTo(width, 1.0*inch)
+    p5.curveTo(width*0.8, 1.5*inch, width*0.2, 0.5*inch, 0, 1.2*inch)
+    p5.close()
+    canvas.drawPath(p5, stroke=0, fill=1)
+
+    # Watermark (Center)
+    canvas.saveState()
+    canvas.setFont("Helvetica-Bold", 120)
+    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.04))
+    canvas.translate(width/2, height/2)
+    canvas.rotate(45)
+    canvas.drawCentredString(0, 0, "Rx")
+    canvas.restoreState()
     
     canvas.restoreState()
 
@@ -198,7 +231,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     styles = getSampleStyleSheet()
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=12, leading=14)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=12, leading=14)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_BURGUNDY if use_color else colors.black)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_TEAL_MEDIUM if use_color else colors.black)
 
     style_narrative = ParagraphStyle(
         name='Narrative',
@@ -235,7 +268,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     header_data = [[
         logo_image if logo_image else "",
         safe_p(header_text, style_center),
-        logo_image_right if logo_image_right else ""
+        logo_image_right if (logo_image_right and not use_color) else ""
     ]]
     
     # Total width ~ 7.0 inches. 1.2 + 4.6 + 1.2 = 7.0
@@ -251,9 +284,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     ]))
     story.append(header_table)
 
-    line_table = Table([['']], colWidths=[7.5*inch])
-    line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.black)]))
-    story.append(line_table)
+    if not use_color:
+        line_table = Table([['']], colWidths=[7.5*inch])
+        line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.black)]))
+        story.append(line_table)
     story.append(Spacer(1, 0.25*inch))
     
     report_title = pdf_config.get('report_title') or "INFORME MÉDICO"
@@ -369,6 +403,36 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(Paragraph(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
     story.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
     
+    # In color mode, we move the signature to the bottom right and the second logo to the bottom left
+    if use_color:
+        story.pop() # remove SigCI
+        story.pop() # remove SigIDs
+        story.pop() # remove SigSpec
+        story.pop() # remove SigName
+        story.pop() # remove SignatureLine/Image
+        
+        # Build composite bottom table
+        footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=9, alignment=TA_RIGHT)
+        footer_col_left = [logo_image_right] if logo_image_right else [""]
+        footer_col_right = [
+            Paragraph(f"<b>{sig_name}</b>", footer_sig_style),
+            Paragraph(sig_specialty, footer_sig_style),
+            Paragraph(sig_ids, footer_sig_style)
+        ]
+        
+        footer_table_data = [[footer_col_left, footer_col_right]]
+        footer_table = Table(footer_table_data, colWidths=[3.5*inch, 3.5*inch])
+        footer_table.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
+            ('ALIGN', (0,0), (0,0), 'LEFT'),
+            ('ALIGN', (1,0), (1,0), 'RIGHT'),
+            # Add a signature line above the right column
+            ('LINEABOVE', (1,0), (1,0), 1, BRAND_TEAL_MEDIUM),
+            ('TOPPADDING', (0,0), (-1,-1), 20),
+        ]))
+        story.append(Spacer(1, 0.5*inch))
+        story.append(footer_table)
+    
     # --- PAGE 2: IMAGES (Optional) ---
     if report_data.get('include_images') and report_data.get('assets'):
         from reportlab.platypus import PageBreak
@@ -385,7 +449,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         header_data_p2 = [[
             logo_image if logo_image else "",
             safe_p(header_text, ParagraphStyle(name='HeaderCenterP2', parent=styleN, alignment=TA_CENTER)),
-            logo_image_right if logo_image_right else ""
+            logo_image_right if (logo_image_right and not use_color) else ""
         ]]
         header_table_p2 = Table(header_data_p2, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
         header_table_p2.setStyle(TableStyle([
@@ -476,7 +540,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
 
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=10, leading=12)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=10, leading=12)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_BURGUNDY if use_color else colors.black)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_TEAL_MEDIUM if use_color else colors.black)
     styleJustify = ParagraphStyle(name='Justify', parent=styleN, alignment=TA_JUSTIFY)
 
     def get_str(key, default=''):
@@ -508,7 +572,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     header_data = [[
         logo_image if logo_image else "",
         safe_p(header_text, style_center),
-        logo_image_right if logo_image_right else ""
+        logo_image_right if (logo_image_right and not use_color) else ""
     ]]
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
