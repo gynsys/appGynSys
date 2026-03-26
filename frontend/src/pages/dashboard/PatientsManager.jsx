@@ -886,6 +886,7 @@ export default function PatientsManager({ isEmbedded = false }) {
         onClose={() => setChoiceModalOpen(false)} 
         title="¿Qué deseas editar?" 
         size="md"
+        fullScreenOnMobile
       >
         <div className="grid grid-cols-1 gap-4 p-4">
           <button 
