@@ -136,18 +136,22 @@ def _get_header_logos(pdf_config, doctor):
     return logo_left, logo_right
 
 # --- Premium Color Layout Constants & Helpers ---
-BRAND_TEAL_DARK = HexColor('#006666')
-BRAND_TEAL_MEDIUM = HexColor('#009999')
-BRAND_TEAL_LIGHT = HexColor('#B2DFDB')
-BRAND_TEAL_FADED = HexColor('#E0F2F2')
+BRAND_LILAC_DARK = HexColor('#4A148C')
+BRAND_LILAC_MEDIUM = HexColor('#9C27B0')
+BRAND_LILAC_LIGHT = HexColor('#E1BEE7')
+BRAND_LILAC_BG = HexColor('#F3E5F5')
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
     width, height = doc.pagesize
     
-    # TOP ARCS (Upper Right to Left)
-    # Darkest Arc (Topmost)
-    canvas.setFillColor(BRAND_TEAL_DARK)
+    # Fill Background with very light lilac
+    canvas.setFillColor(BRAND_LILAC_BG)
+    canvas.rect(0, 0, width, height, stroke=0, fill=1)
+    
+    # TOP ARCS
+    # Darkest Arc
+    canvas.setFillColor(BRAND_LILAC_DARK)
     p = canvas.beginPath()
     p.moveTo(0, height)
     p.lineTo(width, height)
@@ -156,8 +160,8 @@ def draw_color_background(canvas, doc):
     p.close()
     canvas.drawPath(p, stroke=0, fill=1)
     
-    # Medium Arc 1
-    canvas.setFillColor(BRAND_TEAL_MEDIUM)
+    # Medium Arc
+    canvas.setFillColor(BRAND_LILAC_MEDIUM)
     p2 = canvas.beginPath()
     p2.moveTo(0, height)
     p2.lineTo(width, height)
@@ -166,19 +170,19 @@ def draw_color_background(canvas, doc):
     p2.close()
     canvas.drawPath(p2, stroke=0, fill=1)
     
-    # Lightest Arc (Top)
-    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.3))
+    # Lightest Arc (Increased height +150px -> ~2 inches extra)
+    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.2)) # Faded Purple
     p3 = canvas.beginPath()
     p3.moveTo(0, height)
     p3.lineTo(width, height)
-    p3.lineTo(width, height - 0.5*inch)
-    p3.curveTo(width*0.6, height - 2.2*inch, width*0.2, height - 1.5*inch, 0, height - 1.8*inch)
+    p3.lineTo(width, height - 2.5*inch) # 0.5 + 2.0
+    p3.curveTo(width*0.6, height - 3.5*inch, width*0.2, height - 2.5*inch, 0, height - 3.0*inch)
     p3.close()
     canvas.drawPath(p3, stroke=0, fill=1)
     
     # BOTTOM ARCS
     # Darkest (Bottom)
-    canvas.setFillColor(BRAND_TEAL_MEDIUM)
+    canvas.setFillColor(BRAND_LILAC_MEDIUM)
     p4 = canvas.beginPath()
     p4.moveTo(0, 0)
     p4.lineTo(width, 0)
@@ -187,20 +191,20 @@ def draw_color_background(canvas, doc):
     p4.close()
     canvas.drawPath(p4, stroke=0, fill=1)
     
-    # Faded (Bottom)
-    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.2))
+    # Faded (Bottom) (Increased height +100px -> ~1.4 inches extra)
+    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.15))
     p5 = canvas.beginPath()
     p5.moveTo(0, 0)
     p5.lineTo(width, 0)
-    p5.lineTo(width, 1.0*inch)
-    p5.curveTo(width*0.8, 1.5*inch, width*0.2, 0.5*inch, 0, 1.2*inch)
+    p5.lineTo(width, 2.4*inch) # 1.0 + 1.4
+    p5.curveTo(width*0.8, 3.0*inch, width*0.2, 1.5*inch, 0, 2.8*inch)
     p5.close()
     canvas.drawPath(p5, stroke=0, fill=1)
 
     # Watermark (Center)
     canvas.saveState()
     canvas.setFont("Helvetica-Bold", 120)
-    canvas.setFillColor(Color(0, 0.6, 0.6, alpha=0.04))
+    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.03))
     canvas.translate(width/2, height/2)
     canvas.rotate(45)
     canvas.drawCentredString(0, 0, "Rx")
@@ -231,7 +235,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     styles = getSampleStyleSheet()
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=12, leading=14)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=12, leading=14)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_TEAL_MEDIUM if use_color else colors.black)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_LILAC_MEDIUM if use_color else colors.black)
 
     style_narrative = ParagraphStyle(
         name='Narrative',
@@ -427,7 +431,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('ALIGN', (0,0), (0,0), 'LEFT'),
             ('ALIGN', (1,0), (1,0), 'RIGHT'),
             # Add a signature line above the right column
-            ('LINEABOVE', (1,0), (1,0), 1, BRAND_TEAL_MEDIUM),
+            ('LINEABOVE', (1,0), (1,0), 1, BRAND_LILAC_MEDIUM),
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
         story.append(Spacer(1, 0.5*inch))
@@ -540,7 +544,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
 
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=10, leading=12)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=10, leading=12)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_TEAL_MEDIUM if use_color else colors.black)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_LILAC_MEDIUM if use_color else colors.black)
     styleJustify = ParagraphStyle(name='Justify', parent=styleN, alignment=TA_JUSTIFY)
 
     def get_str(key, default=''):
