@@ -152,6 +152,21 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
+    # Logo 1 (Left) - Prefer config, then profile
+    logo_source_left = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+    logo_image = None
+    if logo_source_left:
+        try:
+            logo_path = get_local_path_from_url(logo_source_left)
+            if logo_path and os.path.exists(logo_path):
+                img_reader = ImageReader(logo_path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                logo_image = Image(logo_path, width=1.1*inch, height=(1.1*inch)*aspect)
+                logo_image.hAlign = 'CENTER'
+        except Exception as e:
+            logger.error(f"Error loading left logo: {e}")
+
     # Logo 2 (Right)
     logo_image_right = ""
     logo_source_right = pdf_config.get('logo_header_2')
