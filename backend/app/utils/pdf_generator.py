@@ -186,7 +186,7 @@ def draw_color_background(canvas, doc):
     canvas.saveState()
     canvas.setFont("Helvetica", 10)
     canvas.setFillColor(BRAND_LILAC_MEDIUM)
-    footer_url = getattr(doc, 'footer_url', "www.gynsys.net/mariel-herrera")
+    footer_url = getattr(doc, 'footer_url', "www.gynsys.net")
     canvas.drawCentredString(width/2, 0.3*inch, footer_url)
     canvas.restoreState()
     
@@ -214,7 +214,13 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     # Dynamic Watermark & URL from pdf_config
     watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
     doc.watermark_path = get_local_path_from_url(watermark_source)
-    doc.footer_url = pdf_config.get('doctor_url') or "www.gynsys.net/mariel-herrera"
+    
+    # Build dynamic footer URL based on doctor's slug or config
+    base_domain = "www.gynsys.net"
+    if doctor and doctor.slug_url:
+        doc.footer_url = pdf_config.get('doctor_url') or f"{base_domain}/{doctor.slug_url}"
+    else:
+        doc.footer_url = pdf_config.get('doctor_url') or base_domain
     
     story = []
 
@@ -774,7 +780,12 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         # Resolve Dynamic Watermark & URL
         watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
         doc.watermark_path = get_local_path_from_url(watermark_source)
-        doc.footer_url = pdf_config.get('doctor_url') or "www.gynsys.net/mariel-herrera"
+        
+        base_domain = "www.gynsys.net"
+        if doctor and doctor.slug_url:
+            doc.footer_url = pdf_config.get('doctor_url') or f"{base_domain}/{doctor.slug_url}"
+        else:
+            doc.footer_url = pdf_config.get('doctor_url') or base_domain
         
         if use_color:
             doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
