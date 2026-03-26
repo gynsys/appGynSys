@@ -145,22 +145,23 @@ def draw_color_background(canvas, doc):
     canvas.saveState()
     width, height = doc.pagesize
     
+    # Base fill to eliminate any white gaps
+    canvas.setFillColor(BRAND_LILAC_BG)
+    canvas.rect(0, 0, width, height, stroke=0, fill=1)
+    
     # 1. Background Image (Full Page)
     bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
     if os.path.exists(bg_path):
-        canvas.drawImage(bg_path, 0, 0, width, height, mask='auto')
-    else:
-        # Fallback if image missing
-        canvas.setFillColor(BRAND_LILAC_BG)
-        canvas.rect(0, 0, width, height, stroke=0, fill=1)
+        # We draw the background explicitly to 100% of the page size
+        canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
     
     # 2. Watermark Logo (Center)
     logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
     if os.path.exists(logo_path):
         canvas.saveState()
         # Watermark sizing
-        w_width = 4*inch
-        w_height = 4*inch # Adjusted by aspect if needed
+        w_width = 5*inch # Larger watermark
+        w_height = 5*inch
         try:
             img_reader = ImageReader(logo_path)
             iw, ih = img_reader.getSize()
@@ -169,8 +170,10 @@ def draw_color_background(canvas, doc):
         except:
             pass
             
-        canvas.setFillAlpha(0.06) # Very subtle watermark
-        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, width=w_width, height=w_height, mask='auto', preserveAspectRatio=True)
+        canvas.setFillAlpha(0.15) # Increased from 0.06 to 0.15 for visibility
+        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, 
+                         width=w_width, height=w_height, mask='auto', 
+                         preserveAspectRatio=True)
         canvas.restoreState()
     
     canvas.restoreState()
