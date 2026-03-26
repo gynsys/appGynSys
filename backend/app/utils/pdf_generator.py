@@ -155,8 +155,14 @@ def draw_color_background(canvas, doc):
         # We draw the background explicitly to 100% of the page size
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
     
-    # 2. Watermark Logo (Image-based as requested)
-    logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
+    # 2. Watermark Logo (Dynamic implementation)
+    # Check if a specific watermark path was provided in the doc object
+    logo_path = getattr(doc, 'watermark_path', None)
+    
+    # Fallback to default if none provided or doesn't exist
+    if not logo_path or not os.path.exists(logo_path):
+        logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
+        
     if os.path.exists(logo_path):
         canvas.saveState()
         # Watermark sizing
@@ -203,6 +209,11 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
+    
+    # Dynamic Watermark from pdf_config
+    watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+    doc.watermark_path = get_local_path_from_url(watermark_source)
+    
     story = []
 
     styles = getSampleStyleSheet()
@@ -336,7 +347,20 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     story.append(Spacer(1, 0.3*inch))
     footer_city = pdf_config.get('footer_city') or "Guarenas"
-    today_str = format_date_spanish()
+    
+    # Use custom report date if provided
+    report_at_raw = report_data.get('report_at')
+    if report_at_raw:
+        try:
+            from dateutil.parser import parse
+            report_at = parse(report_at_raw) if isinstance(report_at_raw, str) else report_at_raw
+            today_str = format_date_spanish(report_at)
+        except Exception as e:
+            logger.error(f"Error parsing custom report date {report_at_raw}: {e}")
+            today_str = format_date_spanish()
+    else:
+        today_str = format_date_spanish()
+        
     pre_signature_text = f"Sin otro particular se suscribe en {footer_city} a los {today_str}."
     story.append(Paragraph(pre_signature_text, ParagraphStyle(name='PreFooter', fontSize=12, alignment=TA_CENTER, spaceAfter=24)))
 
@@ -745,6 +769,10 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     # Footer removed - medical history is cumulative document without signature
 
     try:
+        # Resolve Dynamic Watermark
+        watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+        doc.watermark_path = get_local_path_from_url(watermark_source)
+        
         if use_color:
             doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
         else:
