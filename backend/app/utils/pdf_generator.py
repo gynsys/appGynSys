@@ -100,6 +100,39 @@ def format_date_spanish(date: datetime = None) -> str:
     year = date.year
     return f"{day} de {month} de {year}"
 
+def _get_header_logos(pdf_config, doctor):
+    # Logo 1 (Left)
+    logo_source_left = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+    logo_left = None
+    if logo_source_left:
+        try:
+            logo_path = get_local_path_from_url(logo_source_left)
+            if logo_path and os.path.exists(logo_path):
+                img_reader = ImageReader(logo_path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                logo_left = Image(logo_path, width=1.1*inch, height=(1.1*inch)*aspect)
+                logo_left.hAlign = 'CENTER'
+        except Exception as e:
+            logger.error(f"Error loading left logo: {e}")
+
+    # Logo 2 (Right)
+    logo_source_right = pdf_config.get('logo_header_2')
+    logo_right = None
+    if logo_source_right:
+        try:
+            logo_path_right = get_local_path_from_url(logo_source_right)
+            if logo_path_right and os.path.exists(logo_path_right):
+                img_reader_right = ImageReader(logo_path_right)
+                iw_r, ih_r = img_reader_right.getSize()
+                aspect_r = ih_r / float(iw_r)
+                logo_right = Image(logo_path_right, width=1.1*inch, height=(1.1*inch)*aspect_r)
+                logo_right.hAlign = 'CENTER'
+        except Exception as e:
+            logger.error(f"Error loading right logo: {e}")
+            
+    return logo_left, logo_right
+
 def generate_summary_report(report_data: dict, doctor_id: int, db: Session = None) -> io.BytesIO:
     """
     Genera el PDF del Informe Médico Resumido (tamaño carta).
@@ -152,36 +185,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
-    # Logo 1 (Left) - Prefer config, then profile
-    logo_source_left = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
-    logo_image = None
-    if logo_source_left:
-        try:
-            logo_path = get_local_path_from_url(logo_source_left)
-            if logo_path and os.path.exists(logo_path):
-                img_reader = ImageReader(logo_path)
-                iw, ih = img_reader.getSize()
-                aspect = ih / float(iw)
-                logo_image = Image(logo_path, width=1.1*inch, height=(1.1*inch)*aspect)
-                logo_image.hAlign = 'CENTER'
-        except Exception as e:
-            logger.error(f"Error loading left logo: {e}")
-
-    # Logo 2 (Right)
-    logo_image_right = ""
-    logo_source_right = pdf_config.get('logo_header_2')
-    
-    if logo_source_right:
-        try:
-            logo_path_right = get_local_path_from_url(logo_source_right)
-            if logo_path_right and os.path.exists(logo_path_right):
-                img_reader_right = ImageReader(logo_path_right)
-                iw_r, ih_r = img_reader_right.getSize()
-                aspect_r = ih_r / float(iw_r)
-                logo_image_right = Image(logo_path_right, width=1.1*inch, height=(1.1*inch)*aspect_r)
-                logo_image_right.hAlign = 'CENTER'
-        except Exception as e:
-            logger.error(f"Error loading right logo: {e}")
+    logo_image, logo_image_right = _get_header_logos(pdf_config, doctor)
 
     # Header Table: 3 columns [Logo Left | Info Center | Logo Right]
     # Center text alignment
@@ -451,21 +455,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
-    # Logo 2 (Right)
-    logo_image_right = ""
-    logo_source_right = pdf_config.get('logo_header_2')
-    
-    if logo_source_right:
-        try:
-            logo_path_right = get_local_path_from_url(logo_source_right)
-            if logo_path_right and os.path.exists(logo_path_right):
-                img_reader_right = ImageReader(logo_path_right)
-                iw_r, ih_r = img_reader_right.getSize()
-                aspect_r = ih_r / float(iw_r)
-                logo_image_right = Image(logo_path_right, width=1.1*inch, height=(1.1*inch)*aspect_r)
-                logo_image_right.hAlign = 'CENTER'
-        except Exception as e:
-            logger.error(f"Error loading right logo: {e}")
+    logo_image, logo_image_right = _get_header_logos(pdf_config, doctor)
 
     # Header Table: 3 columns
     style_center = ParagraphStyle(name='HeaderCenterMed', parent=styleN, alignment=TA_CENTER)
