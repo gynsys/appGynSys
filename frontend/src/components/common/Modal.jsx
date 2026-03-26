@@ -15,7 +15,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
     '5xl': 'max-w-[90%]', // Custom extra wide
     story: 'max-w-[700px]', // Special for medical history
     full: 'max-w-[98%]',  // Almost full width
-    alert: 'max-w-[400px] md:h-[160px]', // Exact size for alerts
+    alert: 'max-w-[400px] md:h-[175px]', // Exact size for alerts
   }
 
   return (
