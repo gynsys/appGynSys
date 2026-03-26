@@ -799,15 +799,17 @@ export default function PatientsManager({ isEmbedded = false }) {
                   SOPORTES
                 </button>
 
-                <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={includeColor}
-                    onChange={(e) => setIncludeColor(e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                  />
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
-                </label>
+                {!basePdfUrl?.includes('history_pdf') && (
+                  <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={includeColor}
+                      onChange={(e) => setIncludeColor(e.target.checked)}
+                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
+                  </label>
+                )}
 
                 <label className="flex items-center gap-2 cursor-pointer sm:ml-auto">
                   <input

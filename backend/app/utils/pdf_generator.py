@@ -4,13 +4,15 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from reportlab.lib.pagesizes import legal, letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.pagesizes import letter, legal
+from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 import html
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.units import inch
 from reportlab.lib import colors
+from reportlab.lib.colors import Color, hexColor
 # import qrcode
 from reportlab.lib.utils import ImageReader
 from sqlalchemy.orm import Session
@@ -133,7 +135,47 @@ def _get_header_logos(pdf_config, doctor):
             
     return logo_left, logo_right
 
-def generate_summary_report(report_data: dict, doctor_id: int, db: Session = None) -> io.BytesIO:
+# --- Premium Color Layout Constants & Helpers ---
+BRAND_BURGUNDY = hexColor('#8B1D3B')
+BRAND_GOLD = hexColor('#D4AF37')
+BRAND_TEAL = hexColor('#008080') # From example image style
+BRAND_TEAL_LIGHT = hexColor('#E0F2F2')
+
+def draw_color_background(canvas, doc):
+    canvas.saveState()
+    # Draw a curved header shape at the top
+    p = canvas.beginPath()
+    p.moveTo(0, doc.pagesize[1])
+    p.lineTo(doc.pagesize[0], doc.pagesize[1])
+    p.lineTo(doc.pagesize[0], doc.pagesize[1] - 1.5*inch)
+    p.curveTo(doc.pagesize[0]*0.7, doc.pagesize[1] - 1.8*inch, 
+              doc.pagesize[0]*0.3, doc.pagesize[1] - 1.2*inch, 
+              0, doc.pagesize[1] - 1.5*inch)
+    p.close()
+    
+    canvas.setFillColor(BRAND_BURGUNDY)
+    canvas.setStrokeColor(BRAND_BURGUNDY)
+    canvas.drawPath(p, stroke=1, fill=1)
+    
+    # Add a secondary accent curve (lighter)
+    p2 = canvas.beginPath()
+    p2.moveTo(0, doc.pagesize[1])
+    p2.lineTo(doc.pagesize[0], doc.pagesize[1])
+    p2.lineTo(doc.pagesize[0], doc.pagesize[1] - 1.2*inch)
+    p2.curveTo(doc.pagesize[0]*0.7, doc.pagesize[1] - 1.4*inch, 
+               doc.pagesize[0]*0.3, doc.pagesize[1] - 1.0*inch, 
+               0, doc.pagesize[1] - 1.2*inch)
+    p2.close()
+    canvas.setFillColor(Color(0.54, 0.11, 0.23, alpha=0.3)) # Faded burgundy
+    canvas.drawPath(p2, stroke=0, fill=1)
+    
+    # Footer accent
+    canvas.setFillColor(BRAND_BURGUNDY)
+    canvas.rect(0, 0, doc.pagesize[0], 0.1*inch, stroke=0, fill=1)
+    
+    canvas.restoreState()
+
+def generate_summary_report(report_data: dict, doctor_id: int, db: Session = None, use_color: bool = False) -> io.BytesIO:
     """
     Genera el PDF del Informe Médico Resumido (tamaño carta).
     """
@@ -200,11 +242,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # Left logo left-aligned
-        ('ALIGN', (1, 0), (1, 0), 'CENTER'), # Text centered
-        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),  # Right logo right-aligned
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.white if use_color else colors.black),
     ]))
     story.append(header_table)
 
@@ -423,7 +466,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     buffer.seek(0)
     return buffer
 
-def generate_medical_report(report_data: dict, doctor_id: int, db: Session = None) -> io.BytesIO:
+def generate_medical_report(report_data: dict, doctor_id: int, db: Session = None, use_color: bool = False) -> io.BytesIO:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=legal, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
     story = []
@@ -472,6 +515,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         ('ALIGN', (2,0), (2,0), 'RIGHT'),
         ('LEFTPADDING', (0,0), (-1,-1), 0),
         ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.white if use_color else colors.black),
     ]))
     story.append(header_table)
     
