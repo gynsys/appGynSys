@@ -888,7 +888,7 @@ export default function PatientsManager({ isEmbedded = false }) {
         size="md"
         fullScreenOnMobile
       >
-        <div className="grid grid-cols-1 gap-4 p-4">
+        <div className="h-full flex flex-col justify-center gap-4 p-4">
           <button 
             onClick={() => handleChoice('history')}
             className="flex items-center gap-4 p-6 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-indigo-200 dark:hover:border-indigo-800"
