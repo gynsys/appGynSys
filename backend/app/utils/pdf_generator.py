@@ -12,7 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-from reportlab.lib.colors import Color, hexColor
+from reportlab.lib.colors import Color, HexColor
 # import qrcode
 from reportlab.lib.utils import ImageReader
 from sqlalchemy.orm import Session
@@ -136,10 +136,10 @@ def _get_header_logos(pdf_config, doctor):
     return logo_left, logo_right
 
 # --- Premium Color Layout Constants & Helpers ---
-BRAND_BURGUNDY = hexColor('#8B1D3B')
-BRAND_GOLD = hexColor('#D4AF37')
-BRAND_TEAL = hexColor('#008080') # From example image style
-BRAND_TEAL_LIGHT = hexColor('#E0F2F2')
+BRAND_BURGUNDY = HexColor('#8B1D3B')
+BRAND_GOLD = HexColor('#D4AF37')
+BRAND_TEAL = HexColor('#008080') # From example image style
+BRAND_TEAL_LIGHT = HexColor('#E0F2F2')
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
