@@ -176,6 +176,13 @@ def draw_color_background(canvas, doc):
     
     canvas.restoreState()
     
+    # 3. Bottom Center URL
+    canvas.saveState()
+    canvas.setFont("Helvetica", 10)
+    canvas.setFillColor(BRAND_LILAC_MEDIUM)
+    canvas.drawCentredString(width/2, 0.3*inch, "www.gynsys.net/mariel-herrera")
+    canvas.restoreState()
+    
     canvas.restoreState()
 
 def generate_summary_report(report_data: dict, doctor_id: int, db: Session = None, use_color: bool = False) -> io.BytesIO:
