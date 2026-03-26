@@ -572,7 +572,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             <input
               type="text"
               placeholder="Buscar por nombre o CI..."
-              className={`block w-full pl-12 pr-4 py-3 border-2 rounded-2xl leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent md:text-sm text-gray-900 dark:text-white transition-all shadow-sm ${
+              className={`block w-full pl-12 pr-4 py-3 border-2 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent md:text-sm text-gray-900 dark:text-white transition-all shadow-sm ${
                 isFocused ? '' : 'border-gray-100 dark:border-gray-700'
               }`}
               style={{ 
@@ -656,7 +656,7 @@ export default function PatientsManager({ isEmbedded = false }) {
           </div>
 
           {/* Table View for Desktop */}
-          <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
               <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                 <tr>
