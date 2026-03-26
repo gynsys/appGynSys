@@ -512,6 +512,7 @@ def delete_consultation(
 def get_consultation_pdf(
     id: int,
     include_images: bool = Query(False),
+    use_color: bool = Query(False),
     download: bool = Query(False),
     db: Session = Depends(get_db)
 ):
@@ -550,7 +551,7 @@ def get_consultation_pdf(
         data["consultation_type"] = "Ginecología"
 
     # Generate PDF (Summary Report)
-    pdf_buffer = generate_summary_report(data, consultation.doctor_id, db)
+    pdf_buffer = generate_summary_report(data, consultation.doctor_id, db, use_color=use_color)
     
     headers = {}
     if download:
@@ -582,6 +583,7 @@ def get_consultation_report_data(
 @router.get("/{id}/history_pdf")
 def get_consultation_history_pdf(
     id: int,
+    use_color: bool = Query(False),
     db: Session = Depends(get_db)
 ):
     # Use the service to get the data
@@ -590,7 +592,7 @@ def get_consultation_history_pdf(
         raise HTTPException(status_code=404, detail="Consultation not found")
 
     # Generate PDF (Medical History with ALL consultations)
-    pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db)
+    pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db, use_color=use_color)
     
     return Response(content=pdf_buffer.getvalue(), media_type="application/pdf")
 
