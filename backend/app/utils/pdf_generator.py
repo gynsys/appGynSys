@@ -186,7 +186,8 @@ def draw_color_background(canvas, doc):
     canvas.saveState()
     canvas.setFont("Helvetica", 10)
     canvas.setFillColor(BRAND_LILAC_MEDIUM)
-    canvas.drawCentredString(width/2, 0.3*inch, "www.gynsys.net/mariel-herrera")
+    footer_url = getattr(doc, 'footer_url', "www.gynsys.net/mariel-herrera")
+    canvas.drawCentredString(width/2, 0.3*inch, footer_url)
     canvas.restoreState()
     
     canvas.restoreState()
@@ -210,9 +211,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
     
-    # Dynamic Watermark from pdf_config
+    # Dynamic Watermark & URL from pdf_config
     watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
     doc.watermark_path = get_local_path_from_url(watermark_source)
+    doc.footer_url = pdf_config.get('doctor_url') or "www.gynsys.net/mariel-herrera"
     
     story = []
 
@@ -769,9 +771,10 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     # Footer removed - medical history is cumulative document without signature
 
     try:
-        # Resolve Dynamic Watermark
+        # Resolve Dynamic Watermark & URL
         watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
         doc.watermark_path = get_local_path_from_url(watermark_source)
+        doc.footer_url = pdf_config.get('doctor_url') or "www.gynsys.net/mariel-herrera"
         
         if use_color:
             doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
