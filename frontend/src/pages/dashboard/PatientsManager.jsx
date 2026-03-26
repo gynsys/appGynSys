@@ -625,14 +625,14 @@ export default function PatientsManager({ isEmbedded = false }) {
                 <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-indigo-600 text-white shadow-sm"
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-sm"
                     title="Ver Informe Médico"
                   >
                     <FiEye size={16} className="mr-2" /> INFORME
                   </button>
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`, consultation.patient_name)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-lg text-[10px] font-black bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                     title="Ver Historia Completa"
                   >
                     HISTORIA
@@ -681,14 +681,14 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <div className="flex gap-2 justify-center">
                         <button 
                           onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
-                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black shadow-sm hover:bg-indigo-700 transition-all"
+                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-[10px] font-black shadow-sm hover:bg-indigo-700 transition-all"
                           title="Ver Informe Médico"
                         >
                           <FiEye size={14} /> INFORME
                         </button>
                         <button 
                           onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`, consultation.patient_name)}
-                          className="px-4 py-2 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-xl text-[10px] font-black hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                          className="px-4 py-2 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-black hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
                           title="Ver Historia Clínica"
                         >
                           HISTORIA
@@ -1091,10 +1091,10 @@ export default function PatientsManager({ isEmbedded = false }) {
 
       <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirmar" size="alert">
         <div className="p-2 text-center h-full flex flex-col justify-center">
-          <p className="text-gray-900 dark:text-white font-black md:text-2xl tracking-tight">¿Seguro de eliminar?</p>
-          <div className="mt-6 flex justify-center gap-3">
-            <button onClick={() => setDeleteModalOpen(false)} className="flex-1 px-4 py-2.5 border-2 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">No</button>
-            <button onClick={confirmDelete} className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-black uppercase tracking-widest shadow-lg shadow-red-100 dark:shadow-none hover:bg-red-700 transition-all">Sí, eliminar</button>
+          <p className="text-gray-900 dark:text-white font-black text-lg tracking-tight">¿Seguro de eliminar?</p>
+          <div className="mt-4 flex justify-center gap-3">
+            <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-1.5 border-2 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">No</button>
+            <button onClick={confirmDelete} className="px-5 py-1.5 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-100 dark:shadow-none hover:bg-red-700 transition-all">Sí, eliminar</button>
           </div>
         </div>
       </Modal>
