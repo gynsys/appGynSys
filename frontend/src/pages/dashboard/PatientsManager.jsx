@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 import { useToastStore } from '../../store/toastStore';
@@ -227,10 +227,12 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
 
 export default function PatientsManager({ isEmbedded = false }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  const { doctor, isDarkTheme } = useOutletContext() || {};
   const navigate = useNavigate();
   const [consultations, setConsultations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Delete State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -570,9 +572,17 @@ export default function PatientsManager({ isEmbedded = false }) {
             <input
               type="text"
               placeholder="Buscar por nombre o CI..."
-              className="block w-full pl-12 pr-4 py-3 border-2 border-gray-100 dark:border-gray-700 rounded-2xl leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:text-sm text-gray-900 dark:text-white transition-all shadow-sm"
+              className={`block w-full pl-12 pr-4 py-3 border-2 rounded-2xl leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent md:text-sm text-gray-900 dark:text-white transition-all shadow-sm ${
+                isFocused ? '' : 'border-gray-100 dark:border-gray-700'
+              }`}
+              style={{ 
+                borderColor: isFocused ? (doctor?.theme_primary_color || '#4f46e5') : undefined,
+                boxShadow: isFocused ? `0 0 0 2px ${(doctor?.theme_primary_color || '#4f46e5')}44` : undefined
+              }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
             />
           </div>
         </div>
@@ -600,7 +610,7 @@ export default function PatientsManager({ isEmbedded = false }) {
               <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[24px] border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
+                    <div className="h-12 w-12 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
                       <FiUser />
                     </div>
                     <div className="ml-3">
@@ -622,7 +632,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                   </button>
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700"
+                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-xl text-[10px] font-black bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                     title="Ver Historia Completa"
                   >
                     HISTORIA
@@ -661,7 +671,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                   <tr key={consultation.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><FiUser /></div>
+                        <div className="h-10 w-10 flex items-center justify-center text-indigo-600"><FiUser /></div>
                         <div className="ml-4 font-black uppercase text-sm">{consultation.patient_name}</div>
                       </div>
                     </td>
@@ -678,7 +688,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                         </button>
                         <button 
                           onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`)}
-                          className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-[10px] font-black hover:bg-blue-100 transition-all"
+                          className="px-4 py-2 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-xl text-[10px] font-black hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
                           title="Ver Historia Clínica"
                         >
                           HISTORIA
