@@ -155,26 +155,26 @@ def draw_color_background(canvas, doc):
         # We draw the background explicitly to 100% of the page size
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
     
-    # 2. Watermark Logo (Center Vector implementation for sharpness)
-    canvas.saveState()
-    canvas.translate(width/2, height/2)
-    canvas.rotate(45)
-    
-    # "M" part
-    canvas.setFont("Times-BoldItalic", 180)
-    canvas.setFillColor(HexColor('#8B1D3B'))
-    canvas.setFillAlpha(0.06)
-    canvas.drawCentredString(-45, -20, "M")
-    
-    # "H" part
-    canvas.setFillColor(HexColor('#BC7B8B'))
-    canvas.drawCentredString(55, -20, "H")
-    
-    # Subtle "-" in between
-    canvas.setFont("Helvetica-Bold", 80)
-    canvas.drawCentredString(5, -10, "-")
-    
-    canvas.restoreState()
+    # 2. Watermark Logo (Image-based as requested)
+    logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
+    if os.path.exists(logo_path):
+        canvas.saveState()
+        # Watermark sizing
+        w_width = 5*inch
+        w_height = 5*inch
+        try:
+            img_reader = ImageReader(logo_path)
+            iw, ih = img_reader.getSize()
+            aspect = ih / float(iw)
+            w_height = w_width * aspect
+        except:
+            pass
+            
+        canvas.setFillAlpha(0.12) # Subtle but visible
+        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, 
+                         width=w_width, height=w_height, mask='auto', 
+                         preserveAspectRatio=True)
+        canvas.restoreState()
     
     # 3. Bottom Center URL
     canvas.saveState()
