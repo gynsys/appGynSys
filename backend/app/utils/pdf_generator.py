@@ -152,38 +152,40 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
-    # Logo
-    logo_image = ""
-    # Prefer logo from config, then doctor profile
-    logo_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+    # Logo 2 (Right)
+    logo_image_right = ""
+    logo_source_right = pdf_config.get('logo_header_2')
     
-    if logo_source:
+    if logo_source_right:
         try:
-            logo_path = get_local_path_from_url(logo_source)
-            
-            if logo_path and os.path.exists(logo_path):
-                img = Image(logo_path, width=1.2*inch, height=1.2*inch)
-                img.hAlign = 'CENTER'
-                # Maintain aspect ratio
-                img_reader = ImageReader(logo_path)
-                iw, ih = img_reader.getSize()
-                aspect = ih / float(iw)
-                img = Image(logo_path, width=1.2*inch, height=(1.2*inch)*aspect)
-                img.hAlign = 'CENTER'
-                logo_image = img
-            else:
-                logger.warning(f"Logo file not found for source: {logo_source}")
+            logo_path_right = get_local_path_from_url(logo_source_right)
+            if logo_path_right and os.path.exists(logo_path_right):
+                img_reader_right = ImageReader(logo_path_right)
+                iw_r, ih_r = img_reader_right.getSize()
+                aspect_r = ih_r / float(iw_r)
+                logo_image_right = Image(logo_path_right, width=1.1*inch, height=(1.1*inch)*aspect_r)
+                logo_image_right.hAlign = 'CENTER'
         except Exception as e:
-            logger.error(f"Error loading logo: {e}")
+            logger.error(f"Error loading right logo: {e}")
 
-    # Header Table
-    # Logo on left (col 0), Text on right (col 1)
-    header_data = [[logo_image if logo_image else "", safe_p(header_text, styleN)]]
-    header_table = Table(header_data, colWidths=[1.5*inch, 5.5*inch])
+    # Header Table: 3 columns [Logo Left | Info Center | Logo Right]
+    # Center text alignment
+    style_center = ParagraphStyle(name='HeaderCenter', parent=styleN, alignment=TA_CENTER)
+    header_data = [[
+        logo_image if logo_image else "",
+        safe_p(header_text, style_center),
+        logo_image_right if logo_image_right else ""
+    ]]
+    
+    # Total width ~ 7.0 inches. 1.2 + 4.6 + 1.2 = 7.0
+    header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0,0), (0,0), 'CENTER'),
-        ('ALIGN', (1,0), (1,0), 'LEFT'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # Left logo left-aligned
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'), # Text centered
+        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),  # Right logo right-aligned
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
     ]))
     story.append(header_table)
 
@@ -317,8 +319,20 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         else:
             img_title = "ULTRASONIDO GINECOLÓGICO"
             
-        # Repeat Header
-        story.append(header_table)
+        # Repeat Header (already updated to 3 cols if we use same logic)
+        header_data_p2 = [[
+            logo_image if logo_image else "",
+            safe_p(header_text, ParagraphStyle(name='HeaderCenterP2', parent=styleN, alignment=TA_CENTER)),
+            logo_image_right if logo_image_right else ""
+        ]]
+        header_table_p2 = Table(header_data_p2, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
+        header_table_p2.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (0,0), (0,0), 'LEFT'),
+            ('ALIGN', (1,0), (1,0), 'CENTER'),
+            ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ]))
+        story.append(header_table_p2)
         story.append(line_table)
         story.append(Spacer(1, 0.25*inch))
         story.append(Paragraph(f"<u>{img_title}</u>", styleH1))
@@ -422,32 +436,37 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
-    # Logo
-    logo_image = ""
-    logo_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
+    # Logo 2 (Right)
+    logo_image_right = ""
+    logo_source_right = pdf_config.get('logo_header_2')
     
-    if logo_source:
+    if logo_source_right:
         try:
-            logo_path = get_local_path_from_url(logo_source)
-            
-            if logo_path and os.path.exists(logo_path):
-                img_reader = ImageReader(logo_path)
-                iw, ih = img_reader.getSize()
-                aspect = ih / float(iw)
-                img = Image(logo_path, width=1.2*inch, height=(1.2*inch)*aspect)
-                img.hAlign = 'CENTER'
-                logo_image = img
+            logo_path_right = get_local_path_from_url(logo_source_right)
+            if logo_path_right and os.path.exists(logo_path_right):
+                img_reader_right = ImageReader(logo_path_right)
+                iw_r, ih_r = img_reader_right.getSize()
+                aspect_r = ih_r / float(iw_r)
+                logo_image_right = Image(logo_path_right, width=1.1*inch, height=(1.1*inch)*aspect_r)
+                logo_image_right.hAlign = 'CENTER'
         except Exception as e:
-            logger.error(f"Error loading logo: {e}")
-    
-    # Header Table
-    # Logo on left (col 0), Text on right (col 1)
-    header_data = [[logo_image if logo_image else "", safe_p(header_text, styleN)]]
-    header_table = Table(header_data, colWidths=[1.5*inch, 5.5*inch])
+            logger.error(f"Error loading right logo: {e}")
+
+    # Header Table: 3 columns
+    style_center = ParagraphStyle(name='HeaderCenterMed', parent=styleN, alignment=TA_CENTER)
+    header_data = [[
+        logo_image if logo_image else "",
+        safe_p(header_text, style_center),
+        logo_image_right if logo_image_right else ""
+    ]]
+    header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0,0), (0,0), 'CENTER'), # Logo centered in its cell
-        ('ALIGN', (1,0), (1,0), 'LEFT'),   # Text left aligned next to logo
+        ('ALIGN', (0,0), (0,0), 'LEFT'),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
     ]))
     story.append(header_table)
     

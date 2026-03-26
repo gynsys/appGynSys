@@ -21,6 +21,7 @@ export default function PdfConfigurationPage() {
     report_title: 'HISTORIA MEDICA',
     footer_city: '',
     logo_header_1: '',
+    logo_header_2: '',
     logo_signature: '',
     include_functional_exam: true
   });
@@ -34,7 +35,8 @@ export default function PdfConfigurationPage() {
             ...prev,
             ...user.pdf_config,
             // Prioritize pdf_config logo if set, otherwise fallback to user profile logo
-            logo_header_1: user.pdf_config.logo_header_1 || (user.logo_url ? user.logo_url : '')
+            logo_header_1: user.pdf_config.logo_header_1 || (user.logo_url ? user.logo_url : ''),
+            logo_header_2: user.pdf_config.logo_header_2 || ''
           }));
         } else {
           // Default values if nothing stored
@@ -48,7 +50,8 @@ export default function PdfConfigurationPage() {
             cmdm_number: '38.789',
             doctor_id: '23.812.988',
             footer_city: 'Guarenas',
-            logo_header_1: user.logo_url || ''
+            logo_header_1: user.logo_url || '',
+            logo_header_2: ''
           }));
         }
       } catch (error) {
@@ -77,7 +80,7 @@ export default function PdfConfigurationPage() {
       try {
         let responseUrl = previewUrl;
 
-        if (field === 'logo_header_1') {
+        if (field === 'logo_header_1' || field === 'logo_header_2') {
           const response = await doctorService.uploadLogo(file);
           responseUrl = response.logo_url;
           showToast('Logo subido exitosamente', 'success');
@@ -250,11 +253,17 @@ export default function PdfConfigurationPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Arrastra y suelta tus imágenes para el encabezado y firma.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <ImageUpload
-              label="Logo del Encabezado"
+              label="Logo Izquierdo"
               currentImage={settings.logo_header_1}
               onImageChange={(file, url) => handleImageChange('logo_header_1', file, url)}
+            />
+
+            <ImageUpload
+              label="Logo Derecho"
+              currentImage={settings.logo_header_2}
+              onImageChange={(file, url) => handleImageChange('logo_header_2', file, url)}
             />
 
             <ImageUpload
