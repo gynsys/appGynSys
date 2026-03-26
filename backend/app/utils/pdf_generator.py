@@ -145,68 +145,33 @@ def draw_color_background(canvas, doc):
     canvas.saveState()
     width, height = doc.pagesize
     
-    # Fill Background with very light lilac
-    canvas.setFillColor(BRAND_LILAC_BG)
-    canvas.rect(0, 0, width, height, stroke=0, fill=1)
+    # 1. Background Image (Full Page)
+    bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
+    if os.path.exists(bg_path):
+        canvas.drawImage(bg_path, 0, 0, width, height, mask='auto')
+    else:
+        # Fallback if image missing
+        canvas.setFillColor(BRAND_LILAC_BG)
+        canvas.rect(0, 0, width, height, stroke=0, fill=1)
     
-    # TOP ARCS (Fanning from left)
-    # 1. Lightest Arc (Largest base)
-    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.15))
-    p3 = canvas.beginPath()
-    p3.moveTo(0, height)
-    p3.lineTo(width, height)
-    p3.lineTo(width, height - 1.5*inch)
-    p3.curveTo(width*0.6, height - 3.8*inch, width*0.1, height - 1.5*inch, 0, height - 3.5*inch)
-    p3.close()
-    canvas.drawPath(p3, stroke=0, fill=1)
-    
-    # 2. Medium Arc
-    canvas.setFillColor(BRAND_LILAC_MEDIUM)
-    p2 = canvas.beginPath()
-    p2.moveTo(0, height)
-    p2.lineTo(width * 0.8, height)
-    p2.curveTo(width*0.5, height - 2.5*inch, width*0.1, height - 0.5*inch, 0, height - 2.5*inch)
-    p2.close()
-    canvas.drawPath(p2, stroke=0, fill=1)
-    
-    # 3. Darkest Arc (Topmost Left)
-    canvas.setFillColor(BRAND_LILAC_DARK)
-    p = canvas.beginPath()
-    p.moveTo(0, height)
-    p.lineTo(width * 0.4, height)
-    p.curveTo(width*0.2, height - 1.5*inch, width*0.05, height - 0.2*inch, 0, height - 1.5*inch)
-    p.close()
-    canvas.drawPath(p, stroke=0, fill=1)
-    
-    # BOTTOM ARCS
-    # Darkest (Bottom)
-    canvas.setFillColor(BRAND_LILAC_MEDIUM)
-    p4 = canvas.beginPath()
-    p4.moveTo(0, 0)
-    p4.lineTo(width, 0)
-    p4.lineTo(width, 0.6*inch)
-    p4.curveTo(width*0.7, 0.2*inch, width*0.3, 1.2*inch, 0, 0.8*inch)
-    p4.close()
-    canvas.drawPath(p4, stroke=0, fill=1)
-    
-    # Faded (Bottom) (Increased height +100px -> ~1.4 inches extra)
-    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.15))
-    p5 = canvas.beginPath()
-    p5.moveTo(0, 0)
-    p5.lineTo(width, 0)
-    p5.lineTo(width, 2.4*inch) # 1.0 + 1.4
-    p5.curveTo(width*0.8, 3.0*inch, width*0.2, 1.5*inch, 0, 2.8*inch)
-    p5.close()
-    canvas.drawPath(p5, stroke=0, fill=1)
-
-    # Watermark (Center)
-    canvas.saveState()
-    canvas.setFont("Helvetica-Bold", 120)
-    canvas.setFillColor(Color(0.61, 0.15, 0.69, alpha=0.03))
-    canvas.translate(width/2, height/2)
-    canvas.rotate(45)
-    canvas.drawCentredString(0, 0, "Rx")
-    canvas.restoreState()
+    # 2. Watermark Logo (Center)
+    logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
+    if os.path.exists(logo_path):
+        canvas.saveState()
+        # Watermark sizing
+        w_width = 4*inch
+        w_height = 4*inch # Adjusted by aspect if needed
+        try:
+            img_reader = ImageReader(logo_path)
+            iw, ih = img_reader.getSize()
+            aspect = ih / float(iw)
+            w_height = w_width * aspect
+        except:
+            pass
+            
+        canvas.setFillAlpha(0.06) # Very subtle watermark
+        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, width=w_width, height=w_height, mask='auto', preserveAspectRatio=True)
+        canvas.restoreState()
     
     canvas.restoreState()
 
@@ -267,11 +232,16 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     # Header Table: 3 columns [Logo Left | Info Center | Logo Right]
     # Center text alignment
     style_center = ParagraphStyle(name='HeaderCenter', parent=styleN, alignment=TA_CENTER)
-    header_data = [[
-        logo_image if logo_image else "",
-        safe_p(header_text, style_center),
-        logo_image_right if (logo_image_right and not use_color) else ""
-    ]]
+    # In color mode, remove left logo and center text for minimalist look
+    # (Background image already provides the visual identity)
+    if use_color:
+        header_data = [["", "", ""]]
+    else:
+        header_data = [[
+            logo_image if logo_image else "",
+            safe_p(header_text, style_center),
+            logo_image_right if logo_image_right else ""
+        ]]
     
     # Total width ~ 7.0 inches. 1.2 + 4.6 + 1.2 = 7.0
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
