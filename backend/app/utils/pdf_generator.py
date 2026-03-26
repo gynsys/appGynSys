@@ -185,7 +185,7 @@ def draw_color_background(canvas, doc):
     # 3. Bottom Center URL
     canvas.saveState()
     canvas.setFont("Helvetica", 10)
-    canvas.setFillColor(BRAND_LILAC_MEDIUM)
+    canvas.setFillColor(BRAND_LILAC_DARK)
     footer_url = getattr(doc, 'footer_url', "www.gynsys.net")
     canvas.drawCentredString(width/2, 0.3*inch, footer_url)
     canvas.restoreState()
