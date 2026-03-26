@@ -892,7 +892,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             onClick={() => handleChoice('history')}
             className="flex items-center gap-4 p-6 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-indigo-200 dark:hover:border-indigo-800"
           >
-            <div className="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <div className="h-14 w-14 flex-shrink-0 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
               <FiUser size={24} />
             </div>
             <div>
@@ -905,7 +905,7 @@ export default function PatientsManager({ isEmbedded = false }) {
             onClick={() => handleChoice('report')}
             className="flex items-center gap-4 p-6 bg-teal-50 dark:bg-teal-900/20 hover:bg-teal-100 dark:hover:bg-teal-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-teal-200 dark:hover:border-teal-800"
           >
-            <div className="h-14 w-14 bg-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <div className="h-14 w-14 flex-shrink-0 bg-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
               <FiFileText size={24} />
             </div>
             <div>
