@@ -249,6 +249,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [currentConsultationId, setCurrentConsultationId] = useState(null);
   const [basePdfUrl, setBasePdfUrl] = useState(null);
   const [includeImages, setIncludeImages] = useState(false);
+  const [includeColor, setIncludeColor] = useState(false);
   const [isAssetOnly, setIsAssetOnly] = useState(false);
   const [currentPatientName, setCurrentPatientName] = useState('');
 
@@ -494,6 +495,7 @@ export default function PatientsManager({ isEmbedded = false }) {
     let url = basePdfUrl;
     const params = new URLSearchParams();
     if (includeImages) params.append('include_images', 'true');
+    if (includeColor) params.append('use_color', 'true');
     if (isDownload) params.append('download', 'true');
     
     const queryString = params.toString();
@@ -796,6 +798,16 @@ export default function PatientsManager({ isEmbedded = false }) {
                 >
                   SOPORTES
                 </button>
+
+                <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={includeColor}
+                    onChange={(e) => setIncludeColor(e.target.checked)}
+                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
+                </label>
 
                 <label className="flex items-center gap-2 cursor-pointer sm:ml-auto">
                   <input
