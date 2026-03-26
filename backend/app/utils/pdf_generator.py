@@ -198,7 +198,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     styles = getSampleStyleSheet()
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=12, leading=14)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=12, leading=14)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_BURGUNDY if use_color else colors.black)
 
     style_narrative = ParagraphStyle(
         name='Narrative',
@@ -473,7 +473,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
 
     styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=10, leading=12)
     styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=10, leading=12)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6, textColor=BRAND_BURGUNDY if use_color else colors.black)
     styleJustify = ParagraphStyle(name='Justify', parent=styleN, alignment=TA_JUSTIFY)
 
     def get_str(key, default=''):
