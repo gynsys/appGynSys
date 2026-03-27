@@ -171,13 +171,13 @@ def draw_color_background(canvas, doc):
     canvas.setFillColor(BRAND_LILAC_BG)
     canvas.rect(0, 0, width, height, stroke=0, fill=1)
     
-    # 1. Background Image disabled as per user request for white background
-    # bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
-    # if os.path.exists(bg_path):
-    #     canvas.saveState()
-    #     canvas.setFillAlpha(0.12)
-    #     canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
-    #     canvas.restoreState()
+    # 1. Background Image (Full Page) - Restored over white background for premium feel
+    bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
+    if os.path.exists(bg_path):
+        canvas.saveState()
+        canvas.setFillAlpha(0.35) # Texture over white
+        canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
+        canvas.restoreState()
     
     # 2. Watermark Logo (Dynamic implementation)
     include_watermark = getattr(doc, 'include_watermark', True)
