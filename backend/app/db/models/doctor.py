@@ -103,7 +103,7 @@ class Doctor(Base):
     pending_notifications = relationship("PendingNotification", back_populates="doctor", cascade="all, delete-orphan")
     push_subscriptions = relationship("PushSubscription", back_populates="doctor", cascade="all, delete-orphan")
     online_settings = relationship("OnlineConsultationSettings", back_populates="doctor", cascade="all, delete-orphan", uselist=False)
-    recommendations = relationship("Recommendation", back_populates="doctor", cascade="all, delete-orphan")
+    recommendations = relationship("Recommendation", back_populates="tenant", cascade="all, delete-orphan")
     preconsultation_questions = relationship("PreconsultationQuestion", back_populates="doctor", cascade="all, delete-orphan")
     cycle_logs = relationship("CycleLog", back_populates="doctor", cascade="all, delete-orphan")
     symptom_logs = relationship("SymptomLog", back_populates="doctor", cascade="all, delete-orphan")

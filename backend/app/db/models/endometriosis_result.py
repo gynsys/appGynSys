@@ -20,4 +20,4 @@ class EndometriosisResult(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationship
-    doctor = relationship("Doctor", backref="endometriosis_results")
+    doctor = relationship("Doctor", back_populates="endometriosis_results")
