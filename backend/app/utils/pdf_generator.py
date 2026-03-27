@@ -149,11 +149,13 @@ def draw_color_background(canvas, doc):
     canvas.setFillColor(BRAND_LILAC_BG)
     canvas.rect(0, 0, width, height, stroke=0, fill=1)
     
-    # 1. Background Image (Full Page)
+    # 1. Background Image (Full Page) - Applied with transparency to blend with the requested BRAND_LILAC_BG
     bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
     if os.path.exists(bg_path):
-        # We draw the background explicitly to 100% of the page size
+        canvas.saveState()
+        canvas.setFillAlpha(0.25) # Blend with the background color
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
+        canvas.restoreState()
     
     # 2. Watermark Logo (Dynamic implementation)
     include_watermark = getattr(doc, 'include_watermark', True)
