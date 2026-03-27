@@ -650,10 +650,10 @@ export default function PatientsManager({ isEmbedded = false }) {
                   >
                     <FiImage size={18} />
                   </button>
-                  <button onClick={() => handleEditClick(consultation)} className="p-0.5 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                  <button onClick={() => handleEditClick(consultation)} className="ml-[5px] p-0.5 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
                     <FiEdit size={18} />
                   </button>
-                  <button onClick={() => handleDeleteClick(consultation.id)} className="p-0.5 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
+                  <button onClick={() => handleDeleteClick(consultation.id)} className="ml-[5px] p-0.5 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
                     <FiTrash2 size={18} />
                   </button>
                 </div>
