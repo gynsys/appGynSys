@@ -628,7 +628,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     #{consultation.history_number || 'PEND'}
                   </div>
                 </div>
-                <div className="flex gap-1 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-1 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
                     className="flex-1 inline-flex justify-center items-center px-1 py-2.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-sm"
