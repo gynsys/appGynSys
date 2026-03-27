@@ -32,10 +32,10 @@ def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dic
         # Si el usuario NO proporcionó un texto plano específico, derivamos del HTML
         if not text_tpl:
             import re
-            # Limpieza básica de HTML para Push
+            # Limpieza básica de HTML para Push, conservando saltos de línea
             clean_text = re.sub(r'<[^>]+>', '', html_tpl)
-            # Normalizar espacios y saltos de línea
-            clean_text = ' '.join(clean_text.split())
+            # Normalizar espacios pero mantener líneas
+            clean_text = "\n".join(line.strip() for line in clean_text.splitlines() if line.strip())
             rendered_text = _fmt(clean_text)
         else:
             rendered_text = _fmt(text_tpl)
