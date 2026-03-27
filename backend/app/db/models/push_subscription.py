@@ -23,4 +23,4 @@ class PushSubscription(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     user = relationship("CycleUser", backref="patient_push_subscriptions")
-    doctor = relationship("Doctor", backref="doctor_push_subscriptions")
+    doctor = relationship("Doctor", back_populates="push_subscriptions")

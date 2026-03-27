@@ -16,4 +16,4 @@ class PreconsultationQuestion(Base):
 
     # Multi-tenant link
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True) # Initially nullable for migration, then should be enforced
-    doctor = relationship("Doctor", backref="preconsultation_questions")
+    doctor = relationship("Doctor", back_populates="preconsultation_questions")

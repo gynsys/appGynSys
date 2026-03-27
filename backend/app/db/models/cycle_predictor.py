@@ -14,7 +14,7 @@ class CycleLog(Base):
     cycle_length = Column(Integer, nullable=True)
     notes = Column(String, nullable=True)
 
-    doctor = relationship("Doctor", backref="cycle_logs")
+    doctor = relationship("Doctor", back_populates="cycle_logs")
     cycle_user = relationship("CycleUser", backref="cycle_logs")
 
 class SymptomLog(Base):
@@ -30,7 +30,7 @@ class SymptomLog(Base):
     symptoms = Column(JSON, nullable=True) # List of strings
     notes = Column(String, nullable=True)
 
-    doctor = relationship("Doctor", backref="symptom_logs")
+    doctor = relationship("Doctor", back_populates="symptom_logs")
     cycle_user = relationship("CycleUser", backref="symptom_logs")
 
 class CycleNotificationSettings(Base):

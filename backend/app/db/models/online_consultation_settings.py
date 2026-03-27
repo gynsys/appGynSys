@@ -42,4 +42,4 @@ class OnlineConsultationSettings(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationship
-    doctor = relationship("Doctor", backref="online_consultation_settings")
+    doctor = relationship("Doctor", back_populates="online_settings")

@@ -99,7 +99,7 @@ class NotificationRule(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    doctor = relationship("Doctor", backref="notification_rules")
+    doctor = relationship("Doctor", back_populates="notification_rules")
     
     # Unique per type (one global rule per type)
     __table_args__ = (
@@ -164,7 +164,7 @@ class NotificationLog(Base):
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser", backref="notification_logs")
-    doctor = relationship("Doctor", backref="notification_logs")
+    doctor = relationship("Doctor", back_populates="notification_logs")
 
     @property
     def recipient_name(self) -> Optional[str]:
@@ -221,7 +221,7 @@ class PendingNotification(Base):
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser")
-    doctor = relationship("Doctor")
+    doctor = relationship("Doctor", back_populates="pending_notifications")
 
     @property
     def recipient_name(self) -> Optional[str]:

@@ -32,4 +32,4 @@ class Recommendation(Base):
     
     # Relationships
     category = relationship("RecommendationCategory", back_populates="items")
-    tenant = relationship("Doctor", backref="recommendations")
+    tenant = relationship("Doctor", back_populates="recommendations")
