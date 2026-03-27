@@ -513,6 +513,8 @@ def get_consultation_pdf(
     id: int,
     include_images: bool = Query(False),
     use_color: bool = Query(False),
+    include_watermark: bool = Query(True),
+    report_at: str = Query(None),
     download: bool = Query(False),
     db: Session = Depends(get_db)
 ):
@@ -550,6 +552,10 @@ def get_consultation_pdf(
         # Fallback if no appointment found
         data["consultation_type"] = "Ginecología"
 
+    if report_at:
+        data["report_at"] = report_at
+    data["include_watermark"] = include_watermark
+
     # Generate PDF (Summary Report)
     pdf_buffer = generate_summary_report(data, consultation.doctor_id, db, use_color=use_color)
     
@@ -584,12 +590,19 @@ def get_consultation_report_data(
 def get_consultation_history_pdf(
     id: int,
     use_color: bool = Query(False),
+    include_watermark: bool = Query(True),
+    report_at: str = Query(None),
     db: Session = Depends(get_db)
 ):
     # Use the service to get the data
     data = ConsultationService.get_history_data(db, id)
     if not data:
         raise HTTPException(status_code=404, detail="Consultation not found")
+
+    # Pass toggle
+    data["include_watermark"] = include_watermark
+    if report_at:
+        data["report_at"] = report_at
 
     # Generate PDF (Medical History with ALL consultations)
     pdf_buffer = generate_medical_report(data, data.get("doctor_id", id), db, use_color=use_color)

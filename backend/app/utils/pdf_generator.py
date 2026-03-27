@@ -183,25 +183,13 @@ def draw_color_background(canvas, doc):
                              preserveAspectRatio=True)
             canvas.restoreState()
     
-    # 3. Fixed Footer Elements (Doctor Info & QR/Logo)
-    # Shown on every page when use_color is active
+    # 3. Fixed Footer Elements (Logo/QR ONLY - info removed as requested)
     footer_data = getattr(doc, 'footer_fixed_data', None)
     if footer_data:
         canvas.saveState()
-        # Right Side: Doctor Info
-        info_lines = footer_data.get('info', [])
-        y_pos = 0.8 * inch # Base height for footer info
-        canvas.setFont("Helvetica-Bold", 12)
-        canvas.setFillColor(BRAND_LILAC_DARK)
+        # Doctor Info Right Side REMOVED as requested (it was duplicated with signature)
         
-        for i, line in enumerate(info_lines):
-            # First line is bold name, others are normal
-            if i > 0: canvas.setFont("Helvetica", 10)
-            canvas.drawRightString(width - 0.75*inch, y_pos, line)
-            y_pos -= 14 # leading
-            
         # Left Side: QR / Logo (Repositioned 15px lower as requested)
-        # Assuming QR/Logo height is ~1.1 inch, we place it near bottom left
         qr_path = footer_data.get('qr_path')
         if qr_path and os.path.exists(qr_path):
             try:
@@ -210,8 +198,6 @@ def draw_color_background(canvas, doc):
                 aspect = ih / float(iw)
                 qr_w = 1.1 * inch
                 qr_h = qr_w * aspect
-                # 0.4 inch baseline - 15px (~0.2 inch) = ~0.2 inch
-                # Let's use 0.3*inch - 15/72.0 as requested
                 qr_y = 0.5 * inch - (15 / 72.0) 
                 canvas.drawImage(qr_path, 0.75*inch, qr_y, width=qr_w, height=qr_h, mask='auto', preserveAspectRatio=True)
             except:
@@ -259,13 +245,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     else:
         doc.footer_url = pdf_config.get('doctor_url') or base_domain
         
-    # Fixed Footer Data (QR and Info)
-    sig_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
-    sig_specialty = pdf_config.get('specialty') or "Ginecólogo Obstetra - UCV"
-    mpps = pdf_config.get('mpps_number', '140.795')
-    cmdm = pdf_config.get('cmdm_number', '38.789')
+    # Fixed Footer Data (QR ONLY - Info removed)
     doc.footer_fixed_data = {
-        'info': [sig_name, sig_specialty, f"MPPS: {mpps} / CMDM: {cmdm}"],
         'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
     }
     
@@ -830,14 +811,9 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         else:
             doc.footer_url = pdf_config.get('doctor_url') or base_domain
             
-        # Fixed Footer Data if color mode
+        # Fixed Footer Data (QR ONLY)
         if use_color:
-            sig_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
-            sig_specialty = pdf_config.get('specialty') or "Ginecólogo Obstetra - UCV"
-            mpps = pdf_config.get('mpps_number', '140.795')
-            cmdm = pdf_config.get('cmdm_number', '38.789')
             doc.footer_fixed_data = {
-                'info': [sig_name, sig_specialty, f"MPPS: {mpps} / CMDM: {cmdm}"],
                 'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
             }
 
