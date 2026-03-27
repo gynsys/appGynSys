@@ -645,7 +645,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                   </button>
                   <button 
                     onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                    className="p-0.5 bg-gray-50 text-gray-600 rounded-lg flex items-center justify-center border border-gray-100"
+                    className="ml-[5px] p-0.5 bg-gray-50 text-gray-600 rounded-lg flex items-center justify-center border border-gray-100"
                     title="Ver Soportes Digitales"
                   >
                     <FiImage size={18} />
