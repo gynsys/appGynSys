@@ -230,7 +230,8 @@ def run_daily_evaluation():
     try:
         now = normalize_to_caracas()
         today_date = now.date()
-        ttl_hash = int(time.time()) // 3600
+        # Refresh rules every 60 seconds instead of every hour
+        ttl_hash = int(time.time()) // 60
         global_rules = get_cached_global_rules(ttl_hash)
         
         if not global_rules:
@@ -333,7 +334,8 @@ def trigger_immediate_evaluation(user_id: int, db: Session):
         ).delete(synchronize_session=False)
         db.commit()
         
-        ttl_hash = int(time.time()) // 3600
+        # Refresh rules every 60 seconds instead of every hour
+        ttl_hash = int(time.time()) // 60
         global_rules = get_cached_global_rules(ttl_hash)
         _process_single_user(user_id, global_rules, now, today_date)
         deliver_pending_notifications()

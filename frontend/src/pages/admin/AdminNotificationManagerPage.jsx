@@ -259,6 +259,10 @@ export default function NotificationManagerPage() {
             }
 
             await updateRule(editingType, rulePayload)
+            // Force refresh of rules to get latest synced templates
+            if (typeof fetchRules === 'function') {
+                await fetchRules(true);
+            }
             toast.success("Notificación actualizada con éxito")
             setIsCreateOpen(false)
             setEditingType(null)

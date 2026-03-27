@@ -13,7 +13,7 @@ from app.db.models.doctor import Doctor
 from app.api.v1.endpoints.auth import get_current_admin_user
 from app.services.push_service import send_push_notification
 from app.db.models.push_subscription import PushSubscription
-from app.db.models.push_subscription import PushSubscription
+from app.db.models.notification import NotificationRule
 
 router = APIRouter()
 
@@ -353,39 +353,46 @@ async def test_all_notification_types(
             detail=f"User {user_email} has not enabled push notifications"
         )
     
-    # Test notifications to send
-    test_notifications = [
-        {
-            "title": "🩸 Recordatorio de Periodo",
-            "body": "Tu periodo está por llegar en 3 días. Prepárate con anticipación.",
-            "icon": "/icon-192x192.png",
-            "data": {"type": "cycle_phase", "phase": "pre_period"}
-        },
-        {
-            "title": "💚 Ventana Fértil",
-            "body": "Has entrado en tu ventana fértil. Alta probabilidad de embarazo.",
-            "icon": "/icon-192x192.png",
-            "data": {"type": "fertile_window"}
-        },
-        {
-            "title": "🥚 Día de Ovulación",
-            "body": "Hoy es tu día estimado de ovulación.",
-            "icon": "/icon-192x192.png",
-            "data": {"type": "ovulation"}
-        },
-        {
-            "title": "💊 Anticonceptivo",
-            "body": "Es hora de tomar tu píldora anticonceptiva.",
-            "icon": "/icon-192x192.png",
-            "data": {"type": "contraceptive_reminder"}
-        },
-        {
-            "title": "🔔 Notificación General",
-            "body": "Sistema de notificaciones funciona correctamente.",
-            "icon": "/icon-192x192.png",
-            "data": {"type": "system_test"}
-        }
+    # 1. Fetch real templates from DB for 5 common types
+    target_types = [
+        "day_28_period_tomorrow", 
+        "day_10_fertile_start", 
+        "day_14_ovulation_peak", 
+        "contraceptive_daily", 
+        "system_welcome"
     ]
+    db_rules = db.query(NotificationRule).filter(
+        NotificationRule.notification_type.in_(target_types),
+        NotificationRule.tenant_id == None
+    ).all()
+
+    # Map DB rules to test notification format
+    test_notifications = []
+    for rule in db_rules:
+        # Use message_text_template (prioritized by push) or fallback to message_template
+        body_template = rule.message_text_template or rule.message_template
+        
+        # Basic variable replacement for tests
+        body = body_template.replace("{patient_name}", user.nombre_completo or "Usuario")
+        body = body.replace("{appointment_time}", "10:00 AM")
+        
+        test_notifications.append({
+            "title": rule.title_template,
+            "body": body,
+            "icon": "/icon-192x192.png",
+            "data": {"type": rule.notification_type, "is_test": True}
+        })
+    
+    # 2. Add a generic fallback if DB rules weren't found
+    if not test_notifications:
+        test_notifications = [
+            {
+                "title": "🔔 Notificación General",
+                "body": f"Hola {user.nombre_completo or 'Usuario'}, el sistema de notificaciones funciona.",
+                "icon": "/icon-192x192.png",
+                "data": {"type": "system_test"}
+            }
+        ]
     
     results = []
     errors = []

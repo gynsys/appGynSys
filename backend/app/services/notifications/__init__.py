@@ -58,9 +58,21 @@ def get_rule_by_type(db: Session, tenant_id: Optional[int], notification_type: s
 def update_rule(db: Session, db_obj: NotificationRule, rule_in: NotificationRuleUpdate) -> NotificationRule:
     from .processor import get_cached_global_rules
     import logging
+    import re
     _logger = logging.getLogger(__name__)
 
     update_data = rule_in.model_dump(exclude_unset=True)
+    
+    # Sync message_text_template if only message_template is provided
+    if "message_template" in update_data and "message_text_template" not in update_data:
+        html_content = update_data["message_template"]
+        # Basic HTML stripping to keep the Push content meaningful
+        clean_text = re.sub(r'<[^>]+>', '', html_content)
+        # Normalize whitespace
+        clean_text = " ".join(clean_text.split())
+        setattr(db_obj, "message_text_template", clean_text)
+        _logger.info(f"Auto-synchronized message_text_template for {db_obj.notification_type}")
+
     for field, value in update_data.items():
         setattr(db_obj, field, value)
 
