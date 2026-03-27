@@ -12,6 +12,8 @@ from app.db.models.cycle_user import CycleUser
 from app.db.models.doctor import Doctor
 from app.api.v1.endpoints.auth import get_current_admin_user
 from app.services.push_service import send_push_notification
+from app.services.notifications.sender import safe_render_content
+from app.services.notifications.context import calculate_smart_context
 from app.db.models.push_subscription import PushSubscription
 from app.db.models.notification import NotificationRule
 
@@ -190,11 +192,46 @@ async def test_push_notification(
         )
     
     try:
-        # Send push notification
+        # 3. Render templates with actor context
+        # Gather basic context
+        from app.db.models.cycle_predictor import PregnancyLog, CycleLog
+        from app.cycle_predictor.logic import calculate_predictions
+        
+        predictions = None
+        pregnancy = None
+        
+        if isinstance(actor, CycleUser):
+            pregnancy = db.query(PregnancyLog).filter(PregnancyLog.cycle_user_id == actor.id, PregnancyLog.is_active == True).first()
+            if not pregnancy:
+                last_cycle = db.query(CycleLog).filter(CycleLog.cycle_user_id == actor.id).order_by(CycleLog.start_date.desc()).first()
+                if last_cycle and actor.cycle_avg_length:
+                    predictions = calculate_predictions(last_cycle.start_date, actor.cycle_avg_length, actor.period_avg_length)
+
+        # Generate smart context
+        context = calculate_smart_context(actor, db, predictions, pregnancy)
+        # Ensure patient_name is always there for rendering
+        context["patient_name"] = actor.nombre_completo or "Usuario"
+        
+        # Create a mock rule for safe_render_content
+        from app.services.notifications.registry import _RuleData
+        class MockRule:
+            def __init__(self, title, body):
+                self.notification_type = "test_manual"
+                self.title_template = title
+                self.message_template = body
+                self.message_text_template = body
+        
+        mock_rule = MockRule(request.title, request.body)
+        rendered = safe_render_content(mock_rule, context)
+        
+        final_title = rendered["title"] if rendered else request.title
+        final_body = rendered["message_text"] if rendered else request.body
+
+        # 4. Send push notification
         result = send_push_notification(
-            user=actor, #send_push_notification handles both as they both have .push_subscriptions
-            title=request.title,
-            body=request.body,
+            user=actor, 
+            title=final_title,
+            body=final_body,
             icon=request.icon,
             badge=request.badge,
             data=request.data or {}
