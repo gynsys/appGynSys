@@ -31,8 +31,8 @@ public class MainActivity extends BridgeActivity {
         }
 
         // --- LÓGICA DEL SPINNER CLÁSICO (INYECCIÓN DIRECTA) ---
-        // 1. Inflamos el diseño de la capa de carga
-        final View loadingOverlay = getLayoutInflater().inflate(R.layout.activity_main, null);
+        // 1. Inflamos el diseño de la capa de carga (net.gynsys.R)
+        final View loadingOverlay = getLayoutInflater().inflate(net.gynsys.R.layout.activity_main, null);
         
         // 2. Lo agregamos encima de todo el contenido de la ventana
         addContentView(loadingOverlay, new ViewGroup.LayoutParams(
@@ -52,7 +52,9 @@ public class MainActivity extends BridgeActivity {
                         public void run() {
                             loadingOverlay.setVisibility(View.GONE);
                             // Lo eliminamos para liberar memoria
-                            ((ViewGroup)loadingOverlay.getParent()).removeView(loadingOverlay);
+                            if (loadingOverlay.getParent() != null) {
+                                ((ViewGroup)loadingOverlay.getParent()).removeView(loadingOverlay);
+                            }
                         }
                     });
                 } else {

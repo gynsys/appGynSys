@@ -631,29 +631,29 @@ export default function PatientsManager({ isEmbedded = false }) {
                 <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-sm"
+                    className="flex-1 inline-flex justify-center items-center px-1.5 py-2.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-sm"
                     title="Ver Informe Médico"
                   >
-                    <FiEye size={16} className="mr-2" /> INFORME
+                    INFORME
                   </button>
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/history_pdf`, consultation.patient_name)}
-                    className="flex-1 inline-flex justify-center items-center px-3 py-2.5 rounded-lg text-[10px] font-black bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    className="flex-1 inline-flex justify-center items-center px-1.5 py-2.5 rounded-lg text-[10px] font-black bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                     title="Ver Historia Completa"
                   >
                     HISTORIA
                   </button>
                   <button 
                     onClick={() => handleViewAssets(consultation.id, consultation.patient_name)} 
-                    className="p-2.5 bg-gray-50 text-gray-600 rounded-xl flex items-center justify-center border border-gray-100"
+                    className="p-1.5 bg-gray-50 text-gray-600 rounded-lg flex items-center justify-center border border-gray-100"
                     title="Ver Soportes Digitales"
                   >
                     <FiImage size={18} />
                   </button>
-                  <button onClick={() => handleEditClick(consultation)} className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                  <button onClick={() => handleEditClick(consultation)} className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
                     <FiEdit size={18} />
                   </button>
-                  <button onClick={() => handleDeleteClick(consultation.id)} className="p-2.5 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
+                  <button onClick={() => handleDeleteClick(consultation.id)} className="p-1.5 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
                     <FiTrash2 size={18} />
                   </button>
                 </div>
