@@ -161,7 +161,7 @@ def _get_header_logos(pdf_config, doctor):
 BRAND_LILAC_DARK = HexColor('#4A148C')
 BRAND_LILAC_MEDIUM = HexColor('#9C27B0')
 BRAND_LILAC_LIGHT = HexColor('#E1BEE7')
-BRAND_LILAC_BG = HexColor('#F9BEF8') # Requested RGB (249, 190, 248)
+BRAND_LILAC_BG = colors.white
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
@@ -171,13 +171,13 @@ def draw_color_background(canvas, doc):
     canvas.setFillColor(BRAND_LILAC_BG)
     canvas.rect(0, 0, width, height, stroke=0, fill=1)
     
-    # 1. Background Image (Full Page) - Applied with transparency to blend with the requested BRAND_LILAC_BG
-    bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
-    if os.path.exists(bg_path):
-        canvas.saveState()
-        canvas.setFillAlpha(0.12) # Even more subtle to satisfy "behind everything" feel
-        canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
-        canvas.restoreState()
+    # 1. Background Image disabled as per user request for white background
+    # bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
+    # if os.path.exists(bg_path):
+    #     canvas.saveState()
+    #     canvas.setFillAlpha(0.12)
+    #     canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
+    #     canvas.restoreState()
     
     # 2. Watermark Logo (Dynamic implementation)
     include_watermark = getattr(doc, 'include_watermark', True)
