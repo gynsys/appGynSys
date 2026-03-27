@@ -156,35 +156,71 @@ def draw_color_background(canvas, doc):
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
     
     # 2. Watermark Logo (Dynamic implementation)
-    # Check if a specific watermark path was provided in the doc object
-    logo_path = getattr(doc, 'watermark_path', None)
-    
-    # Fallback to default if none provided or doesn't exist
-    if not logo_path or not os.path.exists(logo_path):
-        logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
+    include_watermark = getattr(doc, 'include_watermark', True)
+    if include_watermark:
+        logo_path = getattr(doc, 'watermark_path', None)
         
-    if os.path.exists(logo_path):
-        canvas.saveState()
-        # Watermark sizing
-        w_width = 5*inch
-        w_height = 5*inch
-        try:
-            img_reader = ImageReader(logo_path)
-            iw, ih = img_reader.getSize()
-            aspect = ih / float(iw)
-            w_height = w_width * aspect
-        except:
-            pass
+        # Fallback to default if none provided or doesn't exist
+        if not logo_path or not os.path.exists(logo_path):
+            logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logos", "dr_logo_watermark.png")
             
-        canvas.setFillAlpha(0.12) # Subtle but visible
-        canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, 
-                         width=w_width, height=w_height, mask='auto', 
-                         preserveAspectRatio=True)
-        canvas.restoreState()
+        if os.path.exists(logo_path):
+            canvas.saveState()
+            # Watermark sizing
+            w_width = 5*inch
+            w_height = 5*inch
+            try:
+                img_reader = ImageReader(logo_path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                w_height = w_width * aspect
+            except:
+                pass
+                
+            canvas.setFillAlpha(0.12) # Subtle but visible
+            canvas.drawImage(logo_path, (width - w_width)/2, (height - w_height)/2, 
+                             width=w_width, height=w_height, mask='auto', 
+                             preserveAspectRatio=True)
+            canvas.restoreState()
     
-    # 3. Bottom Center URL
+    # 3. Fixed Footer Elements (Doctor Info & QR/Logo)
+    # Shown on every page when use_color is active
+    footer_data = getattr(doc, 'footer_fixed_data', None)
+    if footer_data:
+        canvas.saveState()
+        # Right Side: Doctor Info
+        info_lines = footer_data.get('info', [])
+        y_pos = 0.8 * inch # Base height for footer info
+        canvas.setFont("Helvetica-Bold", 12)
+        canvas.setFillColor(BRAND_LILAC_DARK)
+        
+        for i, line in enumerate(info_lines):
+            # First line is bold name, others are normal
+            if i > 0: canvas.setFont("Helvetica", 10)
+            canvas.drawRightString(width - 0.75*inch, y_pos, line)
+            y_pos -= 14 # leading
+            
+        # Left Side: QR / Logo (Repositioned 15px lower as requested)
+        # Assuming QR/Logo height is ~1.1 inch, we place it near bottom left
+        qr_path = footer_data.get('qr_path')
+        if qr_path and os.path.exists(qr_path):
+            try:
+                img_reader = ImageReader(qr_path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                qr_w = 1.1 * inch
+                qr_h = qr_w * aspect
+                # 0.4 inch baseline - 15px (~0.2 inch) = ~0.2 inch
+                # Let's use 0.3*inch - 15/72.0 as requested
+                qr_y = 0.5 * inch - (15 / 72.0) 
+                canvas.drawImage(qr_path, 0.75*inch, qr_y, width=qr_w, height=qr_h, mask='auto', preserveAspectRatio=True)
+            except:
+                pass
+        canvas.restoreState()
+
+    # 4. Bottom Center URL (Scale increased 30%: 10 -> 13)
     canvas.saveState()
-    canvas.setFont("Helvetica", 10)
+    canvas.setFont("Helvetica", 13)
     canvas.setFillColor(BRAND_LILAC_DARK)
     footer_url = getattr(doc, 'footer_url', "www.gynsys.net")
     canvas.drawCentredString(width/2, 0.3*inch, footer_url)
@@ -211,7 +247,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
     
-    # Dynamic Watermark & URL from pdf_config
+    # Watermark Toggle & Dynamic Watermark
+    doc.include_watermark = str(report_data.get('include_watermark', 'true')).lower() == 'true'
     watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
     doc.watermark_path = get_local_path_from_url(watermark_source)
     
@@ -221,6 +258,16 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         doc.footer_url = pdf_config.get('doctor_url') or f"{base_domain}/{doctor.slug_url}"
     else:
         doc.footer_url = pdf_config.get('doctor_url') or base_domain
+        
+    # Fixed Footer Data (QR and Info)
+    sig_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
+    sig_specialty = pdf_config.get('specialty') or "Ginecólogo Obstetra - UCV"
+    mpps = pdf_config.get('mpps_number', '140.795')
+    cmdm = pdf_config.get('cmdm_number', '38.789')
+    doc.footer_fixed_data = {
+        'info': [sig_name, sig_specialty, f"MPPS: {mpps} / CMDM: {cmdm}"],
+        'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
+    }
     
     story = []
 
@@ -418,15 +465,11 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
     
     # In color mode, we move the signature to the bottom right and the second logo to the bottom left
+    # In color mode, we already handled footer drawing in draw_color_background callback
     if use_color:
-        story.pop() # remove SigCI
-        story.pop() # remove SigIDs
-        story.pop() # remove SigSpec
-        story.pop() # remove SigName
-        story.pop() # remove SignatureLine/Image
-        
-        # Build composite bottom table
-        # 35% larger info: from 9 to 12
+        story.append(Spacer(1, 1*inch)) # Placeholder space to avoid overlap
+    else:
+        # Build composite bottom table for non-color mode
         footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
         footer_col_left = [logo_image_right] if logo_image_right else [""]
         footer_col_right = [
@@ -441,7 +484,6 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
             ('ALIGN', (0,0), (0,0), 'LEFT'),
             ('ALIGN', (1,0), (1,0), 'RIGHT'),
-            # LINE REMOVED as requested
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
         story.append(Spacer(1, 0.5*inch))
@@ -777,7 +819,8 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     # Footer removed - medical history is cumulative document without signature
 
     try:
-        # Resolve Dynamic Watermark & URL
+        # Watermark Toggle & Dynamic Watermark & URL
+        doc.include_watermark = str(report_data.get('include_watermark', 'true')).lower() == 'true'
         watermark_source = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
         doc.watermark_path = get_local_path_from_url(watermark_source)
         
@@ -786,7 +829,18 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
             doc.footer_url = pdf_config.get('doctor_url') or f"{base_domain}/{doctor.slug_url}"
         else:
             doc.footer_url = pdf_config.get('doctor_url') or base_domain
-        
+            
+        # Fixed Footer Data if color mode
+        if use_color:
+            sig_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
+            sig_specialty = pdf_config.get('specialty') or "Ginecólogo Obstetra - UCV"
+            mpps = pdf_config.get('mpps_number', '140.795')
+            cmdm = pdf_config.get('cmdm_number', '38.789')
+            doc.footer_fixed_data = {
+                'info': [sig_name, sig_specialty, f"MPPS: {mpps} / CMDM: {cmdm}"],
+                'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
+            }
+
         if use_color:
             doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
         else:

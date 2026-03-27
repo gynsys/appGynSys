@@ -250,6 +250,7 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [basePdfUrl, setBasePdfUrl] = useState(null);
   const [includeImages, setIncludeImages] = useState(false);
   const [includeColor, setIncludeColor] = useState(false);
+  const [includeWatermark, setIncludeWatermark] = useState(true);
   const [isAssetOnly, setIsAssetOnly] = useState(false);
   const [currentPatientName, setCurrentPatientName] = useState('');
   const [customReportDate, setCustomReportDate] = useState(new Date().toISOString().split('T')[0]);
@@ -497,6 +498,7 @@ export default function PatientsManager({ isEmbedded = false }) {
     const params = new URLSearchParams();
     if (includeImages) params.append('include_images', 'true');
     if (includeColor) params.append('use_color', 'true');
+    if (!includeWatermark) params.append('include_watermark', 'false');
     if (customReportDate) params.append('report_at', customReportDate);
     if (isDownload) params.append('download', 'true');
     
@@ -812,6 +814,15 @@ export default function PatientsManager({ isEmbedded = false }) {
                         className="text-xs font-bold bg-transparent border-none p-0 focus:ring-0 text-gray-600 dark:text-gray-300 w-24"
                       />
                     </div>
+                    <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={includeWatermark}
+                        onChange={(e) => setIncludeWatermark(e.target.checked)}
+                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      />
+                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
+                    </label>
                     <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
                       <input
                         type="checkbox"
