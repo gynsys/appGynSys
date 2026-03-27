@@ -1,7 +1,7 @@
 """
 Patient model - represents patients in the system.
 """
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
