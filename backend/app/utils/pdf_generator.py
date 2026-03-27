@@ -102,6 +102,28 @@ def format_date_spanish(date: datetime = None) -> str:
     year = date.year
     return f"{day} de {month} de {year}"
 
+def format_ci_v(ci_str: str) -> str:
+    """Formats a number with dots as thousand separators (e.g. 23812988 -> 23.812.988)"""
+    if not ci_str: return ""
+    # Clean non-numeric except maybe prefix
+    prefix = ""
+    if "-" in str(ci_str):
+        parts = str(ci_str).split("-", 1)
+        prefix = parts[0] + "-"
+        num_part = parts[1]
+    else:
+        num_part = str(ci_str)
+    
+    # Keep only digits for formatting
+    digits = "".join(filter(str.isdigit, num_part))
+    if not digits: return str(ci_str)
+    
+    try:
+        formatted = f"{int(digits):,}".replace(",", ".")
+        return f"{prefix}{formatted}"
+    except:
+        return str(ci_str)
+
 def _get_header_logos(pdf_config, doctor):
     # Logo 1 (Left)
     logo_source_left = pdf_config.get('logo_header_1') or (doctor.logo_url if doctor else None)
@@ -139,7 +161,7 @@ def _get_header_logos(pdf_config, doctor):
 BRAND_LILAC_DARK = HexColor('#4A148C')
 BRAND_LILAC_MEDIUM = HexColor('#9C27B0')
 BRAND_LILAC_LIGHT = HexColor('#E1BEE7')
-BRAND_LILAC_BG = HexColor('#FBD5F6')
+BRAND_LILAC_BG = HexColor('#F9BEF8') # Requested RGB (249, 190, 248)
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
@@ -327,7 +349,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     story.append(safe_p(f"<b>Nombre y Apellidos:</b> {report_context.get('full_name')}", style_patient_data))
     story.append(safe_p(f"<b>Edad:</b> {report_context.get('age')}", style_patient_data))
-    story.append(safe_p(f"<b>C.I.:</b> {report_context.get('ci')}", style_patient_data))
+    story.append(safe_p(f"<b>C.I.:</b> {format_ci_v(report_context.get('ci'))}", style_patient_data))
     story.append(Spacer(1, 0.3*inch))
 
     # Unified Report Content Priority
@@ -410,8 +432,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     cmdm = pdf_config.get('cmdm_number', '38.789')
     sig_ids = f"MPPS: {mpps} / CMDM: {cmdm}"
     
-    ci = pdf_config.get('doctor_id', '13409534')
-    sig_ci = f"C.I.: {ci}"
+    sig_ci = f"C.I.: {format_ci_v(pdf_config.get('doctor_ci', '23.812.988'))}"
     
     # Signature Image
     signature_source = pdf_config.get('logo_signature')
@@ -476,6 +497,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     if report_data.get('include_images') and report_data.get('assets'):
         from reportlab.platypus import PageBreak
         story.append(PageBreak())
+        
+        # Patient info
+        patient_name = report_data.get('full_name') or report_data.get('patient_name', 'Paciente')
+        patient_ci = format_ci_v(report_data.get('ci') or report_data.get('patient_ci', 'V-00.000.000'))
+        patient_age = report_data.get('age') or report_data.get('patient_age', '00')
+        patient_phone = report_data.get('phone') or report_data.get('patient_phone', '0000-0000000')
         
         # Determine title based on consultation type
         c_type = (report_data.get('consultation_type') or "").lower()
@@ -633,7 +660,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     patient_table_data = [
         [safe_p("<b>Nombre:</b>", styleB), safe_p(get_str('full_name').title(), styleN),
          safe_p("<b>Edad:</b>", styleB), safe_p(get_str('age'), styleN)],
-        [safe_p("<b>C.I.:</b>", styleB), safe_p(get_str('ci'), styleN),
+        [safe_p("<b>C.I.:</b>", styleB), safe_p(format_ci_v(get_str('ci')), styleN),
          safe_p("<b>TLF:</b>", styleB), safe_p(get_str('phone'), styleN)],
         [safe_p("<b>Dirección:</b>", styleB), safe_p(get_str('address').title(), styleN),
          safe_p("<b>Ocupación:</b>", styleB), safe_p(get_str('occupation').title(), styleN)],
