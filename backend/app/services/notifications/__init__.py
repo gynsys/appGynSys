@@ -66,10 +66,10 @@ def update_rule(db: Session, db_obj: NotificationRule, rule_in: NotificationRule
     # Sync message_text_template if only message_template is provided
     if "message_template" in update_data and "message_text_template" not in update_data:
         html_content = update_data["message_template"]
-        # Basic HTML stripping to keep the Push content meaningful
+        # Basic HTML stripping, but preserving line breaks
         clean_text = re.sub(r'<[^>]+>', '', html_content)
-        # Normalize whitespace
-        clean_text = " ".join(clean_text.split())
+        # Normalize spaces but keep lines
+        clean_text = "\n".join(line.strip() for line in clean_text.splitlines() if line.strip())
         setattr(db_obj, "message_text_template", clean_text)
         _logger.info(f"Auto-synchronized message_text_template for {db_obj.notification_type}")
 
