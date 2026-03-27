@@ -139,7 +139,7 @@ def _get_header_logos(pdf_config, doctor):
 BRAND_LILAC_DARK = HexColor('#4A148C')
 BRAND_LILAC_MEDIUM = HexColor('#9C27B0')
 BRAND_LILAC_LIGHT = HexColor('#E1BEE7')
-BRAND_LILAC_BG = HexColor('#F3E5F5')
+BRAND_LILAC_BG = HexColor('#FBD5F6')
 
 def draw_color_background(canvas, doc):
     canvas.saveState()
