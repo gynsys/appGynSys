@@ -806,12 +806,12 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {!basePdfUrl?.includes('history_pdf') && (
                   <>
                     <div className="flex flex-col gap-1 border-r pr-4 border-gray-200 dark:border-gray-700">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Fecha Reporte</span>
+                      <span className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-tighter">Fecha Reporte</span>
                       <input
                         type="date"
                         value={customReportDate}
                         onChange={(e) => setCustomReportDate(e.target.value)}
-                        className="text-xs font-bold bg-transparent border-none p-0 focus:ring-0 text-gray-600 dark:text-gray-300 w-24"
+                        className="text-xs font-bold bg-transparent border-none p-0 focus:ring-0 text-gray-600 dark:text-gray-100 dark:[color-scheme:dark] w-24"
                       />
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
