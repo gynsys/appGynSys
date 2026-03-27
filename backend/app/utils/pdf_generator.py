@@ -175,7 +175,7 @@ def draw_color_background(canvas, doc):
     bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
     if os.path.exists(bg_path):
         canvas.saveState()
-        canvas.setFillAlpha(0.25) # Blend with the background color
+        canvas.setFillAlpha(0.12) # Even more subtle to satisfy "behind everything" feel
         canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
         canvas.restoreState()
     
