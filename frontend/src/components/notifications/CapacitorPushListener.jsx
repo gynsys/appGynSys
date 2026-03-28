@@ -56,12 +56,16 @@ export const CapacitorPushListener = () => {
                         axios.post('/notifications/subscribe', { token: tokenValue })
                             .then(() => {
                                 remoteLog('[GynSysPush] Native token synced successfully');
+                                // Guardamos el token por si el usuario cambia de sesión sin reiniciar la app
+                                localStorage.setItem('capacitor_push_token', tokenValue);
                             })
                             .catch(err => {
                                 const errorDetail = err?.response?.data || err.message;
                                 remoteLog(`[GynSysPush] Error syncing native token: ${JSON.stringify(errorDetail)}`);
                             });
                     } else {
+                        // Guardamos el token igual aunque no esté autenticado para usarlo al hacer login
+                        localStorage.setItem('capacitor_push_token', tokenValue);
                         remoteLog(`[GynSysPush] Registration success but NOT authenticated yet`);
                     }
                 });
@@ -111,6 +115,13 @@ export const CapacitorPushListener = () => {
         if (isCapacitor()) {
             remoteLog(`[GynSysPush] Checking Native permissions...`);
             try {
+                // Sincronización proactiva del token usando el token guardado en caso de swap de cuentas
+                const savedToken = localStorage.getItem('capacitor_push_token');
+                if (savedToken) {
+                    remoteLog(`[GynSysPush] Proactive sync of saved token on login...`);
+                    axios.post('/notifications/subscribe', { token: savedToken }).catch(() => {});
+                }
+
                 PushNotifications.checkPermissions().then((res) => {
                     remoteLog(`[GynSysPush] Permission result: ${res.receive}`);
                     if (res.receive === 'granted') {
