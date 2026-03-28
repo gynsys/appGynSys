@@ -89,8 +89,8 @@ class DoctorUpdate(BaseModel):
     theme_container_bg_color: Optional[str] = None
     design_template: Optional[str] = None
     profile_image_border: Optional[bool] = None
-    card_shadow: Optional[bool] = None
-    container_shadow: Optional[bool] = None
+    card_shadow: Optional[str] = None
+    container_shadow: Optional[str] = None
     gallery_width: Optional[str] = None
     contact_email: Optional[EmailStr] = None
     schedule: Optional[Dict[str, Any]] = None
@@ -125,8 +125,8 @@ class DoctorInDB(DoctorBase):
     theme_container_bg_color: Optional[str] = None
     design_template: Optional[str] = 'glass'
     profile_image_border: Optional[bool] = True
-    card_shadow: Optional[bool] = True
-    container_shadow: Optional[bool] = True
+    card_shadow: Optional[str] = None
+    container_shadow: Optional[str] = None
     gallery_width: Optional[str] = None
     is_active: Optional[bool] = True
     is_verified: Optional[bool] = False
@@ -155,8 +155,8 @@ class DoctorPublic(DoctorBase):
     theme_container_bg_color: Optional[str] = None
     design_template: Optional[str] = 'glass'
     profile_image_border: Optional[bool] = True
-    card_shadow: Optional[bool] = True
-    container_shadow: Optional[bool] = True
+    card_shadow: Optional[str] = None
+    container_shadow: Optional[str] = None
     gallery_width: Optional[str] = None
     especialidad: Optional[str] = None
     universidad: Optional[str] = None
