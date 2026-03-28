@@ -3,8 +3,10 @@
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <!-- Fondo negro para que coincida con tu logo -->
         <item name="windowSplashScreenBackground">#000000</item>
-        <!-- Forzamos tu logo desde el inicio -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <!-- Forzamos tu logo a transparente -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <!-- Forzamos iconos blancos en la status bar del splash screen -->
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
