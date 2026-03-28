@@ -364,31 +364,45 @@ export default function PatientsManager({ isEmbedded = false }) {
     }).join('\n');
   };
 
-  const handleEditClick = (consultation) => {
+  const handleEditClick = async (consultation) => {
     setConsultationToEdit(consultation);
+
+    // Fetch datos completos desde el backend para garantizar que todos los
+    // campos de historia (antecedentes, resúmenes, etc.) estén presentes.
+    // El endpoint /data usa _map_consultation_to_data que mapea correctamente
+    // todos los campos de la DB al schema del formulario.
+    let fullData = consultation;
+    try {
+      const res = await api.get(`/consultations/${consultation.id}/data`);
+      fullData = { ...consultation, ...res.data };
+    } catch (e) {
+      // Si falla el fetch, usamos los datos parciales de la lista como fallback
+      console.error('[EditClick] Error fetching full consultation data:', e);
+    }
+
     setEditFormData({
-      full_name: consultation.patient_name,
-      ci: consultation.patient_ci,
-      age: consultation.patient_age,
-      phone: consultation.patient_phone,
-      address: consultation.address || '',
-      occupation: consultation.occupation || '',
-      reason_for_visit: consultation.reason_for_visit,
-      family_history_mother: consultation.family_history_mother,
-      family_history_father: consultation.family_history_father,
-      personal_history: consultation.personal_history,
-      supplements: consultation.supplements,
-      surgical_history: consultation.surgical_history,
-      summary_gyn_obstetric: consultation.obstetric_history_summary || '',
-      summary_functional_exam: consultation.functional_exam_summary || '',
-      summary_habits: consultation.habits_summary || '',
-      admin_physical_exam: consultation.physical_exam || '',
-      admin_ultrasound: consultation.ultrasound || '',
-      admin_diagnosis: formatPlanWithBullets(consultation.diagnosis || ''),
-      admin_plan: formatPlanWithBullets(consultation.plan || ''),
-      admin_observations: consultation.observations || '',
-      medical_report_content: consultation.medical_report_content || '',
-      history_number: consultation.history_number
+      full_name: fullData.full_name || fullData.patient_name || '',
+      ci: fullData.ci || fullData.patient_ci || '',
+      age: fullData.age || fullData.patient_age || '',
+      phone: fullData.phone || fullData.patient_phone || '',
+      address: fullData.address || '',
+      occupation: fullData.occupation || '',
+      reason_for_visit: fullData.reason_for_visit || '',
+      family_history_mother: fullData.family_history_mother || '',
+      family_history_father: fullData.family_history_father || '',
+      personal_history: fullData.personal_history || '',
+      supplements: fullData.supplements || '',
+      surgical_history: fullData.surgical_history || '',
+      summary_gyn_obstetric: fullData.summary_gyn_obstetric || '',
+      summary_functional_exam: fullData.summary_functional_exam || '',
+      summary_habits: fullData.summary_habits || '',
+      admin_physical_exam: fullData.admin_physical_exam || fullData.physical_exam || '',
+      admin_ultrasound: fullData.admin_ultrasound || fullData.ultrasound || '',
+      admin_diagnosis: formatPlanWithBullets(fullData.admin_diagnosis || fullData.diagnosis || ''),
+      admin_plan: formatPlanWithBullets(fullData.admin_plan || fullData.plan || ''),
+      admin_observations: fullData.admin_observations || fullData.observations || '',
+      medical_report_content: fullData.medical_report_content || '',
+      history_number: fullData.history_number || '',
     });
 
     setChoiceModalOpen(true);
