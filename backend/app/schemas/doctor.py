@@ -9,7 +9,7 @@ from app.schemas.location import Location as LocationSchema
 
 class DoctorBase(BaseModel):
     """Base schema with common doctor fields."""
-    email: EmailStr
+    email: str
     nombre_completo: str
     especialidad: Optional[str] = None
     universidad: Optional[str] = None
@@ -39,9 +39,9 @@ class DoctorCreate(DoctorBase):
 
 class CertificationBase(BaseModel):
     """Base schema for certifications."""
-    name: str = Field(..., description="Name of the institution (e.g. UCV)")
-    title: str = Field(..., description="Title/Degree obtained")
-    logo_url: str = Field(..., description="URL of the logo image")
+    name: Optional[str] = Field(None, description="Name of the institution (e.g. UCV)")
+    title: Optional[str] = Field(None, description="Title/Degree obtained")
+    logo_url: Optional[str] = Field(None, description="URL of the logo image")
     order: int = Field(default=0)
 
 class CertificationCreate(CertificationBase):
@@ -117,7 +117,7 @@ class DoctorUpdate(BaseModel):
 class DoctorInDB(DoctorBase):
     """Schema for internal use (includes sensitive data)."""
     id: int
-    slug_url: str
+    slug_url: Optional[str] = None
     logo_url: Optional[str] = None
     photo_url: Optional[str] = None
     theme_primary_color: Optional[str] = None
@@ -130,12 +130,12 @@ class DoctorInDB(DoctorBase):
     gallery_width: Optional[str] = None
     is_active: Optional[bool] = True
     is_verified: Optional[bool] = False
-    status: str
+    status: Optional[str] = 'pending'
     plan_id: Optional[int] = None
     role: str = "user"
     show_certifications_carousel: Optional[bool] = False
     certifications: List[CertificationInDB] = []
-    created_at: datetime
+    created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     enabled_modules: List[str] = Field(default=[], validation_alias="enabled_module_codes")
     modules_status: List[ModuleSimple] = [] # Detailed status of all modules
