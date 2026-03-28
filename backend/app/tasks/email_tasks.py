@@ -30,6 +30,7 @@ from app.db.models.faq import FAQ
 from app.db.models.testimonial import Testimonial
 from app.db.models.preconsultation import PreconsultationQuestion
 from app.db.models.tenant_module import TenantModule
+from app.db.models.module import Module
 from app.utils.clinical_formatters import (
     to_roman,
     format_obstetric_history,
@@ -562,19 +563,22 @@ def apply_doctor_template_async(doctor_id: int):
                 db.add(new_question)
 
             # Apply Enabled Modules
-            for module_name in template.get('enabled_modules', []):
-                # Check if already exists to avoid duplicates
-                existing = db.query(TenantModule).filter(
-                    TenantModule.tenant_id == doctor.id,
-                    TenantModule.module_name == module_name
-                ).first()
-                if not existing:
-                    new_mod = TenantModule(
-                        tenant_id=doctor.id,
-                        module_name=module_name,
-                        is_enabled=True
-                    )
-                    db.add(new_mod)
+            for module_code in template.get('enabled_modules', []):
+                # Find module by code
+                module = db.query(Module).filter(Module.code == module_code).first()
+                if module:
+                    # Check if already exists to avoid duplicates
+                    existing = db.query(TenantModule).filter(
+                        TenantModule.tenant_id == doctor.id,
+                        TenantModule.module_id == module.id
+                    ).first()
+                    if not existing:
+                        new_mod = TenantModule(
+                            tenant_id=doctor.id,
+                            module_id=module.id,
+                            is_enabled=True
+                        )
+                        db.add(new_mod)
 
             db.commit()
             print(f"[SUCCESS] Template applied for Doctor {doctor.email}")
