@@ -326,6 +326,9 @@ export default function PatientsManager({ isEmbedded = false }) {
   const [editFormData, setEditFormData] = useState({});
   const [patientReports, setPatientReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(false);
+  // Consultas sucesivas del paciente para el modo edición de informe
+  const [editReportConsultations, setEditReportConsultations] = useState([]);
+  const [editReportLoadingId, setEditReportLoadingId] = useState(null);
 
   const { showToast } = useToastStore();
 
@@ -408,10 +411,43 @@ export default function PatientsManager({ isEmbedded = false }) {
     setChoiceModalOpen(true);
   };
 
-  const handleChoice = (mode) => {
+  const handleChoice = async (mode) => {
     setEditMode(mode);
     setChoiceModalOpen(false);
     setEditModalOpen(true);
+
+    // Para el modo informe, cargar todas las consultas del paciente para permitir edición sucesiva
+    if (mode === 'report' && consultationToEdit?.patient_ci) {
+      try {
+        const res = await api.get(`/consultations/patient/${consultationToEdit.patient_ci}/raw`);
+        setEditReportConsultations(res.data || []);
+      } catch (e) {
+        setEditReportConsultations([]);
+      }
+    }
+  };
+
+  // Carga los datos de una consulta específica en el formulario de informe (para consultas sucesivas)
+  const loadReportConsultation = async (reportConsultation) => {
+    setEditReportLoadingId(reportConsultation.id);
+    try {
+      const res = await api.get(`/consultations/${reportConsultation.id}/data`);
+      const fullData = { ...reportConsultation, ...res.data };
+      setConsultationToEdit(reportConsultation);
+      setEditFormData(prev => ({
+        ...prev,
+        admin_diagnosis: formatPlanWithBullets(fullData.admin_diagnosis || fullData.diagnosis || ''),
+        admin_plan: formatPlanWithBullets(fullData.admin_plan || fullData.plan || ''),
+        admin_physical_exam: fullData.admin_physical_exam || fullData.physical_exam || '',
+        admin_ultrasound: fullData.admin_ultrasound || fullData.ultrasound || '',
+        admin_observations: fullData.admin_observations || fullData.observations || '',
+        medical_report_content: fullData.medical_report_content || '',
+      }));
+    } catch (e) {
+      console.error('[loadReportConsultation] Error:', e);
+    } finally {
+      setEditReportLoadingId(null);
+    }
   };
 
   const handleEditChange = (e) => {
@@ -1145,6 +1181,39 @@ export default function PatientsManager({ isEmbedded = false }) {
               </div>
             </div>
             <hr className="border-gray-100" />
+
+            {/* Sección: Hallazgos de la Consulta */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-green-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                Hallazgos de la Consulta
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Diagnóstico</label>
+                  <textarea name="admin_diagnosis" value={editFormData.admin_diagnosis || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Examen Físico</label>
+                    <textarea name="admin_physical_exam" value={editFormData.admin_physical_exam || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ecografía</label>
+                    <textarea name="admin_ultrasound" value={editFormData.admin_ultrasound || ''} onChange={handleEditChange} rows="3" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Plan de Tratamiento</label>
+                  <textarea name="admin_plan" value={editFormData.admin_plan || ''} onChange={handleEditChange} rows="4" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Observaciones</label>
+                  <textarea name="admin_observations" value={editFormData.admin_observations || ''} onChange={handleEditChange} rows="2" className="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 rounded-xl text-sm transition-all outline-none font-medium dark:text-gray-100" />
+                </div>
+              </div>
+            </div>
+            <hr className="border-gray-100" />
             </>
             )}
 
@@ -1153,8 +1222,37 @@ export default function PatientsManager({ isEmbedded = false }) {
             <div className="space-y-4">
               <h3 className="text-sm font-black text-green-600 uppercase tracking-widest flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                Consulta Médica Actual
+                Editar Informe Médico
               </h3>
+
+              {/* Selector de consultas sucesivas */}
+              {editReportConsultations.length > 1 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Seleccionar consulta a editar</p>
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-200">
+                    {editReportConsultations.map((rc) => {
+                      const isSelected = String(rc.id) === String(consultationToEdit?.id);
+                      const isLoading = editReportLoadingId === rc.id;
+                      return (
+                        <button
+                          key={rc.id}
+                          type="button"
+                          onClick={() => !isSelected && loadReportConsultation(rc)}
+                          disabled={isLoading}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-black border-2 transition-all whitespace-nowrap ${
+                            isSelected
+                              ? 'bg-green-600 border-green-600 text-white shadow-md'
+                              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-green-300 hover:text-green-600'
+                          }`}
+                        >
+                          {isLoading ? '...' : new Date(rc.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div className="space-y-1">
                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 font-black">Contenido del Informe Médico (Unificado)</label>
