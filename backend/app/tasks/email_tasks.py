@@ -476,7 +476,23 @@ def apply_doctor_template_async(doctor_id: int):
 
         # Path relative to backend/app/tasks/email_tasks.py -> ../../../mariel_herrera_template.json
         # backend/app/tasks/email_tasks.py
-        template_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'mariel_herrera_template.json')
+        # Flexible path searching for the template
+        current_dir = os.path.dirname(__file__)
+        possible_paths = [
+            os.path.join(current_dir, '..', '..', 'mariel_herrera_template.json'), # backend/app/tasks -> backend/
+            os.path.join(current_dir, '..', '..', '..', 'mariel_herrera_template.json'), # backend/app/tasks -> root
+            os.path.join(os.getcwd(), 'mariel_herrera_template.json'),
+            'mariel_herrera_template.json'
+        ]
+        
+        template_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                template_path = path
+                break
+        
+        if not template_path:
+            template_path = possible_paths[0] # Default for error msg
 
         try:
             with open(template_path, 'r', encoding='utf-8') as f:
