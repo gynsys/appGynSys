@@ -31,9 +31,10 @@ const STEPS = [
 ];
 
 export default function QuickSetupPage() {
-  const [currentStep, setCurrentStep] = parseInt(localStorage.getItem('quick_setup_step') || '1') 
-    ? useState(parseInt(localStorage.getItem('quick_setup_step') || '1')) 
-    : useState(1);
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = localStorage.getItem('quick_setup_step');
+    return saved ? parseInt(saved) : 1;
+  });
 
   const handleNext = () => {
     if (currentStep < STEPS.length) {
@@ -188,7 +189,7 @@ export default function QuickSetupPage() {
       </div>
 
       {/* Navigation Footer */}
-      <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
         <button
           onClick={handlePrev}
           disabled={currentStep === 1}

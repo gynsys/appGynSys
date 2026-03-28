@@ -53,6 +53,7 @@ import QuickSetupPage from './pages/dashboard/QuickSetupPage'
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
+import { WizardLayout } from './components/layout/WizardLayout'
 import { useState } from 'react'
 import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
 
@@ -205,6 +206,15 @@ function App() {
         <Route path="/:slug/blog" element={<BlogPublicPage />} />
         <Route path="/:slug/blog/:postSlug" element={<BlogPostPage />} />
 
+        {/* Wizard Setup Route (Sidebar-free) */}
+        <Route path="/dashboard/setup" element={
+          <ProtectedRoute>
+            <WizardLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<QuickSetupPage />} />
+        </Route>
+
         {/* Dashboard Routes (SPA Layout) */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
@@ -212,8 +222,6 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<DashboardOverviewPage />} />
-          <Route path="setup" element={<QuickSetupPage />} />
-
           <Route path="consultation" element={<DoctorConsultationPage />} />
           <Route path="preconsulta-config" element={<PreconsultationConfigPage />} />
           <Route path="pdf-config" element={<PdfConfigurationPage />} />
