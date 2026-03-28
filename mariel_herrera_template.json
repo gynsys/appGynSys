@@ -1,0 +1,120 @@
+{
+  "profile_info": {
+    "especialidad": "Ginecología y Obstetricia",
+    "universidad": "Universidad Central de Venezuela",
+    "biografia": "Médico Especialista en Ginecología y Obstetricia con amplia experiencia en control prenatal, cirugía mínimamente invasiva y salud femenina integral. Mi compromiso es brindar una atención humana, profesional y actualizada a cada una de mis pacientes.",
+    "services_section_title": "Servicios Disponibles",
+    "contact_email": "soporte@gynsys.net"
+  },
+  "theme_config": {
+    "theme_primary_color": "#7c3aed",
+    "theme_body_bg_color": "#f9fafb",
+    "theme_container_bg_color": "#ffffff",
+    "card_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    "container_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+  },
+  "social_media": {
+    "social_instagram": "gynsys.oficial",
+    "social_tiktok": "gynsys.oficial"
+  },
+  "schedule": {
+    "monday": "09:00 - 18:00",
+    "tuesday": "09:00 - 18:00",
+    "wednesday": "09:00 - 18:00",
+    "thursday": "09:00 - 18:00",
+    "friday": "09:00 - 18:00",
+    "saturday": "09:00 - 13:00",
+    "sunday": "Cerrado"
+  },
+  "pdf_config": {
+    "header_text": "Ginecología y Obstetricia - Atención Integral",
+    "footer_text": "GynSys - Sistema de Gestión Médica",
+    "show_logo": true
+  },
+  "enabled_modules": [
+    "appointments",
+    "patients",
+    "consultations",
+    "preconsultation",
+    "cycle_predictor",
+    "notifications",
+    "blog",
+    "gallery",
+    "faq",
+    "testimonials"
+  ],
+  "services": [
+    {
+      "title": "Control Prenatal",
+      "description": "Seguimiento integral del embarazo para asegurar la salud de la madre y el bebé.",
+      "image_url": "https://placehold.co/600x400/7c3aed/ffffff?text=Control+Prenatal",
+      "order": 1
+    },
+    {
+      "title": "Ginecología General",
+      "description": "Consulta ginecológica preventiva, citología y exámenes de rutina.",
+      "image_url": "https://placehold.co/600x400/7c3aed/ffffff?text=Ginecologia+General",
+      "order": 2
+    },
+    {
+      "title": "Ecografía Pélvica",
+      "description": "Diagnóstico por imagen para evaluación uterina y ovárica.",
+      "image_url": "https://placehold.co/600x400/7c3aed/ffffff?text=Ecografia+Pelvica",
+      "order": 3
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuáles son los horarios de atención?",
+      "answer": "Atendemos de lunes a viernes de 9:00 AM a 6:00 PM, y sábados de 9:00 AM a 1:00 PM. Se requiere cita previa.",
+      "order": 1
+    },
+    {
+      "question": "¿Aceptan seguros médicos?",
+      "answer": "Sí, trabajamos con la mayoría de los seguros médicos nacionales e internacionales. Por favor contáctenos para verificar su cobertura específica.",
+      "order": 2
+    },
+    {
+      "question": "¿Qué debo llevar a mi primera consulta?",
+      "answer": "Para su primera visita, por favor traiga su identificación, tarjeta de seguro, y cualquier estudio o análisis previo relevante. Es recomendable llegar 15 minutos antes.",
+      "order": 3
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Ana García",
+      "content": "La atención es excelente. Me sentí muy cómoda y explicaron todo con mucha claridad. ¡Muy recomendada!",
+      "rating": 5,
+      "photo_url": null
+    },
+    {
+      "name": "Laura Martínez",
+      "content": "El mejor acompañamiento durante mi embarazo. Siempre atentos a mis dudas y muy profesionales.",
+      "rating": 5,
+      "photo_url": null
+    }
+  ],
+  "preconsultation_questions": [
+    {
+      "question_text": "¿Cuál es el motivo principal de su consulta?",
+      "question_type": "text",
+      "is_required": true,
+      "order": 1,
+      "category": "general"
+    },
+    {
+      "question_text": "¿Fecha de su última menstruación?",
+      "question_type": "date",
+      "is_required": true,
+      "order": 2,
+      "category": "gynecological"
+    },
+    {
+      "question_text": "¿Tiene algún antecedente de alergias a medicamentos?",
+      "question_type": "text",
+      "is_required": false,
+      "order": 3,
+      "category": "medical"
+    }
+  ]
+}
