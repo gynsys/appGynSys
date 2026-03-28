@@ -3,23 +3,28 @@
     android:id="@+id/loading_overlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground"
+    android:background="@color/splash_bg"
     android:gravity="center"
     android:orientation="vertical"
     android:clickable="true"
     android:focusable="true">
 
     <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/splash_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="200dp"
+        android:layout_height="3dp"
         android:indeterminate="true"
-        android:indeterminateTint="#6366F1" />
+        android:indeterminateTint="@color/splash_accent" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Cargando..."
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:textColor="@color/splash_text"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-light"
+        android:letterSpacing="0.05" />
+
 </LinearLayout>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_bg">#FFFFFF</color>
+    <!-- Splash: dark defaults, overridden at runtime by tenant theme via SharedPreferences -->
+    <color name="splash_bg">#000000</color>
+    <color name="splash_accent">#6366F1</color>
+    <color name="splash_text">#666666</color>
+
+    <!-- App theme colors -->
     <color name="colorPrimary">#6366F1</color>
     <color name="colorPrimaryDark">#4F46E5</color>
     <color name="colorAccent">#818CF8</color>

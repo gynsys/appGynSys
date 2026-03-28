@@ -419,12 +419,27 @@ export default function DoctorProfilePage() {
 
     // Sync theme-color meta tag and html class with doctor's theme
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (doctor?.design_template === 'dark') {
+    const isDark = doctor?.design_template === 'dark'
+    if (isDark) {
       document.documentElement.classList.add('dark')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#111827') // gray-950
     } else {
       document.documentElement.classList.remove('dark')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#ffffff')
+    }
+
+    // --- Bridge nativo Android (Capacitor) ---
+    // Envía el tema del tenant al nativo para que el próximo arranque
+    // use el fondo y acento correctos en el overlay de carga.
+    // La llamada es un no-op en navegador web (el bridge no existirá).
+    if (doctor?.theme_primary_color && window.GynSysAndroid?.setTheme) {
+      const accentColor = doctor.theme_primary_color
+      const bgColor = isDark ? '#000000' : '#FFFFFF'
+      try {
+        window.GynSysAndroid.setTheme(bgColor, accentColor, isDark)
+      } catch (e) {
+        // Fallo silencioso: no afecta la UX del usuario
+      }
     }
   }, [doctor])
 
