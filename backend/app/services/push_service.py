@@ -61,7 +61,7 @@ def send_push_to_actor(
     # Try both relationship names for compatibility
     subscriptions = getattr(actor, 'patient_push_subscriptions', None)
     if subscriptions is None:
-        subscriptions = getattr(actor, 'doctor_push_subscriptions', [])
+        subscriptions = getattr(actor, 'push_subscriptions', [])
     
     if not subscriptions:
         return {"success": False, "error": "Actor has no push subscription"}
