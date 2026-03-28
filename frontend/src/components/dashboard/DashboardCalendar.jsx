@@ -131,7 +131,7 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
                                                 <div
                                                     key={i}
                                                     className="text-xs flex flex-col bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md border-l-4 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                    style={{ borderLeftColor: (app.appointment_type?.toLowerCase().includes('online') || type === 'online') ? '#A855F7' : primaryColor }}
+                                                    style={{ borderLeftColor: (app.appointment_type?.toLowerCase()?.includes('online') || type === 'online') ? '#A855F7' : primaryColor }}
                                                 >
                                                     <div className="flex justify-between items-center mb-1">
                                                         <span className="font-bold text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-500">

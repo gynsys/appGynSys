@@ -301,10 +301,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     style_patient_data = ParagraphStyle(name='PatientData', parent=styleN, spaceAfter=2)
 
     # Header
-    doctor_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
-    specialty = pdf_config.get('specialty') or (doctor.especialidad if doctor else "Especialista en Ginecología y Obstetricia")
-    location = pdf_config.get('location') or "Caracas-Guarenas Guatire"
-    phones = pdf_config.get('phones') or "04244281876-04127738918"
+    doctor_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Médico Especialista")
+    specialty = pdf_config.get('specialty') or (doctor.especialidad if doctor else "Ginecología y Obstetricia")
+    location = pdf_config.get('location') or ""
+    phones = pdf_config.get('phones') or ""
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
@@ -428,11 +428,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     sig_name = doctor_name
     sig_specialty = pdf_config.get('specialty') or "Ginecólogo Obstetra - UCV"
     
-    mpps = pdf_config.get('mpps_number', '140.795')
-    cmdm = pdf_config.get('cmdm_number', '38.789')
-    sig_ids = f"MPPS: {mpps} / CMDM: {cmdm}"
+    mpps = pdf_config.get('mpps_number', '')
+    cmdm = pdf_config.get('cmdm_number', '')
+    sig_ids = f"MPPS: {mpps} / CMDM: {cmdm}" if (mpps or cmdm) else ""
     
-    sig_ci = f"C.I.: {format_ci_v(pdf_config.get('doctor_ci', '23.812.988'))}"
+    doctor_ci_val = pdf_config.get('doctor_ci', '')
+    sig_ci = f"C.I.: {format_ci_v(doctor_ci_val)}" if doctor_ci_val else ""
     
     # Signature Image
     signature_source = pdf_config.get('logo_signature')
@@ -624,10 +625,10 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
             pdf_config = doctor.pdf_config
 
     # Header
-    doctor_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Dra. Mariel Herrera")
-    specialty = pdf_config.get('specialty') or (doctor.especialidad if doctor else "Especialista en Ginecología y Obstetricia")
-    location = pdf_config.get('location') or "Caracas-Guarenas Guatire"
-    phones = pdf_config.get('phones') or "04244281876-04127738918"
+    doctor_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Médico Especialista")
+    specialty = pdf_config.get('specialty') or (doctor.especialidad if doctor else "Ginecología y Obstetricia")
+    location = pdf_config.get('location') or ""
+    phones = pdf_config.get('phones') or ""
     
     header_text = f"<b>{doctor_name}</b><br/>{specialty}<br/>{location}<br/>Citas: {phones}"
     
