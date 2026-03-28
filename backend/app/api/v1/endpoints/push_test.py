@@ -93,7 +93,7 @@ async def get_detailed_users_devices(
     users = db.query(CycleUser).options(joinedload(CycleUser.patient_push_subscriptions)).all()
     
     # 2. Get Doctors
-    doctors = db.query(Doctor).options(joinedload(Doctor.doctor_push_subscriptions)).all()
+    doctors = db.query(Doctor).options(joinedload(Doctor.push_subscriptions)).all()
     
     result = []
     
@@ -129,11 +129,11 @@ async def get_detailed_users_devices(
         
     # Map Doctors
     for doctor in doctors:
-        if not doctor.doctor_push_subscriptions:
+        if not doctor.push_subscriptions:
             continue
             
         devices = []
-        for sub in doctor.doctor_push_subscriptions:
+        for sub in doctor.push_subscriptions:
             # Handle null endpoint (Capacitor devices use tokens)
             endpoint_display = "CAPACITOR_DEVICE"
             if sub.endpoint:
@@ -184,7 +184,7 @@ async def test_push_notification(
         raise HTTPException(status_code=404, detail=f"User or Doctor not found: {request.user_email}")
     
     # Check if they have push subscriptions
-    subs = actor.patient_push_subscriptions if isinstance(actor, CycleUser) else actor.doctor_push_subscriptions
+    subs = actor.patient_push_subscriptions if isinstance(actor, CycleUser) else actor.push_subscriptions
     if not subs:
         raise HTTPException(
             status_code=400, 
