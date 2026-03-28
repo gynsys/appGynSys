@@ -47,6 +47,7 @@ import RecommendationsManager from './pages/dashboard/RecommendationsManager'
 import PdfConfigurationPage from './pages/dashboard/PdfConfigurationPage'
 import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPage'
 import PatientsManager from './pages/dashboard/PatientsManager'
+import QuickSetupPage from './pages/dashboard/QuickSetupPage'
 // Removed OnboardingPage import
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
@@ -211,6 +212,7 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<DashboardOverviewPage />} />
+          <Route path="setup" element={<QuickSetupPage />} />
 
           <Route path="consultation" element={<DoctorConsultationPage />} />
           <Route path="preconsulta-config" element={<PreconsultationConfigPage />} />

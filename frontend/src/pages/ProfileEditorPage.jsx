@@ -7,7 +7,7 @@ import { useProfileData } from '../components/profile-editor/useProfileData'
 import { useTestimonials } from '../components/profile-editor/useTestimonials'
 import { useFAQs } from '../components/profile-editor/useFAQs'
 
-const ProfileEditorPage = () => {
+const ProfileEditorPage = ({ isQuickSetup = false }) => {
   const navigate = useNavigate()
 
   const profileData = useProfileData()
@@ -42,23 +42,25 @@ const ProfileEditorPage = () => {
 
   return (
     <Fragment>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className={`bg-gray-50 dark:bg-gray-900 transition-colors duration-200 ${!isQuickSetup ? 'min-h-screen' : ''}`}>
         {/* Navbar */}
 
 
         {/* Main Content */}
-        <div className="py-6 sm:py-12 px-0 sm:px-6 lg:px-8">
+        <div className={`${!isQuickSetup ? 'py-6 sm:py-12' : 'pb-6'} px-0 sm:px-6 lg:px-8`}>
           <div className="max-w-4xl mx-auto">
             <div className="">
-              <div className="flex items-center justify-between mb-8 px-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Perfil</h1>
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
-                >
-                  &larr; Volver
-                </button>
-              </div>
+              {!isQuickSetup && (
+                <div className="flex items-center justify-between mb-8 px-2">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Perfil</h1>
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+                  >
+                    &larr; Volver
+                  </button>
+                </div>
+              )}
 
               <ProfileTabsLayout
                 {...profileData}
