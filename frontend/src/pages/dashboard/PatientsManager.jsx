@@ -28,6 +28,69 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
     }]
     : (data.all_consultations || []);
 
+  // --- Vista simplificada para Informe Individual ---
+  if (data.is_single_report) {
+    const c = consultations[0] || {};
+    return (
+      <div className="space-y-3 text-gray-800 dark:text-gray-200 p-1">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-indigo-600 font-bold text-sm">
+              {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </p>
+            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+              Informe
+            </span>
+          </div>
+          {/* medical_report_content tiene prioridad si existe */}
+          {data.medical_report_content ? (
+            <p className="text-sm whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
+              {data.medical_report_content}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {!isPlaceholder(c.diagnosis) && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Diagnóstico</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{c.diagnosis}</p>
+                </div>
+              )}
+              {!isPlaceholder(c.plan) && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Plan de Tratamiento</p>
+                  <p className="text-sm whitespace-pre-line text-gray-700 dark:text-gray-300">{c.plan}</p>
+                </div>
+              )}
+              {(!isPlaceholder(c.physical_exam) || !isPlaceholder(c.ultrasound)) && (
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                  {!isPlaceholder(c.physical_exam) && (
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Examen Físico</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{c.physical_exam}</p>
+                    </div>
+                  )}
+                  {!isPlaceholder(c.ultrasound) && (
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Ecografía</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{c.ultrasound}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {!isPlaceholder(c.observations) && (
+                <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Observaciones</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{c.observations}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Vista completa para Historia Clínica ---
   return (
     <div className="space-y-6 text-gray-800 dark:text-gray-200 p-1 md:p-4 overflow-y-auto max-h-[70vh]">
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
