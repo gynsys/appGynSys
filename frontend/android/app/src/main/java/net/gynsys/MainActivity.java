@@ -64,17 +64,6 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Forzar barra de estado oscura con iconos blancos (ignora cualquier DayNight Theme overriding)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            android.view.WindowInsetsController controller = getWindow().getInsetsController();
-            if (controller != null) {
-                controller.setSystemBarsAppearance(0, android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }
-        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            android.view.View decor = getWindow().getDecorView();
-            decor.setSystemUiVisibility(decor.getSystemUiVisibility() & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
-
         registerPlugin(PushNotificationsPlugin.class);
 
 
@@ -102,6 +91,16 @@ public class MainActivity extends BridgeActivity {
         addContentView(loadingOverlay, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // Iniciar animación suave de fade-in para evitar el "brinco" de los elementos
+        ProgressBar progressBar = loadingOverlay.findViewById(net.gynsys.R.id.splash_progress);
+        android.widget.TextView splashText = loadingOverlay.findViewById(net.gynsys.R.id.splash_text);
+        if (progressBar != null) {
+            progressBar.animate().alpha(1f).setDuration(600).setStartDelay(100).start();
+        }
+        if (splashText != null) {
+            splashText.animate().alpha(1f).setDuration(600).setStartDelay(100).start();
+        }
 
         // --- Configurar WebView ---
         try {
