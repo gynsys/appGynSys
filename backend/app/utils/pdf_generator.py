@@ -288,7 +288,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         name='Narrative',
         parent=styleN,
         alignment=TA_JUSTIFY,
-        leading=20,
+        leading=14,         # Reducido de 20 a 14 para ahorrar espacio
         firstLineIndent=0   # Sin sangría inicial para el texto narrativo
     )
     
@@ -297,7 +297,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         name='Plan',
         parent=styleN,
         alignment=TA_JUSTIFY,  # Justificado como el texto narrativo
-        leading=16,
+        leading=14,         # Reducido de 16 a 14 para ahorrar espacio
         leftIndent=18,      # Sangría izquierda para los números
         firstLineIndent=0 # Compensar la primera línea para alinear números
     )
@@ -344,16 +344,16 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         line_table = Table([['']], colWidths=[7.5*inch])
         line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.black)]))
         story.append(line_table)
-    story.append(Spacer(1, 0.25*inch))
+    story.append(Spacer(1, 0.15*inch))
     
     report_title = pdf_config.get('report_title') or "INFORME MÉDICO"
     story.append(safe_p(f"<u>{report_title}</u>", styleH1))
-    story.append(Spacer(1, 0.25*inch))
+    story.append(Spacer(1, 0.15*inch))
 
     story.append(safe_p(f"<b>Nombre y Apellidos:</b> {report_context.get('full_name')}", style_patient_data))
     story.append(safe_p(f"<b>Edad:</b> {report_context.get('age')}", style_patient_data))
     story.append(safe_p(f"<b>C.I.:</b> {format_ci_v(report_context.get('ci'))}", style_patient_data))
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Spacer(1, 0.2*inch))
 
     # Unified Report Content Priority
     unified_content = report_data.get('medical_report_content')
@@ -408,7 +408,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             for item in obs_items:
                 story.append(Paragraph(item, style_plan))
 
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Spacer(1, 0.1*inch)) # Reduído de 0.3 para ganar espacio
     footer_city = pdf_config.get('footer_city') or "Guarenas"
     
     # Use custom report date if provided
@@ -425,7 +425,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         today_str = format_date_spanish()
         
     pre_signature_text = f"Sin otro particular se suscribe en {footer_city} a los {today_str}."
-    story.append(Paragraph(pre_signature_text, ParagraphStyle(name='PreFooter', fontSize=12, alignment=TA_CENTER, spaceAfter=24)))
+    story.append(Paragraph(pre_signature_text, ParagraphStyle(name='PreFooter', fontSize=12, alignment=TA_CENTER, spaceAfter=8))) # Reducido de 24
 
     # Signature
     sig_name = doctor_name
@@ -503,7 +503,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('LEFTPADDING', (0,0), (-1,-1), 0),
         ]))
         
-        story.append(Spacer(1, 0.4*inch))
+        story.append(Spacer(1, 0.15*inch)) # Reducido de 0.4
         story.append(KeepTogether(footer_table))
     else:
         # Build composite bottom table for non-color mode
@@ -523,7 +523,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('ALIGN', (1,0), (1,0), 'RIGHT'),
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
-        story.append(Spacer(1, 0.4*inch))
+        story.append(Spacer(1, 0.15*inch)) # Reducido de 0.4
         story.append(KeepTogether(footer_table))
     
     # --- PAGE 2: IMAGES (Optional) ---
