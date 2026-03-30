@@ -234,7 +234,20 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
             <div className="w-full flex justify-center">
               <button
                 type="button"
-                onClick={() => googleLogin()}
+                onClick={() => {
+                  if (isCapacitor()) {
+                    // Manual Implicit Flow for Capacitor to bypass SDK origin issues
+                    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013444456950-r1v7m72v7673p5f5v486745674567456.apps.googleusercontent.com'; // Fallback to avoid crashes if env is missing
+                    const redirectUri = window.location.origin + window.location.pathname;
+                    const scope = 'openid email profile';
+                    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
+                    
+                    console.log("[GynSys] Starting manual Google Oauth redirect for Capacitor...");
+                    window.location.href = url;
+                  } else {
+                    googleLogin();
+                  }
+                }}
                 className={`w-full flex items-center justify-center gap-3 px-4 py-2 border rounded-md transition-all duration-200 ${isDark ? 'bg-transparent border-gray-600 text-gray-300 hover:bg-white/5' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">

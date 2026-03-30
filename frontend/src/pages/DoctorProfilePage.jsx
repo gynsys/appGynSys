@@ -448,24 +448,20 @@ export default function DoctorProfilePage() {
       <div className={`min-h-screen flex items-center justify-center ${document.documentElement.classList.contains('dark') ? 'bg-gray-950' : 'bg-white'}`}>
         <style>
           {`
-            @keyframes heartbeat {
-              0% { transform: scale(1); }
-              14% { transform: scale(1.15); }
-              28% { transform: scale(1); }
-              42% { transform: scale(1.15); }
-              70% { transform: scale(1); }
+            @keyframes spin {
+              to { transform: rotate(360deg); }
             }
-            .animate-heartbeat {
-              animation: heartbeat 1.5s infinite;
+            .animate-loading-spinner {
+              animation: spin 1s linear infinite;
             }
           `}
         </style>
-        <div className="text-center flex flex-col items-center">
-          <img
-            src="/GynSys.png"
-            alt="Cargando perfil..."
-            className="w-24 h-auto object-contain animate-heartbeat drop-shadow-md"
+        <div className="text-center flex flex-col items-center gap-4">
+          <div 
+            className="w-12 h-12 border-4 border-gray-200 dark:border-gray-800 rounded-full animate-loading-spinner"
+            style={{ borderTopColor: primaryColor }}
           />
+          <p className="text-sm font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase">Cargando...</p>
         </div>
       </div>
     )
