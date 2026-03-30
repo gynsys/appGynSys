@@ -255,7 +255,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             pdf_config = doctor.pdf_config
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=letter,
+        topMargin=0.5*inch, bottomMargin=0.5*inch, 
+        leftMargin=0.5*inch, rightMargin=0.5*inch
+    )
     
     # Watermark Toggle & Dynamic Watermark
     doc.include_watermark = str(report_data.get('include_watermark', 'true')).lower() == 'true'
@@ -327,8 +332,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             logo_image_right if logo_image_right else ""
         ]]
     
-    # Total width ~ 7.0 inches. 1.2 + 4.6 + 1.2 = 7.0
-    header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
+    # Total width ~ 7.5 inches (0.5 margins). 1.3 + 4.9 + 1.3 = 7.5
+    header_table = Table(header_data, colWidths=[1.3*inch, 4.9*inch, 1.3*inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('ALIGN', (0, 0), (0, 0), 'LEFT'),
@@ -490,40 +495,38 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         sig_elements.append(safe_p(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
 
     if use_color:
-        # Create a side-by-side table for QR and Signature in Color Mode
-        # In Color Mode, QR goes to the bottom left (as requested)
+        # standard 7.5" layout for perfect page centering with 0.5 margins
+        # Col 1: QR (1.3") | Col 2: Signature Block (4.9") | Col 3: Empty (1.3")
+        # Center of Col 2 is at 1.3 + 2.45 = 3.75 (Perfect center of 7.5" total width)
+        
         footer_data = [
-            [qr_item if qr_item else "", sig_elements]
+            [qr_item if qr_item else "", sig_elements, ""]
         ]
-        footer_table = Table(footer_data, colWidths=[2.0*inch, 4.0*inch])
+        
+        footer_table = Table(footer_data, colWidths=[1.3*inch, 4.9*inch, 1.3*inch])
         footer_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (0,0), 'LEFT'),
             ('ALIGN', (1,0), (1,0), 'CENTER'),
             ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
         ]))
+        footer_table.hAlign = 'CENTER'
         
-        story.append(Spacer(1, 0.15*inch)) # Reducido de 0.4
+        story.append(Spacer(1, 0.1*inch))
         story.append(KeepTogether(footer_table))
     else:
-        # Build composite bottom table for non-color mode
-        # In B&W Mode, QR is already in the header (Top Right), 
-        # so we ONLY show the signature in the footer.
-        footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
-        
-        # footer_col_left is empty here to avoid duplicate QR in B&W mode
-        footer_col_left = "" 
-        footer_col_right = sig_elements 
-        
-        footer_table_data = [[footer_col_left, footer_col_right]]
-        footer_table = Table(footer_table_data, colWidths=[3.0*inch, 4.0*inch])
+        # B&W Mode: Single centered column of 7.5"
+        footer_table_data = [[sig_elements]]
+        footer_table = Table(footer_table_data, colWidths=[7.5*inch])
         footer_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
-            ('ALIGN', (0,0), (0,0), 'LEFT'),
-            ('ALIGN', (1,0), (1,0), 'RIGHT'),
+            ('ALIGN', (0,0), (0,0), 'CENTER'),
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
-        story.append(Spacer(1, 0.15*inch)) # Reducido de 0.4
+        footer_table.hAlign = 'CENTER'
+        
+        story.append(Spacer(1, 0.1*inch))
         story.append(KeepTogether(footer_table))
     
     # --- PAGE 2: IMAGES (Optional) ---
