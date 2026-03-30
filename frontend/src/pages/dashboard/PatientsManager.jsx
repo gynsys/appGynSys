@@ -733,7 +733,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <FiUser />
                     </div>
                     <div className="ml-3">
-                      <h4 className="font-black text-gray-900 dark:text-white leading-tight">{consultation.patient_name || 'Desconocido'}</h4>
+                      <h4 className="font-bold text-gray-900 dark:text-white leading-tight">{consultation.patient_name || 'Desconocido'}</h4>
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400">CI: {consultation.patient_ci || 'N/A'}</p>
                     </div>
                   </div>
@@ -791,7 +791,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex items-center justify-center text-indigo-600"><FiUser /></div>
-                        <div className="ml-4 font-black uppercase text-sm">{consultation.patient_name}</div>
+                        <div className="ml-4 font-bold text-sm">{consultation.patient_name}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">{consultation.history_number}</td>
