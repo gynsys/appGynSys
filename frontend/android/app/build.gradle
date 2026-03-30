@@ -47,6 +47,26 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// Automation to copy APK to public folder after build
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        def variantName = variant.name.capitalize()
+        def taskName = "copy${variantName}ApkToPublic"
+        
+        task(taskName, type: Copy) {
+            description "Copies the ${variant.name} APK to the frontend public folder"
+            from output.outputFile
+            into file("${project.projectDir}/../../public")
+            rename { String fileName ->
+                "GynSys.apk"
+            }
+        }
+        
+        // Ensure the copy task runs after the APK is assembled
+        output.assemble.finalizedBy taskName
+    }
+}
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {
