@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Calendar, TrendingUp, Bell, Baby, Loader2 } from 'lucide-react';
+import { isCapacitor } from '../../utils/platform';
 import { useAuthStore } from '../../store/authStore';
 import cycleService from '../../services/cycleService';
 import CycleDashboardTab from '../../components/cycle-predictor/CycleDashboardTab';
@@ -54,6 +55,9 @@ export default function CycleDashboard() {
     };
 
     if (loading) {
+        if (isCapacitor()) {
+            return <div className="min-h-[60vh] bg-transparent" />;
+        }
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>

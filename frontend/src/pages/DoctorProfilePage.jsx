@@ -448,6 +448,9 @@ export default function DoctorProfilePage() {
   const isDarkTheme = theme === 'dark' || document.documentElement.classList.contains('dark')
 
   if (loading) {
+    if (isCapacitor()) {
+      return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={bodyBgStyle} />
+    }
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`}>
         <style>
