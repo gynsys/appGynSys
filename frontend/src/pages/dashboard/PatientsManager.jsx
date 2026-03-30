@@ -972,19 +972,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                  <div className="hidden md:block h-[60vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
                   {basePdfUrl && <iframe src={getFullPdfUrl()} className="w-full h-full border-0" title="Visor de PDF" />}
                 </div>
-                {/* Mobile specific PDF helper for native apps */}
-                {isCapacitor() && (
-                  <div className="md:hidden flex flex-col items-center justify-center p-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-800">
-                    <FiFileText className="w-12 h-12 text-indigo-500 mb-4" />
-                    <p className="text-sm text-center font-medium mb-6">Para una mejor experiencia y compatibilidad, abre el documento en el visor nativo del sistema.</p>
-                     <button 
-                      onClick={() => openExternalFile(getFullPdfUrl())}
-                      className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"
-                    >
-                      ABRIR DOCUMENTO
-                    </button>
-                  </div>
-                )}
+
               </>
             ) : (
               // Tab Content: Assets
