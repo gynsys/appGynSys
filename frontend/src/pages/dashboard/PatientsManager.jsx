@@ -681,7 +681,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       {!isEmbedded && (
         <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left px-4 sm:px-0">
-            <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">Gestión de Historias Médicas</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Gestión de Historias Médicas</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Administra las consultas y reportes generados.</p>
           </div>
           <div className="relative w-full md:w-80 px-4 sm:px-0">
