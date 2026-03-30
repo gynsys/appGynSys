@@ -449,7 +449,8 @@ export default function DoctorProfilePage() {
 
   if (loading) {
     if (isCapacitor()) {
-      return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={bodyBgStyle} />
+      // Evitamos ReferenceError al no usar variables declaradas más abajo
+      return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={{ backgroundColor: doctor?.theme_body_bg_color || 'transparent' }} />
     }
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`}>
