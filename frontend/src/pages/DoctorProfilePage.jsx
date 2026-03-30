@@ -596,6 +596,7 @@ export default function DoctorProfilePage() {
         primaryColor={primaryColor}
         onAppointmentClick={handleOpenAppointment}
         onTestClick={handleOpenTest}
+        onCycleClick={() => navigate('/cycle/dashboard')}
         onLoginClick={() => setIsLoginModalOpen(true)}
         onRegisterClick={() => setIsNavbarRegisterOpen(true)}
         onMedicalHistoryClick={handleMedicalHistoryClick}

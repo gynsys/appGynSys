@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from './useAuth'
+import { isCapacitor } from '../../utils/platform'
 import { useGoogleLogin } from '@react-oauth/google'
 
 export default function LoginForm({ redirect = '/dashboard', isModal = false, primaryColor = '#4f46e5', onForgotPasswordClick, onSuccess, onRegisterClick }) {
@@ -18,7 +19,11 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
   const handleGoogleSuccess = async (tokenResponse) => {
     setLoading(true);
     try {
-      const response = await loginWithGoogle(tokenResponse.access_token);
+      // For redirect mode, the token might come in the Hash/URL
+      const token = tokenResponse.access_token;
+      if (!token) throw new Error("No token received");
+
+      const response = await loginWithGoogle(token);
       if (onSuccess) onSuccess();
 
       const savedRedirect = localStorage.getItem('redirect_after_login');
@@ -38,6 +43,7 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
   const googleLogin = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
     onError: () => setError('Error al iniciar sesión con Google'),
+    ux_mode: isCapacitor() ? 'redirect' : 'popup',
   });
 
   const handleSubmit = async (e) => {
