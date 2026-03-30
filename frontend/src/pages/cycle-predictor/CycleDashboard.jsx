@@ -20,6 +20,15 @@ export default function CycleDashboard() {
     const [loading, setLoading] = useState(true);
     const [showEndDialog, setShowEndDialog] = useState(false);
     const [endLoading, setEndLoading] = useState(false);
+    
+    // Add a state to know if this is the very first time the app is loading
+    const [isInitialBoot] = useState(() => {
+        if (!window.__gynsys_has_booted) {
+             window.__gynsys_has_booted = true;
+             return true;
+        }
+        return false;
+    });
 
     useEffect(() => {
         if (isCycleAuthenticated) {
@@ -55,7 +64,7 @@ export default function CycleDashboard() {
     };
 
     if (loading) {
-        if (isCapacitor()) {
+        if (isCapacitor() && isInitialBoot) {
             return <div className="min-h-[60vh] bg-transparent" />;
         }
         return (

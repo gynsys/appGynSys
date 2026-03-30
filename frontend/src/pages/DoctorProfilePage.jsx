@@ -445,10 +445,17 @@ export default function DoctorProfilePage() {
   
   const theme = doctor?.design_template || 'glass'
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'
-  const isDarkTheme = theme === 'dark' || document.documentElement.classList.contains('dark')
+  // Add a state to know if this is the very first time the app is loading
+  const [isInitialBoot] = useState(() => {
+    if (!window.__gynsys_has_booted) {
+      window.__gynsys_has_booted = true;
+      return true;
+    }
+    return false;
+  });
 
   if (loading) {
-    if (isCapacitor()) {
+    if (isCapacitor() && isInitialBoot) {
       // Evitamos ReferenceError al no usar variables declaradas más abajo
       return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={{ backgroundColor: doctor?.theme_body_bg_color || 'transparent' }} />
     }
