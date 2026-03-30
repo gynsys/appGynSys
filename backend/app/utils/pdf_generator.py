@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from reportlab.lib.pagesizes import letter, legal
 from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak, KeepTogether
 import html
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
@@ -269,10 +269,13 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     else:
         doc.footer_url = pdf_config.get('doctor_url') or base_domain
         
-    # Fixed Footer Data (QR ONLY - Info removed)
-    doc.footer_fixed_data = {
-        'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
-    }
+    # Fixed Footer Data (QR in background only if NOT in color flow)
+    if not use_color:
+        doc.footer_fixed_data = {
+            'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
+        }
+    else:
+        doc.footer_fixed_data = {}
     
     story = []
 
@@ -435,53 +438,59 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     doctor_ci_val = pdf_config.get('doctor_ci', '')
     sig_ci = f"C.I.: {format_ci_v(doctor_ci_val)}" if doctor_ci_val else ""
     
+    # QR Image for Flow
+    qr_item = None
+    if use_color:
+        qr_source = pdf_config.get('logo_header_2')
+        if qr_source:
+            try:
+                qr_path = get_local_path_from_url(qr_source)
+                if qr_path and os.path.exists(qr_path):
+                    qr_item = Image(qr_path, width=0.9*inch, height=0.9*inch)
+                    qr_item.hAlign = 'LEFT'
+            except:
+                pass
+    
     # Signature Image
     signature_source = pdf_config.get('logo_signature')
     signature_image = None
-    if signature_source:
-        try:
-            sig_path = get_local_path_from_url(signature_source)
-            if sig_path and os.path.exists(sig_path):
-                # Signature usually wider
-                img_reader = ImageReader(sig_path)
-                iw, ih = img_reader.getSize()
-                aspect = ih / float(iw)
-                # Limit width to 2.5 inch
-                target_width = 2.5*inch
-                target_height = target_width * aspect
-                # But limit height to 1 inch
-                if target_height > 1*inch:
-                    target_height = 1*inch
-                    target_width = target_height / aspect
-                
-                signature_image = Image(sig_path, width=target_width, height=target_height)
-                signature_image.hAlign = 'CENTER'
-        except Exception as e:
-            logger.error(f"Error loading signature: {e}")
-
+    # Build Signature and QR Block
+    sig_elements = []
     if signature_image:
-        story.append(signature_image)
+        sig_elements.append(signature_image)
     else:
-        story.append(Paragraph("_________________________", ParagraphStyle(name='SignatureLine', alignment=TA_CENTER)))
+        sig_elements.append(Paragraph("_________________________", ParagraphStyle(name='SignatureLine', alignment=TA_CENTER)))
         
-    story.append(Paragraph(f"<b>{sig_name}</b>", ParagraphStyle(name='SigName', alignment=TA_CENTER, fontSize=12, spaceBefore=6)))
-    story.append(Paragraph(sig_specialty, ParagraphStyle(name='SigSpec', alignment=TA_CENTER, fontSize=10)))
-    story.append(Paragraph(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
-    story.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
-    
-    # In color mode, we move the signature to the bottom right and the second logo to the bottom left
-    # In color mode, we already handled footer drawing in draw_color_background callback
+    sig_elements.append(Paragraph(f"<b>{sig_name}</b>", ParagraphStyle(name='SigName', alignment=TA_CENTER, fontSize=12, spaceBefore=4)))
+    sig_elements.append(Paragraph(sig_specialty, ParagraphStyle(name='SigSpec', alignment=TA_CENTER, fontSize=10)))
+    if sig_ids:
+        sig_elements.append(Paragraph(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
+    if sig_ci:
+        sig_elements.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
+
     if use_color:
-        story.append(Spacer(1, 1*inch)) # Placeholder space to avoid overlap
+        # Create a side-by-side table for QR and Signature in Color Mode
+        # This keeps them together and avoids using the background fixed footer
+        footer_data = [
+            [qr_item if qr_item else "", sig_elements]
+        ]
+        footer_table = Table(footer_data, colWidths=[2.0*inch, 4.0*inch])
+        footer_table.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ALIGN', (0,0), (0,0), 'LEFT'),
+            ('ALIGN', (1,0), (1,0), 'CENTER'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ]))
+        
+        # Use KeepTogether to prevent splitting across pages
+        story.append(Spacer(1, 0.4*inch))
+        story.append(KeepTogether(footer_table))
     else:
         # Build composite bottom table for non-color mode
+        # (Same as before but wrapped in KeepTogether)
         footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
         footer_col_left = [logo_image_right] if logo_image_right else [""]
-        footer_col_right = [
-            Paragraph(f"<b>{sig_name}</b>", footer_sig_style),
-            Paragraph(sig_specialty, footer_sig_style),
-            Paragraph(sig_ids, footer_sig_style)
-        ]
+        footer_col_right = sig_elements # Use the shared sig elements
         
         footer_table_data = [[footer_col_left, footer_col_right]]
         footer_table = Table(footer_table_data, colWidths=[3.0*inch, 4.0*inch])
@@ -491,8 +500,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('ALIGN', (1,0), (1,0), 'RIGHT'),
             ('TOPPADDING', (0,0), (-1,-1), 20),
         ]))
-        story.append(Spacer(1, 0.5*inch))
-        story.append(footer_table)
+        story.append(Spacer(1, 0.4*inch))
+        story.append(KeepTogether(footer_table))
     
     # --- PAGE 2: IMAGES (Optional) ---
     if report_data.get('include_images') and report_data.get('assets'):
