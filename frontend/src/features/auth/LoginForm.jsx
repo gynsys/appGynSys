@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from './useAuth'
 import { isCapacitor } from '../../utils/platform'
@@ -45,6 +45,32 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
     onError: () => setError('Error al iniciar sesión con Google'),
     ux_mode: isCapacitor() ? 'redirect' : 'popup',
   });
+
+  // Handle redirect callback (Implicit Flow) for Capacitor/Mobile
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      // Check both hash (common for implicit flow) and search params
+      const hash = window.location.hash;
+      const params = new URLSearchParams(window.location.search);
+      
+      let accessToken = params.get('access_token');
+      
+      if (!accessToken && hash && hash.includes('access_token=')) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        accessToken = hashParams.get('access_token');
+      }
+
+      if (accessToken) {
+        console.log("[GynSys] Google Token detected in URL, processing...");
+        // Clean URL to prevent multiple login attempts on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        handleGoogleSuccess({ access_token: accessToken });
+      }
+    };
+
+    handleRedirectResult();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
