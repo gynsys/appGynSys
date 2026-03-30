@@ -7,5 +7,25 @@
     android:gravity="center"
     android:orientation="vertical"
     android:clickable="true"
-    android:focusable="true" />
+    android:focusable="true">
 
+    <ProgressBar
+        android:id="@+id/splash_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="200dp"
+        android:layout_height="3dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/splash_accent" />
+
+    <TextView
+        android:id="@+id/splash_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Cargando..."
+        android:textColor="@color/splash_text"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-light"
+        android:letterSpacing="0.05" />
+
+</LinearLayout>

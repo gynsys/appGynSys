@@ -78,7 +78,12 @@ public class MainActivity extends BridgeActivity {
         // Aplicar colores del tenant al overlay antes de mostrarlo
         try {
             loadingOverlay.setBackgroundColor(Color.parseColor(savedBg));
-            /* ProgressBar eliminada para centralizar carga en React */
+            ProgressBar progressBar = loadingOverlay.findViewById(net.gynsys.R.id.splash_progress);
+            if (progressBar != null) {
+                progressBar.setIndeterminateTintList(
+                        android.content.res.ColorStateList.valueOf(Color.parseColor(savedAccent))
+                );
+            }
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Color inválido en SharedPreferences, usando defaults", e);
         }
@@ -88,7 +93,14 @@ public class MainActivity extends BridgeActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
         // Iniciar animación suave de fade-in para evitar el "brinco" de los elementos
-        /* Animaciones eliminadas ya que los elementos fueron removidos del XML */
+        ProgressBar progressBar = loadingOverlay.findViewById(net.gynsys.R.id.splash_progress);
+        android.widget.TextView splashText = loadingOverlay.findViewById(net.gynsys.R.id.splash_text);
+        if (progressBar != null) {
+            progressBar.animate().alpha(1f).setDuration(600).setStartDelay(100).start();
+        }
+        if (splashText != null) {
+            splashText.animate().alpha(1f).setDuration(600).setStartDelay(100).start();
+        }
 
         // --- Configurar WebView ---
         try {
