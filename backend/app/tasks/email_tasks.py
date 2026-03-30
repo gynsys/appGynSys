@@ -230,14 +230,6 @@ def send_consultation_report_email(email: str, patient_name: str, report_url: st
     <p>Su consulta ha finalizado, adjunto encontrará su informe médico.</p>
     """
     
-    if full_url:
-        html_content += f"""
-        <p>También puede descargarlo haciendo clic en el siguiente enlace si no puede visualizar el adjunto:</p>
-        <p style="text-align: center; margin: 30px 0;">
-            <a href="{full_url}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Descargar Informe Médico</a>
-        </p>
-        """
-        
     html_content += """
     <hr>
     <p><small>GynSys - Gestión Médica</small></p>
