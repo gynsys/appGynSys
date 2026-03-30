@@ -482,12 +482,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     else:
         sig_elements.append(Paragraph("_________________________", ParagraphStyle(name='SignatureLine', alignment=TA_CENTER)))
         
-    sig_elements.append(Paragraph(f"<b>{sig_name}</b>", ParagraphStyle(name='SigName', alignment=TA_CENTER, fontSize=12, spaceBefore=4)))
-    sig_elements.append(Paragraph(sig_specialty, ParagraphStyle(name='SigSpec', alignment=TA_CENTER, fontSize=10)))
+    sig_elements.append(safe_p(f"<b>{sig_name}</b>", ParagraphStyle(name='SigName', alignment=TA_CENTER, fontSize=12, spaceBefore=4)))
+    sig_elements.append(safe_p(sig_specialty, ParagraphStyle(name='SigSpec', alignment=TA_CENTER, fontSize=10)))
     if sig_ids:
-        sig_elements.append(Paragraph(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
+        sig_elements.append(safe_p(sig_ids, ParagraphStyle(name='SigIDs', alignment=TA_CENTER, fontSize=10)))
     if sig_ci:
-        sig_elements.append(Paragraph(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
+        sig_elements.append(safe_p(sig_ci, ParagraphStyle(name='SigCI', alignment=TA_CENTER, fontSize=10)))
 
     if use_color:
         # Create a side-by-side table for QR and Signature in Color Mode
@@ -512,7 +512,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
         
         # footer_col_left is empty here to avoid duplicate QR in B&W mode
-        footer_col_left = [""] 
+        footer_col_left = "" 
         footer_col_right = sig_elements 
         
         footer_table_data = [[footer_col_left, footer_col_right]]
