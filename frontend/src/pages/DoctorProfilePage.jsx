@@ -445,6 +445,7 @@ export default function DoctorProfilePage() {
   
   const theme = doctor?.design_template || 'glass'
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'
+  const isDarkTheme = theme === 'dark' || document.documentElement.classList.contains('dark')
   // Add a state to know if this is the very first time the app is loading
   const [isInitialBoot] = useState(() => {
     if (!window.__gynsys_has_booted) {
