@@ -442,10 +442,14 @@ export default function DoctorProfilePage() {
       }
     }
   }, [doctor])
+  
+  const theme = doctor?.design_template || 'glass'
+  const primaryColor = doctor?.theme_primary_color || '#4F46E5'
+  const isDarkTheme = theme === 'dark' || document.documentElement.classList.contains('dark')
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${document.documentElement.classList.contains('dark') ? 'bg-gray-950' : 'bg-white'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`}>
         <style>
           {`
             @keyframes spin {
@@ -469,7 +473,7 @@ export default function DoctorProfilePage() {
 
   if (error || !doctor) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${document.documentElement.classList.contains('dark') ? 'bg-gray-950 text-white' : 'bg-gray-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDarkTheme ? 'bg-gray-950 text-white' : 'bg-gray-50'}`}>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Perfil no encontrado</h1>
           <p className="text-gray-600">{error || 'El perfil que buscas no existe'}</p>
@@ -493,11 +497,6 @@ export default function DoctorProfilePage() {
         : m.code === code
     )
   }
-
-  const theme = doctor?.design_template || 'glass'
-  const isDarkTheme = theme === 'dark'
-
-  const primaryColor = doctor.theme_primary_color || '#4F46E5' // Default indigo
 
   // Disable explicit background colors in dark mode so classes take over
   // Also disable for 'minimal' theme to enforce pure white standard
