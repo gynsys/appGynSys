@@ -454,6 +454,27 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     # Signature Image
     signature_source = pdf_config.get('logo_signature')
     signature_image = None
+    if signature_source:
+        try:
+            sig_path = get_local_path_from_url(signature_source)
+            if sig_path and os.path.exists(sig_path):
+                # Signature usually wider
+                img_reader = ImageReader(sig_path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                # Limit width to 2.5 inch
+                target_width = 2.5*inch
+                target_height = target_width * aspect
+                # But limit height to 1 inch
+                if target_height > 1*inch:
+                    target_height = 1*inch
+                    target_width = target_height / aspect
+                
+                signature_image = Image(sig_path, width=target_width, height=target_height)
+                signature_image.hAlign = 'CENTER'
+        except Exception as e:
+            logger.error(f"Error loading signature: {e}")
+
     # Build Signature and QR Block
     sig_elements = []
     if signature_image:
@@ -470,7 +491,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     if use_color:
         # Create a side-by-side table for QR and Signature in Color Mode
-        # This keeps them together and avoids using the background fixed footer
+        # In Color Mode, QR goes to the bottom left (as requested)
         footer_data = [
             [qr_item if qr_item else "", sig_elements]
         ]
@@ -482,15 +503,17 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
             ('LEFTPADDING', (0,0), (-1,-1), 0),
         ]))
         
-        # Use KeepTogether to prevent splitting across pages
         story.append(Spacer(1, 0.4*inch))
         story.append(KeepTogether(footer_table))
     else:
         # Build composite bottom table for non-color mode
-        # (Same as before but wrapped in KeepTogether)
+        # In B&W Mode, QR is already in the header (Top Right), 
+        # so we ONLY show the signature in the footer.
         footer_sig_style = ParagraphStyle(name='FooterSig', fontSize=12, alignment=TA_RIGHT, leading=14)
-        footer_col_left = [logo_image_right] if logo_image_right else [""]
-        footer_col_right = sig_elements # Use the shared sig elements
+        
+        # footer_col_left is empty here to avoid duplicate QR in B&W mode
+        footer_col_left = [""] 
+        footer_col_right = sig_elements 
         
         footer_table_data = [[footer_col_left, footer_col_right]]
         footer_table = Table(footer_table_data, colWidths=[3.0*inch, 4.0*inch])
