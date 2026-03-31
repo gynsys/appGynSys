@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
-import { User, Mail, Lock, Loader2, Play } from 'lucide-react'
+import { User, Mail, Lock, Loader2, Play, Eye, EyeOff } from 'lucide-react'
 import LoginModal from '../../components/features/LoginModal'
 
 export default function DoctorRegisterForm() {
@@ -20,6 +20,8 @@ export default function DoctorRegisterForm() {
     })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
 
     useEffect(() => {
@@ -186,13 +188,20 @@ export default function DoctorRegisterForm() {
                                         <input
                                             id="password"
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? 'text' : 'password'}
                                             required
                                             placeholder="••••••••"
                                             value={formData.password}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 h-14 rounded-2xl bg-gray-50 border border-transparent focus:border-indigo-200 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none text-gray-800 font-medium"
+                                            className="w-full pl-12 pr-12 h-14 rounded-2xl bg-gray-50 border border-transparent focus:border-indigo-200 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none text-gray-800 font-medium"
                                         />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-indigo-600 transition-colors"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -205,13 +214,20 @@ export default function DoctorRegisterForm() {
                                         <input
                                             id="confirmPassword"
                                             name="confirmPassword"
-                                            type="password"
+                                            type={showConfirmPassword ? 'text' : 'password'}
                                             required
                                             placeholder="••••••••"
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 h-14 rounded-2xl bg-gray-50 border border-transparent focus:border-indigo-200 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none text-gray-800 font-medium"
+                                            className="w-full pl-12 pr-12 h-14 rounded-2xl bg-gray-50 border border-transparent focus:border-indigo-200 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none text-gray-800 font-medium"
                                         />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-indigo-600 transition-colors"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        >
+                                            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
