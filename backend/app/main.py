@@ -24,19 +24,15 @@ async def log_user_agent(request, call_next):
     print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)
     return await call_next(request)
 
-# Configure CORS
-# We merge settings and ensure production domains are always present
+# Configure CORS (Must be added last to be the outer-most middleware)
 origins = settings.CORS_ORIGINS
 if isinstance(origins, str):
     origins = [o.strip() for o in origins.split(",") if o.strip()]
-
-# Regex to safely match gynsys.net and subdomains
-cors_regex = r"https?://(([a-z0-9-]+\.)?gynsys\.net|localhost|127\.0\.0\.1)(:[0-9]+)?$"
+origins = [str(o).rstrip("/") for o in origins]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=cors_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
