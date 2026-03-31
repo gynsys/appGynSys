@@ -204,8 +204,8 @@ export default function CampaignsPage() {
       </div>
 
       {activeTab === 'new' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="space-y-6">
             <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* 1. Recipient Selection */}
@@ -400,28 +400,6 @@ export default function CampaignsPage() {
                   {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-5 h-5" /> Lanzar Campaña</>}
                 </button>
               </form>
-            </div>
-          </div>
-
-          {/* Preview Panel */}
-          <div className="space-y-6">
-            <h2 className="text-[10px] font-black text-black dark:text-gray-400 uppercase tracking-widest px-2">Vista Previa</h2>
-            <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-               <div className="p-3 border-b flex items-center gap-2"><FiMail style={{ color: primaryColor }} /><span className="text-[10px] font-black uppercase">Email</span></div>
-               <div className="p-6">
-                  <div className="font-bold text-xs mb-3 truncate">{formData.subject || 'Sin asunto'}</div>
-                  <div className="p-4 rounded-xl border border-dashed border-gray-100 dark:border-gray-700 min-h-[100px] text-[10px] prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.content_html || '<p class="italic text-gray-300">Mensaje vacío...</p>' }} />
-               </div>
-            </div>
-            <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-               <div className="p-3 border-b flex items-center gap-2"><FiBell style={{ color: primaryColor }} /><span className="text-[10px] font-black uppercase">Notificación App</span></div>
-               <div className="p-4 flex gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: primaryColor }}>G</div>
-                  <div className="overflow-hidden flex-1">
-                     <div className="font-black text-[10px] truncate">{formData.subject || 'GynSys'}</div>
-                     <div className="text-[9px] text-gray-400 line-clamp-2 mt-0.5">{formData.content_html.replace(/<[^>]+>/g, '') || 'Resumen...'}</div>
-                  </div>
-               </div>
             </div>
           </div>
         </div>

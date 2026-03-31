@@ -117,7 +117,10 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
                             {/* Hover Tooltip - Enhanced */}
                             {isHovered && hasApps && (
                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-2 z-50">
-                                    <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 text-center uppercase tracking-wide">
+                                    <div 
+                                        className="text-xs font-bold mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 text-center uppercase tracking-wide transition-colors"
+                                        style={{ color: primaryColor }}
+                                    >
                                         {format(day, "d 'de' MMMM", { locale: es })}
                                     </div>
                                     <div className="max-h-48 overflow-y-auto space-y-2">

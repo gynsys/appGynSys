@@ -97,7 +97,7 @@ export const DashboardLayout = () => {
       {/* Mobile Bottom Nav for Doctors */}
       <div className="md:hidden flex">
         <BottomNav
-          theme={doctor?.theme_primary_color || '#4F46E5'}
+          theme={doctor?.theme_primary_color || '#4f46e5'}
           items={[
             {
               icon: <FiLink className="w-5 h-5" />,

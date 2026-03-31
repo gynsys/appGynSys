@@ -3,7 +3,7 @@ import { getImageUrl } from '../../lib/imageUtils'
 import { FiHome, FiMoon, FiSun } from 'react-icons/fi'
 import { useDarkMode } from '../../hooks/useDarkMode'
 
-export default function DashboardNavbar({ doctor, primaryColor = '#4F46E5' }) {
+export default function DashboardNavbar({ doctor, primaryColor = '#4f46e5' }) {
   const navigate = useNavigate()
   const [darkMode, toggleDarkMode] = useDarkMode()
   const publicUrl = doctor?.slug_url ? `/${doctor.slug_url}` : '#'

@@ -97,7 +97,10 @@ export default function DashboardOverviewPage() {
   if (!isAuthenticated || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-b-2"
+          style={{ borderColor: doctor?.theme_primary_color || '#4F46E5' }}
+        ></div>
       </div>
     )
   }

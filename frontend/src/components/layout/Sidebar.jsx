@@ -102,19 +102,24 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
                         <button
                           key={index}
                           onClick={item.action ? item.action : () => handleNavigation(item.path)}
-                          className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${item.className || ''} ${isActive
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                          className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${item.className || ''} ${isActive
+                            ? 'shadow-sm'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700/50 dark:hover:text-white'
                             }`}
-                          style={isActive ? { color: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
+                          style={isActive ? { 
+                            color: primaryColor, 
+                            backgroundColor: isDarkTheme ? `${primaryColor}20` : `${primaryColor}10`,
+                            borderLeft: `3px solid ${primaryColor}`,
+                            borderRadius: '0 8px 8px 0'
+                          } : {}}
                         >
                           <item.icon
-                            className={`mr-3 h-5 w-5 ${isActive ? 'text-indigo-700' : 'text-gray-400'}`}
-                            style={isActive ? { color: primaryColor } : {}}
+                            className="mr-3 h-5 w-5 transition-colors"
+                            style={{ color: isActive ? primaryColor : 'inherit' }}
                           />
-                          <span className="flex-1 text-left">{item.label}</span>
+                          <span className={`${isActive ? 'font-black' : 'font-medium'} flex-1 text-left`}>{item.label}</span>
                           {item.count > 0 && (
-                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
                               {item.count}
                             </span>
                           )}

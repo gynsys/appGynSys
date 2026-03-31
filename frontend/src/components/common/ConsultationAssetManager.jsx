@@ -6,7 +6,28 @@ import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
 import { openExternalFile, isCapacitor } from '../../utils/platform';
 
-export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange, readOnly = false }) => {
+// Helper for transparency
+const hexToRgba = (hex, alpha) => {
+  try {
+    if (!hex || hex === 'transparent') return 'transparent';
+    let r, g, b;
+    const cleanHex = hex.replace('#', '');
+    if (cleanHex.length === 3) {
+      r = parseInt(cleanHex.slice(0, 1).repeat(2), 16);
+      g = parseInt(cleanHex.slice(1, 2).repeat(2), 16);
+      b = parseInt(cleanHex.slice(2, 3).repeat(2), 16);
+    } else {
+      r = parseInt(cleanHex.slice(0, 2), 16);
+      g = parseInt(cleanHex.slice(2, 4), 16);
+      b = parseInt(cleanHex.slice(4, 6), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  } catch (e) {
+    return hex;
+  }
+};
+
+export const ConsultationAssetManager = ({ consultationId, initialAssets = [], onAssetsChange, readOnly = false, primaryColor = '#4F46E5', isDarkTheme = false }) => {
     const [assets, setAssets] = useState(initialAssets);
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -139,9 +160,9 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     };
 
     const renderIcon = (fileType) => {
-        if (fileType.startsWith('image/')) return <FiImage className="w-8 h-8 text-indigo-500" />;
-        if (fileType.startsWith('video/')) return <FiVideo className="w-8 h-8 text-indigo-500" />;
-        return <FiFile className="w-8 h-8 text-indigo-500" />;
+        if (fileType.startsWith('image/')) return <FiImage className="w-8 h-8" style={{ color: primaryColor }} />;
+        if (fileType.startsWith('video/')) return <FiVideo className="w-8 h-8" style={{ color: primaryColor }} />;
+        return <FiFile className="w-8 h-8" style={{ color: primaryColor }} />;
     };
 
     const isImage = (fileType) => fileType.startsWith('image/');
@@ -181,10 +202,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
             {!readOnly && (
                 <div
                     className={`relative border-2 border-dashed rounded-xl p-4 transition-all duration-300 ${
-                        dragActive
-                        ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 scale-[0.99]'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
+                        dragActive ? 'scale-[0.99]' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
                     }`}
+                    style={dragActive ? { 
+                        borderColor: primaryColor, 
+                        backgroundColor: hexToRgba(primaryColor, 0.05) 
+                    } : {}}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -201,9 +224,18 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                     />
 
                     <div className="flex flex-col items-center justify-center text-center space-y-2">
-                        <div className={`p-2 rounded-full ${dragActive ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-400'} shadow-sm transition-colors`}>
+                        <div 
+                            className="p-2 rounded-full shadow-sm transition-colors"
+                            style={dragActive ? { 
+                                backgroundColor: hexToRgba(primaryColor, 0.1), 
+                                color: primaryColor 
+                            } : { 
+                                backgroundColor: isDarkTheme ? '#1f2937' : 'white', 
+                                color: '#9ca3af' 
+                            }}
+                        >
                             {isUploading ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: primaryColor }}></div>
                             ) : (
                                 <FiUploadCloud className="w-6 h-6" />
                             )}
@@ -231,7 +263,13 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {assets.map((asset) => (
-                                <div key={asset.id} className="relative bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 transition-colors shadow-sm">
+                        <div 
+                            key={asset.id} 
+                            className="relative bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors shadow-sm"
+                            style={{ '--hover-border': primaryColor }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = primaryColor}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = isDarkTheme ? '#374151' : '#e5e7eb'}
+                        >
                                     <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
                                         {isImage(asset.file_type) ? (
                                             <img
@@ -265,7 +303,16 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                         {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
                                             <button
                                                 onClick={() => setPreviewAsset(asset)}
-                                                className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
+                                                className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
+                                                style={{ transition: 'all 0.2s' }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.backgroundColor = hexToRgba(primaryColor, 0.1);
+                                                    e.currentTarget.style.color = primaryColor;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.backgroundColor = isDarkTheme ? '#374151' : 'white';
+                                                    e.currentTarget.style.color = isDarkTheme ? '#f3f4f6' : '#1f2937';
+                                                }}
                                                 title="Ver archivo"
                                             >
                                                 <FiEye className="w-3.5 h-3.5" />
@@ -273,7 +320,15 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                         )}
                                         <button
                                             onClick={() => openExternalFile(getFullUrl(asset.file_path))}
-                                            className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900 transition-colors"
+                                            className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = hexToRgba(primaryColor, 0.1);
+                                                e.currentTarget.style.color = primaryColor;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = isDarkTheme ? '#374151' : 'white';
+                                                e.currentTarget.style.color = isDarkTheme ? '#f3f4f6' : '#1f2937';
+                                            }}
                                             title="Descargar"
                                         >
                                             <FiDownload className="w-3.5 h-3.5" />
@@ -344,11 +399,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                             </div>
                         )}
                     </div>
-
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-10">
                         <button
                             onClick={() => openExternalFile(getFullUrl(previewAsset.file_path))}
-                            className="text-white hover:text-indigo-400 transition-colors flex items-center space-x-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
+                            className="text-white transition-colors flex items-center space-x-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
+                            onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
                         >
                             <FiDownload className="w-5 h-5" />
                             <span className="text-sm font-medium">

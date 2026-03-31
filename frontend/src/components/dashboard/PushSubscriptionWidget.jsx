@@ -2,6 +2,27 @@ import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { toast } from 'sonner';
 
+// Helper for transparency
+const hexToRgba = (hex, alpha) => {
+  try {
+    if (!hex || hex === 'transparent') return 'transparent';
+    let r, g, b;
+    const cleanHex = hex.replace('#', '');
+    if (cleanHex.length === 3) {
+      r = parseInt(cleanHex.slice(0, 1).repeat(2), 16);
+      g = parseInt(cleanHex.slice(1, 2).repeat(2), 16);
+      b = parseInt(cleanHex.slice(2, 3).repeat(2), 16);
+    } else {
+      r = parseInt(cleanHex.slice(0, 2), 16);
+      g = parseInt(cleanHex.slice(2, 4), 16);
+      b = parseInt(cleanHex.slice(4, 6), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  } catch (e) {
+    return hex;
+  }
+};
+
 export default function PushSubscriptionWidget({ primaryColor = '#4F46E5' }) {
     const { isSubscribed, subscribeToPush, unsubscribeFromPush, loading, error } = usePushNotifications();
 
@@ -27,7 +48,13 @@ export default function PushSubscriptionWidget({ primaryColor = '#4F46E5' }) {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-indigo-500/5 border border-indigo-50/50 dark:border-gray-700 p-5 transition-all duration-300 hover:shadow-indigo-500/10 active:scale-[0.99]">
+        <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border dark:border-gray-700 p-5 transition-all duration-300 active:scale-[0.99]"
+            style={{ 
+                borderColor: hexToRgba(primaryColor, 0.1),
+                boxShadow: `0 20px 25px -5px ${hexToRgba(primaryColor, 0.05)}, 0 10px 10px -5px ${hexToRgba(primaryColor, 0.02)}`
+            }}
+        >
             <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
                 <div className="flex items-center gap-4">
                     <div className={`p-3 rounded-2xl transition-all duration-500 ${isSubscribed ? 'bg-green-50 dark:bg-green-900/20 rotate-0' : 'bg-gray-50 dark:bg-gray-700 -rotate-12'}`}>
@@ -54,10 +81,11 @@ export default function PushSubscriptionWidget({ primaryColor = '#4F46E5' }) {
                     disabled={loading}
                     className={`w-full sm:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-all transform active:scale-95 flex items-center justify-center gap-2 min-w-[160px] ${isSubscribed
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                            : 'text-white shadow-lg shadow-indigo-500/30'
+                            : 'text-white shadow-lg'
                         }`}
                     style={!isSubscribed ? { 
                         background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+                        boxShadow: `0 10px 15px -3px ${hexToRgba(primaryColor, 0.3)}`
                     } : {}}
                 >
                     {loading ? (

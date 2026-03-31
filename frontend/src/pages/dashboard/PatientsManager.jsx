@@ -8,7 +8,28 @@ import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, Fi
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
 
-const HistoryHtmlView = ({ data, downloadUrl }) => {
+// Helper for transparency
+const hexToRgba = (hex, alpha) => {
+  try {
+    if (!hex || hex === 'transparent') return 'transparent';
+    let r, g, b;
+    const cleanHex = hex.replace('#', '');
+    if (cleanHex.length === 3) {
+      r = parseInt(cleanHex.slice(0, 1).repeat(2), 16);
+      g = parseInt(cleanHex.slice(1, 2).repeat(2), 16);
+      b = parseInt(cleanHex.slice(2, 3).repeat(2), 16);
+    } else {
+      r = parseInt(cleanHex.slice(0, 2), 16);
+      g = parseInt(cleanHex.slice(2, 4), 16);
+      b = parseInt(cleanHex.slice(4, 6), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  } catch (e) {
+    return hex;
+  }
+};
+
+const HistoryHtmlView = ({ data, downloadUrl, primaryColor }) => {
   if (!data) return null;
 
   const isPlaceholder = (val) => 
@@ -35,10 +56,13 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
       <div className="space-y-3 text-gray-800 dark:text-gray-200 p-1">
         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
           <div className="flex justify-between items-center">
-            <p className="text-indigo-600 font-bold text-sm">
+            <p className="font-bold text-sm" style={{ color: primaryColor }}>
               {new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
             </p>
-            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+            <span 
+              className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase transition-colors"
+              style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+            >
               Informe
             </span>
           </div>
@@ -143,7 +167,7 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
           </div>
           <div className="flex justify-between items-center">
             <p className="text-gray-500">N° Historia</p>
-            <p className="font-semibold text-right text-indigo-600">{data.history_number}</p>
+            <p className="font-semibold text-right" style={{ color: primaryColor }}>{data.history_number}</p>
           </div>
         </div>
       </div>
@@ -224,14 +248,20 @@ const HistoryHtmlView = ({ data, downloadUrl }) => {
             return (
               <div key={idx} className={`relative ${!data.is_single_report ? "pl-10" : ""}`}>
               {!data.is_single_report && (
-                <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 border-indigo-500 z-10 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <div 
+                  className="absolute left-0 top-1 w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-2 z-10 flex items-center justify-center transition-colors"
+                  style={{ borderColor: primaryColor }}
+                >
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
                 </div>
               )}
               <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div className="flex justify-between items-start mb-3">
-                  <p className="text-indigo-600 font-bold">{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                  <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+                  <p className="font-bold transition-colors" style={{ color: primaryColor }}>{new Date(c.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                  <span 
+                    className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase transition-colors"
+                    style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+                  >
                     {data.is_single_report ? 'Reporte Actual' : 'Consulta'}
                   </span>
                 </div>
@@ -709,7 +739,10 @@ export default function PatientsManager({ isEmbedded = false }) {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div 
+            className="animate-spin rounded-full h-12 w-12 border-b-2"
+            style={{ borderColor: doctor?.theme_primary_color || '#4f46e5' }}
+          ></div>
         </div>
       ) : filteredConsultations.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] shadow-sm p-12 md:p-20 text-center border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700">
@@ -729,7 +762,7 @@ export default function PatientsManager({ isEmbedded = false }) {
               <div key={consultation.id} className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[24px] border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="h-12 w-12 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
+                    <div className="h-12 w-12 flex items-center justify-center text-xl transition-colors" style={{ color: doctor?.theme_primary_color || '#4f46e5' }}>
                       <FiUser />
                     </div>
                     <div className="ml-3">
@@ -744,7 +777,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                 <div className="flex items-center gap-1 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button 
                     onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
-                    className="flex-1 inline-flex justify-center items-center px-1 py-2.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-sm"
+                    className="flex-1 inline-flex justify-center items-center px-1 py-2.5 rounded-lg text-[10px] font-black text-white shadow-sm transition-all active:scale-95"
+                    style={{ backgroundColor: doctor?.theme_primary_color || '#4f46e5', boxShadow: `0 4px 6px -1px ${hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.3)}` }}
                     title="Ver Informe Médico"
                   >
                     INFORME
@@ -763,7 +797,11 @@ export default function PatientsManager({ isEmbedded = false }) {
                   >
                     <FiImage size={18} />
                   </button>
-                  <button onClick={() => handleEditClick(consultation)} className="ml-2 p-0.5 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                  <button 
+                    onClick={() => handleEditClick(consultation)} 
+                    className="ml-2 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                    style={{ backgroundColor: hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.1), color: doctor?.theme_primary_color || '#4f46e5' }}
+                  >
                     <FiEdit size={18} />
                   </button>
                   <button onClick={() => handleDeleteClick(consultation.id)} className="ml-2 p-0.5 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
@@ -790,7 +828,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                   <tr key={consultation.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex items-center justify-center text-indigo-600"><FiUser /></div>
+                        <div className="h-10 w-10 flex items-center justify-center transition-colors" style={{ color: doctor?.theme_primary_color || '#4f46e5' }}><FiUser /></div>
                         <div className="ml-4 font-bold text-sm">{consultation.patient_name}</div>
                       </div>
                     </td>
@@ -800,7 +838,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                       <div className="flex gap-2 justify-center">
                         <button 
                           onClick={() => handleViewPdf(`${API_BASE}/consultations/${consultation.id}/pdf`, consultation.patient_name)}
-                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-[10px] font-black shadow-sm hover:bg-indigo-700 transition-all"
+                          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95"
+                          style={{ backgroundColor: doctor?.theme_primary_color || '#4f46e5' }}
                           title="Ver Informe Médico"
                         >
                           <FiEye size={14} /> INFORME
@@ -819,7 +858,13 @@ export default function PatientsManager({ isEmbedded = false }) {
                         >
                           <FiImage size={18} />
                         </button>
-                        <button onClick={() => handleEditClick(consultation)} className="p-2 text-indigo-500 rounded-xl hover:bg-indigo-50"><FiEdit size={18} /></button>
+                        <button 
+                          onClick={() => handleEditClick(consultation)} 
+                          className="p-2 rounded-xl transition-all hover:scale-110"
+                          style={{ color: doctor?.theme_primary_color || '#4f46e5', backgroundColor: hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.1) }}
+                        >
+                          <FiEdit size={18} />
+                        </button>
                         <button onClick={() => handleDeleteClick(consultation.id)} className="p-2 text-red-400 rounded-xl hover:bg-red-50"><FiTrash2 size={18} /></button>
                       </div>
                     </td>
@@ -855,11 +900,17 @@ export default function PatientsManager({ isEmbedded = false }) {
                   return (
                     <div 
                       key={report.id} 
-                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl transition-all border-2 ${
-                        isSelected 
-                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
-                          : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-200 dark:bg-gray-800 dark:border-gray-700'
-                      }`}
+                      className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl transition-all border-2"
+                      style={isSelected ? { 
+                        backgroundColor: doctor?.theme_primary_color || '#4f46e5', 
+                        borderColor: doctor?.theme_primary_color || '#4f46e5',
+                        color: 'white',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      } : {
+                        backgroundColor: isDarkTheme ? '#1f2937' : 'white',
+                        borderColor: isDarkTheme ? '#374151' : '#f3f4f6',
+                        color: isDarkTheme ? '#9ca3af' : '#6b7280'
+                      }}
                     >
                       <button
                         onClick={() => {
@@ -897,21 +948,27 @@ export default function PatientsManager({ isEmbedded = false }) {
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={() => setActivePdfTab('pdf')}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                    activePdfTab === 'pdf' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
+                  className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                  style={activePdfTab === 'pdf' ? { 
+                    backgroundColor: doctor?.theme_primary_color || '#4f46e5', 
+                    color: 'white' 
+                  } : { 
+                    backgroundColor: isDarkTheme ? '#374151' : '#f3f4f6', 
+                    color: isDarkTheme ? '#d1d5db' : '#4b5563' 
+                  }}
                 >
                   {basePdfUrl?.includes('history_pdf') ? 'HISTORIA' : 'INFORME'}
                 </button>
                 <button
                   onClick={() => setActivePdfTab('assets')}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                    activePdfTab === 'assets' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
+                  className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                  style={activePdfTab === 'assets' ? { 
+                    backgroundColor: doctor?.theme_primary_color || '#4f46e5', 
+                    color: 'white' 
+                  } : { 
+                    backgroundColor: isDarkTheme ? '#374151' : '#f3f4f6', 
+                    color: isDarkTheme ? '#d1d5db' : '#4b5563' 
+                  }}
                 >
                   SOPORTES
                 </button>
@@ -932,7 +989,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                         type="checkbox"
                         checked={includeWatermark}
                         onChange={(e) => setIncludeWatermark(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                        className="w-4 h-4 rounded focus:ring-0 transition-colors"
+                        style={{ color: doctor?.theme_primary_color || '#4f46e5' }}
                       />
                       <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
                     </label>
@@ -941,7 +999,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                         type="checkbox"
                         checked={includeColor}
                         onChange={(e) => setIncludeColor(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                        className="w-4 h-4 rounded focus:ring-0 transition-colors"
+                        style={{ color: doctor?.theme_primary_color || '#4f46e5' }}
                       />
                       <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
                     </label>
@@ -967,7 +1026,7 @@ export default function PatientsManager({ isEmbedded = false }) {
                 {loadingHistory ? (
                   <div className="md:hidden flex flex-col items-center justify-center p-20 animat-pulse text-gray-500">Cargando documento...</div>
                 ) : historyData ? (
-                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={getFullPdfUrl()} /></div>
+                  <div className="md:hidden"><HistoryHtmlView data={historyData} downloadUrl={getFullPdfUrl()} primaryColor={doctor?.theme_primary_color || '#4f46e5'} /></div>
                 ) : null}
                  <div className="hidden md:block h-[60vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
                   {basePdfUrl && <iframe src={getFullPdfUrl()} className="w-full h-full border-0" title="Visor de PDF" />}
@@ -977,7 +1036,12 @@ export default function PatientsManager({ isEmbedded = false }) {
             ) : (
               // Tab Content: Assets
               <div className="h-[60vh] overflow-y-auto pr-2">
-                <ConsultationAssetManager consultationId={currentConsultationId} readOnly={false} />
+                <ConsultationAssetManager 
+                  consultationId={currentConsultationId} 
+                  readOnly={false} 
+                  primaryColor={doctor?.theme_primary_color || '#4f46e5'} 
+                  isDarkTheme={isDarkTheme}
+                />
               </div>
             )}
           </div>
@@ -985,7 +1049,8 @@ export default function PatientsManager({ isEmbedded = false }) {
              {basePdfUrl && !isAssetOnly && (
               <button 
                 onClick={() => isCapacitor() ? openExternalFile(getFullPdfUrl(true)) : downloadFile(getFullPdfUrl(true))} 
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
+                className="px-4 py-2 text-white rounded-lg text-sm font-medium transition-all active:scale-95 shadow-sm"
+                style={{ backgroundColor: doctor?.theme_primary_color || '#4f46e5' }}
               >
                 {isCapacitor() ? 'Abrir Externo' : 'Descargar PDF'}
               </button>
@@ -1030,14 +1095,21 @@ export default function PatientsManager({ isEmbedded = false }) {
         <div className="h-full flex flex-col justify-center gap-10 p-4">
           <button 
             onClick={() => handleChoice('history')}
-            className="flex items-center gap-4 p-6 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-3xl transition-all group text-left border-2 border-transparent hover:border-indigo-200 dark:hover:border-indigo-800"
+            className="flex items-center gap-4 p-6 rounded-3xl transition-all group text-left border-2"
+            style={{ 
+              backgroundColor: hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.05),
+              borderColor: 'transparent'
+            }}
           >
-            <div className="h-[35px] w-[35px] flex-shrink-0 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <div 
+              className="h-[35px] w-[35px] flex-shrink-0 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"
+              style={{ backgroundColor: doctor?.theme_primary_color || '#4f46e5' }}
+            >
               <FiUser size={18} />
             </div>
             <div>
-              <h4 className="font-black text-indigo-900 dark:text-indigo-100 text-lg uppercase tracking-tight">Historia Clínica</h4>
-              <p className="text-sm font-medium text-indigo-600/70 dark:text-indigo-400/70">Identificación, antecedentes y perfil permanente.</p>
+              <h4 className="font-black text-lg uppercase tracking-tight" style={{ color: doctor?.theme_primary_color || '#4f46e5' }}>Historia Clínica</h4>
+              <p className="text-sm font-medium opacity-70" style={{ color: doctor?.theme_primary_color || '#4f46e5' }}>Identificación, antecedentes y perfil permanente.</p>
             </div>
           </button>
 
@@ -1070,8 +1142,8 @@ export default function PatientsManager({ isEmbedded = false }) {
             {/* Sección: Datos de Identificación (Siempre visible en Historia, solo lectura o simplificada en Informe si se desea, pero la dejaremos para Historia) */}
             {editMode === 'history' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
+              <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2" style={{ color: doctor?.theme_primary_color || '#4f46e5' }}>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: doctor?.theme_primary_color || '#4f46e5' }}></div>
                 Identificación del Paciente
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1249,7 +1321,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                     value={editFormData.medical_report_content || ''} 
                     onChange={handleEditChange} 
                     rows="15" 
-                    className="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-100 dark:border-indigo-900/30 focus:border-indigo-500 rounded-2xl text-sm transition-all outline-none font-medium dark:text-gray-100 shadow-inner"
+                    className="w-full p-4 bg-white dark:bg-gray-800 border-2 focus:border-indigo-500 rounded-2xl text-sm transition-all outline-none font-medium dark:text-gray-100 shadow-inner"
+                    style={{ borderColor: hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.2) }}
                     placeholder="Escribe el informe aquí..."
                   />
                 </div>
@@ -1282,7 +1355,11 @@ export default function PatientsManager({ isEmbedded = false }) {
 
             <button 
               type="submit" 
-              className="px-10 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95"
+              className="px-10 py-3 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg transition-all active:scale-95"
+              style={{ 
+                backgroundColor: doctor?.theme_primary_color || '#4f46e5',
+                boxShadow: `0 10px 15px -3px ${hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.2)}`
+              }}
             >
               Guardar
             </button>

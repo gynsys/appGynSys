@@ -160,7 +160,13 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
               type="email"
               autoComplete="email"
               required
-              className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${isModal || isDark ? 'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400' : ''}`}
+              className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${isModal || isDark ? 'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400' : ''}`}
+              style={{ 
+                '--tw-ring-color': primaryColor,
+                outlineColor: primaryColor
+              }}
+              onFocus={(e) => e.target.style.borderColor = primaryColor}
+              onBlur={(e) => e.target.style.borderColor = isDark ? '#4b5563' : '#d1d5db'}
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -177,7 +183,13 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
-                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${isModal || isDark ? 'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 pr-10' : 'pr-10'}`}
+                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${isModal || isDark ? 'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 pr-10' : 'pr-10'}`}
+                style={{ 
+                    '--tw-ring-color': primaryColor,
+                    outlineColor: primaryColor
+                }}
+                onFocus={(e) => e.target.style.borderColor = primaryColor}
+                onBlur={(e) => e.target.style.borderColor = isDark ? '#4b5563' : '#d1d5db'}
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -220,8 +232,11 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
           <button
             type="submit"
             disabled={loading}
-            className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white transition-all duration-200 outline-none transform active:scale-95 ${!primaryColor ? 'bg-indigo-600 hover:bg-indigo-700' : 'hover:opacity-90 shadow-md'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed`}
-            style={primaryColor ? { backgroundColor: primaryColor } : {}}
+            className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white transition-all duration-200 outline-none transform active:scale-95 hover:opacity-90 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+            style={{ 
+                backgroundColor: primaryColor,
+                '--tw-ring-color': primaryColor
+            }}
           >
             {loading ? (
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

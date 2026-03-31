@@ -9,7 +9,7 @@ import { Home, Calendar, Newspaper, MessageCircle } from 'lucide-react';
  * @param {Array} props.items - Navigation items: [{ icon, label, action, isActive }]
  * @param {string} props.theme - Primary color from doctor theme
  */
-export const BottomNav = ({ items, theme = '#C75B7A', className = '' }) => {
+export const BottomNav = ({ items, theme = '#4f46e5', className = '' }) => {
     return (
         <nav
             className={`fixed bottom-0 left-0 right-0 z-50 
