@@ -12,83 +12,112 @@ const AppearanceTab = ({
     formData,
     handleChange
 }) => {
+    // Helper for transparency
+    const hexToRgba = (hex, alpha) => {
+        try {
+            if (!hex || hex === 'transparent') return 'transparent';
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        } catch (e) {
+            return hex;
+        }
+    };
+
+    const primaryColor = formData.theme_primary_color || '#4F46E5';
+
     return (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="space-y-8 animate-fadeIn font-manrope">
             {/* Theme Selector - Visual Cards */}
             <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4 dark:text-white">Plantilla de Diseño (Tema)</h2>
+                <h2 className="text-xl font-playfair font-semibold text-black mb-4 dark:text-white">Plantilla de Diseño (Tema)</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {DESIGN_TEMPLATES.map((template) => (
                         <div
                             key={template.id}
                             onClick={() => handleChange({ target: { name: 'design_template', value: template.id } })}
                             className={`
-                cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative
+                cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 relative
                 ${(formData.design_template || 'glass') === template.id
-                                    ? 'border-slate-600 dark:border-slate-400 bg-slate-50 dark:bg-slate-800/60 shadow-md transform scale-[1.02]'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm'
+                                    ? 'border-transparent shadow-lg transform scale-[1.02]'
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-sm'
                                 }
               `}
+                            style={(formData.design_template || 'glass') === template.id ? { 
+                                backgroundColor: hexToRgba(primaryColor, 0.05),
+                                borderColor: primaryColor,
+                                boxShadow: `0 10px 15px -3px ${hexToRgba(primaryColor, 0.2)}`
+                            } : {}}
                         >
                             <div className="flex items-center justify-between mb-2">
-                                <span className={`font-bold ${(formData.design_template || 'glass') === template.id
-                                    ? 'text-slate-900 dark:text-white'
+                                <span className={`font-bold text-sm tracking-tight ${(formData.design_template || 'glass') === template.id
+                                    ? 'text-black dark:text-white'
                                     : 'text-gray-900 dark:text-white'
-                                    }`}>
+                                    }`}
+                                    style={(formData.design_template || 'glass') === template.id ? { color: primaryColor } : {}}
+                                >
                                     {template.label}
                                 </span>
                                 {(formData.design_template || 'glass') === template.id && (
-                                    <div className="w-5 h-5 rounded-full bg-slate-800 dark:bg-white flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-white dark:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                     </div>
                                 )}
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{template.description}</p>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 my-6"></div>
+            <div className="border-t border-gray-100 dark:border-gray-700 my-8"></div>
 
             {/* Colors Section */}
             <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4 dark:text-white">Personalización de Colores</h2>
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                <h2 className="text-xl font-playfair font-semibold text-black mb-4 dark:text-white">Personalización de Colores</h2>
+                <div className="bg-gray-50/50 dark:bg-gray-800/30 p-8 rounded-3xl border border-gray-100 dark:border-gray-700 space-y-8">
                     <div>
-                        <label htmlFor="theme_primary_color" className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+                        <label htmlFor="theme_primary_color" className="block text-xs font-black uppercase tracking-widest text-black/60 mb-3 dark:text-gray-300">
                             Color Primario (Marca)
                         </label>
-                        <div className="flex items-center gap-4">
-                            <Input
+                        <div className="flex items-center gap-6">
+                            <input
                                 name="theme_primary_color"
+                                id="theme_primary_color"
                                 type="color"
                                 value={formData.theme_primary_color}
                                 onChange={handleChange}
-                                className="border-gray-300 h-10 w-20 p-1 dark:bg-gray-700 dark:border-gray-600 cursor-pointer rounded-md"
+                                className="h-14 w-24 p-1.5 bg-white dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 cursor-pointer rounded-2xl shadow-sm transition-all hover:scale-105 active:scale-95"
+                                style={{ borderColor: hexToRgba(primaryColor, 0.2) }}
                             />
-                            <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{formData.theme_primary_color}</span>
+                            <div className="space-y-1">
+                                <span className="block text-lg font-black font-mono tracking-tighter" style={{ color: primaryColor }}>{formData.theme_primary_color}</span>
+                                <span className="block text-[10px] font-bold text-gray-400 uppercase">Código Hexadecimal</span>
+                            </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Este color se usará en botones, enlaces y elementos destacados.</p>
+                        <p className="text-[11px] font-medium text-gray-400 mt-3 italic">Este color se aplicará dinámicamente en botones, iconos y elementos clave de tu marca.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100 dark:border-gray-700">
                         <div>
-                            <label htmlFor="theme_body_bg_color" className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+                            <label htmlFor="theme_body_bg_color" className="block text-[10px] font-black uppercase tracking-widest text-black/60 mb-3 dark:text-gray-300">
                                 Fondo General de Página
                             </label>
-                            <div className="flex items-center space-x-2">
-                                <Input
+                            <div className="flex items-center gap-3">
+                                <input
                                     name="theme_body_bg_color"
+                                    id="theme_body_bg_color"
                                     type="color"
                                     value={formData.theme_body_bg_color || '#ffffff'}
                                     onChange={handleChange}
-                                    className="border-gray-300 h-10 w-full p-1 dark:bg-gray-700 dark:border-gray-600 cursor-pointer rounded-md"
+                                    className="h-10 w-20 p-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 cursor-pointer rounded-xl"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => handleChange({ target: { name: 'theme_body_bg_color', value: '' } })}
-                                    className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 underline"
+                                    className="text-[10px] font-black uppercase tracking-wider underline opacity-50 hover:opacity-100 transition-opacity"
+                                    style={{ color: primaryColor }}
                                 >
                                     Restaurar
                                 </button>
@@ -96,21 +125,23 @@ const AppearanceTab = ({
                         </div>
 
                         <div>
-                            <label htmlFor="theme_container_bg_color" className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                Fondo de Tarjetas/Contenedores
+                            <label htmlFor="theme_container_bg_color" className="block text-[10px] font-black uppercase tracking-widest text-black/60 mb-3 dark:text-gray-300">
+                                Fondo de Tarjetas
                             </label>
-                            <div className="flex items-center space-x-2">
-                                <Input
+                            <div className="flex items-center gap-3">
+                                <input
                                     name="theme_container_bg_color"
+                                    id="theme_container_bg_color"
                                     type="color"
                                     value={formData.theme_container_bg_color || '#ffffff'}
                                     onChange={handleChange}
-                                    className="border-gray-300 h-10 w-full p-1 dark:bg-gray-700 dark:border-gray-600 cursor-pointer rounded-md"
+                                    className="h-10 w-20 p-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 cursor-pointer rounded-xl"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => handleChange({ target: { name: 'theme_container_bg_color', value: '' } })}
-                                    className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 underline"
+                                    className="text-[10px] font-black uppercase tracking-wider underline opacity-50 hover:opacity-100 transition-opacity"
+                                    style={{ color: primaryColor }}
                                 >
                                     Restaurar
                                 </button>
@@ -120,68 +151,36 @@ const AppearanceTab = ({
                 </div>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 my-6"></div>
+            <div className="border-t border-gray-100 dark:border-gray-700 my-8"></div>
 
             {/* Shadows Control */}
             <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4 dark:text-white">Efectos Visuales</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
-                    {/* Profile Image Border Toggle */}
-                    <div className="flex items-center justify-between p-4">
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Borde en Foto de Perfil</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Muestra un borde circular alrededor de tu foto.</p>
+                <h2 className="text-xl font-playfair font-semibold text-black mb-6 dark:text-white">Efectos Visuales</h2>
+                <div className="bg-white dark:bg-gray-800/80 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm">
+                    {[
+                        { id: 'profile_image_border', label: 'Borde en Foto de Perfil', desc: 'Muestra un círculo de color alrededor de tu foto.' },
+                        { id: 'card_shadow', label: 'Sombra en Tarjetas', desc: 'Sutil profundidad en servicios y recomendaciones.' },
+                        { id: 'container_shadow', label: 'Sombra en Contenedores', desc: 'Elevación premium en cabeceras y bloques principales.' }
+                    ].map((effect, idx) => (
+                        <div key={effect.id} className={`flex items-center justify-between p-6 ${idx !== 2 ? 'border-b border-gray-50 dark:border-gray-700/50' : ''}`}>
+                            <div>
+                                <h3 className="text-sm font-bold text-black dark:text-white">{effect.label}</h3>
+                                <p className="text-[11px] text-gray-400 font-medium">{effect.desc}</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={formData[effect.id]}
+                                    onChange={(e) => handleChange({ target: { name: effect.id, value: e.target.checked } })}
+                                />
+                                <div
+                                    className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 transition-colors"
+                                    style={{ backgroundColor: formData[effect.id] ? primaryColor : undefined }}
+                                ></div>
+                            </label>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={formData.profile_image_border}
-                                onChange={(e) => handleChange({ target: { name: 'profile_image_border', value: e.target.checked } })}
-                            />
-                            <div
-                                className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            ></div>
-                        </label>
-                    </div>
-
-                    {/* Card Shadow Toggle */}
-                    <div className="flex items-center justify-between p-4">
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Sombra en Tarjetas</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Sombras suaves en elementos individuales como servicios o testimonios.</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={formData.card_shadow}
-                                onChange={(e) => handleChange({ target: { name: 'card_shadow', value: e.target.checked } })}
-                            />
-                            <div
-                                className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            ></div>
-                        </label>
-                    </div>
-
-                    {/* Container Shadow Toggle */}
-                    <div className="flex items-center justify-between p-4">
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Sombra en Contenedores</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Sombras en bloques grandes como el encabezado o pie de página.</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={formData.container_shadow}
-                                onChange={(e) => handleChange({ target: { name: 'container_shadow', value: e.target.checked } })}
-                            />
-                            <div
-                                className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            ></div>
-                        </label>
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>
