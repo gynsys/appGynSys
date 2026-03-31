@@ -21,6 +21,7 @@ export default function CampaignsPage() {
   // Selection / Contacts State
   const [selectedContactIds, setSelectedContactIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('all'); // all, manual, sync_patient, sync_cycle
   const [showAddModal, setShowAddModal] = useState(false);
   const [newContact, setNewContact] = useState({ full_name: '', email: '', phone: '' });
 
@@ -46,11 +47,17 @@ export default function CampaignsPage() {
         campaignService.getCampaigns(),
         campaignService.getContacts()
       ]);
-      setSources(sourcesData);
-      setHistory(historyData);
+      console.log("Sources fetched:", sourcesData?.length);
+      setSources(sourcesData || []);
+      setHistory(historyData || []);
       setContacts(contactsData || []);
+      
+      if (sourcesData?.length === 0) {
+        console.warn("No campaign sources (blog/recoms) found for this doctor.");
+      }
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Error fetching campaign data:", error);
+      toast.error("Error al cargar datos de campaña. Verifica tu conexión.");
     } finally {
       setIsFetching(false);
     }
@@ -125,10 +132,12 @@ export default function CampaignsPage() {
     }
   };
 
-  const filteredContacts = contacts.filter(c => 
-    c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredContacts = contacts.filter(c => {
+    const matchesSearch = c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         c.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSource = sourceFilter === 'all' || c.source === sourceFilter;
+    return matchesSearch && matchesSource;
+  });
 
   if (isFetching) return (
     <div className="flex items-center justify-center h-64">
@@ -189,11 +198,27 @@ export default function CampaignsPage() {
                   {formData.target_type === 'selection' && (
                     <div className="mt-6 space-y-4 animate-fade-in border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/20">
                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="relative flex-1 min-w-[200px]">
+                          <div className="flex bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 shadow-sm">
+                            {[
+                                { id: 'all', label: 'Todos' },
+                                { id: 'manual', label: 'Manual' },
+                                { id: 'sync_patient', label: 'Pacientes' },
+                                { id: 'sync_cycle', label: 'App' }
+                            ].map(f => (
+                                <button 
+                                    key={f.id} type="button" onClick={() => setSourceFilter(f.id)}
+                                    className={`px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all ${sourceFilter === f.id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-indigo-600'}`}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
+                          </div>
+                          
+                          <div className="relative flex-1 min-w-[150px]">
                             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input 
-                              type="text" placeholder="Buscar contactos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800"
+                              type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800"
                             />
                           </div>
                           <div className="flex gap-2">
@@ -218,6 +243,7 @@ export default function CampaignsPage() {
                                    </th>
                                    <th className="p-3 font-black text-gray-400 uppercase text-[9px]">Nombre</th>
                                    <th className="p-3 font-black text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px]">Origen</th>
                                    <th className="p-3 text-right"></th>
                                 </tr>
                              </thead>
@@ -231,6 +257,15 @@ export default function CampaignsPage() {
                                     </td>
                                     <td className="p-3 font-bold">{c.full_name}</td>
                                     <td className="p-3 text-gray-500 hidden md:table-cell">{c.email}</td>
+                                    <td className="p-3">
+                                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${
+                                        c.source === 'manual' ? 'bg-amber-100 text-amber-700' :
+                                        c.source === 'sync_patient' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-purple-100 text-purple-700'
+                                      }`}>
+                                        {c.source === 'manual' ? 'Manual' : c.source === 'sync_patient' ? 'Paciente' : 'App'}
+                                      </span>
+                                    </td>
                                     <td className="p-3 text-right">
                                       <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteContact(c.id); }} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><FiTrash2 /></button>
                                     </td>
