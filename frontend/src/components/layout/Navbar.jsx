@@ -116,9 +116,16 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   {/* Mobile Dropdown */}
                   {isCycleAuthenticated && showUserMenu && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-[60] overflow-hidden">
-                      <div className="px-4 py-3">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta Paciente</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{cycleUser?.email || cycleUser?.nombre_completo}</p>
+                      <div className="px-4 py-2">
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Cuenta Paciente</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                          {cycleUser?.nombre_completo || 'Paciente'}
+                        </p>
+                        {cycleUser?.nombre_completo && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium">
+                            {cycleUser.email}
+                          </p>
+                        )}
                       </div>
                       <div className="py-1">
                         <Link
@@ -329,9 +336,16 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                 {showUserMenu && (
                   <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
                     {/* User header */}
-                    <div className="px-4 py-3">
-                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Cuenta Paciente</p>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{cycleUser?.email || cycleUser?.nombre_completo}</p>
+                    <div className="px-4 py-2 text-left">
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Cuenta Paciente</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                        {cycleUser?.nombre_completo || 'Paciente'}
+                      </p>
+                      {cycleUser?.nombre_completo && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium">
+                          {cycleUser.email}
+                        </p>
+                      )}
                     </div>
                     <div className="py-1">
                       <Link
