@@ -150,11 +150,11 @@ export default function CampaignsPage() {
       {/* Header */}
       <div className={`relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl ${isDarkTheme ? 'bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800' : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-500'} text-white`}>
         <div className="relative z-10">
-          <h1 className="text-3xl font-black mb-2 flex items-center gap-3">
+          <h1 className="text-3xl font-playfair font-black mb-2 flex items-center gap-3">
             <FiSend className="w-8 h-8 animate-pulse" />
             Campañas de Difusión
           </h1>
-          <p className="text-indigo-100 max-w-xl opacity-90">
+          <p className="text-indigo-100 max-w-xl opacity-90 font-medium">
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function CampaignsPage() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* 1. Recipient Selection logic */}
                 <div className="space-y-4">
-                  <h2 className="text-sm font-black uppercase text-gray-400 tracking-wider flex items-center gap-2">
+                  <h2 className="text-base font-playfair font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">1</span>
                     ¿A quién enviamos?
                   </h2>
@@ -187,7 +187,7 @@ export default function CampaignsPage() {
                     ].map(t => (
                       <button 
                         key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
-                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600' : 'border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
                       >
                         {t.label}
                       </button>
@@ -218,7 +218,7 @@ export default function CampaignsPage() {
                             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input 
                               type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800"
+                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none"
                             />
                           </div>
                           <div className="flex gap-2">
@@ -281,7 +281,7 @@ export default function CampaignsPage() {
 
                 {/* 2. Message Content */}
                 <div className="space-y-4">
-                   <h2 className="text-sm font-black uppercase text-gray-400 tracking-wider flex items-center gap-2">
+                   <h2 className="text-base font-playfair font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">2</span>
                     ¿Qué quieres contar?
                   </h2>
@@ -314,7 +314,7 @@ export default function CampaignsPage() {
                    <textarea rows={6} placeholder="Cuerpo del mensaje (acepta HTML)..." value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-medium resize-none shadow-inner" />
                 </div>
 
-                <button disabled={isLoading} className="w-full py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest">
+                <button disabled={isLoading} className="w-full py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-playfair font-black shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-lg">
                   {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-5 h-5" /> Lanzar Campaña</>}
                 </button>
               </form>

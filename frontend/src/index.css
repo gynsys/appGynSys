@@ -2,10 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+
 :root {
   --nav-height: 4rem;
   --safe-area-bottom: env(safe-area-inset-bottom);
   --total-bottom-offset: calc(var(--nav-height) + var(--safe-area-bottom));
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-manrope {
+  font-family: 'Manrope', sans-serif;
 }
 
 /* Zero-Jump Positioning Utility */

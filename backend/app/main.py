@@ -33,6 +33,7 @@ origins = [str(o).rstrip("/") for o in origins]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*gynsys\.net", # Safety net for all subdomains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

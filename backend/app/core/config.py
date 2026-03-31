@@ -51,16 +51,15 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: Union[str, List[str]] = [
+        "https://gynsys.net",
+        "https://www.gynsys.net",
+        "https://api.gynsys.net",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://localhost:5174", 
         "http://127.0.0.1:5174",
-        "https://gynsys.netlify.app",
-        
-        "https://gynsys.net",
-        "https://www.gynsys.net",
-        "https://api.gynsys.net"
+        "https://gynsys.netlify.app"
     ]
 
     @field_validator("CORS_ORIGINS", mode="before")
