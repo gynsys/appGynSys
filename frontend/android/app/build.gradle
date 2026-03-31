@@ -43,6 +43,17 @@ dependencies {
     
     // Firebase Cloud Messaging dependency for diagnostics
     implementation 'com.google.firebase:firebase-messaging:24.1.0'
+
+    // Solución optimizada para error de Duplicate classes en Kotlin 1.8+
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") {
+            because("kotlin-stdlib-jdk7 is now part of kotlin-stdlib 1.8.22")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") {
+            because("kotlin-stdlib-jdk8 is now part of kotlin-stdlib 1.8.22")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.22")
+    }
 }
 
 apply from: 'capacitor.build.gradle'
