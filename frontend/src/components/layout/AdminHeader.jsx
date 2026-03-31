@@ -4,7 +4,7 @@ import { MdDashboard, MdLogout, MdHome, MdMenu, MdNotifications } from 'react-ic
 import { useAuth } from '../../features/auth/useAuth';
 import { getImageUrl } from '../../lib/imageUtils';
 
-export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificationCount = 0, doctor }) => {
+export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificationCount = 0, doctor, isDarkTheme }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
