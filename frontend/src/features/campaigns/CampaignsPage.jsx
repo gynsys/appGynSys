@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FiSend, FiPlus, FiClock, FiCheckCircle, FiAlertCircle, 
-  FiFileText, FiLayers, FiMessageSquare, FiMail, FiBell, FiChevronRight, FiCheck
+  FiFileText, FiLayers, FiMessageSquare, FiMail, FiBell, 
+  FiChevronRight, FiCheck, FiUsers, FiSearch, FiTrash2, FiUserPlus, FiRefreshCw, FiMinus
 } from 'react-icons/fi';
 import { campaignService } from '../../services/campaignService';
 import { toast } from 'sonner';
@@ -12,8 +13,16 @@ export default function CampaignsPage() {
   const [activeTab, setActiveTab] = useState('new');
   const [sources, setSources] = useState([]);
   const [history, setHistory] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Selection / Contacts State
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newContact, setNewContact] = useState({ full_name: '', email: '', phone: '' });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -32,83 +41,104 @@ export default function CampaignsPage() {
   const fetchData = async () => {
     setIsFetching(true);
     try {
-      const [sourcesData, historyData] = await Promise.all([
+      const [sourcesData, historyData, contactsData] = await Promise.all([
         campaignService.getSources(),
-        campaignService.getCampaigns()
+        campaignService.getCampaigns(),
+        campaignService.getContacts()
       ]);
       setSources(sourcesData);
       setHistory(historyData);
+      setContacts(contactsData || []);
     } catch (error) {
       console.error("Error fetching data", error);
-      toast.error("Error al cargar datos");
     } finally {
       setIsFetching(false);
     }
   };
 
-  const handleSourceSelect = (source) => {
-    if (source === 'custom') {
-      setFormData({
-        ...formData,
-        source_type: 'custom',
-        source_id: null,
-        title: '',
-        subject: '',
-        content_html: ''
-      });
+  const handleSyncContacts = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await campaignService.syncContacts();
+      toast.success(`Sincronización exitosa (+${result.added} contactos)`);
+      fetchData();
+    } catch (error) {
+      toast.error("Error al sincronizar");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleAddContact = async (e) => {
+    e.preventDefault();
+    if (!newContact.full_name || !newContact.email) return toast.warning("Nombre y Email son obligatorios");
+    try {
+      await campaignService.createContact(newContact);
+      toast.success("Contacto añadido");
+      setNewContact({ full_name: '', email: '', phone: '' });
+      setShowAddModal(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al añadir");
+    }
+  };
+
+  const handleDeleteContact = async (id) => {
+    if (!window.confirm("¿Eliminar contacto?")) return;
+    try {
+      await campaignService.deleteContact(id);
+      toast.success("Eliminado");
+      fetchData();
+    } catch (error) {
+      toast.error("Error");
+    }
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedContactIds.length === filteredContacts.length) {
+      setSelectedContactIds([]);
     } else {
-      setFormData({
-        ...formData,
-        source_type: source.type,
-        source_id: source.id,
-        title: `Campaña: ${source.title}`,
-        subject: source.title,
-        content_html: `Hola, te invito a ver mi última publicación: "${source.title}". \n\n${source.summary || ''}`
-      });
+      setSelectedContactIds(filteredContacts.map(c => c.id));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.subject || !formData.content_html) {
-      toast.warning("Por favor completa todos los campos obligatorios");
-      return;
-    }
+    if (!formData.title || !formData.subject || !formData.content_html) return toast.warning("Completa todos los campos");
+    if (formData.target_type === 'selection' && selectedContactIds.length === 0) return toast.warning("Selecciona al menos un destinatario");
 
     setIsLoading(true);
     try {
-      await campaignService.createCampaign(formData);
-      toast.success("¡Campaña enviada a la cola de procesamiento!");
+      const payload = {
+        ...formData,
+        selected_contact_ids: formData.target_type === 'selection' ? selectedContactIds : null
+      };
+      await campaignService.createCampaign(payload);
+      toast.success("Campaña en cola");
       setActiveTab('history');
       fetchData();
-      // Reset form
-      setFormData({
-        title: '',
-        subject: '',
-        content_html: '',
-        source_type: 'custom',
-        source_id: null,
-        target_type: 'all'
-      });
+      setSelectedContactIds([]);
     } catch (error) {
-      console.error("Error creating campaign", error);
-      toast.error("Error al enviar la campaña");
+      toast.error("Error al enviar");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isFetching) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
+  const filteredContacts = contacts.filter(c => 
+    c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isFetching) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
-      {/* Header with Animation */}
+      {/* Header */}
       <div className={`relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl ${isDarkTheme ? 'bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800' : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-500'} text-white`}>
         <div className="relative z-10">
           <h1 className="text-3xl font-black mb-2 flex items-center gap-3">
@@ -116,238 +146,227 @@ export default function CampaignsPage() {
             Campañas de Difusión
           </h1>
           <p className="text-indigo-100 max-w-xl opacity-90">
-            Conecta con tus pacientes de forma masiva. Envía promociones, noticias del blog o recomendaciones de salud directamente a su Email y App GynSys.
+            Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
-        
-        {/* Decorative Shapes */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400/20 rounded-full blur-2xl -ml-10 -mb-10"></div>
       </div>
 
-      {/* Tabs Layout */}
+      {/* Main Tabs */}
       <div className="flex bg-gray-200/50 dark:bg-gray-800/50 p-1.5 rounded-2xl w-fit">
-        <button 
-          onClick={() => setActiveTab('new')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
-        >
-          <FiPlus /> Nueva Campaña
-        </button>
-        <button 
-          onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
-        >
-          <FiClock /> Historial
-        </button>
+        <button onClick={() => setActiveTab('new')} className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600' : 'text-gray-500'}`}><FiPlus /> Nueva Campaña</button>
+        <button onClick={() => setActiveTab('history')} className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600' : 'text-gray-500'}`}><FiClock /> Historial</button>
       </div>
 
       {activeTab === 'new' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Side */}
           <div className="lg:col-span-2 space-y-6">
-            <div className={`p-8 rounded-3xl animate-fade-in shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-              <h2 className="text-xl font-black mb-6 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600">1</span>
-                Diseña tu Mensaje
-              </h2>
-              
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Source Selection */}
-                <div>
-                  <label className="text-xs font-black uppercase text-gray-400 mb-3 block">Fuente del Contenido</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => handleSourceSelect('custom')}
-                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${formData.source_type === 'custom' ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20' : 'border-gray-100 dark:border-gray-700 hover:border-gray-200'}`}
-                    >
-                      <FiMessageSquare className="w-5 h-5 text-indigo-500" />
-                      <span className="text-xs font-bold">Mensaje Libre</span>
-                    </button>
-                    <div className="col-span-2 relative group">
+            <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* 1. Recipient Selection logic */}
+                <div className="space-y-4">
+                  <h2 className="text-sm font-black uppercase text-gray-400 tracking-wider flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">1</span>
+                    ¿A quién enviamos?
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { id: 'all', label: 'Todos' },
+                      { id: 'app_users', label: 'Usuarios App' },
+                      { id: 'patients', label: 'Pacientes' },
+                      { id: 'selection', label: `Personalizar (${selectedContactIds.length})` }
+                    ].map(t => (
+                      <button 
+                        key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
+                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600' : 'border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Integrated Contact List - ONLY visible if Selection is active */}
+                  {formData.target_type === 'selection' && (
+                    <div className="mt-6 space-y-4 animate-fade-in border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/20">
+                       <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="relative flex-1 min-w-[200px]">
+                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input 
+                              type="text" placeholder="Buscar contactos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                              className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button type="button" onClick={handleSyncContacts} disabled={isSyncing} className="p-2 bg-white dark:bg-gray-800 rounded-lg text-indigo-600 border border-indigo-100" title="Sincronizar base de datos">
+                              {isSyncing ? <FiRefreshCw className="animate-spin" /> : <FiRefreshCw />}
+                            </button>
+                            <button type="button" onClick={() => setShowAddModal(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1">
+                              <FiPlus /> AÑADIR
+                            </button>
+                          </div>
+                       </div>
+
+                       <div className="max-h-[300px] overflow-y-auto rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                          <table className="w-full text-left border-collapse text-xs">
+                             <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm">
+                                <tr>
+                                   <th className="p-3 w-8">
+                                     <button type="button" onClick={toggleAllSelection} className={`w-4 h-4 rounded border flex items-center justify-center ${selectedContactIds.length > 0 ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>
+                                       {selectedContactIds.length === filteredContacts.length && selectedContactIds.length > 0 && <FiCheck className="w-3 h-3" />}
+                                       {selectedContactIds.length > 0 && selectedContactIds.length < filteredContacts.length && <FiMinus className="w-3 h-3" />}
+                                     </button>
+                                   </th>
+                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px]">Nombre</th>
+                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                   <th className="p-3 text-right"></th>
+                                </tr>
+                             </thead>
+                             <tbody>
+                                {filteredContacts.map(c => (
+                                  <tr key={c.id} onClick={() => setSelectedContactIds(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} className={`border-t border-gray-50 dark:border-gray-700 transition-colors cursor-pointer hover:bg-indigo-50/20 ${selectedContactIds.includes(c.id) ? 'bg-indigo-50/30' : ''}`}>
+                                    <td className="p-3">
+                                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedContactIds.includes(c.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>
+                                        {selectedContactIds.includes(c.id) && <FiCheck className="w-3 h-3" />}
+                                      </div>
+                                    </td>
+                                    <td className="p-3 font-bold">{c.full_name}</td>
+                                    <td className="p-3 text-gray-500 hidden md:table-cell">{c.email}</td>
+                                    <td className="p-3 text-right">
+                                      <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteContact(c.id); }} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><FiTrash2 /></button>
+                                    </td>
+                                  </tr>
+                                ))}
+                             </tbody>
+                          </table>
+                          {filteredContacts.length === 0 && <div className="p-8 text-center text-gray-400 italic">No hay contactos</div>}
+                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Message Content */}
+                <div className="space-y-4">
+                   <h2 className="text-sm font-black uppercase text-gray-400 tracking-wider flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">2</span>
+                    ¿Qué quieres contar?
+                  </h2>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <select 
                         onChange={(e) => {
-                          const id = parseInt(e.target.value);
-                          const src = sources.find(s => s.id === id && s.type === e.target.selectedOptions[0].dataset.type);
-                          if (src) handleSourceSelect(src);
+                          if (e.target.value === 'custom') {
+                            setFormData({...formData, source_type: 'custom', source_id: null, title: '', subject: '', content_html: ''});
+                          } else {
+                            const [type, id] = e.target.value.split(':');
+                            const src = sources.find(s => s.id === parseInt(id) && s.type === type);
+                            if (src) setFormData({...formData, source_type: type, source_id: src.id, title: `Campaña: ${src.title}`, subject: src.title, content_html: `Hola! Te invito a leer: "${src.title}"`});
+                          }
                         }}
-                        className={`w-full p-4 rounded-2xl border-2 appearance-none h-full transition-all text-xs font-bold ${formData.source_type !== 'custom' ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20' : 'border-gray-100 dark:border-gray-700'}`}
+                        className="p-4 rounded-xl border-2 border-gray-100 dark:border-gray-700 bg-gray-50 transition-all font-bold text-xs"
                       >
-                        <option value="">Cargar del Blog o Recomendación...</option>
-                        <optgroup label="Artículos del Blog">
-                          {sources.filter(s => s.type === 'blog').map(s => (
-                            <option key={`blog-${s.id}`} value={s.id} data-type="blog">{s.title}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Recomendaciones">
-                          {sources.filter(s => s.type === 'recommendation').map(s => (
-                            <option key={`recom-${s.id}`} value={s.id} data-type="recommendation">{s.title}</option>
-                          ))}
-                        </optgroup>
+                         <option value="custom">Escribir desde cero (Mensaje Libre)</option>
+                         <optgroup label="Blog">
+                             {sources.filter(s => s.type === 'blog').map(s => <option key={s.id} value={`blog:${s.id}`}>{s.title}</option>)}
+                         </optgroup>
+                         <optgroup label="Recomendaciones">
+                             {sources.filter(s => s.type === 'recommendation').map(s => <option key={s.id} value={`recommendation:${s.id}`}>{s.title}</option>)}
+                         </optgroup>
                       </select>
-                      <FiLayers className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition-colors pointer-events-none" />
-                    </div>
-                  </div>
+                      <input type="text" placeholder="Título interno de la campaña" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-bold" />
+                   </div>
+                   
+                   <input type="text" placeholder="Asunto (Visto por el paciente)" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-bold" />
+                   
+                   <textarea rows={6} placeholder="Cuerpo del mensaje (acepta HTML)..." value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-medium resize-none shadow-inner" />
                 </div>
 
-                <div>
-                  <label className="text-xs font-black uppercase text-gray-400 mb-2 block">Título de Campaña (Interno)</label>
-                  <input 
-                    type="text" 
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    placeholder="Ej: Invitación Blog - Prevención Cáncer"
-                    className="w-full p-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-black uppercase text-gray-400 mb-2 block">Asunto (Para el Paciente)</label>
-                  <input 
-                    type="text" 
-                    value={formData.subject}
-                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    placeholder="Ej: Hola! Tengo un nuevo artículo para ti..."
-                    className="w-full p-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-black uppercase text-gray-400 mb-2 block">Cuerpo del Mensaje (HTML)</label>
-                  <textarea 
-                    rows={6}
-                    value={formData.content_html}
-                    onChange={(e) => setFormData({...formData, content_html: e.target.value})}
-                    placeholder="Escribe el contenido aquí..."
-                    className="w-full p-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 focus:ring-2 focus:ring-indigo-500 transition-all font-medium resize-none"
-                  />
-                  <p className="text-[10px] text-gray-500 mt-2 italic">Acepta etiquetas HTML básicas para formato.</p>
-                </div>
-
-                <div className="pt-4">
-                   <button 
-                    disabled={isLoading}
-                    className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    ) : (
-                      <>
-                        <FiSend className="w-5 h-5" />
-                        Lanzar Campaña Ahora
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button disabled={isLoading} className="w-full py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest">
+                  {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-5 h-5" /> Lanzar Campaña</>}
+                </button>
               </form>
             </div>
           </div>
 
-          {/* Preview Side */}
+          {/* Preview Panel */}
           <div className="space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-2 text-gray-400 uppercase text-xs">Vista Previa</h2>
-            
-            {/* Email Preview */}
-            <div className={`rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
-                <FiMail className="text-indigo-500" />
-                <span className="text-[10px] font-black uppercase">Vista previa Email</span>
-              </div>
-              <div className="p-6">
-                <div className="mb-4">
-                  <span className="text-[10px] text-gray-400 block mb-1">ASUNTO:</span>
-                  <div className="font-bold text-sm truncate">{formData.subject || '(Sin asunto)'}</div>
-                </div>
-                <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-gray-600 min-h-[150px]">
-                  <div 
-                    className="text-sm prose prose-indigo max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: formData.content_html || '<p class="text-gray-400 italic">Escribe algo para previsualizar...</p>' }}
-                  />
-                  {formData.source_type !== 'custom' && (
-                    <div className="mt-4 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-xs font-bold text-center">
-                      Botón de ver {formData.source_type} incluido
-                    </div>
-                  )}
-                </div>
-              </div>
+            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Vista Previa</h2>
+            <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+               <div className="p-3 border-b flex items-center gap-2"><FiMail className="text-indigo-500" /><span className="text-[10px] font-black uppercase">Email</span></div>
+               <div className="p-6">
+                  <div className="font-bold text-xs mb-3 truncate">{formData.subject || 'Sin asunto'}</div>
+                  <div className="p-4 rounded-xl border border-dashed border-gray-100 dark:border-gray-700 min-h-[100px] text-[10px] prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.content_html || '<p class="italic text-gray-300">Mensaje vacío...</p>' }} />
+               </div>
             </div>
-
-            {/* Push Preview */}
-            <div className={`rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm ${isDarkTheme ? 'bg-gray-800' : 'bg-white'} relative`}>
-                <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
-                    <FiBell className="text-indigo-500" />
-                    <span className="text-[10px] font-black uppercase">Notificación App</span>
-                </div>
-                <div className="p-6 flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-lg">G</div>
-                    <div className="overflow-hidden">
-                        <div className="font-black text-sm">{formData.subject || 'Notificación GynSys'}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
-                            {formData.content_html.replace(/<[^>]+>/g, '') || 'Resumen del mensaje...'}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800">
-                <p className="text-[10px] text-amber-700 dark:text-amber-500 flex items-start gap-2">
-                    <FiAlertCircle className="flex-shrink-0 mt-0.5" />
-                    Las campañas tardan un promedio de 5-10 minutos en llegar a todos los pacientes dependiendo del tamaño de tu base de datos.
-                </p>
+            <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+               <div className="p-3 border-b flex items-center gap-2"><FiBell className="text-indigo-500" /><span className="text-[10px] font-black uppercase">Notificación App</span></div>
+               <div className="p-4 flex gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">G</div>
+                  <div className="overflow-hidden flex-1">
+                     <div className="font-black text-[10px] truncate">{formData.subject || 'GynSys'}</div>
+                     <div className="text-[9px] text-gray-400 line-clamp-2 mt-0.5">{formData.content_html.replace(/<[^>]+>/g, '') || 'Resumen...'}</div>
+                  </div>
+               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* History Tab */
-        <div className="space-y-4 animate-fade-in">
+        /* History Section */
+        <div className="space-y-4 animate-fade-in pb-10">
           {history.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700">
+            <div className="p-12 text-center bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed">
               <FiMessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-500">Aún no has enviado campañas</h3>
-              <p className="text-sm text-gray-400">Tus envíos masivos aparecerán aquí para seguimiento.</p>
+              <p className="text-gray-400 text-sm italic">No se han registrado campañas</p>
             </div>
           ) : (
-            history.map((item) => (
-              <div key={item.id} className={`p-6 rounded-2xl border transition-all hover:bg-gray-50 dark:hover:bg-gray-700/30 ${isDarkTheme ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
-                      {item.status === 'sent' ? <FiCheckCircle /> : <FiClock className="animate-spin" />}
-                    </div>
-                    <div>
-                      <h3 className="font-black text-sm uppercase tracking-tight">{item.title}</h3>
-                      <div className="flex items-center gap-4 mt-1">
-                        <span className="text-[10px] text-gray-400 uppercase font-bold flex items-center gap-1">
-                          <FiClock /> {new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {item.status === 'sent' ? 'Enviado' : 'Procesando'}
-                        </span>
+            history.map(item => (
+              <div key={item.id} className="p-6 rounded-2xl bg-white dark:bg-gray-800 border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 shadow-sm flex items-center justify-between gap-4 transition-all">
+                <div className="flex items-center gap-4">
+                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>{item.status === 'sent' ? <FiCheckCircle /> : <FiClock className="animate-spin" />}</div>
+                   <div>
+                      <h3 className="font-black text-xs uppercase tracking-tight">{item.title}</h3>
+                      <div className="flex gap-2 items-center mt-1">
+                        <span className="text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Pendiente'}</span>
+                        <span className="text-[9px] font-bold text-indigo-400 uppercase bg-indigo-50 px-2 py-0.5 rounded-full">{item.target_type}</span>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <div className="text-lg font-black text-indigo-600 dark:text-indigo-400">{item.stats?.sent_count || 0}</div>
-                      <div className="text-[10px] font-black text-gray-400 uppercase">Totales</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-black text-gray-700 dark:text-gray-200">{item.stats?.push_count || 0}</div>
-                      <div className="text-[10px] font-black text-gray-400 uppercase truncate max-w-[50px]">Push</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-black text-gray-700 dark:text-gray-200">{item.stats?.email_count || 0}</div>
-                      <div className="text-[10px] font-black text-gray-400 uppercase truncate max-w-[50px]">Email</div>
-                    </div>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                      <FiChevronRight className="text-gray-400" />
-                    </button>
-                  </div>
+                   </div>
+                </div>
+                <div className="flex items-center gap-4 px-4 border-l">
+                   <div className="text-center">
+                      <div className="text-lg font-black text-indigo-600">{item.stats?.sent_count || 0}</div>
+                      <div className="text-[8px] font-black text-gray-400 uppercase">Destinatarios</div>
+                   </div>
+                   <FiChevronRight className="text-gray-300" />
                 </div>
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* Manual Add Contact Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`w-full max-w-sm p-8 rounded-3xl shadow-2xl ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+             <h3 className="text-xl font-black mb-6 text-indigo-600 uppercase flex items-center gap-2"><FiUserPlus /> Nuevo Contacto</h3>
+             <form onSubmit={handleAddContact} className="space-y-4">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Nombre Completo</span>
+                  <input type="text" placeholder="Ej: Maria Lopez" value={newContact.full_name} onChange={(e) => setNewContact({...newContact, full_name: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Email</span>
+                  <input type="email" placeholder="maria@ejemplo.com" value={newContact.email} onChange={(e) => setNewContact({...newContact, email: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Teléfono (opcional)</span>
+                  <input type="text" placeholder="+54 9 11..." value={newContact.phone} onChange={(e) => setNewContact({...newContact, phone: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
+                </div>
+                <div className="flex gap-4 pt-4">
+                   <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 text-xs font-bold text-gray-500">Cerrar</button>
+                   <button className="flex-2 px-6 py-3 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg shadow-indigo-500/30">GUARDAR</button>
+                </div>
+             </form>
+          </div>
         </div>
       )}
     </div>

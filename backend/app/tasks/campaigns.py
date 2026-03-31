@@ -3,7 +3,7 @@ Celery tasks for Diffusion Campaigns.
 """
 from app.core.celery_app import celery_app
 from app.db.base import SessionLocal
-from app.db.models.campaign import DiffusionCampaign
+from app.db.models.campaign import DiffusionCampaign, CampaignContact
 from app.db.models.patient import Patient
 from app.db.models.cycle_user import CycleUser
 from app.db.models.notification import PendingNotification
@@ -27,35 +27,75 @@ def process_diffusion_campaign(campaign_id: int):
         campaign.status = "sending"
         db.commit()
 
-        # 1. Identify unique recipients by email
-        # Get all patients for this doctor
-        patients = db.query(Patient).filter(Patient.doctor_id == campaign.tenant_id).all()
-        # Get all app users for this doctor (they have push)
-        app_users = db.query(CycleUser).filter(CycleUser.doctor_id == campaign.tenant_id).all()
-
+        # 1. Identify recipients based on target_type
         recipients = {} # email -> {type: str, id: int, name: str, has_push: bool}
 
-        # Add patients first (email only)
-        for p in patients:
-            if p.email:
-                email = p.email.strip().lower()
+        if campaign.target_type == "selection" and campaign.selected_contact_ids:
+            # Targeted Selection
+            contacts = db.query(CampaignContact).filter(
+                CampaignContact.tenant_id == campaign.tenant_id,
+                CampaignContact.id.in_(campaign.selected_contact_ids),
+                CampaignContact.is_active == True
+            ).all()
+            
+            for c in contacts:
+                email = c.email.strip().lower()
                 recipients[email] = {
-                    "type": "patient",
-                    "id": p.id,
-                    "name": p.nombre_completo,
-                    "has_push": False
+                    "type": "cycle_user" if c.cycle_user_id else "patient",
+                    "id": c.cycle_user_id or c.patient_id,
+                    "name": c.full_name,
+                    "has_push": True if c.cycle_user_id else False
                 }
-
-        # Overwrite with app users (better data + push support)
-        for u in app_users:
-            if u.email:
-                email = u.email.strip().lower()
-                recipients[email] = {
-                    "type": "cycle_user",
-                    "id": u.id,
-                    "name": u.nombre_completo,
-                    "has_push": True
-                }
+        else:
+            # Broad targeting (all, app_users, patients)
+            patients_q = db.query(Patient).filter(Patient.doctor_id == campaign.tenant_id)
+            app_users_q = db.query(CycleUser).filter(CycleUser.doctor_id == campaign.tenant_id)
+            
+            # Sub-filters
+            if campaign.target_type == "app_users":
+                # Only App Users
+                for u in app_users_q.all():
+                    if u.email:
+                        email = u.email.strip().lower()
+                        recipients[email] = {
+                            "type": "cycle_user",
+                            "id": u.id,
+                            "name": u.nombre_completo,
+                            "has_push": True
+                        }
+            elif campaign.target_type == "patients":
+                # Only Patients
+                for p in patients_q.all():
+                    if p.email:
+                        email = p.email.strip().lower()
+                        recipients[email] = {
+                            "type": "patient",
+                            "id": p.id,
+                            "name": p.nombre_completo,
+                            "has_push": False
+                        }
+            else:
+                # Default: ALL
+                # Add patients first (no push by default)
+                for p in patients_q.all():
+                    if p.email:
+                        email = p.email.strip().lower()
+                        recipients[email] = {
+                            "type": "patient",
+                            "id": p.id,
+                            "name": p.nombre_completo,
+                            "has_push": False
+                        }
+                # Overwrite with app users (better data + push support)
+                for u in app_users_q.all():
+                    if u.email:
+                        email = u.email.strip().lower()
+                        recipients[email] = {
+                            "type": "cycle_user",
+                            "id": u.id,
+                            "name": u.nombre_completo,
+                            "has_push": True
+                        }
 
         # 2. Create PendingNotifications
         sent_count = 0

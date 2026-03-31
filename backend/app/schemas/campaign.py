@@ -12,7 +12,8 @@ class DiffusionCampaignBase(BaseModel):
     content_text: Optional[str] = None
     source_type: str = "custom" # custom, blog, recommendation
     source_id: Optional[int] = None
-    target_type: str = "all" # all, app_users, patients
+    target_type: str = "all" # all, app_users, patients, selection
+    selected_contact_ids: Optional[List[int]] = None
 
 class DiffusionCampaignCreate(DiffusionCampaignBase):
     pass
@@ -34,10 +35,29 @@ class DiffusionCampaignResponse(DiffusionCampaignBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+class CampaignContactBase(BaseModel):
+    full_name: str
+    email: str
+    phone: Optional[str] = None
+    patient_id: Optional[int] = None
+    cycle_user_id: Optional[int] = None
+    source: str = "manual"
+
+class CampaignContactCreate(CampaignContactBase):
+    pass
+
+class CampaignContactResponse(CampaignContactBase):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    tenant_id: int
+    is_active: bool
+    created_at: datetime
+
 class DiffusionSource(BaseModel):
     id: int
     title: str
     type: str # blog, recommendation
     summary: Optional[str] = None
-    image_url: Optional[str] = None
+    cover_image: Optional[str] = None # Renamed from image_url for consistency
     url: Optional[str] = None

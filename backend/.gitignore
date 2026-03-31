@@ -48,6 +48,6 @@ uploads/
 *.log
 
 # Alembic
-alembic/versions/*.py
+# Track all migrations
 !alembic/versions/.gitkeep
 
