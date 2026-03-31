@@ -10,7 +10,18 @@ import { useOutletContext } from 'react-router-dom';
 
 export default function CampaignsPage() {
   const { isDarkTheme, primaryColor = '#4F46E5' } = useOutletContext();
-  const [activeTab, setActiveTab] = useState('new');
+  
+  // Helper for transparency
+  const hexToRgba = (hex, alpha) => {
+    try {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    } catch (e) {
+      return hex;
+    }
+  };
   const [sources, setSources] = useState([]);
   const [history, setHistory] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -18,6 +29,8 @@ export default function CampaignsPage() {
   const [isFetching, setIsFetching] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   
+  const [activeTab, setActiveTab] = useState('new');
+
   // Selection / Contacts State
   const [selectedContactIds, setSelectedContactIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,17 +60,12 @@ export default function CampaignsPage() {
         campaignService.getCampaigns(),
         campaignService.getContacts()
       ]);
-      console.log("Sources fetched:", sourcesData?.length);
       setSources(sourcesData || []);
       setHistory(historyData || []);
       setContacts(contactsData || []);
-      
-      if (sourcesData?.length === 0) {
-        console.warn("No campaign sources (blog/recoms) found for this doctor.");
-      }
     } catch (error) {
       console.error("Error fetching campaign data:", error);
-      toast.error("Error al cargar datos de campaña. Verifica tu conexión.");
+      toast.error("Error al cargar datos de campaña");
     } finally {
       setIsFetching(false);
     }
@@ -141,20 +149,27 @@ export default function CampaignsPage() {
 
   if (isFetching) return (
     <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
     </div>
   );
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       {/* Header */}
-      <div className={`relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl ${isDarkTheme ? 'bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800' : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-500'} text-white`}>
+      <div 
+        className="relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl text-white"
+        style={{ 
+          background: isDarkTheme 
+            ? `linear-gradient(135deg, ${hexToRgba(primaryColor, 0.4)}, #1e1b4b, #312e81)` 
+            : `linear-gradient(135deg, ${primaryColor}, #7c3aed, ${primaryColor})`
+        }}
+      >
         <div className="relative z-10">
-          <h1 className="text-3xl font-playfair font-black mb-2 flex items-center gap-3">
+          <h1 className="text-3xl font-playfair font-semibold mb-2 flex items-center gap-3">
             <FiSend className="w-8 h-8 animate-pulse" />
             Campañas de Difusión
           </h1>
-          <p className="text-indigo-100 max-w-xl opacity-90 font-medium">
+          <p className="max-w-xl opacity-90 font-medium" style={{ color: isDarkTheme ? '#e0e7ff' : hexToRgba('#ffffff', 0.9) }}>
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
@@ -163,8 +178,20 @@ export default function CampaignsPage() {
 
       {/* Main Tabs */}
       <div className="flex bg-gray-200/50 dark:bg-gray-800/50 p-1.5 rounded-2xl w-fit">
-        <button onClick={() => setActiveTab('new')} className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600' : 'text-gray-500'}`}><FiPlus /> Nueva Campaña</button>
-        <button onClick={() => setActiveTab('history')} className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md text-indigo-600' : 'text-gray-500'}`}><FiClock /> Historial</button>
+        <button 
+          onClick={() => setActiveTab('new')} 
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
+          style={activeTab === 'new' ? { color: primaryColor } : {}}
+        >
+          <FiPlus /> Nueva Campaña
+        </button>
+        <button 
+          onClick={() => setActiveTab('history')} 
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
+          style={activeTab === 'history' ? { color: primaryColor } : {}}
+        >
+          <FiClock /> Historial
+        </button>
       </div>
 
       {activeTab === 'new' ? (
@@ -172,10 +199,15 @@ export default function CampaignsPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* 1. Recipient Selection logic */}
+                {/* 1. Recipient Selection */}
                 <div className="space-y-4">
-                  <h2 className="text-base font-playfair font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">1</span>
+                  <h2 className="text-base font-playfair font-semibold uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
+                    <span 
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"
+                      style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+                    >
+                      1
+                    </span>
                     ¿A quién enviamos?
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -187,16 +219,20 @@ export default function CampaignsPage() {
                     ].map(t => (
                       <button 
                         key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
-                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
+                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? '' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
+                        style={formData.target_type === t.id ? { 
+                          borderColor: primaryColor, 
+                          backgroundColor: hexToRgba(primaryColor, 0.05),
+                          color: primaryColor 
+                        } : {}}
                       >
                         {t.label}
                       </button>
                     ))}
                   </div>
 
-                  {/* Integrated Contact List - ONLY visible if Selection is active */}
                   {formData.target_type === 'selection' && (
-                    <div className="mt-6 space-y-4 animate-fade-in border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/20">
+                    <div className="mt-6 space-y-4 animate-fade-in border-2 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/20" style={{ borderColor: hexToRgba(primaryColor, 0.2) }}>
                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 shadow-sm">
                             {[
@@ -207,7 +243,10 @@ export default function CampaignsPage() {
                             ].map(f => (
                                 <button 
                                     key={f.id} type="button" onClick={() => setSourceFilter(f.id)}
-                                    className={`px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all ${sourceFilter === f.id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-indigo-600'}`}
+                                    className={`px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all ${sourceFilter === f.id ? 'text-white shadow-md' : 'text-gray-500'}`}
+                                    style={sourceFilter === f.id ? { backgroundColor: primaryColor } : {}}
+                                    onMouseEnter={(e) => { if(sourceFilter !== f.id) e.target.style.color = primaryColor; }}
+                                    onMouseLeave={(e) => { if(sourceFilter !== f.id) e.target.style.color = ''; }}
                                 >
                                     {f.label}
                                 </button>
@@ -218,14 +257,24 @@ export default function CampaignsPage() {
                             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input 
                               type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 outline-none transition-all shadow-sm focus:border-transparent"
+                              style={{ border: `2px solid ${hexToRgba(primaryColor, 0.2)}` }}
                             />
                           </div>
                           <div className="flex gap-2">
-                            <button type="button" onClick={handleSyncContacts} disabled={isSyncing} className="p-2 bg-white dark:bg-gray-800 rounded-lg text-indigo-600 border border-indigo-100" title="Sincronizar base de datos">
+                            <button 
+                              type="button" onClick={handleSyncContacts} disabled={isSyncing} 
+                              className="p-2 bg-white dark:bg-gray-800 rounded-lg border" 
+                              style={{ color: primaryColor, borderColor: hexToRgba(primaryColor, 0.2) }}
+                              title="Sincronizar base de datos"
+                            >
                               {isSyncing ? <FiRefreshCw className="animate-spin" /> : <FiRefreshCw />}
                             </button>
-                            <button type="button" onClick={() => setShowAddModal(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1">
+                            <button 
+                              type="button" onClick={() => setShowAddModal(true)} 
+                              className="px-3 py-2 text-white rounded-lg text-[10px] font-black flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95"
+                              style={{ backgroundColor: primaryColor }}
+                            >
                               <FiPlus /> AÑADIR
                             </button>
                           </div>
@@ -236,27 +285,39 @@ export default function CampaignsPage() {
                              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm">
                                 <tr>
                                    <th className="p-3 w-8">
-                                     <button type="button" onClick={toggleAllSelection} className={`w-4 h-4 rounded border flex items-center justify-center ${selectedContactIds.length > 0 ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>
+                                     <button 
+                                      type="button" onClick={toggleAllSelection} 
+                                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${selectedContactIds.length > 0 ? 'text-white' : 'border-gray-300'}`}
+                                      style={selectedContactIds.length > 0 ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+                                     >
                                        {selectedContactIds.length === filteredContacts.length && selectedContactIds.length > 0 && <FiCheck className="w-3 h-3" />}
                                        {selectedContactIds.length > 0 && selectedContactIds.length < filteredContacts.length && <FiMinus className="w-3 h-3" />}
                                      </button>
                                    </th>
-                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px]">Nombre</th>
-                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
-                                   <th className="p-3 font-black text-gray-400 uppercase text-[9px]">Origen</th>
+                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
+                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
                                    <th className="p-3 text-right"></th>
                                 </tr>
                              </thead>
                              <tbody>
                                 {filteredContacts.map(c => (
-                                  <tr key={c.id} onClick={() => setSelectedContactIds(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} className={`border-t border-gray-50 dark:border-gray-700 transition-colors cursor-pointer hover:bg-indigo-50/20 ${selectedContactIds.includes(c.id) ? 'bg-indigo-50/30' : ''}`}>
+                                  <tr 
+                                   key={c.id} 
+                                   onClick={() => setSelectedContactIds(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} 
+                                   className={`border-t border-gray-50 dark:border-gray-700 transition-colors cursor-pointer hover:bg-gray-50/50`}
+                                   style={selectedContactIds.includes(c.id) ? { backgroundColor: hexToRgba(primaryColor, 0.1) } : {}}
+                                  >
                                     <td className="p-3">
-                                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedContactIds.includes(c.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>
+                                      <div 
+                                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${selectedContactIds.includes(c.id) ? 'text-white' : 'border-gray-300'}`}
+                                       style={selectedContactIds.includes(c.id) ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+                                      >
                                         {selectedContactIds.includes(c.id) && <FiCheck className="w-3 h-3" />}
                                       </div>
                                     </td>
                                     <td className="p-3 font-bold">{c.full_name}</td>
-                                    <td className="p-3 text-gray-500 hidden md:table-cell">{c.email}</td>
+                                    <td className="p-3 text-gray-700 dark:text-gray-400 hidden md:table-cell">{c.email}</td>
                                     <td className="p-3">
                                       <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${
                                         c.source === 'manual' ? 'bg-amber-100 text-amber-700' :
@@ -281,8 +342,13 @@ export default function CampaignsPage() {
 
                 {/* 2. Message Content */}
                 <div className="space-y-4">
-                   <h2 className="text-base font-playfair font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 text-[10px]">2</span>
+                   <h2 className="text-base font-playfair font-semibold uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
+                    <span 
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"
+                      style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+                    >
+                      2
+                    </span>
                     ¿Qué quieres contar?
                   </h2>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,7 +380,14 @@ export default function CampaignsPage() {
                    <textarea rows={6} placeholder="Cuerpo del mensaje (acepta HTML)..." value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-medium resize-none shadow-inner" />
                 </div>
 
-                <button disabled={isLoading} className="w-full py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-playfair font-black shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-lg">
+                <button 
+                  disabled={isLoading} 
+                  className="w-full py-5 rounded-2xl text-white font-playfair font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-lg shadow-xl"
+                  style={{ 
+                    backgroundColor: primaryColor,
+                    boxShadow: `0 20px 25px -5px ${hexToRgba(primaryColor, 0.3)}`
+                  }}
+                >
                   {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-5 h-5" /> Lanzar Campaña</>}
                 </button>
               </form>
@@ -323,18 +396,18 @@ export default function CampaignsPage() {
 
           {/* Preview Panel */}
           <div className="space-y-6">
-            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Vista Previa</h2>
+            <h2 className="text-[10px] font-black text-black dark:text-gray-400 uppercase tracking-widest px-2">Vista Previa</h2>
             <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-               <div className="p-3 border-b flex items-center gap-2"><FiMail className="text-indigo-500" /><span className="text-[10px] font-black uppercase">Email</span></div>
+               <div className="p-3 border-b flex items-center gap-2"><FiMail style={{ color: primaryColor }} /><span className="text-[10px] font-black uppercase">Email</span></div>
                <div className="p-6">
                   <div className="font-bold text-xs mb-3 truncate">{formData.subject || 'Sin asunto'}</div>
                   <div className="p-4 rounded-xl border border-dashed border-gray-100 dark:border-gray-700 min-h-[100px] text-[10px] prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.content_html || '<p class="italic text-gray-300">Mensaje vacío...</p>' }} />
                </div>
             </div>
             <div className={`rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-               <div className="p-3 border-b flex items-center gap-2"><FiBell className="text-indigo-500" /><span className="text-[10px] font-black uppercase">Notificación App</span></div>
+               <div className="p-3 border-b flex items-center gap-2"><FiBell style={{ color: primaryColor }} /><span className="text-[10px] font-black uppercase">Notificación App</span></div>
                <div className="p-4 flex gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">G</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: primaryColor }}>G</div>
                   <div className="overflow-hidden flex-1">
                      <div className="font-black text-[10px] truncate">{formData.subject || 'GynSys'}</div>
                      <div className="text-[9px] text-gray-400 line-clamp-2 mt-0.5">{formData.content_html.replace(/<[^>]+>/g, '') || 'Resumen...'}</div>
@@ -353,7 +426,12 @@ export default function CampaignsPage() {
             </div>
           ) : (
             history.map(item => (
-              <div key={item.id} className="p-6 rounded-2xl bg-white dark:bg-gray-800 border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 shadow-sm flex items-center justify-between gap-4 transition-all">
+              <div 
+                key={item.id} 
+                className="p-6 rounded-2xl bg-white dark:bg-gray-800 border-2 border-transparent shadow-sm flex items-center justify-between gap-4 transition-all"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = hexToRgba(primaryColor, 0.2); }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
+              >
                 <div className="flex items-center gap-4">
                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>{item.status === 'sent' ? <FiCheckCircle /> : <FiClock className="animate-spin" />}</div>
                    <div>
@@ -361,14 +439,14 @@ export default function CampaignsPage() {
                       <div className="flex gap-2 items-center mt-1">
                         <span className="text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
                         <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Pendiente'}</span>
-                        <span className="text-[9px] font-bold text-indigo-400 uppercase bg-indigo-50 px-2 py-0.5 rounded-full">{item.target_type}</span>
+                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1) }}>{item.target_type}</span>
                       </div>
                    </div>
                 </div>
                 <div className="flex items-center gap-4 px-4 border-l">
                    <div className="text-center">
-                      <div className="text-lg font-black text-indigo-600">{item.stats?.sent_count || 0}</div>
-                      <div className="text-[8px] font-black text-gray-400 uppercase">Destinatarios</div>
+                      <div className="text-lg font-black" style={{ color: primaryColor }}>{item.stats?.sent_count || 0}</div>
+                      <div className="text-[8px] font-black text-gray-700 dark:text-gray-400 uppercase">Destinatarios</div>
                    </div>
                    <FiChevronRight className="text-gray-300" />
                 </div>
@@ -382,7 +460,7 @@ export default function CampaignsPage() {
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className={`w-full max-w-sm p-8 rounded-3xl shadow-2xl ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-             <h3 className="text-xl font-black mb-6 text-indigo-600 uppercase flex items-center gap-2"><FiUserPlus /> Nuevo Contacto</h3>
+             <h3 className="text-xl font-black mb-6 uppercase flex items-center gap-2" style={{ color: primaryColor }}><FiUserPlus /> Nuevo Contacto</h3>
              <form onSubmit={handleAddContact} className="space-y-4">
                 <div className="space-y-1">
                   <span className="text-[9px] font-black uppercase text-gray-400 px-1">Nombre Completo</span>
@@ -397,8 +475,13 @@ export default function CampaignsPage() {
                   <input type="text" placeholder="+54 9 11..." value={newContact.phone} onChange={(e) => setNewContact({...newContact, phone: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
                 </div>
                 <div className="flex gap-4 pt-4">
-                   <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 text-xs font-bold text-gray-500">Cerrar</button>
-                   <button className="flex-2 px-6 py-3 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg shadow-indigo-500/30">GUARDAR</button>
+                   <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 text-xs font-bold text-black/60 dark:text-gray-400">Cerrar</button>
+                   <button 
+                    className="flex-2 px-6 py-3 rounded-xl text-white text-xs font-black shadow-lg"
+                    style={{ backgroundColor: primaryColor, boxShadow: `0 10px 15px -3px ${hexToRgba(primaryColor, 0.4)}` }}
+                   >
+                    GUARDAR
+                   </button>
                 </div>
              </form>
           </div>

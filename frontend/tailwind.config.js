@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        playfair: ["'Playfair Display'", 'serif'],
+        manrope: ["'Manrope'", 'sans-serif'],
+      },
       colors: {
         primary: {
           50: '#f0f0ff',
