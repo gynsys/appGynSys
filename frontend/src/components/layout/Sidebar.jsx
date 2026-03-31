@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiMapPin, FiClipboard, FiFolder, FiEdit3,
   FiCalendar, FiSettings, FiClock, FiBriefcase,
-  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell
+  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell, FiSend
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
         { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
         { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
         { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
+        { icon: FiSend, label: 'Difusión (Campañas)', path: '/dashboard/campaigns' },
         { 
           icon: FiLink, 
           label: 'Link Onboarding', 

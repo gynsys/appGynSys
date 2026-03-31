@@ -56,6 +56,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout'
 import { WizardLayout } from './components/layout/WizardLayout'
 import { useState } from 'react'
 import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
+import CampaignsPage from './features/campaigns/CampaignsPage'
 
 import { isCapacitor } from './utils/platform'
 
@@ -235,6 +236,7 @@ function App() {
           <Route path="appointments" element={<AppointmentManager />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
+          <Route path="campaigns" element={<CampaignsPage />} />
         </Route>
 
 

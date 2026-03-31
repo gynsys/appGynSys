@@ -72,8 +72,13 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
         actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
         if actor: email_address = actor.email
         
-    if not actor:
-        return False, None, "Actor not found"
+    # Si no hay actor (CycleUser/Doctor), intentamos con el email directo
+    if not actor and item.recipient_email_direct:
+        email_address = item.recipient_email_direct
+        # En este caso no hay push posible, solo email
+    
+    if not actor and not email_address:
+        return False, None, "Actor and direct email not found"
     
     # Usuario pidió que absolutamente todas sean duales (Email + Push)
     # Ignoramos la preferencia del item si no es dual, a menos que el canal esté vacío
@@ -86,8 +91,8 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     errors = []
     channels_sent = []
     
-    # 1. INTENTAR PUSH
-    if "push" in channels_to_try:
+    # 1. INTENTAR PUSH (Solo si hay actor/app)
+    if "push" in channels_to_try and actor:
         if push_circuit.can_execute():
             try:
                 # Si es para doctora, el link debe ser al dash de admin

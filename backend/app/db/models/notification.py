@@ -161,6 +161,10 @@ class NotificationLog(Base):
     clicked_at = Column(DateTime(timezone=True), nullable=True)
     event_metadata = Column(JSON, nullable=True, default={})
 
+    # Direct Recipient Info (for patients without App account)
+    recipient_email_direct = Column(String(255), nullable=True, index=True)
+    recipient_name_direct = Column(String(255), nullable=True)
+
     # Relationships
     rule = relationship("NotificationRule")
     recipient = relationship("CycleUser", backref="notification_logs")
@@ -172,7 +176,7 @@ class NotificationLog(Base):
             return self.recipient.nombre_completo
         if self.doctor:
             return self.doctor.nombre_completo
-        return None
+        return self.recipient_name_direct
 
     @property
     def recipient_email(self) -> Optional[str]:
@@ -180,7 +184,7 @@ class NotificationLog(Base):
             return self.recipient.email
         if self.doctor:
             return self.doctor.email
-        return None
+        return self.recipient_email_direct
 
 
 class PendingNotification(Base):
@@ -206,6 +210,10 @@ class PendingNotification(Base):
     retry_count = Column(Integer, default=0)
     last_error = Column(Text, nullable=True)
     
+    # Direct Recipient Info (for patients without App account)
+    recipient_email_direct = Column(String(255), nullable=True, index=True)
+    recipient_name_direct = Column(String(255), nullable=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
     sent_at = Column(DateTime(timezone=True), nullable=True)
@@ -229,7 +237,7 @@ class PendingNotification(Base):
             return self.recipient.nombre_completo
         if self.doctor:
             return self.doctor.nombre_completo
-        return None
+        return self.recipient_name_direct
 
     @property
     def recipient_email(self) -> Optional[str]:
@@ -237,4 +245,4 @@ class PendingNotification(Base):
             return self.recipient.email
         if self.doctor:
             return self.doctor.email
-        return None
+        return self.recipient_email_direct
