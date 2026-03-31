@@ -14,9 +14,18 @@ export default function CampaignsPage() {
   // Helper for transparency
   const hexToRgba = (hex, alpha) => {
     try {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
+      if (!hex || hex === 'transparent') return 'transparent';
+      let r, g, b;
+      const cleanHex = hex.replace('#', '');
+      if (cleanHex.length === 3) {
+        r = parseInt(cleanHex.slice(0, 1).repeat(2), 16);
+        g = parseInt(cleanHex.slice(1, 2).repeat(2), 16);
+        b = parseInt(cleanHex.slice(2, 3).repeat(2), 16);
+      } else {
+        r = parseInt(cleanHex.slice(0, 2), 16);
+        g = parseInt(cleanHex.slice(2, 4), 16);
+        b = parseInt(cleanHex.slice(4, 6), 16);
+      }
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     } catch (e) {
       return hex;
@@ -160,8 +169,8 @@ export default function CampaignsPage() {
         className="relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl text-white"
         style={{ 
           background: isDarkTheme 
-            ? `linear-gradient(135deg, ${hexToRgba(primaryColor, 0.4)}, #1e1b4b, #312e81)` 
-            : `linear-gradient(135deg, ${primaryColor}, #7c3aed, ${primaryColor})`
+            ? `linear-gradient(135deg, ${hexToRgba(primaryColor, 0.4)}, #111827, #1e1b4b)` 
+            : `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.85)}, ${primaryColor})`
         }}
       >
         <div className="relative z-10">
