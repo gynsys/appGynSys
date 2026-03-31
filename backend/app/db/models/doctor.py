@@ -40,8 +40,8 @@ class Doctor(Base):
     theme_container_bg_color = Column(String, nullable=True)  # Custom container background color
     design_template = Column(String, default='glass', nullable=True)  # 'glass', 'minimal', 'soft', 'dark'
     profile_image_border = Column(Boolean, default=True)  # Whether to show border around profile photo
-    card_shadow = Column(String, nullable=True)  # Store CSS shadow string
-    container_shadow = Column(String, nullable=True)  # Store CSS shadow string
+    card_shadow = Column(Boolean, default=True)  # Whether to show shadows on cards
+    container_shadow = Column(Boolean, default=True)  # Whether to show shadows on containers
     gallery_width = Column(String, nullable=True, default='100%')  # Gallery width for home page
     contact_email = Column(String, nullable=True)  # Email for contact form submissions
     schedule = Column(JSON, nullable=True)  # Doctor's consultation schedule

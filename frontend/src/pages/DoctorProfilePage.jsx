@@ -868,7 +868,10 @@ export default function DoctorProfilePage() {
         doctorId={doctor?.id}
         doctor={doctor}
         primaryColor={primaryColor}
-        onRequireAuth={() => setIsLoginModalOpen(true)}
+        onRequireAuth={() => {
+          setIsAppointmentModalOpen(false);
+          setIsLoginModalOpen(true);
+        }}
         isUnified={isUnifiedOnboarding}
       />
 
