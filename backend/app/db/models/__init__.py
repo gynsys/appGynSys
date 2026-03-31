@@ -11,6 +11,7 @@ from app.db.models.tenant_module import TenantModule
 from app.db.models.preconsultation import PreconsultationQuestion
 from app.db.models.recommendation import Recommendation
 from app.db.models.online_consultation_settings import OnlineConsultationSettings
+from app.db.models.campaign import DiffusionCampaign
 
 __all__ = [
     "Doctor",
@@ -25,5 +26,6 @@ __all__ = [
     "PreconsultationQuestion",
     "Recommendation",
     "OnlineConsultationSettings",
+    "DiffusionCampaign",
 ]
 
