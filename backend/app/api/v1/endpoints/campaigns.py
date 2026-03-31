@@ -36,9 +36,10 @@ async def get_campaign_sources(
     sources = []
     
     # 1. Fetch Blog Posts
+    # We use .is_(True) for explicit boolean comparison in some DB dialects
     posts = db.query(BlogPost).filter(
         BlogPost.doctor_id == current_user.id,
-        BlogPost.is_published == True
+        BlogPost.is_published.is_(True)
     ).order_by(BlogPost.created_at.desc()).all()
     
     for post in posts:
@@ -54,7 +55,7 @@ async def get_campaign_sources(
     # 2. Fetch Recommendations
     recoms = db.query(Recommendation).filter(
         Recommendation.tenant_id == current_user.id,
-        Recommendation.is_active == True
+        Recommendation.is_active.is_(True)
     ).all()
     
     for recom in recoms:
