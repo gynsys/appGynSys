@@ -37,6 +37,8 @@ export default function CampaignsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('all');
   
   const [activeTab, setActiveTab] = useState('new');
 
@@ -231,24 +233,29 @@ export default function CampaignsPage() {
                       1
                     </span>
                     ¿A quién enviamos?
+                    <span className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] bg-gray-100 dark:bg-gray-800 border" style={{ borderColor: hexToRgba(primaryColor, 0.2), color: primaryColor }}>
+                      <FiUsers className="w-3 h-3" />
+                      {contacts.length} suscriptores totales
+                    </span>
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                      { id: 'all', label: 'Todos' },
-                      { id: 'app_users', label: 'Usuarios App' },
-                      { id: 'patients', label: 'Pacientes' },
-                      { id: 'selection', label: `Personalizar (${selectedContactIds.length})` }
+                      { id: 'all', label: 'Todos', count: contacts.length },
+                      { id: 'app_users', label: 'Usuarios App', count: contacts.filter(c => c.source === 'sync_cycle').length },
+                      { id: 'patients', label: 'Pacientes', count: contacts.filter(c => c.source !== 'sync_cycle').length },
+                      { id: 'selection', label: `Personalizar`, count: selectedContactIds.length }
                     ].map(t => (
                       <button 
                         key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
-                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${formData.target_type === t.id ? '' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
+                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${formData.target_type === t.id ? '' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
                         style={formData.target_type === t.id ? { 
                           borderColor: primaryColor, 
                           backgroundColor: hexToRgba(primaryColor, 0.05),
                           color: primaryColor 
                         } : {}}
                       >
-                        {t.label}
+                        <span>{t.label}</span>
+                        <span className="opacity-60 text-[8px]">({t.count})</span>
                       </button>
                     ))}
                   </div>
