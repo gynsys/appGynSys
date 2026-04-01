@@ -395,13 +395,13 @@ export default function CampaignsPage() {
 
                 <button 
                   disabled={isLoading} 
-                  className="w-full py-5 rounded-2xl text-white font-playfair font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-lg shadow-xl"
+                  className="w-full py-6 rounded-2xl text-white font-playfair font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-lg shadow-2xl group"
                   style={{ 
-                    backgroundColor: primaryColor,
-                    boxShadow: `0 20px 25px -5px ${hexToRgba(primaryColor, 0.3)}`
+                    background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.8)})`,
+                    boxShadow: `0 15px 30px -10px ${hexToRgba(primaryColor, 0.5)}`
                   }}
                 >
-                  {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-5 h-5" /> Lanzar Campaña</>}
+                  {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> LANZAR CAMPAÑA</>}
                 </button>
               </form>
             </div>
