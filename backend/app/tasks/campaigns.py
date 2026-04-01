@@ -156,16 +156,15 @@ def process_diffusion_campaign(campaign_id: int):
                 scheduled_for=datetime.utcnow(),
                 channel="dual" if data["has_push"] else "email",
                 status="pending",
-                doctor_id=campaign.tenant_id
+                doctor_id=campaign.tenant_id,
+                # Email snapshot for resilience
+                recipient_email_direct=email,
+                recipient_name_direct=data["name"]
             )
             
-            # Fill recipient info
+            # Link to internal record if exists
             if data["type"] == "cycle_user":
                 pending.recipient_id = data["id"]
-            else:
-                # Direct email patient
-                pending.recipient_email_direct = email
-                pending.recipient_name_direct = data["name"]
             
             db.add(pending)
             sent_count += 1

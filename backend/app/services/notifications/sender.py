@@ -77,8 +77,9 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
         email_address = item.recipient_email_direct
         # No hay actor para Push en este caso
         
-    # 3. ÚLTIMA OPCIÓN: Doctora (Notificaciones administrativas del sistema)
-    if not email_address and item.doctor_id:
+    # 3. ÚLTIMA OPCIÓN: Doctora (Solo para notificaciones puramente administrativas)
+    # Importante: No usamos este fallback si se intentó enviar a alguien externo (ID o Email Directo)
+    if not email_address and item.doctor_id and not item.recipient_id and not item.recipient_email_direct:
         actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
         if actor: 
             email_address = actor.email
