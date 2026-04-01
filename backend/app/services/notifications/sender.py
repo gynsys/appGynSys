@@ -61,28 +61,30 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     Envia por Push + Email de forma DUAL (Soporta Usuaria o Doctora).
     Si log_id está presente, se incluye en el payload de Push para tracking.
     """
-    # Identificar el actor y el email de destino
+    # --- ESTRATEGIA DE DESTINATARIO ---
     actor = None
     email_address = None
     
-    # 1. Prioridad: Usuarios registrados (CycleUser) por ID
+    # 1. Buscar Actor (Solo para PUSH y metadatos)
     if item.recipient_id:
         actor = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
-        if actor: 
-            email_address = actor.email
-            
-    # 2. SEGUNDA PRIORIDAD: Email directo (Manual, Pacientes sin App, Campañas)
-    # Importante: Esto debe ir ANTES que el doctor_id para evitar redirecciones
-    if not email_address and item.recipient_email_direct:
+
+    # 2. DETERMINAR EMAIL_ADDRESS (Prioridad: Snapshot de Campaña > Perfil Usuario > Admin)
+    
+    # A. Prioridad 1: Email grabado en la notificación (Snapshots de Campaña/Manual)
+    if item.recipient_email_direct:
         email_address = item.recipient_email_direct
-        # No hay actor para Push en este caso
         
-    # 3. ÚLTIMA OPCIÓN: Doctora (Solo para notificaciones puramente administrativas)
-    # Importante: No usamos este fallback si se intentó enviar a alguien externo (ID o Email Directo)
+    # B. Prioridad 2: Email del perfil del usuario (Si no hay snapshot directo)
+    if not email_address and actor:
+        email_address = actor.email
+            
+    # C. Prioridad 3: Doctora (Solo para notificaciones administrativas puras)
     if not email_address and item.doctor_id and not item.recipient_id and not item.recipient_email_direct:
-        actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
-        if actor: 
-            email_address = actor.email
+        doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
+        if doctor: 
+            email_address = doctor.email
+            actor = doctor # Para PUSH administrativo si aplica
         
     if not email_address:
         return False, None, f"Target email not found (item_id: {item.id})"
