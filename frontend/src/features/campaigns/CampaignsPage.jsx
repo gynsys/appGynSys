@@ -315,7 +315,7 @@ export default function CampaignsPage() {
                          <div className="space-y-4 animate-fade-in">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                <div className="space-y-1">
-                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Nombre Completo</span>
+                                  <span className="text-[11px] font-black uppercase text-gray-600 px-1">Nombre Completo</span>
                                   <input 
                                     type="text" placeholder="Ej: Maria Lopez" value={newContact.full_name} 
                                     onChange={(e) => setNewContact({...newContact, full_name: e.target.value})} 
@@ -324,7 +324,7 @@ export default function CampaignsPage() {
                                   />
                                </div>
                                <div className="space-y-1">
-                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Email</span>
+                                  <span className="text-[11px] font-black uppercase text-gray-600 px-1">Email</span>
                                   <input 
                                     type="email" placeholder="maria@ejemplo.com" value={newContact.email} 
                                     onChange={(e) => setNewContact({...newContact, email: e.target.value})} 
@@ -333,7 +333,7 @@ export default function CampaignsPage() {
                                   />
                                </div>
                                <div className="space-y-1">
-                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Teléfono (opcional)</span>
+                                  <span className="text-[11px] font-black uppercase text-gray-600 px-1">Teléfono (opcional)</span>
                                   <input 
                                     type="text" placeholder="+54 9 11..." value={newContact.phone} 
                                     onChange={(e) => setNewContact({...newContact, phone: e.target.value})} 
