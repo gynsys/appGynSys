@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   FiSend, FiPlus, FiClock, FiCheckCircle, FiAlertCircle, 
   FiFileText, FiLayers, FiMessageSquare, FiMail, FiBell, 
-  FiChevronRight, FiCheck, FiUsers, FiSearch, FiTrash2, FiUserPlus, FiRefreshCw, FiMinus
+  FiChevronRight, FiCheck, FiUsers, FiSearch, FiTrash2, 
+  FiUserPlus, FiRefreshCw, FiMinus, FiSmartphone, FiUser, 
+  FiList, FiPlusCircle, FiEdit2 
 } from 'react-icons/fi';
 import { campaignService } from '../../services/campaignService';
 import { toast } from 'sonner';
