@@ -210,20 +210,19 @@ export default function CampaignsPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       {/* Header */}
       <div 
-        className="relative overflow-hidden rounded-3xl p-5 shadow-lg text-white"
-        style={{ 
-          background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.9)})`,
-          boxShadow: `0 10px 20px -10px ${hexToRgba(primaryColor, 0.4)}`
-        }}
+        className="relative overflow-hidden rounded-2xl p-5 text-gray-900 dark:text-white"
       >
         <div className="relative z-10">
           <h1 className="text-2xl font-sans font-black mb-1 flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+            <div 
+              className="p-2 rounded-xl backdrop-blur-md"
+              style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+            >
               <FiSend className="w-5 h-5" />
             </div>
             Campañas de Difusión
           </h1>
-          <p className="max-w-xl opacity-90 font-medium text-sm leading-relaxed text-white/80">
+          <p className="max-w-xl opacity-90 font-medium text-sm leading-relaxed text-gray-600 dark:text-white/80">
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
@@ -457,10 +456,10 @@ export default function CampaignsPage() {
                              {sources.filter(s => s.type === 'recommendation').map(s => <option key={s.id} value={`recommendation:${s.id}`}>{s.title}</option>)}
                          </optgroup>
                       </select>
-                      <input type="text" placeholder="Título interno de la campaña" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-bold" />
+                      <input type="text" placeholder="Título interno de la campaña" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="p-4 rounded-lg bg-gray-50 border-2 border-gray-300 dark:border-gray-700 text-sm font-bold" />
                    </div>
                    
-                   <input type="text" placeholder="Asunto (Visto por el paciente)" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-bold" />
+                   <input type="text" placeholder="Asunto (Visto por el paciente)" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full p-4 rounded-lg bg-gray-50 border-2 border-gray-300 dark:border-gray-700 text-sm font-bold" />
                    
                    <div className="flex flex-col gap-3">
                       <textarea 
@@ -468,7 +467,7 @@ export default function CampaignsPage() {
                         placeholder="Cuerpo del mensaje (acepta HTML)..." 
                         value={formData.content_html} 
                         onChange={(e) => setFormData({...formData, content_html: e.target.value})} 
-                        className="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-100 dark:border-gray-700 text-xs font-medium resize-none shadow-inner" 
+                        className="w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-300 dark:border-gray-700 text-sm font-medium resize-none shadow-inner" 
                       />
                       
                       <div className="mt-2">
