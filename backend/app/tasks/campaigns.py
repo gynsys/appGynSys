@@ -71,7 +71,7 @@ def process_diffusion_campaign(campaign_id: int):
                         recipients[email] = {
                             "type": "patient",
                             "id": p.id,
-                            "name": p.nombre_completo,
+                            "name": p.name,
                             "has_push": False
                         }
             else:
@@ -83,7 +83,7 @@ def process_diffusion_campaign(campaign_id: int):
                         recipients[email] = {
                             "type": "patient",
                             "id": p.id,
-                            "name": p.nombre_completo,
+                            "name": p.name,
                             "has_push": False
                         }
                 # Overwrite with app users (better data + push support)
@@ -109,7 +109,8 @@ def process_diffusion_campaign(campaign_id: int):
                 message_text=campaign.content_text or campaign.subject,
                 scheduled_for=datetime.utcnow(),
                 channel="dual" if data["has_push"] else "email",
-                status="pending"
+                status="pending",
+                doctor_id=campaign.tenant_id
             )
             
             # Fill recipient info
