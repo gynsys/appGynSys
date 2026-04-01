@@ -320,7 +320,7 @@ const HistoryHtmlView = ({ data, downloadUrl, primaryColor }) => {
 
 export default function PatientsManager({ isEmbedded = false }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-  const { doctor, isDarkTheme } = useOutletContext() || {};
+  const { doctor, isDarkTheme, primaryColor } = useOutletContext() || {};
   const navigate = useNavigate();
   const [consultations, setConsultations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -1321,8 +1321,8 @@ export default function PatientsManager({ isEmbedded = false }) {
                     value={editFormData.medical_report_content || ''} 
                     onChange={handleEditChange} 
                     rows="15" 
-                    className="w-full p-4 bg-white dark:bg-gray-800 border-2 focus:border-indigo-500 rounded-2xl text-sm transition-all outline-none font-medium dark:text-gray-100 shadow-inner"
-                    style={{ borderColor: hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.2) }}
+                    className="w-full p-4 bg-white dark:bg-gray-800 border-2 rounded-2xl text-sm transition-all outline-none font-medium dark:text-gray-100 shadow-inner"
+                    style={{ borderColor: hexToRgba(primaryColor, 0.2) }}
                     placeholder="Escribe el informe aquí..."
                   />
                 </div>
@@ -1357,8 +1357,8 @@ export default function PatientsManager({ isEmbedded = false }) {
               type="submit" 
               className="px-10 py-3 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg transition-all active:scale-95"
               style={{ 
-                backgroundColor: doctor?.theme_primary_color || '#4f46e5',
-                boxShadow: `0 10px 15px -3px ${hexToRgba(doctor?.theme_primary_color || '#4f46e5', 0.2)}`
+                backgroundColor: primaryColor,
+                boxShadow: `0 10px 15px -3px ${hexToRgba(primaryColor, 0.2)}`
               }}
             >
               Guardar

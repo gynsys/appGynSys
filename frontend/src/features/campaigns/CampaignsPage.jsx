@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 
 export default function CampaignsPage() {
-  const { isDarkTheme, primaryColor = '#4F46E5' } = useOutletContext();
+  const { isDarkTheme, primaryColor = '#4f46e5' } = useOutletContext();
   
   // Helper for transparency
   const hexToRgba = (hex, alpha) => {
@@ -166,19 +166,27 @@ export default function CampaignsPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       {/* Header */}
       <div 
-        className="relative overflow-hidden rounded-3xl p-8 transition-all duration-500 shadow-xl text-white"
-        style={{ backgroundColor: primaryColor }}
+        className="relative overflow-hidden rounded-3xl p-10 transition-all duration-500 shadow-xl text-white group"
+        style={{ 
+          background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.85)})`,
+          boxShadow: `0 20px 40px -15px ${hexToRgba(primaryColor, 0.4)}`
+        }}
       >
         <div className="relative z-10">
-          <h1 className="text-3xl font-playfair font-semibold mb-2 flex items-center gap-3">
-            <FiSend className="w-8 h-8 animate-pulse" />
+          <h1 className="text-4xl font-playfair font-bold mb-3 flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
+              <FiSend className="w-8 h-8 animate-pulse" />
+            </div>
             Campañas de Difusión
           </h1>
-          <p className="max-w-xl opacity-90 font-medium text-white">
+          <p className="max-w-xl opacity-90 font-medium text-lg leading-relaxed text-white/90">
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-white/20 transition-colors duration-700"></div>
+        <div className="absolute bottom-0 left-1/2 w-40 h-40 bg-black/10 rounded-full blur-2xl -mb-10 group-hover:bg-black/20 transition-colors duration-700"></div>
       </div>
 
       {/* Main Tabs */}
