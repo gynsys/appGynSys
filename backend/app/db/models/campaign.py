@@ -62,7 +62,7 @@ class CampaignContact(Base):
     
     # Link to existing records if applicable
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True)
-    cycle_user_id = Column(Integer, ForeignKey("cycle_user.id"), nullable=True)
+    cycle_user_id = Column(Integer, ForeignKey("cycle_users.id"), nullable=True)
     
     # Metadata
     source = Column(String(50), default="manual") # manual, sync_patient, sync_cycle
