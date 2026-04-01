@@ -228,29 +228,30 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      {/* Main Tabs */}
-      <div className="flex bg-gray-200/50 dark:bg-gray-800/50 p-1.5 rounded-2xl w-fit">
-        <button 
-          onClick={() => setActiveTab('new')} 
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
-          style={activeTab === 'new' ? { color: primaryColor } : {}}
-        >
-          <FiPlus /> Nueva Campaña
-        </button>
-        <button 
-          onClick={() => setActiveTab('history')} 
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
-          style={activeTab === 'history' ? { color: primaryColor } : {}}
-        >
-          <FiClock /> Historial
-        </button>
-      </div>
+      {/* Tabs moved inside the content section */}
 
-      {activeTab === 'new' ? (
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="space-y-6">
-            <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-              <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="max-w-4xl mx-auto">
+        <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+          {/* Main Tabs Integrated */}
+          <div className="flex bg-gray-100/80 dark:bg-gray-900/50 p-1.5 rounded-2xl w-fit mb-8 border border-gray-200/50 dark:border-gray-700">
+            <button 
+              onClick={() => setActiveTab('new')} 
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'new' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
+              style={activeTab === 'new' ? { color: primaryColor } : {}}
+            >
+              <FiPlus /> Nueva Campaña
+            </button>
+            <button 
+              onClick={() => setActiveTab('history')} 
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
+              style={activeTab === 'history' ? { color: primaryColor } : {}}
+            >
+              <FiClock /> Historial
+            </button>
+          </div>
+
+          {activeTab === 'new' ? (
+             <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
                 {/* 1. Recipient Selection */}
                 <div className="space-y-4">
                   <h2 className="text-base font-sans font-black uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
@@ -493,49 +494,46 @@ export default function CampaignsPage() {
                 >
                   {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : <><FiSend className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> LANZAR CAMPAÑA</>}
                 </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* History Section */
-        <div className="space-y-4 animate-fade-in pb-10">
-          {history.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed">
-              <FiMessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 text-sm italic">No se han registrado campañas</p>
-            </div>
+             </form>
           ) : (
-            history.map(item => (
-              <div 
-                key={item.id} 
-                className="p-6 rounded-2xl bg-white dark:bg-gray-800 border-2 border-transparent shadow-sm flex items-center justify-between gap-4 transition-all"
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = hexToRgba(primaryColor, 0.2); }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
-              >
-                <div className="flex items-center gap-4">
-                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>{item.status === 'sent' ? <FiCheckCircle /> : <FiClock className="animate-spin" />}</div>
-                   <div>
-                      <h3 className="font-black text-xs uppercase tracking-tight">{item.title}</h3>
-                      <div className="flex gap-2 items-center mt-1">
-                        <span className="text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Pendiente'}</span>
-                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1) }}>{item.target_type}</span>
-                      </div>
+             /* History Section Integrated in same card style */
+             <div className="space-y-4 animate-fade-in pb-4">
+               {history.length === 0 ? (
+                 <div className="p-12 text-center bg-gray-50 dark:bg-gray-900/50 rounded-3xl border-2 border-dashed">
+                   <FiMessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                   <p className="text-gray-400 text-sm italic">No se han registrado campañas</p>
+                 </div>
+               ) : (
+                 history.map(item => (
+                   <div 
+                     key={item.id} 
+                     className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent shadow-sm flex items-center justify-between gap-4 transition-all hover:border-gray-200 dark:hover:border-gray-700"
+                   >
+                     <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>{item.status === 'sent' ? <FiCheckCircle /> : <FiClock className="animate-spin" />}</div>
+                        <div>
+                           <h3 className="font-black text-xs uppercase tracking-tight">{item.title}</h3>
+                           <div className="flex gap-2 items-center mt-1">
+                             <span className="text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
+                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Pendiente'}</span>
+                             <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1) }}>{item.target_type}</span>
+                           </div>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-4 px-4 border-l">
+                        <div className="text-center">
+                           <div className="text-lg font-black" style={{ color: primaryColor }}>{item.stats?.sent_count || 0}</div>
+                           <div className="text-[8px] font-black text-gray-700 dark:text-gray-400 uppercase">Destinatarios</div>
+                        </div>
+                        <FiChevronRight className="text-gray-300" />
+                     </div>
                    </div>
-                </div>
-                <div className="flex items-center gap-4 px-4 border-l">
-                   <div className="text-center">
-                      <div className="text-lg font-black" style={{ color: primaryColor }}>{item.stats?.sent_count || 0}</div>
-                      <div className="text-[8px] font-black text-gray-700 dark:text-gray-400 uppercase">Destinatarios</div>
-                   </div>
-                   <FiChevronRight className="text-gray-300" />
-                </div>
-              </div>
-            ))
+                 ))
+               )}
+             </div>
           )}
         </div>
-      )}
+      </div>
 
     </div>
   );
