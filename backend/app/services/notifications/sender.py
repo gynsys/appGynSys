@@ -135,9 +135,12 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     if "email" in channels_to_try:
         if email_address:
             try:
-                _send_integrated_email(email_address, item.subject, item.body)
-                email_success = True
-                channels_sent.append("email")
+                # Capture the real success status from the email service
+                email_success = _send_integrated_email(email_address, item.subject, item.body)
+                if email_success:
+                    channels_sent.append("email")
+                else:
+                    errors.append("Email service reported failure (check SMTP/Resend logs)")
             except Exception as e:
                 errors.append(f"Email error: {str(e)}")
         else:
