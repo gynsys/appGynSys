@@ -61,24 +61,30 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     Envia por Push + Email de forma DUAL (Soporta Usuaria o Doctora).
     Si log_id está presente, se incluye en el payload de Push para tracking.
     """
-    # Identificar el actor (Prioridad: recipient_id -> doctor_id)
+    # Identificar el actor y el email de destino
     actor = None
     email_address = None
     
+    # 1. Prioridad: Usuarios registrados (CycleUser) por ID
     if item.recipient_id:
         actor = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
-        if actor: email_address = actor.email
-    elif item.doctor_id:
-        actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
-        if actor: email_address = actor.email
-        
-    # Si no hay actor (CycleUser/Doctor), intentamos con el email directo
-    if not actor and item.recipient_email_direct:
+        if actor: 
+            email_address = actor.email
+            
+    # 2. SEGUNDA PRIORIDAD: Email directo (Manual, Pacientes sin App, Campañas)
+    # Importante: Esto debe ir ANTES que el doctor_id para evitar redirecciones
+    if not email_address and item.recipient_email_direct:
         email_address = item.recipient_email_direct
-        # En este caso no hay push posible, solo email
-    
-    if not actor and not email_address:
-        return False, None, "Actor and direct email not found"
+        # No hay actor para Push en este caso
+        
+    # 3. ÚLTIMA OPCIÓN: Doctora (Notificaciones administrativas del sistema)
+    if not email_address and item.doctor_id:
+        actor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
+        if actor: 
+            email_address = actor.email
+        
+    if not email_address:
+        return False, None, f"Target email not found (item_id: {item.id})"
     
     # Usuario pidió que absolutamente todas sean duales (Email + Push)
     # Ignoramos la preferencia del item si no es dual, a menos que el canal esté vacío
