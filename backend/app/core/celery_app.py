@@ -39,6 +39,6 @@ celery_app.autodiscover_tasks(['app'])
 try:
     import app.tasks.email_tasks
     import app.tasks.notifications
-
+    import app.tasks.campaigns
 except ImportError:
     pass
