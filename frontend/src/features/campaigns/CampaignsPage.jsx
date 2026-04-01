@@ -484,7 +484,7 @@ export default function CampaignsPage() {
 
                 <button 
                   disabled={isLoading} 
-                  className="w-full py-6 rounded-2xl text-white font-sans font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-lg shadow-2xl group"
+                  className="w-full h-[50px] rounded-2xl text-white font-sans font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-sm shadow-xl group"
                   style={{ 
                     background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.8)})`,
                     boxShadow: `0 15px 30px -10px ${hexToRgba(primaryColor, 0.5)}`
