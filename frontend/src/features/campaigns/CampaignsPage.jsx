@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 
 export default function CampaignsPage() {
-  const { isDarkTheme, primaryColor = '#4f46e5' } = useOutletContext();
+  const { isDarkTheme, primaryColor = '#4f46e5', doctor } = useOutletContext();
   
   // Helper for transparency
   const hexToRgba = (hex, alpha) => {
@@ -385,7 +385,33 @@ export default function CampaignsPage() {
                           } else {
                             const [type, id] = e.target.value.split(':');
                             const src = sources.find(s => s.id === parseInt(id) && s.type === type);
-                            if (src) setFormData({...formData, source_type: type, source_id: src.id, title: `Campaña: ${src.title}`, subject: src.title, content_html: `Hola! Te invito a leer: "${src.title}"`});
+                            if (src) {
+                              const baseUrl = `https://gynsys.net/p/${doctor?.slug_url || 'clinica'}`;
+                              const fullUrl = src.url?.startsWith('http') ? src.url : `${baseUrl}${src.url}`;
+                              
+                              const htmlContent = `
+                                <div style="font-family: sans-serif; line-height: 1.6; color: #374151;">
+                                  <h2 style="color: ${primaryColor}; margin-bottom: 10px;">¡Hola! Tengo algo nuevo para ti.</h2>
+                                  <p style="margin-bottom: 20px;">Te invito a revisar esta información que he preparado especialmente para mis pacientes: <strong>"${src.title}"</strong></p>
+                                  ${src.summary ? `<p style="font-style: italic; color: #6b7280; border-left: 4px solid ${primaryColor}; padding-left: 15px; margin-bottom: 20px;">${src.summary}</p>` : ''}
+                                  <div style="margin-top: 30px; text-align: center;">
+                                    <a href="${fullUrl}" style="background-color: ${primaryColor}; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">
+                                      VER INFORMACIÓN COMPLETA
+                                    </a>
+                                  </div>
+                                  <p style="margin-top: 40px; font-size: 12px; color: #9ca3af;">Enviado desde la plataforma digital de ${doctor?.nombre_completo || 'tu doctora'}.</p>
+                                </div>
+                              `;
+                              
+                              setFormData({
+                                ...formData, 
+                                source_type: type, 
+                                source_id: src.id, 
+                                title: `Difusión: ${src.title}`, 
+                                subject: src.title, 
+                                content_html: htmlContent.trim()
+                              });
+                            }
                           }
                         }}
                         className="p-4 rounded-xl border-2 border-gray-100 dark:border-gray-700 bg-gray-50 transition-all font-bold text-xs"
