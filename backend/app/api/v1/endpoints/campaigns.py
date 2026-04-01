@@ -149,8 +149,10 @@ async def create_contact(
             db.refresh(existing)
             return existing
 
+    # Create new contact
+    # Use model_dump(exclude={"email"}) to avoid multiple values for 'email' argument
     contact = CampaignContact(
-        **contact_in.model_dump(),
+        **contact_in.model_dump(exclude={"email"}),
         tenant_id=current_user.id,
         email=contact_in.email.lower().strip()
     )
