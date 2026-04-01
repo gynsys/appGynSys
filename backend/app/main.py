@@ -27,13 +27,21 @@ async def log_user_agent(request, call_next):
 # Configure CORS (Must be added last to be the outer-most middleware)
 origins = settings.CORS_ORIGINS
 if isinstance(origins, str):
+    # Handle CSV string if necessary
     origins = [o.strip() for o in origins.split(",") if o.strip()]
-origins = [str(o).rstrip("/") for o in origins]
+
+# Clean and normalize origins (no trailing slashes, ensure strings)
+origins = [str(o).strip().rstrip("/") for o in origins]
+
+# Add production domains explicitly for safety
+if "https://gynsys.net" not in origins:
+    origins.append("https://gynsys.net")
+if "https://www.gynsys.net" not in origins:
+    origins.append("https://www.gynsys.net")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"https://.*gynsys\.net", # Safety net for all subdomains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
