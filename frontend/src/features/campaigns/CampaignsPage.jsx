@@ -212,20 +212,18 @@ export default function CampaignsPage() {
       <div 
         className="relative overflow-hidden rounded-2xl p-5 text-gray-900 dark:text-white"
       >
-        <div className="relative z-10">
-          <h1 className="text-2xl font-sans font-black mb-1 flex items-center gap-3">
-            <div 
-              className="p-2 rounded-xl backdrop-blur-md"
-              style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
-            >
-              <FiSend className="w-5 h-5" />
-            </div>
-            Campañas de Difusión
-          </h1>
-          <p className="max-w-xl opacity-90 font-medium text-sm leading-relaxed text-gray-600 dark:text-white/80">
-            Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
-          </p>
-        </div>
+        <h1 className="text-2xl font-sans font-black mb-1 flex items-center gap-3">
+          <div 
+            className="p-2 rounded-xl backdrop-blur-md"
+            style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
+          >
+            <FiSend className="w-5 h-5" />
+          </div>
+          Campañas de Difusión
+        </h1>
+        <p className="max-w-xl opacity-90 font-medium text-sm leading-relaxed text-gray-600 dark:text-white/80">
+          Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
+        </p>
       </div>
 
       {/* Tabs moved inside the content section */}
