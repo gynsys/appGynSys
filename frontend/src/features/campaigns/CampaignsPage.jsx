@@ -130,13 +130,18 @@ export default function CampaignsPage() {
     setIsSubmittingContact(true);
     try {
       const res = await campaignService.createContact(newContact);
-      setContacts(prev => [res, ...prev]);
-      setSelectedContactIds(prev => [...prev, res.id]);
+      setContacts(prev => {
+        const exists = prev.find(c => c.id === res.id);
+        if (exists) return prev;
+        return [res, ...prev];
+      });
+      setSelectedContactIds(prev => prev.includes(res.id) ? prev : [...prev, res.id]);
       setNewContact({ full_name: '', email: '', phone: '', source: 'manual' });
       setFormData(prev => ({ ...prev, target_type: 'selection' }));
-      toast.success("Contacto añadido y seleccionado");
+      toast.success("Contacto listo y seleccionado");
     } catch (error) {
-      toast.error("Error al añadir contacto");
+      const msg = error.response?.data?.detail || "Error al añadir contacto";
+      toast.error(msg);
     } finally {
       setIsSubmittingContact(false);
     }

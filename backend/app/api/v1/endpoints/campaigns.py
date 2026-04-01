@@ -139,16 +139,16 @@ async def create_contact(
     ).first()
     
     if existing:
-        if existing.is_active:
-            raise HTTPException(status_code=400, detail="Contact already exists")
-        else:
+        if not existing.is_active:
             # Reactivate
             existing.full_name = contact_in.full_name
             existing.phone = contact_in.phone
             existing.is_active = True
             db.commit()
             db.refresh(existing)
-            return existing
+        
+        # Whether it was active or just reactivated, return 200 OK
+        return existing
 
     # Create new contact
     # Use model_dump(exclude={"email"}) to avoid multiple values for 'email' argument
