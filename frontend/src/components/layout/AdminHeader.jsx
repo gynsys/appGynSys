@@ -66,7 +66,7 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
               )}
               <div className="hidden md:block">
                 <h1 
-                  className="text-xl font-playfair font-semibold px-3 py-1 rounded-xl transition-all duration-300"
+                  className="text-xl font-sans font-semibold px-3 py-1 rounded-xl transition-all duration-300"
                   style={{ 
                     backgroundColor: hexToRgba(primaryColor, 0.05),
                     color: isDarkTheme ? '#ffffff' : '#111827',

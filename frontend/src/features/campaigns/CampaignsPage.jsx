@@ -173,7 +173,7 @@ export default function CampaignsPage() {
         }}
       >
         <div className="relative z-10">
-          <h1 className="text-4xl font-playfair font-bold mb-3 flex items-center gap-4">
+          <h1 className="text-4xl font-sans font-black mb-3 flex items-center gap-4">
             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
               <FiSend className="w-8 h-8 animate-pulse" />
             </div>
@@ -214,7 +214,7 @@ export default function CampaignsPage() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* 1. Recipient Selection */}
                 <div className="space-y-4">
-                  <h2 className="text-base font-playfair font-semibold uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
+                  <h2 className="text-base font-sans font-black uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
                     <span 
                       className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"
                       style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
@@ -355,7 +355,7 @@ export default function CampaignsPage() {
 
                 {/* 2. Message Content */}
                 <div className="space-y-4">
-                   <h2 className="text-base font-playfair font-semibold uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
+                   <h2 className="text-base font-sans font-black uppercase text-black dark:text-gray-400 tracking-wider flex items-center gap-2">
                     <span 
                       className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"
                       style={{ backgroundColor: hexToRgba(primaryColor, 0.1), color: primaryColor }}
@@ -395,7 +395,7 @@ export default function CampaignsPage() {
 
                 <button 
                   disabled={isLoading} 
-                  className="w-full py-6 rounded-2xl text-white font-playfair font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-lg shadow-2xl group"
+                  className="w-full py-6 rounded-2xl text-white font-sans font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-lg shadow-2xl group"
                   style={{ 
                     background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.8)})`,
                     boxShadow: `0 15px 30px -10px ${hexToRgba(primaryColor, 0.5)}`
