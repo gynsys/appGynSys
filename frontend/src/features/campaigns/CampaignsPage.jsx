@@ -274,7 +274,7 @@ export default function CampaignsPage() {
                     ].map(t => (
                       <button 
                         key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
-                        className={`p-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${formData.target_type === t.id ? '' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
+                        className={`p-3 rounded-xl border-2 text-[13px] font-black uppercase transition-all flex flex-col items-center gap-1 ${formData.target_type === t.id ? '' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
                         style={formData.target_type === t.id ? { 
                           borderColor: primaryColor, 
                           backgroundColor: hexToRgba(primaryColor, 0.05),
@@ -282,7 +282,7 @@ export default function CampaignsPage() {
                         } : {}}
                       >
                         <span>{t.label}</span>
-                        <span className="opacity-60 text-[8px]">({t.count})</span>
+                        <span className="opacity-60 text-[10px]">({t.count})</span>
                       </button>
                     ))}
                   </div>
