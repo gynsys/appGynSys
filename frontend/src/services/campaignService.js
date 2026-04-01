@@ -34,5 +34,17 @@ export const campaignService = {
   syncContacts: async () => {
     const response = await api.post('/campaigns/contacts/sync');
     return response.data;
-  }
+  },
+
+  async uploadCampaignImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/uploads/campaign-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };

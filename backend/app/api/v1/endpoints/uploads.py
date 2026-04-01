@@ -27,6 +27,7 @@ BLOG_DIR = UPLOAD_DIR / "blog"
 SERVICES_DIR = UPLOAD_DIR / "services"
 SIGNATURE_DIR = UPLOAD_DIR / "signatures"
 VIDEO_DIR = UPLOAD_DIR / "videos"
+CAMPAIGN_DIR = UPLOAD_DIR / "campaigns"
 LOGO_DIR.mkdir(exist_ok=True)
 PHOTO_DIR.mkdir(exist_ok=True)
 GALLERY_DIR.mkdir(exist_ok=True)
@@ -35,6 +36,7 @@ BLOG_DIR.mkdir(exist_ok=True)
 SERVICES_DIR.mkdir(exist_ok=True)
 SIGNATURE_DIR.mkdir(exist_ok=True)
 VIDEO_DIR.mkdir(exist_ok=True)
+CAMPAIGN_DIR.mkdir(exist_ok=True)
 
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -468,6 +470,42 @@ async def upload_signature(
     return {
         "message": "Signature uploaded successfully",
         "signature_url": signature_url
+    }
+
+
+@router.post("/campaign-image", status_code=status.HTTP_200_OK)
+async def upload_campaign_image(
+    current_user: Annotated[Doctor, Depends(get_current_user)],
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload an image for a diffusion campaign.
+    Returns the URL to be used in the campaign HTML content.
+    """
+    if not validate_image(file):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only JPEG, PNG, and WebP images are allowed."
+        )
+    
+    # Check file size
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    
+    if file_size > settings.MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum size is {settings.MAX_UPLOAD_SIZE / 1024 / 1024}MB"
+        )
+    
+    # Save file
+    image_url = save_uploaded_file(file, CAMPAIGN_DIR, current_user.id, "campaign")
+    
+    return {
+        "message": "Campaign image uploaded successfully",
+        "image_url": image_url
     }
 
 

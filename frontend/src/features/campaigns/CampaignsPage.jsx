@@ -7,6 +7,7 @@ import {
 import { campaignService } from '../../services/campaignService';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
+import { ImageUpload } from '../../components/common/ImageUpload';
 
 export default function CampaignsPage() {
   const { isDarkTheme, primaryColor = '#4f46e5', doctor } = useOutletContext();
@@ -78,6 +79,27 @@ export default function CampaignsPage() {
       toast.error("Error al cargar datos de campaña");
     } finally {
       setIsFetching(false);
+    }
+  };
+
+  const handleImageUpload = async (file) => {
+    if (!file) return;
+    try {
+      const response = await campaignService.uploadCampaignImage(file);
+      const imageUrl = response.image_url;
+      const baseUrl = `https://api.gynsys.net`;
+      const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+      
+      const imgHtml = `\n<div style="text-align: center; margin: 20px 0;"><img src="${fullImageUrl}" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" alt="Imagen de campaña" /></div>\n`;
+      
+      setFormData(prev => ({
+        ...prev,
+        content_html: prev.content_html + imgHtml
+      }));
+      toast.success("Imagen insertada correctamente");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Error al subir la imagen");
     }
   };
 
@@ -429,7 +451,26 @@ export default function CampaignsPage() {
                    
                    <input type="text" placeholder="Asunto (Visto por el paciente)" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-bold" />
                    
-                   <textarea rows={6} placeholder="Cuerpo del mensaje (acepta HTML)..." value={formData.content_html} onChange={(e) => setFormData({...formData, content_html: e.target.value})} className="w-full p-4 rounded-xl bg-gray-50 border-2 border-gray-100 text-xs font-medium resize-none shadow-inner" />
+                   <div className="flex flex-col gap-3">
+                      <textarea 
+                        rows={8} 
+                        placeholder="Cuerpo del mensaje (acepta HTML)..." 
+                        value={formData.content_html} 
+                        onChange={(e) => setFormData({...formData, content_html: e.target.value})} 
+                        className="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-100 dark:border-gray-700 text-xs font-medium resize-none shadow-inner" 
+                      />
+                      
+                      <div className="mt-2">
+                          <ImageUpload 
+                            label="¿Quieres adjuntar una imagen?" 
+                            onImageChange={(file) => handleImageUpload(file)}
+                            className="border-gray-100 dark:border-gray-700"
+                          />
+                          <p className="text-[10px] text-gray-500 mt-2 text-center font-medium">
+                            La imagen se insertará automáticamente al final de tu mensaje. Puedes borrar el código HTML generado si te equivocas.
+                          </p>
+                      </div>
+                    </div>
                 </div>
 
                 <button 
