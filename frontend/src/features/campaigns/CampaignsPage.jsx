@@ -185,12 +185,22 @@ export default function CampaignsPage() {
     if (formData.target_type === 'selection' && selectedContactIds.length === 0) return toast.warning("Selecciona al menos un destinatario");
 
     setIsLoading(true);
+    
+    // Decisión inteligente de destinatarios
+    let finalTargetType = formData.target_type;
+    let finalSelection = selectedContactIds;
+
+    // Si hay selección individual, mandamos esa, sin importar la pestaña
+    if (selectedContactIds.length > 0) {
+      finalTargetType = 'selection';
+    }
+
     try {
-      const payload = {
+      await campaignService.createCampaign({
         ...formData,
-        selected_contact_ids: formData.target_type === 'selection' ? selectedContactIds : null
-      };
-      await campaignService.createCampaign(payload);
+        target_type: finalTargetType,
+        selected_contact_ids: finalTargetType === 'selection' ? finalSelection : null
+      });
       toast.success("Campaña en cola");
       
       setFormData({
@@ -531,9 +541,33 @@ export default function CampaignsPage() {
                     </div>
                 </div>
 
-                <button disabled={isLoading} className="w-full h-[50px] rounded-2xl text-white font-sans font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.01] uppercase tracking-[0.2em] text-sm shadow-xl" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.8)})` }}>
-                  {isLoading ? 'ENVIANDO...' : 'LANZAR CAMPAÑA'}
-                </button>
+                <div className="flex flex-col gap-4">
+                  {selectedContactIds.length > 0 && formData.target_type !== 'selection' && (
+                     <div className="px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 flex items-center gap-3 animate-pulse">
+                        <FiAlertCircle className="text-amber-500 shrink-0" />
+                        <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                           Tienes {selectedContactIds.length} seleccionados. El envío se limitará a ellos.
+                        </p>
+                     </div>
+                  )}
+
+                  <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-5 rounded-2xl text-white font-sans font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 uppercase tracking-[0.2em] text-sm shadow-2xl group"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.8)})`,
+                      boxShadow: `0 20px 40px -10px ${hexToRgba(primaryColor, 0.4)}`
+                    }}
+                  >
+                    <FiSend className={`w-5 h-5 ${isLoading ? 'animate-ping' : 'group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform'}`} />
+                    {isLoading ? 'PROCESANDO...' : (
+                       selectedContactIds.length > 0 
+                       ? `LANZAR A LOS ${selectedContactIds.length} SELECCIONADOS` 
+                       : `LANZAR A TODO "${formData.target_type === 'all' ? 'TODOS' : formData.target_type.toUpperCase()}"`
+                    )}
+                  </button>
+               </div>
              </form>
           ) : (
              <div className="space-y-4 animate-fade-in pb-4">

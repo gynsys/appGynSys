@@ -53,7 +53,7 @@ def process_diffusion_campaign(campaign_id: int):
             
             # Sub-filters
             if campaign.target_type == "app_users":
-                # Only App Users
+                # Registered App Users
                 for u in app_users_q.all():
                     if u.email:
                         email = u.email.strip().lower()
@@ -63,8 +63,23 @@ def process_diffusion_campaign(campaign_id: int):
                             "name": u.nombre_completo,
                             "has_push": True
                         }
+                # Sync'ed manual contacts for App
+                manual_app_q = db.query(CampaignContact).filter(
+                    CampaignContact.tenant_id == campaign.tenant_id,
+                    CampaignContact.is_active == True,
+                    CampaignContact.source == "sync_cycle"
+                )
+                for mc in manual_app_q.all():
+                    m_email = mc.email.strip().lower()
+                    if m_email not in recipients:
+                        recipients[m_email] = {
+                            "type": "cycle_user",
+                            "id": mc.cycle_user_id,
+                            "name": mc.full_name,
+                            "has_push": True if mc.cycle_user_id else False
+                        }
             elif campaign.target_type == "patients":
-                # Only Patients
+                # Registered Patients
                 for p in patients_q.all():
                     if p.email:
                         email = p.email.strip().lower()
@@ -72,6 +87,21 @@ def process_diffusion_campaign(campaign_id: int):
                             "type": "patient",
                             "id": p.id,
                             "name": p.name,
+                            "has_push": False
+                        }
+                # Manual and Synced manual contacts for Patients
+                manual_pat_q = db.query(CampaignContact).filter(
+                    CampaignContact.tenant_id == campaign.tenant_id,
+                    CampaignContact.is_active == True,
+                    CampaignContact.source.in_(["manual", "sync_patient"])
+                )
+                for mc in manual_pat_q.all():
+                    m_email = mc.email.strip().lower()
+                    if m_email not in recipients:
+                        recipients[m_email] = {
+                            "type": "patient",
+                            "id": mc.patient_id,
+                            "name": mc.full_name,
                             "has_push": False
                         }
             else:
