@@ -177,20 +177,20 @@ export default function CampaignsPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       {/* Header */}
       <div 
-        className="relative overflow-hidden rounded-3xl p-10 transition-all duration-500 shadow-xl text-white group"
+        className="relative overflow-hidden rounded-3xl p-5 transition-all duration-500 shadow-lg text-white group"
         style={{ 
           background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.85)})`,
-          boxShadow: `0 20px 40px -15px ${hexToRgba(primaryColor, 0.4)}`
+          boxShadow: `0 10px 20px -10px ${hexToRgba(primaryColor, 0.4)}`
         }}
       >
         <div className="relative z-10">
-          <h1 className="text-4xl font-sans font-black mb-3 flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
-              <FiSend className="w-8 h-8 animate-pulse" />
+          <h1 className="text-2xl font-sans font-black mb-1 flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
+              <FiSend className="w-5 h-5 animate-pulse" />
             </div>
             Campañas de Difusión
           </h1>
-          <p className="max-w-xl opacity-90 font-medium text-lg leading-relaxed text-white/90">
+          <p className="max-w-xl opacity-90 font-medium text-sm leading-relaxed text-white/80">
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
