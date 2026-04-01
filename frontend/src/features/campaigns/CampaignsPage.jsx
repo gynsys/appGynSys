@@ -42,9 +42,8 @@ export default function CampaignsPage() {
 
   // Selection / Contacts State
   const [selectedContactIds, setSelectedContactIds] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('all'); // all, manual, sync_patient, sync_cycle
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [personalizeTab, setPersonalizeTab] = useState('add'); // 'add' or 'list'
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [newContact, setNewContact] = useState({ full_name: '', email: '', phone: '' });
 
   // Form State
@@ -96,14 +95,24 @@ export default function CampaignsPage() {
   const handleAddContact = async (e) => {
     e.preventDefault();
     if (!newContact.full_name || !newContact.email) return toast.warning("Nombre y Email son obligatorios");
+    
+    setIsSubmittingContact(true);
     try {
-      await campaignService.createContact(newContact);
-      toast.success("Contacto añadido");
+      const created = await campaignService.createContact(newContact);
+      toast.success("Contacto añadido y seleccionado");
+      
+      // Auto-select the new contact
+      if (created && created.id) {
+        setSelectedContactIds(prev => [...new Set([...prev, created.id])]);
+      }
+      
       setNewContact({ full_name: '', email: '', phone: '' });
-      setShowAddModal(false);
-      fetchData();
+      await fetchData();
+      setPersonalizeTab('list');
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al añadir");
+    } finally {
+      setIsSubmittingContact(false);
     }
   };
 
@@ -245,110 +254,111 @@ export default function CampaignsPage() {
                   </div>
 
                   {formData.target_type === 'selection' && (
-                    <div className="mt-6 space-y-4 animate-fade-in border-2 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/20" style={{ borderColor: hexToRgba(primaryColor, 0.2) }}>
-                       <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="flex bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 shadow-sm">
-                            {[
-                                { id: 'all', label: 'Todos' },
-                                { id: 'manual', label: 'Manual' },
-                                { id: 'sync_patient', label: 'Pacientes' },
-                                { id: 'sync_cycle', label: 'App' }
-                            ].map(f => (
-                                <button 
-                                    key={f.id} type="button" onClick={() => setSourceFilter(f.id)}
-                                    className={`px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all ${sourceFilter === f.id ? 'text-white shadow-md' : 'text-gray-500'}`}
-                                    style={sourceFilter === f.id ? { backgroundColor: primaryColor } : {}}
-                                    onMouseEnter={(e) => { if(sourceFilter !== f.id) e.target.style.color = primaryColor; }}
-                                    onMouseLeave={(e) => { if(sourceFilter !== f.id) e.target.style.color = ''; }}
-                                >
-                                    {f.label}
-                                </button>
-                            ))}
-                          </div>
-                          
-                          <div className="relative flex-1 min-w-[150px]">
-                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input 
-                              type="text" placeholder="Buscar por nombre o email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 text-[10px] rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 outline-none transition-all shadow-sm focus:border-transparent"
-                              style={{ border: `2px solid ${hexToRgba(primaryColor, 0.2)}` }}
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <button 
-                              type="button" onClick={handleSyncContacts} disabled={isSyncing} 
-                              className="p-2 bg-white dark:bg-gray-800 rounded-lg border" 
-                              style={{ color: primaryColor, borderColor: hexToRgba(primaryColor, 0.2) }}
-                              title="Sincronizar base de datos"
-                            >
-                              {isSyncing ? <FiRefreshCw className="animate-spin" /> : <FiRefreshCw />}
-                            </button>
-                            <button 
-                              type="button" onClick={() => setShowAddModal(true)} 
-                              className="px-3 py-2 text-white rounded-lg text-[10px] font-black flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95"
-                              style={{ backgroundColor: primaryColor }}
-                            >
-                              <FiPlus /> AÑADIR
-                            </button>
-                          </div>
+                    <div className="mt-6 space-y-6 animate-fade-in border-2 rounded-3xl p-6 bg-gray-50/50 dark:bg-gray-900/20" style={{ borderColor: hexToRgba(primaryColor, 0.2) }}>
+                       {/* Sub-tabs for Personalization */}
+                       <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+                          <button 
+                            type="button" 
+                            onClick={() => setPersonalizeTab('add')}
+                            className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${personalizeTab === 'add' ? '' : 'border-transparent text-gray-400'}`}
+                            style={personalizeTab === 'add' ? { color: primaryColor, borderColor: primaryColor } : {}}
+                          >
+                            Añadir Manual
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => setPersonalizeTab('list')}
+                            className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${personalizeTab === 'list' ? '' : 'border-transparent text-gray-400'}`}
+                            style={personalizeTab === 'list' ? { color: primaryColor, borderColor: primaryColor } : {}}
+                          >
+                            Lista de Envío 
+                            <span className="px-1.5 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-[8px]">{selectedContactIds.length}</span>
+                          </button>
                        </div>
 
-                       <div className="max-h-[300px] overflow-y-auto rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
-                          <table className="w-full text-left border-collapse text-xs">
-                             <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm">
-                                <tr>
-                                   <th className="p-3 w-8">
-                                     <button 
-                                      type="button" onClick={toggleAllSelection} 
-                                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${selectedContactIds.length > 0 ? 'text-white' : 'border-gray-300'}`}
-                                      style={selectedContactIds.length > 0 ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
-                                     >
-                                       {selectedContactIds.length === filteredContacts.length && selectedContactIds.length > 0 && <FiCheck className="w-3 h-3" />}
-                                       {selectedContactIds.length > 0 && selectedContactIds.length < filteredContacts.length && <FiMinus className="w-3 h-3" />}
-                                     </button>
-                                   </th>
-                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
-                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
-                                   <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
-                                   <th className="p-3 text-right"></th>
-                                </tr>
-                             </thead>
-                             <tbody>
-                                {filteredContacts.map(c => (
-                                  <tr 
-                                   key={c.id} 
-                                   onClick={() => setSelectedContactIds(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} 
-                                   className={`border-t border-gray-50 dark:border-gray-700 transition-colors cursor-pointer hover:bg-gray-50/50`}
-                                   style={selectedContactIds.includes(c.id) ? { backgroundColor: hexToRgba(primaryColor, 0.1) } : {}}
-                                  >
-                                    <td className="p-3">
-                                      <div 
-                                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${selectedContactIds.includes(c.id) ? 'text-white' : 'border-gray-300'}`}
-                                       style={selectedContactIds.includes(c.id) ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
-                                      >
-                                        {selectedContactIds.includes(c.id) && <FiCheck className="w-3 h-3" />}
-                                      </div>
-                                    </td>
-                                    <td className="p-3 font-bold">{c.full_name}</td>
-                                    <td className="p-3 text-gray-700 dark:text-gray-400 hidden md:table-cell">{c.email}</td>
-                                    <td className="p-3">
-                                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${
-                                        c.source === 'manual' ? 'bg-amber-100 text-amber-700' :
-                                        c.source === 'sync_patient' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-purple-100 text-purple-700'
-                                      }`}>
-                                        {c.source === 'manual' ? 'Manual' : c.source === 'sync_patient' ? 'Paciente' : 'App'}
-                                      </span>
-                                    </td>
-                                    <td className="p-3 text-right">
-                                      <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteContact(c.id); }} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><FiTrash2 /></button>
-                                    </td>
-                                  </tr>
-                                ))}
-                             </tbody>
-                          </table>
-                          {filteredContacts.length === 0 && <div className="p-8 text-center text-gray-400 italic">No hay contactos</div>}
-                       </div>
+                       {personalizeTab === 'add' ? (
+                         <div className="space-y-4 animate-fade-in">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                               <div className="space-y-1">
+                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Nombre Completo</span>
+                                  <input 
+                                    type="text" placeholder="Ej: Maria Lopez" value={newContact.full_name} 
+                                    onChange={(e) => setNewContact({...newContact, full_name: e.target.value})} 
+                                    className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold text-xs shadow-sm focus:ring-2 focus:ring-opacity-20" 
+                                    style={{ '--tw-ring-color': primaryColor }}
+                                  />
+                               </div>
+                               <div className="space-y-1">
+                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Email</span>
+                                  <input 
+                                    type="email" placeholder="maria@ejemplo.com" value={newContact.email} 
+                                    onChange={(e) => setNewContact({...newContact, email: e.target.value})} 
+                                    className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold text-xs shadow-sm focus:ring-2 focus:ring-opacity-20" 
+                                    style={{ '--tw-ring-color': primaryColor }}
+                                  />
+                               </div>
+                               <div className="space-y-1">
+                                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Teléfono (opcional)</span>
+                                  <input 
+                                    type="text" placeholder="+54 9 11..." value={newContact.phone} 
+                                    onChange={(e) => setNewContact({...newContact, phone: e.target.value})} 
+                                    className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold text-xs shadow-sm focus:ring-2 focus:ring-opacity-20" 
+                                    style={{ '--tw-ring-color': primaryColor }}
+                                  />
+                               </div>
+                            </div>
+                            <div className="flex justify-end">
+                               <button 
+                                type="button"
+                                onClick={handleAddContact}
+                                disabled={isSubmittingContact}
+                                className="px-8 py-3 rounded-xl text-white text-[10px] font-black shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                                style={{ backgroundColor: primaryColor, boxShadow: `0 10px 15px -5px ${hexToRgba(primaryColor, 0.4)}` }}
+                               >
+                                {isSubmittingContact ? 'GUARDANDO...' : 'GUARDAR Y SELECCIONAR'}
+                               </button>
+                            </div>
+                         </div>
+                       ) : (
+                         <div className="space-y-4 animate-fade-in">
+                            <div className="max-h-[300px] overflow-y-auto rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                               <table className="w-full text-left border-collapse text-xs">
+                                  <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm">
+                                     <tr>
+                                        <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
+                                        <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                        <th className="p-3 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
+                                        <th className="p-3 text-right"></th>
+                                     </tr>
+                                  </thead>
+                                  <tbody>
+                                     {contacts.filter(c => selectedContactIds.includes(c.id)).map(c => (
+                                       <tr key={c.id} className="border-t border-gray-50 dark:border-gray-700 transition-colors">
+                                         <td className="p-3 font-bold">{c.full_name}</td>
+                                         <td className="p-3 text-gray-700 dark:text-gray-400 hidden md:table-cell">{c.email}</td>
+                                         <td className="p-3 uppercase text-[8px] font-black">{c.source}</td>
+                                         <td className="p-3 text-right">
+                                           <button 
+                                              type="button" 
+                                              onClick={() => setSelectedContactIds(prev => prev.filter(id => id !== c.id))} 
+                                              className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                              title="Quitar de esta campaña"
+                                            >
+                                              <FiMinus />
+                                            </button>
+                                         </td>
+                                       </tr>
+                                     ))}
+                                  </tbody>
+                               </table>
+                               {selectedContactIds.length === 0 && (
+                                 <div className="p-8 text-center text-gray-400 italic">
+                                   No hay destinatarios seleccionados. Usa "Añadir Manual" para agregar uno.
+                                 </div>
+                               )}
+                            </div>
+                         </div>
+                       )}
                     </div>
                   )}
                 </div>
@@ -447,37 +457,6 @@ export default function CampaignsPage() {
         </div>
       )}
 
-      {/* Manual Add Contact Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className={`w-full max-w-sm p-8 rounded-3xl shadow-2xl ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
-             <h3 className="text-xl font-black mb-6 uppercase flex items-center gap-2" style={{ color: primaryColor }}><FiUserPlus /> Nuevo Contacto</h3>
-             <form onSubmit={handleAddContact} className="space-y-4">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Nombre Completo</span>
-                  <input type="text" placeholder="Ej: Maria Lopez" value={newContact.full_name} onChange={(e) => setNewContact({...newContact, full_name: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Email</span>
-                  <input type="email" placeholder="maria@ejemplo.com" value={newContact.email} onChange={(e) => setNewContact({...newContact, email: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black uppercase text-gray-400 px-1">Teléfono (opcional)</span>
-                  <input type="text" placeholder="+54 9 11..." value={newContact.phone} onChange={(e) => setNewContact({...newContact, phone: e.target.value})} className="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 font-bold text-xs" />
-                </div>
-                <div className="flex gap-4 pt-4">
-                   <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 text-xs font-bold text-black/60 dark:text-gray-400">Cerrar</button>
-                   <button 
-                    className="flex-2 px-6 py-3 rounded-xl text-white text-xs font-black shadow-lg"
-                    style={{ backgroundColor: primaryColor, boxShadow: `0 10px 15px -3px ${hexToRgba(primaryColor, 0.4)}` }}
-                   >
-                    GUARDAR
-                   </button>
-                </div>
-             </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
