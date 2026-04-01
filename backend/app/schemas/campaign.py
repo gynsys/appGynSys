@@ -46,6 +46,11 @@ class CampaignContactBase(BaseModel):
 class CampaignContactCreate(CampaignContactBase):
     pass
 
+class CampaignContactUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
 class CampaignContactResponse(CampaignContactBase):
     model_config = ConfigDict(from_attributes=True)
     

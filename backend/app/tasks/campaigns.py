@@ -96,6 +96,22 @@ def process_diffusion_campaign(campaign_id: int):
                             "name": u.nombre_completo,
                             "has_push": True
                         }
+                
+                # Manual external contacts (not from Patient or CycleUser)
+                manual_contacts = db.query(CampaignContact).filter(
+                    CampaignContact.tenant_id == campaign.tenant_id,
+                    CampaignContact.is_active == True,
+                    CampaignContact.source == "manual"
+                ).all()
+                for mc in manual_contacts:
+                    m_email = mc.email.strip().lower()
+                    if m_email not in recipients:
+                        recipients[m_email] = {
+                            "type": "patient", # Treated as direct email recipient
+                            "id": None,
+                            "name": mc.full_name,
+                            "has_push": False
+                        }
 
         # 2. Create PendingNotifications
         sent_count = 0

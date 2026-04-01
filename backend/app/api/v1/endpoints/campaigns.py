@@ -17,6 +17,7 @@ from app.schemas.campaign import (
     DiffusionCampaignResponse, 
     DiffusionSource,
     CampaignContactCreate,
+    CampaignContactUpdate,
     CampaignContactResponse
 )
 from app.api.v1.endpoints.auth import get_current_user
@@ -157,6 +158,46 @@ async def create_contact(
         email=contact_in.email.lower().strip()
     )
     db.add(contact)
+    db.commit()
+    db.refresh(contact)
+    return contact
+
+@router.patch("/contacts/{contact_id}", response_model=CampaignContactResponse)
+async def update_contact(
+    contact_id: int,
+    contact_in: CampaignContactUpdate,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Update a manual campaign contact.
+    """
+    contact = db.query(CampaignContact).filter(
+        CampaignContact.id == contact_id,
+        CampaignContact.tenant_id == current_user.id
+    ).first()
+    
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+        
+    update_data = contact_in.model_dump(exclude_unset=True)
+    
+    if "email" in update_data:
+        new_email = update_data["email"].lower().strip()
+        # Check if email taken by another contact
+        existing = db.query(CampaignContact).filter(
+            CampaignContact.tenant_id == current_user.id,
+            CampaignContact.email == new_email,
+            CampaignContact.id != contact_id,
+            CampaignContact.is_active == True
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered for another contact")
+        update_data["email"] = new_email
+
+    for field, value in update_data.items():
+        setattr(contact, field, value)
+        
     db.commit()
     db.refresh(contact)
     return contact
