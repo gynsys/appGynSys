@@ -177,16 +177,16 @@ export default function CampaignsPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       {/* Header */}
       <div 
-        className="relative overflow-hidden rounded-3xl p-5 transition-all duration-500 shadow-lg text-white group"
+        className="relative overflow-hidden rounded-3xl p-5 shadow-lg text-white"
         style={{ 
-          background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.85)})`,
+          background: `linear-gradient(135deg, ${primaryColor}, ${hexToRgba(primaryColor, 0.9)})`,
           boxShadow: `0 10px 20px -10px ${hexToRgba(primaryColor, 0.4)}`
         }}
       >
         <div className="relative z-10">
           <h1 className="text-2xl font-sans font-black mb-1 flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
-              <FiSend className="w-5 h-5 animate-pulse" />
+            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+              <FiSend className="w-5 h-5" />
             </div>
             Campañas de Difusión
           </h1>
@@ -194,10 +194,6 @@ export default function CampaignsPage() {
             Conecta con tus pacientes de forma masiva. Envía promociones, noticias o recomendaciones directo a su Email y App GynSys.
           </p>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-white/20 transition-colors duration-700"></div>
-        <div className="absolute bottom-0 left-1/2 w-40 h-40 bg-black/10 rounded-full blur-2xl -mb-10 group-hover:bg-black/20 transition-colors duration-700"></div>
       </div>
 
       {/* Main Tabs */}
