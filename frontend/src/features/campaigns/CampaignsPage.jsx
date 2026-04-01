@@ -172,9 +172,20 @@ export default function CampaignsPage() {
       };
       await campaignService.createCampaign(payload);
       toast.success("Campaña en cola");
+      
+      // Clear form after success
+      setFormData({
+        title: '',
+        subject: '',
+        content_html: '',
+        source_type: 'custom',
+        source_id: null,
+        target_type: 'all'
+      });
+      setSelectedContactIds([]);
+      
       setActiveTab('history');
       fetchData();
-      setSelectedContactIds([]);
     } catch (error) {
       toast.error("Error al enviar");
     } finally {
