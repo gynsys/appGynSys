@@ -69,8 +69,7 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
                   className="text-xl font-sans font-semibold px-3 py-1 rounded-xl transition-all duration-300"
                   style={{ 
                     backgroundColor: hexToRgba(primaryColor, 0.05),
-                    color: isDarkTheme ? '#ffffff' : '#111827',
-                    borderLeft: `3px solid ${primaryColor}` 
+                    color: isDarkTheme ? '#ffffff' : '#111827' 
                   }}
                 >
                   {doctor.nombre_completo}
