@@ -66,6 +66,8 @@ export default function CampaignsPage() {
     target_type: 'all'
   });
 
+  const [selectedCampaignImage, setSelectedCampaignImage] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -90,20 +92,17 @@ export default function CampaignsPage() {
   };
 
   const handleImageUpload = async (file) => {
-    if (!file) return;
+    if (!file) {
+        setSelectedCampaignImage(null);
+        return;
+    }
     try {
       const response = await campaignService.uploadCampaignImage(file);
       const imageUrl = response.image_url;
       // getImageUrl already handles prepending the server root in production
       const fullImageUrl = getImageUrl(imageUrl);
-      
-      const imgHtml = `\n<div style="text-align: center; margin: 20px 0;"><img src="${fullImageUrl}" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" alt="Imagen de campaña" /></div>\n`;
-      
-      setFormData(prev => ({
-        ...prev,
-        content_html: prev.content_html + imgHtml
-      }));
-      toast.success("Imagen insertada correctamente");
+      setSelectedCampaignImage(fullImageUrl);
+      toast.success("Imagen adjuntada correctamente");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error al subir la imagen");
@@ -196,9 +195,16 @@ export default function CampaignsPage() {
       finalTargetType = 'selection';
     }
 
+    // ENSAMBLADO FINAL: Añadir imagen si existe
+    let finalContent = formData.content_html;
+    if (selectedCampaignImage) {
+        finalContent += `\n<div style="text-align: center; margin: 20px 0;"><img src="${selectedCampaignImage}" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" alt="Imagen de campaña" /></div>\n`;
+    }
+
     try {
       await campaignService.createCampaign({
         ...formData,
+        content_html: finalContent,
         target_type: finalTargetType,
         selected_contact_ids: finalTargetType === 'selection' ? finalSelection : null
       });
@@ -213,6 +219,7 @@ export default function CampaignsPage() {
         target_type: 'all'
       });
       setSelectedContactIds([]);
+      setSelectedCampaignImage(null);
       
       setActiveTab('history');
       fetchData();
@@ -529,9 +536,10 @@ export default function CampaignsPage() {
                         className="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-300 dark:border-gray-700 text-sm font-medium resize-none shadow-inner" 
                       />
                       
-                      <div className="mt-2">
+                      <div className="mt-2 text-gray-900 dark:text-white">
                           <ImageUpload 
                             label="¿Quieres adjuntar una imagen?" 
+                            currentImage={selectedCampaignImage}
                             onImageChange={(file) => handleImageUpload(file)}
                             className="border-gray-100 dark:border-gray-700 shadow-sm"
                           />
