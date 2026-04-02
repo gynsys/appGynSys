@@ -149,21 +149,27 @@ def process_diffusion_campaign(campaign_id: int):
         email_count = 0
 
         for email, data in recipients.items():
+            # SAFETY CHECK: Skip if email is missing or malformed
+            if not email or "@" not in email:
+                logger.warning(f"Skipping campaign recipient {data['name']} (ID: {data['id']}) due to invalid email: '{email}'")
+                continue
+
             pending = PendingNotification(
                 subject=campaign.subject,
                 body=campaign.content_html,
                 message_text=campaign.content_text or campaign.subject,
+                # Enviar inmediatamente (o en el próximo procesado)
                 scheduled_for=datetime.utcnow(),
                 channel="dual" if data["has_push"] else "email",
                 status="pending",
                 doctor_id=campaign.tenant_id,
-                # Email snapshot for resilience
+                # Snapshot de correo: ESTO ES LO QUE PROTEGE EL ENVÍO CONTRA CAMBIOS EN EL PERFIL
                 recipient_email_direct=email,
                 recipient_name_direct=data["name"]
             )
             
-            # Link to internal record if exists
-            if data["type"] == "cycle_user":
+            # Link to internal record if exists (for push and metadata)
+            if data["type"] == "cycle_user" and data["id"]:
                 pending.recipient_id = data["id"]
             
             db.add(pending)

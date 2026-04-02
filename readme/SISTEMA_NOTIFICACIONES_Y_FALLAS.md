@@ -1,6 +1,6 @@
 # Sistema de Notificaciones de Campañas y Depuración de Fallas
 
-Este documento detalla el funcionamiento del sistema de difusión de campañas de GyNSys, el diagnóstico de la falla de redirección al doctor y las medidas correctivas aplicadas el 01/04/2026.
+Este documento detalla el funcionamiento del sistema de difusión de campañas de GyNSys, el diagnóstico de la falla de redirección al doctor y las medidas correctivas permanentes aplicadas.
 
 ## 1. Arquitectura del Flujo de Notificación
 
@@ -8,52 +8,53 @@ El sistema opera en tres capas desacopladas para garantizar escalabilidad:
 
 ### A. Capa de Expansión (`backend/app/tasks/campaigns.py`)
 - Al lanzar una campaña, la tarea `process_diffusion_campaign` busca los destinatarios según el filtro (Todos, Pacientes, Usuarios App o Selección Manual).
-- **Snapshot de Resiliencia**: Se crea un registro en `PendingNotification` donde se graba permanentemente el campo `recipient_email_direct`. Esto asegura que si el email de un paciente cambia después, la campaña se envíe al correo que se seleccionó originalmente.
+- **Snapshot de Resiliencia**: Se graba obligatoriamente el campo `recipient_email_direct`. Esto asegura que si el email de un paciente cambia después, la campaña se envíe al correo original seleccionado. Se han añadido validaciones para omitir registros con correos malformados o vacíos.
 
 ### B. Capa de Cola (`backend/app/tasks/notifications.py`)
 - Un proceso de **Celery Beat** recorre cada 60 segundos la tabla `pending_notifications`.
 - Selecciona los registros con estado `pending` y los envía al procesador central.
 
 ### C. Capa de Entrega (`backend/app/services/notifications/sender.py`)
-- Es el cerebro que decide a dónde va el correo y el Push.
-- Utiliza `_send_integrated_email` para despachar vía **Resend** (API) o **SMTP** (Gmail).
+- Es el cerebro que decide a dónde va el correo y el Push. Se ha implementado una jerarquía estricta de seguridad.
 
 ---
 
 ## 2. Diagnóstico de la Falla: "La Sombra del Doctor"
 
 ### El Problema
-Los correos de campaña dirigidos a suscriptores externos (ej. `unicobnb20@gmail.com`) estaban llegando al buzón de la doctora (`milanopabloe@gmail.com`).
+Los correos de campaña dirigidos a suscriptores externos estaban llegando al buzón de la doctora (`milanopabloe@gmail.com`).
 
-### Causas Raíz Identificadas
-1.  **Prioridad de Perfil (Falla de Jerarquía)**: La lógica del `sender.py` priorizaba el `recipient_id` (el ID interno de la App) sobre el `recipient_email_direct` (el email escrito). Como muchos registros de prueba compartían el mismo ID de usuario o estaban mal mapeados, el sistema consultaba el perfil y encontraba el email de la doctora, enviándolo ahí e ignorando el email de la campaña.
-2.  **Fallback Administrativo**: Existía una regla de "Última Opción" que redirigía cualquier notificación sin destinatario claro al correo del doctor. En condiciones de error, esto inundaba el buzón del inquilino con ruido.
-3.  **Falsos Positivos ("Fake Sent")**: El sistema marcaba las notificaciones como `sent` incluso si el servidor de correo reportaba un fallo, ocultando errores de entrega o redirecciones.
-
----
-
-## 3. Acciones Correctivas Realizadas
-
-### [BACKEND] Inversión de Prioridad Directa
-Se modificó `sender.py` para aplicar la jerarquía **"Direct Email First"**:
-- **PASO 1**: Usar `recipient_email_direct` si existe (Snapshot de campaña). **PRIORIDAD ABSOLUTA**.
-- **PASO 2**: Usar email de perfil de usuario (`CycleUser`) solo si no hay email directo.
-- **PASO 3**: Bloqueo total del fallback al doctor si la notificación tiene un destinatario definido.
-
-### [BACKEND] Validación Real de Envío
-Se actualizó el despachador para capturar el valor booleano de éxito de los servicios SMTP/Resend. Ahora, si el correo no sale, el estado es `failed` y se registra el error técnico específico.
-
-### [FRONTEND] Prioridad de Selección
-Se rediseñó la lógica de envío en la UI para que, si el usuario hace clic en los checkboxes de la lista (Selección Manual), el sistema ignore la pestaña activa (ej. "Pacientes") y envíe **exclusivamente** a los seleccionados, evitando envíos masivos accidentales.
-
-### [DATA] Limpieza de Contactos
-Se realizó un **Hard Delete** de registros erróneos (ej. `unicobnc20` con C) para eliminar duplicados y confusiones visuales en el panel.
+### Causas Raíz Corregidas
+1.  **Falla de Jerarquía**: El sistema prefería el perfil del usuario incluso si había un correo directo de campaña. Si el perfil tenía el correo del doctor (por pruebas previas), ocurría el desvío.
+2.  **Fallback Administrativo Indiscriminado**: Cualquier error en la resolución del destinatario enviaba el correo al administrador ("Doctor Fallback").
+3.  **Estado Sent Ficticio**: No se validaba el retorno real del servicio de email.
 
 ---
 
-## 4. Estado Actual y Recomendaciones
-- El sistema es ahora **resiliente al cambio de emails**: una vez lanzada la campaña, el destinatario queda "bloqueado".
-- **Monitoreo en Resend**: Se recomienda verificar periódicamente el dashboard de Resend, ya que si un correo aparece como "Suppressed", el sistema GynSys ahora lo marcará como `failed` correctamente.
+## 3. Acciones Correctivas Aplicadas (Producción)
+
+### [BACKEND] Jerarquía Estricta con Salvaguarda SaaS
+Se modificó `sender.py` para aplicar la jerarquía **"Snapshot First - SaaS Protected"**:
+- **PRIORIDAD 1 (Campañas)**: Si existe `recipient_email_direct`, se usa y **se prohíbe** consultar el perfil. Esto elimina la redirección fantasma.
+- **PRIORIDAD 2 (SaaS Core)**: Si no hay email directo, se usa el perfil del usuario (`recipient_id`). Esto mantiene intactas las notificaciones del SaaS para pacientes.
+- **PRIORIDAD 3 (Admin)**: El correo del doctor se reserva **exclusivamente** para notificaciones administrativas (sin destinatario). Nunca se usará como fallback para campañas.
+
+### [BACKEND] Validación de Entrega
+El sistema ahora captura el estado booleano de **Resend/SMTP**. Si el envío falla, la notificación se marca como `failed` con su error correspondiente en lugar de aparecer como exitosa.
 
 ---
-*Documentación generada para garantizar la continuidad del soporte técnico y evitar regresiones en el módulo de difusión.*
+
+## 4. Mantenimiento y Limpieza de Datos
+
+Para evitar que registros malformados persistan en la lista de selección, se recomienda ejecutar periódicamente:
+
+```sql
+-- Limpiar contactos con errores tipográficos (B vs C)
+DELETE FROM campaign_contact WHERE email ILIKE '%unicobnc%';
+
+-- Eliminar correos del doctor de la lista de difusión externa
+DELETE FROM campaign_contact WHERE email = 'milanopabloe@gmail.com';
+```
+
+---
+*Ultima actualización: 01/04/2026 - Sistema validado para Producción Local.*

@@ -61,7 +61,7 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     Envia por Push + Email de forma DUAL (Soporta Usuaria o Doctora).
     Si log_id está presente, se incluye en el payload de Push para tracking.
     """
-    # --- ESTRATEGIA DE DESTINATARIO ---
+    # --- ESTRATEGIA DE DESTINATARIO (GyNSys Hierarchy) ---
     actor = None
     email_address = None
     
@@ -69,25 +69,31 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     if item.recipient_id:
         actor = db.query(CycleUser).filter(CycleUser.id == item.recipient_id).first()
 
-    # 2. DETERMINAR EMAIL_ADDRESS (Prioridad: Snapshot de Campaña > Perfil Usuario > Admin)
+    # 2. DETERMINAR EMAIL_ADDRESS
+    # REGLA DE ORO: Snapshot de Campaña (Direct) > Perfil Usuario > Doctor Fallback (Solo Admin)
     
     # A. Prioridad 1: Email grabado en la notificación (Snapshots de Campaña/Manual)
     if item.recipient_email_direct:
-        email_address = item.recipient_email_direct
+        email_address = item.recipient_email_direct.strip()
+        # SALVAGUARDA: Si hay email directo, NO consultamos el email del actor bajo ninguna circunstancia
+        # para evitar el problema de "La Sombra del Doctor" si el perfil está viciado.
         
-    # B. Prioridad 2: Email del perfil del usuario (Si no hay snapshot directo)
+    # B. Prioridad 2: Email del perfil del usuario (SaaS Core: Citas, Recordatorios de Sistema)
+    # Solo si NO se definió un email directo explícito.
     if not email_address and actor:
         email_address = actor.email
             
-    # C. Prioridad 3: Doctora (Solo para notificaciones administrativas puras)
-    if not email_address and item.doctor_id and not item.recipient_id and not item.recipient_email_direct:
+    # C. Prioridad 3: Doctora (Solo para notificaciones administrativas puras del SaaS)
+    # Bloqueamos este fallback si existe un destinatario definido (ID o Email Directo)
+    is_pure_admin = not item.recipient_id and not item.recipient_email_direct
+    if not email_address and item.doctor_id and is_pure_admin:
         doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
         if doctor: 
             email_address = doctor.email
             actor = doctor # Para PUSH administrativo si aplica
         
     if not email_address:
-        return False, None, f"Target email not found (item_id: {item.id})"
+        return False, None, f"Target email not found (item_id: {item.id}, is_admin: {is_pure_admin})"
     
     # Usuario pidió que absolutamente todas sean duales (Email + Push)
     # Ignoramos la preferencia del item si no es dual, a menos que el canal esté vacío
