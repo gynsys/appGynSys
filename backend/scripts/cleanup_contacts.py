@@ -7,15 +7,12 @@ current_file = os.path.abspath(__file__)
 backend_root = os.path.dirname(os.path.dirname(current_file))
 sys.path.insert(0, backend_root)
 
-# USAR DATABASE_URL DEL ENTORNO (Configurado en el contenedor de Docker)
+# USAR DATABASE_URL DEL ENTORNO
 db_url = os.getenv("DATABASE_URL")
 
 if not db_url:
     print("ERROR: DATABASE_URL no encontrada en el entorno.")
     sys.exit(1)
-
-print(f"DEBUG: Sys Path pronto con: {backend_root}")
-print(f"DEBUG: Conectando a la base de datos de producción...")
 
 try:
     from app.db.base import SessionLocal
@@ -32,23 +29,23 @@ def cleanup():
         db.execute(text("SELECT 1"))
         print("DEBUG: Conexión a Base de Datos de Producción SaaS Exitosa.")
 
-        # 1. Buscar contactos con errores tipográficos ('B vs C')
+        # 1. Limpieza de errores tipográficos (B vs C) - Búsqueda Ampliada
         typo_contacts = db.query(CampaignContact).filter(
-            CampaignContact.email.ilike('%unicobnc20%')
+            CampaignContact.email.ilike('%unicobn%')
         ).all()
         
-        print(f"Encontrados {len(typo_contacts)} contactos con el error tipográfico 'unicobnc20'.")
+        print(f"Encontrados {len(typo_contacts)} contactos con el error 'unicobn'.")
         for c in typo_contacts:
             print(f" - Eliminando Permanentemente (Hard Delete): {c.full_name} ({c.email})")
             db.delete(c)
 
-        # 2. Buscar contactos que usan el correo del doctor (Redirección Fantasma)
-        doctor_email = 'milanopabloe@gmail.com'
+        # 2. Limpieza de correo del doctor en contactos externos - Búsqueda Ampliada
+        doctor_email_pattern = '%milanopabloe%'
         doctor_contacts = db.query(CampaignContact).filter(
-            CampaignContact.email == doctor_email
+            CampaignContact.email.ilike(doctor_email_pattern)
         ).all()
         
-        print(f"Encontrados {len(doctor_contacts)} contactos usando el correo del doctor ({doctor_email}).")
+        print(f"Encontrados {len(doctor_contacts)} contactos relacionados al doctor.")
         for c in doctor_contacts:
             print(f" - Eliminando contacto de difusión erróneo: {c.full_name} ({c.email})")
             db.delete(c)
