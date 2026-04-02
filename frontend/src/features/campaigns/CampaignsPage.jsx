@@ -67,6 +67,7 @@ export default function CampaignsPage() {
   });
 
   const [selectedCampaignImage, setSelectedCampaignImage] = useState(null);
+  const [selectedSourceMeta, setSelectedSourceMeta] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -195,8 +196,27 @@ export default function CampaignsPage() {
       finalTargetType = 'selection';
     }
 
-    // ENSAMBLADO FINAL: Añadir imagen si existe
+    // ENSAMBLADO FINAL: Unir Mensaje + Fuente + Imagen
     let finalContent = formData.content_html;
+
+    // 1. Añadir Tarjeta de Fuente (Blog/Recomendación) si existe
+    if (selectedSourceMeta) {
+      const cardHtml = `
+        <div style="margin-top: 30px; padding: 25px; border-radius: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb; font-family: sans-serif;">
+          <h2 style="color: ${primaryColor}; margin-top: 0; font-size: 18px;">${selectedSourceMeta.title}</h2>
+          ${selectedSourceMeta.summary ? `<p style="font-style: italic; color: #6b7280; border-left: 4px solid ${primaryColor}; padding-left: 15px; margin-bottom: 20px;">${selectedSourceMeta.summary}</p>` : ''}
+          <div style="text-align: center; margin-top: 25px;">
+            <a href="${selectedSourceMeta.url}" style="background-color: ${primaryColor}; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 14px;">
+              VER INFORMACIÓN COMPLETA
+            </a>
+          </div>
+          <p style="margin-top: 30px; font-size: 11px; color: #9ca3af; text-align: center;">Enviado desde la plataforma digital de ${doctor?.nombre_completo || 'tu doctora'}.</p>
+        </div>
+      `;
+      finalContent += cardHtml;
+    }
+
+    // 2. Añadir Imagen al final si existe
     if (selectedCampaignImage) {
         finalContent += `\n<div style="text-align: center; margin: 20px 0;"><img src="${selectedCampaignImage}" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" alt="Imagen de campaña" /></div>\n`;
     }
@@ -220,6 +240,7 @@ export default function CampaignsPage() {
       });
       setSelectedContactIds([]);
       setSelectedCampaignImage(null);
+      setSelectedSourceMeta(null);
       
       setActiveTab('history');
       fetchData();
@@ -477,9 +498,11 @@ export default function CampaignsPage() {
                   </h2>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <select 
+                        value={formData.source_id ? `${formData.source_type}:${formData.source_id}` : 'custom'}
                         onChange={(e) => {
                           if (e.target.value === 'custom') {
                             setFormData({...formData, source_type: 'custom', source_id: null, title: '', subject: '', content_html: ''});
+                            setSelectedSourceMeta(null);
                           } else {
                             const [type, id] = e.target.value.split(':');
                             const src = sources.find(s => s.id === parseInt(id) && s.type === type);
@@ -487,27 +510,19 @@ export default function CampaignsPage() {
                               const baseUrl = `https://gynsys.net/p/${doctor?.slug_url || 'clinica'}`;
                               const fullUrl = src.url?.startsWith('http') ? src.url : `${baseUrl}${src.url}`;
                               
-                              const htmlContent = `
-                                <div style="font-family: sans-serif; line-height: 1.6; color: #374151;">
-                                  <h2 style="color: ${primaryColor}; margin-bottom: 10px;">¡Hola! Tengo algo nuevo para ti.</h2>
-                                  <p style="margin-bottom: 20px;">Te invito a revisar esta información que he preparado especialmente para mis pacientes: <strong>"${src.title}"</strong></p>
-                                  ${src.summary ? `<p style="font-style: italic; color: #6b7280; border-left: 4px solid ${primaryColor}; padding-left: 15px; margin-bottom: 20px;">${src.summary}</p>` : ''}
-                                  <div style="margin-top: 30px; text-align: center;">
-                                    <a href="${fullUrl}" style="background-color: ${primaryColor}; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">
-                                      VER INFORMACIÓN COMPLETA
-                                    </a>
-                                  </div>
-                                  <p style="margin-top: 40px; font-size: 12px; color: #9ca3af;">Enviado desde la plataforma digital de ${doctor?.nombre_completo || 'tu doctora'}.</p>
-                                </div>
-                              `;
-                              
+                              setSelectedSourceMeta({
+                                title: src.title,
+                                summary: src.summary,
+                                url: fullUrl
+                              });
+
                               setFormData({
                                 ...formData, 
                                 source_type: type, 
                                 source_id: src.id, 
                                 title: `Difusión: ${src.title}`, 
                                 subject: src.title, 
-                                content_html: htmlContent.trim()
+                                content_html: `¡Hola! Te comparto esta información importante para tu bienestar: "${src.title}". Espero que te sea de gran utilidad.\n\nSaludos.`
                               });
                             }
                           }
@@ -524,6 +539,29 @@ export default function CampaignsPage() {
                       </select>
                       <input type="text" placeholder="Título interno de la campaña" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="p-4 rounded-lg bg-gray-50 border-2 border-gray-300 dark:border-gray-700 text-sm font-bold shadow-sm" />
                    </div>
+
+                   {selectedSourceMeta && (
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 animate-in slide-in-from-left duration-300">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-blue-500 text-white">
+                            <FiFileText className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-blue-400">Contenido Adjunto</p>
+                            <p className="text-sm font-bold text-blue-900 dark:text-blue-100">{selectedSourceMeta.title}</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setSelectedSourceMeta(null);
+                            setFormData({...formData, source_type: 'custom', source_id: null});
+                          }}
+                          className="p-2 text-blue-400 hover:text-red-500 transition-colors"
+                        >
+                          <FiTrash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                   )}
                    
                    <input type="text" placeholder="Asunto (Visto por el paciente)" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full p-4 rounded-lg bg-gray-50 border-2 border-gray-300 dark:border-gray-700 text-sm font-bold shadow-sm" />
                    
