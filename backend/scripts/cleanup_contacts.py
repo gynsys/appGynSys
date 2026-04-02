@@ -7,11 +7,15 @@ current_file = os.path.abspath(__file__)
 backend_root = os.path.dirname(os.path.dirname(current_file))
 sys.path.insert(0, backend_root)
 
-# FORZAR DATABASE_URL LOCAL (según .env del usuario)
-os.environ["DATABASE_URL"] = "postgresql://postgres:gyn13409534@127.0.0.1:5433/gynsys"
+# USAR DATABASE_URL DEL ENTORNO (Configurado en el contenedor de Docker)
+db_url = os.getenv("DATABASE_URL")
+
+if not db_url:
+    print("ERROR: DATABASE_URL no encontrada en el entorno.")
+    sys.exit(1)
 
 print(f"DEBUG: Sys Path pronto con: {backend_root}")
-print(f"DEBUG: DATABASE_URL forzada a local (Puerto 5433).")
+print(f"DEBUG: Conectando a la base de datos de producción...")
 
 try:
     from app.db.base import SessionLocal
@@ -24,12 +28,11 @@ except ImportError as e:
 def cleanup():
     db = SessionLocal()
     try:
-        # Test de conexión con sintaxis SQLAlchemy 2.0
+        # Test de conexión
         db.execute(text("SELECT 1"))
-        print("DEBUG: Conexión a Base de Datos de Producción Local Exitosa.")
+        print("DEBUG: Conexión a Base de Datos de Producción SaaS Exitosa.")
 
         # 1. Buscar contactos con errores tipográficos ('B vs C')
-        # Específicamente el caso reportado: unicobnc20
         typo_contacts = db.query(CampaignContact).filter(
             CampaignContact.email.ilike('%unicobnc20%')
         ).all()
@@ -47,15 +50,14 @@ def cleanup():
         
         print(f"Encontrados {len(doctor_contacts)} contactos usando el correo del doctor ({doctor_email}).")
         for c in doctor_contacts:
-            # Los eliminamos de la lista de difusión para evitar ruidos de redirección
             print(f" - Eliminando contacto de difusión erróneo: {c.full_name} ({c.email})")
             db.delete(c)
 
         db.commit()
-        print("Mantenimiento de base de datos finalizado con éxito.")
+        print("Mantenimiento de producción finalizado con éxito.")
         
     except Exception as e:
-        print(f"Error crítico durante la limpieza: {e}")
+        print(f"Error crítico durante la limpieza en el servidor: {e}")
         db.rollback()
     finally:
         db.close()
