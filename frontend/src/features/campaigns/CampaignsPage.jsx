@@ -10,6 +10,7 @@ import { campaignService } from '../../services/campaignService';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 import { ImageUpload } from '../../components/common/ImageUpload';
+import { getImageUrl } from '../../lib/imageUtils';
 
 export default function CampaignsPage() {
   const { isDarkTheme, primaryColor = '#4f46e5', doctor } = useOutletContext();
@@ -93,8 +94,8 @@ export default function CampaignsPage() {
     try {
       const response = await campaignService.uploadCampaignImage(file);
       const imageUrl = response.image_url;
-      const baseUrl = `https://api.gynsys.net`;
-      const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+      // getImageUrl already handles prepending the server root in production
+      const fullImageUrl = getImageUrl(imageUrl);
       
       const imgHtml = `\n<div style="text-align: center; margin: 20px 0;"><img src="${fullImageUrl}" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" alt="Imagen de campaña" /></div>\n`;
       
