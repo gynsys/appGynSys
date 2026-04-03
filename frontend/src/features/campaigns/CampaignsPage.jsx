@@ -385,7 +385,7 @@ export default function CampaignsPage() {
                              </button>
                           )}
                        </div>
-                       <div className="max-h-[350px] overflow-y-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                       <div className="md:max-h-[350px] md:overflow-y-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all overflow-hidden">
                           <table className="w-full text-left border-collapse text-xs">
                              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm border-b">
                                 <tr>
