@@ -178,7 +178,16 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     final_error = "; ".join(errors) if errors else None
     
     # Resolve the image URL to return it for logging
-    # (Already resolved in the push section if applicable)
-    final_image_to_log = locals().get('final_image_url', item.image_url)
+    # We re-calculate it here to be explicit and safe
+    final_image_to_log = item.image_url
+    if not final_image_to_log and item.doctor_id:
+        doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
+        if doctor and doctor.photo_url:
+            final_image_to_log = doctor.photo_url
+            from app.core.config import settings
+            if final_image_to_log and not final_image_to_log.startswith(("http://", "https://")):
+                if not final_image_to_log.startswith("/"):
+                    final_image_to_log = f"/{final_image_to_log}"
+                final_image_to_log = f"{settings.BACKEND_URL}{final_image_to_log}"
 
     return success, final_channel, final_error, final_image_to_log

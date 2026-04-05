@@ -26,6 +26,7 @@ class PushTestRequest(BaseModel):
     body: str
     icon: Optional[str] = "/icon-192x192.png"
     badge: Optional[str] = "/badge-72x72.png"
+    image: Optional[str] = None
     data: Optional[dict] = None
 
 
@@ -227,14 +228,37 @@ async def test_push_notification(
         final_title = rendered["title"] if rendered else request.title
         final_body = rendered["message_text"] if rendered else request.body
 
-        # 4. Send push notification
+        # 4. Resolve Image (Priority: Request -> Doctor Photo)
+        final_image = request.image
+        if not final_image:
+            # Try to get doctor's photo
+            doctor = None
+            if isinstance(actor, Doctor):
+                doctor = actor
+            else:
+                # If actor is CycleUser, we usually don't have a direct doctor link here 
+                # unless we know the tenant context. For tests, we use the admin's photo 
+                # if the requester is an admin.
+                doctor = current_admin
+            
+            if doctor and doctor.photo_url:
+                final_image = doctor.photo_url
+                # Make absolute
+                from app.core.config import settings
+                if final_image and not final_image.startswith(("http://", "https://")):
+                    if not final_image.startswith("/"):
+                        final_image = f"/{final_image}"
+                    final_image = f"{settings.BACKEND_URL}{final_image}"
+
+        # 5. Send push notification
         result = send_push_notification(
             user=actor, 
             title=final_title,
             body=final_body,
             icon=request.icon,
             badge=request.badge,
-            data=request.data or {}
+            data=request.data or {},
+            image=final_image
         )
         
         return {
