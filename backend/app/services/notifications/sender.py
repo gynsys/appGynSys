@@ -7,6 +7,7 @@ from app.tasks.email_tasks import _send_integrated_email
 from app.services.push_service import send_push_to_actor
 from .base import logger, push_circuit, log_notification_event
 from .registry import NOTIFICATION_MAP
+from app.core.config import settings
 
 def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dict) -> Optional[dict]:
     """Renderiza contenido de forma segura con fallback."""
@@ -118,11 +119,27 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                 if log_id:
                     push_data["notification_id"] = log_id
 
+                # Resolve Image URL (Priority: Item specific -> Doctor Photo)
+                final_image_url = item.image_url
+                if not final_image_url and item.doctor_id:
+                    # Fetch doctor if not already loaded
+                    doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
+                    if doctor and doctor.photo_url:
+                        final_image_url = doctor.photo_url
+                
+                # Make URL absolute if relative
+                if final_image_url and not final_image_url.startswith(("http://", "https://")):
+                    # Ensure starts with /
+                    if not final_image_url.startswith("/"):
+                        final_image_url = f"/{final_image_url}"
+                    final_image_url = f"{settings.BACKEND_URL}{final_image_url}"
+
                 result = send_push_to_actor(
                     actor=actor, 
                     title=item.subject, 
                     body=item.message_text or item.subject,
-                    data=push_data
+                    data=push_data,
+                    image=final_image_url
                 )
                 
                 if result.get("success"):

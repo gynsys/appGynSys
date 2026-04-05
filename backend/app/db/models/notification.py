@@ -85,6 +85,7 @@ class NotificationRule(Base):
     title_template = Column(String(255), nullable=False)
     message_template = Column(Text, nullable=False)
     message_text_template = Column(Text, nullable=True)
+    image_url = Column(String(512), nullable=True)
     
     # SETTINGS
     channel = Column(String(20), default="dual")
@@ -116,7 +117,8 @@ class NotificationRule(Base):
             return {
                 "title": self.title_template.format(**context),
                 "message_html": self.message_template.format(**context),
-                "message_text": (self.message_text_template or self.message_template).format(**context)
+                "message_text": (self.message_text_template or self.message_template).format(**context),
+                "image_url": (self.image_url.format(**context) if self.image_url else None)
             }
         except KeyError as e:
             # Fallback if variable missing
@@ -132,6 +134,7 @@ class NotificationRule(Base):
         self.title_template = defaults.get("title_template", "")
         self.message_template = defaults.get("message_template", "")
         self.message_text_template = defaults.get("message_text_template")
+        self.image_url = defaults.get("image_url")
         self.channel = defaults.get("channel", "dual")
         self.send_time = defaults.get("send_time", "08:00")
         self.is_edited = False
@@ -150,6 +153,7 @@ class NotificationLog(Base):
     notification_type = Column(String(50), nullable=False)
     title_sent = Column(String(255), nullable=False)
     channel_used = Column(String(20), nullable=False)
+    image_url = Column(String(512), nullable=True) # Snapshot what was sent
     
     # Result
     sent_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -200,6 +204,7 @@ class PendingNotification(Base):
     subject = Column(String(255), nullable=False)
     body = Column(Text, nullable=False) # HTML content
     message_text = Column(Text, nullable=True) # Plain text for Push
+    image_url = Column(String(512), nullable=True)
     
     # Scheduling
     scheduled_for = Column(DateTime(timezone=True), nullable=False, index=True)

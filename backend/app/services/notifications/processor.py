@@ -133,6 +133,7 @@ def _process_single_user(user_id: int, global_rules: Dict[str, _RuleData], now: 
                 subject=rendered["title"],
                 body=rendered["message_html"],
                 message_text=rendered["message_text"],
+                image_url=rendered.get("image_url"),
                 scheduled_for=target_time,
                 channel=template_rule.channel,
                 status="pending"
@@ -212,6 +213,7 @@ def _process_single_doctor(doctor_id: int, global_rules: Dict[str, _RuleData], n
                 subject=rendered["title"],
                 body=rendered["message_html"],
                 message_text=rendered["message_text"],
+                image_url=rendered.get("image_url"),
                 scheduled_for=target_time,
                 channel=template_rule.channel,
                 status="pending"
@@ -387,6 +389,7 @@ def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, 
             subject=rendered["title"],
             body=rendered["message_html"],
             message_text=rendered["message_text"],
+            image_url=rendered.get("image_url"),
             scheduled_for=now,
             channel=rule.channel,
             status="pending"
