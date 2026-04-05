@@ -684,25 +684,31 @@ export default function CampaignsPage() {
                  history.map(item => (
                    <div 
                      key={item.id} 
-                     className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent shadow-sm flex items-center justify-between gap-4 transition-all hover:border-gray-200 dark:hover:border-gray-700"
+                     className="p-4 md:p-6 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50 shadow-sm flex items-center gap-3 md:gap-4 transition-all hover:border-gray-200 dark:hover:border-gray-700 active:scale-[0.98]"
                    >
-                     <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>{item.status === 'sent' ? <FiCheckCircle /> : <FiClock className={item.status === 'sending' ? 'animate-spin' : ''} />}</div>
-                        <div>
-                           <h3 className="font-black text-xs uppercase tracking-tight">{item.title}</h3>
-                           <div className="flex gap-2 items-center mt-1">
-                             <span className="text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
-                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Procesando'}</span>
-                             <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1) }}>{item.target_type}</span>
-                           </div>
-                        </div>
+                     <div className="flex items-center flex-1 gap-3 md:gap-4 overflow-hidden">
+                       <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl shrink-0 flex items-center justify-center text-sm md:text-base ${item.status === 'sent' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
+                         {item.status === 'sent' ? <FiCheckCircle /> : <FiClock className={item.status === 'sending' ? 'animate-spin' : ''} />}
+                       </div>
+                       <div className="flex-1 overflow-hidden">
+                          <h3 className="font-black text-[11px] md:text-sm uppercase tracking-tight truncate dark:text-white">{item.title}</h3>
+                          {item.subject && (
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 italic font-medium">"{item.subject}"</p>
+                          )}
+                          <div className="flex flex-wrap gap-2 items-center mt-1.5">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
+                            <span className={`text-[8px] md:text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${item.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{item.status === 'sent' ? 'Enviado' : 'Procesando'}</span>
+                            <span className="text-[8px] md:text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1) }}>{item.target_type}</span>
+                          </div>
+                       </div>
                      </div>
-                     <div className="flex items-center gap-4 px-4 border-l">
+
+                     <div className="flex items-center gap-2 md:gap-4 pl-3 md:px-4 border-l dark:border-gray-700 shrink-0">
                         <div className="text-center">
-                           <div className="text-lg font-black" style={{ color: primaryColor }}>{item.stats?.sent_count || 0}</div>
-                           <div className="text-[8px] font-black text-gray-700 dark:text-gray-400 uppercase">Enviados</div>
+                           <div className="text-sm md:text-lg font-black" style={{ color: primaryColor }}>{item.stats?.sent_count || 0}</div>
+                           <div className="text-[7px] md:text-[8px] font-black text-gray-700 dark:text-gray-400 uppercase">Enviados</div>
                         </div>
-                        <FiChevronRight className="text-gray-300" />
+                        <FiChevronRight className="text-gray-300 hidden md:block" />
                      </div>
                    </div>
                  ))
