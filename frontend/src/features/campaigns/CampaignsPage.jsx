@@ -138,7 +138,7 @@ export default function CampaignsPage() {
       });
       setSelectedContactIds(prev => prev.includes(res.id) ? prev : [...prev, res.id]);
       setNewContact({ full_name: '', email: '', phone: '', source: 'manual' });
-      setFormData(prev => ({ ...prev, target_type: 'selection' }));
+      setFormData(prev => ({ ...prev, target_type: 'all' }));
       toast.success("Contacto listo y seleccionado");
     } catch (error) {
       const msg = error.response?.data?.detail || "Error al añadir contacto";
@@ -302,7 +302,6 @@ export default function CampaignsPage() {
                       { id: 'all', label: 'Todos', count: contacts.length, icon: <FiUsers /> },
                       { id: 'app_users', label: 'Usuarios App', count: contacts.filter(c => c.source === 'sync_cycle').length, icon: <FiSmartphone /> },
                       { id: 'patients', label: 'Pacientes', count: contacts.filter(c => c.source !== 'sync_cycle').length, icon: <FiUser /> },
-                      { id: 'selection', label: `Lista Envío`, count: selectedContactIds.length, icon: <FiList /> },
                       { id: 'add_manual', label: `Nuevo`, count: null, icon: <FiPlus /> }
                     ].map(t => (
                       <button 
@@ -371,87 +370,93 @@ export default function CampaignsPage() {
                     </div>
                   ) : (
                     <div className="mt-6 space-y-4 animate-fade-in">
-                       <div className="flex items-center justify-between px-2">
-                          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-                             {formData.target_type === 'selection' ? 'Tu Lista de Selección' : 'Suscriptores en esta categoría'}
-                          </h3>
-                          {formData.target_type === 'selection' && (
-                             <button 
-                              type="button" 
-                              onClick={() => setSelectedContactIds([])}
-                              className="text-[9px] font-bold text-red-500 hover:underline uppercase"
-                             >
-                                Limpiar lista
-                             </button>
-                          )}
-                       </div>
-                       <div className="md:max-h-[350px] md:overflow-y-auto overflow-x-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all">
-                          <table className="w-full text-left border-collapse text-xs">
-                             <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm border-b">
-                                <tr>
-                                   <th className="px-2 py-4 md:p-4 w-10">
-                                      <input 
-                                        type="checkbox" checked={selectedContactIds.length > 0 && contacts.filter(c => {
-                                          if (formData.target_type === 'all') return true;
-                                          if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
-                                          if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
-                                          return selectedContactIds.includes(c.id);
-                                        }).every(c => selectedContactIds.includes(c.id))}
-                                        onChange={(e) => {
-                                          const visible = contacts.filter(c => {
-                                            if (formData.target_type === 'all') return true;
-                                            if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
-                                            if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
-                                            return true;
-                                          });
-                                          if (e.target.checked) setSelectedContactIds(prev => [...new Set([...prev, ...visible.map(c => c.id)])]);
-                                          else {
-                                            const visibleIds = visible.map(c => c.id);
-                                            setSelectedContactIds(prev => prev.filter(id => !visibleIds.includes(id)));
-                                          }
-                                        }}
-                                        className="rounded cursor-pointer"
-                                      />
-                                   </th>
-                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
-                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
-                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
-                                   <th className="px-2 py-4 md:p-4 text-right font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Acciones</th>
-                                </tr>
-                             </thead>
-                             <tbody>
-                                {contacts
-                                  .filter(c => {
-                                    if (formData.target_type === 'selection') return selectedContactIds.includes(c.id);
-                                    if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
-                                    if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
-                                    return true; // 'all'
-                                  })
-                                  .map(c => (
-                                  <tr key={c.id} className="group border-t border-gray-50 dark:border-gray-700 transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/20">
-                                    <td className="px-2 py-4 md:p-4">
+                        <div className="flex items-center justify-between px-2">
+                           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                              Suscriptores en esta categoría
+                           </h3>
+                           {selectedContactIds.length > 0 && (
+                              <div className="flex items-center gap-4">
+                                <span className="text-[10px] font-bold text-blue-600 uppercase">
+                                  {selectedContactIds.length} Seleccionados
+                                </span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => setSelectedContactIds([])}
+                                  className="text-[9px] font-bold text-red-500 hover:underline uppercase"
+                                >
+                                    Limpiar lista
+                                </button>
+                              </div>
+                           )}
+                        </div>
+                        
+                        <div className="md:max-h-[350px] md:overflow-y-auto overflow-x-auto rounded-3xl md:border border-gray-100 dark:border-gray-700 md:bg-white dark:bg-gray-800 md:shadow-sm transition-all md:overflow-hidden">
+                           {/* VISTA DESKTOP: TABLA */}
+                           <table className="w-full text-left border-collapse text-xs hidden md:table">
+                              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm border-b">
+                                 <tr>
+                                    <th className="p-4 w-10">
                                        <input 
-                                          type="checkbox" 
-                                          checked={selectedContactIds.includes(c.id)}
-                                          onChange={(e) => {
-                                             if (e.target.checked) setSelectedContactIds(prev => [...prev, c.id]);
-                                             else setSelectedContactIds(prev => prev.filter(id => id !== c.id));
-                                          }}
-                                          className="rounded cursor-pointer border-gray-300 dark:border-gray-600"
-                                          style={selectedContactIds.includes(c.id) ? { accentColor: primaryColor } : {}}
+                                         type="checkbox" checked={selectedContactIds.length > 0 && contacts.filter(c => {
+                                           if (formData.target_type === 'all') return true;
+                                           if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
+                                           if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
+                                           return true;
+                                         }).every(c => selectedContactIds.includes(c.id))}
+                                         onChange={(e) => {
+                                           const visible = contacts.filter(c => {
+                                             if (formData.target_type === 'all') return true;
+                                             if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
+                                             if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
+                                             return true;
+                                           });
+                                           if (e.target.checked) setSelectedContactIds(prev => [...new Set([...prev, ...visible.map(c => c.id)])]);
+                                           else {
+                                             const visibleIds = visible.map(c => c.id);
+                                             setSelectedContactIds(prev => prev.filter(id => !visibleIds.includes(id)));
+                                           }
+                                         }}
+                                         className="rounded cursor-pointer"
                                        />
-                                    </td>
-                                    <td className="px-2 py-4 md:p-4">
-                                       <div className="font-bold">{c.full_name}</div>
-                                       <div className="md:hidden text-[10px] text-gray-500">{c.email}</div>
-                                    </td>
-                                    <td className="px-2 py-4 md:p-4 text-gray-700 dark:text-gray-400 hidden md:table-cell font-medium">{c.email}</td>
-                                    <td className="px-2 py-4 md:p-4">
-                                       <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[8px] font-black uppercase text-gray-500">
-                                          {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
-                                       </span>
-                                    </td>
-                                    <td className="px-2 py-4 md:p-4 text-right">
+                                    </th>
+                                    <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
+                                    <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                    <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
+                                    <th className="p-4 text-right font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Acciones</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 {contacts
+                                   .filter(c => {
+                                     if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
+                                     if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
+                                     return true; // 'all'
+                                   })
+                                   .map(c => (
+                                   <tr key={c.id} className="group border-t border-gray-50 dark:border-gray-700 transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/20">
+                                     <td className="p-4">
+                                        <input 
+                                           type="checkbox" 
+                                           checked={selectedContactIds.includes(c.id)}
+                                           onChange={(e) => {
+                                              if (e.target.checked) setSelectedContactIds(prev => [...prev, c.id]);
+                                              else setSelectedContactIds(prev => prev.filter(id => id !== c.id));
+                                           }}
+                                           className="rounded cursor-pointer border-gray-300 dark:border-gray-600"
+                                           style={selectedContactIds.includes(c.id) ? { accentColor: primaryColor } : {}}
+                                        />
+                                     </td>
+                                     <td className="p-4">
+                                        <div className="font-bold">{c.full_name}</div>
+                                        <div className="md:hidden text-[10px] text-gray-500">{c.email}</div>
+                                     </td>
+                                     <td className="p-4 text-gray-700 dark:text-gray-400 hidden md:table-cell font-medium">{c.email}</td>
+                                     <td className="p-4">
+                                        <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[8px] font-black uppercase text-gray-500">
+                                           {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
+                                        </span>
+                                     </td>
+                                     <td className="p-4 text-right">
                                       <div className="flex items-center justify-end gap-2 transition-opacity">
                                          <button 
                                            type="button" 
@@ -476,17 +481,69 @@ export default function CampaignsPage() {
                                          </button>
                                       </div>
                                     </td>
-                                  </tr>
+                                   </tr>
+                                 ))}
+                              </tbody>
+                           </table>
+
+                           {/* VISTA MOBILE: LISTA DE TARJETAS (CAPILLARY/NATIVA) */}
+                           <div className="md:hidden space-y-3 pb-8">
+                             {contacts
+                                .filter(c => {
+                                  if (formData.target_type === 'app_users') return c.source === 'sync_cycle';
+                                  if (formData.target_type === 'patients') return c.source !== 'sync_cycle';
+                                  return true;
+                                })
+                                .map(c => (
+                                  <div 
+                                    key={c.id} 
+                                    className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${selectedContactIds.includes(c.id) ? 'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}`}
+                                  >
+                                    <div className="flex items-center flex-1 gap-4 overflow-hidden">
+                                       <input 
+                                          type="checkbox" 
+                                          checked={selectedContactIds.includes(c.id)}
+                                          onChange={(e) => {
+                                             if (e.target.checked) setSelectedContactIds(prev => [...prev, c.id]);
+                                             else setSelectedContactIds(prev => prev.filter(id => id !== c.id));
+                                          }}
+                                          className="w-5 h-5 rounded-lg cursor-pointer shrink-0"
+                                          style={selectedContactIds.includes(c.id) ? { accentColor: primaryColor } : {}}
+                                       />
+                                       <div className="flex-1 overflow-hidden">
+                                          <div className="font-bold text-[13px] truncate dark:text-white">{c.full_name}</div>
+                                          <div className="text-[10px] text-gray-500 truncate dark:text-gray-400">{c.email}</div>
+                                          <div className="mt-1 flex items-center gap-2">
+                                             <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-[8px] font-black uppercase text-gray-500 dark:text-gray-400">
+                                                {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
+                                             </span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="flex flex-col gap-2 shrink-0 border-l pl-3 dark:border-gray-700">
+                                       <button 
+                                         type="button" 
+                                         onClick={() => {
+                                            setEditingContact(c);
+                                            setIsEditModalOpen(true);
+                                         }}
+                                         className="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-blue-500 shadow-sm"
+                                       >
+                                         <FiEdit2 className="w-5 h-5" />
+                                       </button>
+                                       <button 
+                                         type="button" 
+                                         onClick={() => handleDeleteContact(c.id)} 
+                                         className="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-red-500 shadow-sm"
+                                       >
+                                         <FiTrash2 className="w-5 h-5" />
+                                       </button>
+                                    </div>
+                                  </div>
                                 ))}
-                             </tbody>
-                          </table>
-                          {selectedContactIds.length === 0 && formData.target_type === 'selection' && (
-                            <div className="p-16 text-center text-gray-400 bg-gray-50/30">
-                              <FiList className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                              <p className="italic text-sm">Tu lista de selección está vacía.<br/>Marca suscriptores en "Todos" o usa "Nuevo" para empezar.</p>
-                            </div>
-                          )}
-                       </div>
+                           </div>
+                        </div>
                     </div>
                   )}
                 </div>
