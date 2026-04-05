@@ -130,6 +130,7 @@ def _process_single_user(user_id: int, global_rules: Dict[str, _RuleData], now: 
             pending = PendingNotification(
                 notification_rule_id=template_rule.id,
                 recipient_id=user.id,
+                doctor_id=user.doctor_id,
                 subject=rendered["title"],
                 body=rendered["message_html"],
                 message_text=rendered["message_text"],
