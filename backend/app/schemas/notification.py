@@ -94,6 +94,7 @@ class NotificationLogResponse(BaseModel):
     clicked_at: Optional[datetime] = None
     recipient_name: Optional[str] = None
     recipient_email: Optional[str] = None
+    image_url: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -114,6 +115,7 @@ class PendingNotificationResponse(BaseModel):
     sent_at: Optional[datetime] = None
     recipient_name: Optional[str] = None
     recipient_email: Optional[str] = None
+    image_url: Optional[str] = None
     
     class Config:
         from_attributes = True

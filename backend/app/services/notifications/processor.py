@@ -286,7 +286,7 @@ def deliver_pending_notifications():
                     
                     # 1. Intentar envío DUAL (Emails + Push) 
                     # El log_id se pasaría si ya existiera, pero vamos a crearlo después para mayor precisión
-                    success, channel, error = send_dual_notification_logic(db, item)
+                    success, channel, error, final_img = send_dual_notification_logic(db, item)
                     
                     # 2. Crear el Log de Notificación con el RESULTADO REAL
                     log = NotificationLog(
@@ -295,6 +295,7 @@ def deliver_pending_notifications():
                         doctor_id=item.doctor_id,
                         notification_type=item.rule.notification_type if item.rule else "unknown",
                         title_sent=item.subject,
+                        image_url=final_img,
                         status="sent" if success else "failed",
                         channel_used=channel or "none",
                         error_message=error[:500] if error else None,

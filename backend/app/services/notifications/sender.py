@@ -177,4 +177,8 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     final_channel = "+".join(channels_sent) if channels_sent else None
     final_error = "; ".join(errors) if errors else None
     
-    return success, final_channel, final_error
+    # Resolve the image URL to return it for logging
+    # (Already resolved in the push section if applicable)
+    final_image_to_log = locals().get('final_image_url', item.image_url)
+
+    return success, final_channel, final_error, final_image_to_log

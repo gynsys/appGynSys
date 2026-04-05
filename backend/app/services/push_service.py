@@ -93,6 +93,9 @@ def send_push_to_actor(
                 continue
                 
             try:
+                if payload.get("image"):
+                    logger.info(f"[GynSysPush] Sending image in FCM: {payload['image']}")
+                
                 message = messaging.Message(
                     notification=messaging.Notification(
                         title=payload["title"],
