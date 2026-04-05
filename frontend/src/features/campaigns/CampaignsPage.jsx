@@ -564,7 +564,7 @@ export default function CampaignsPage() {
                             const [type, id] = e.target.value.split(':');
                             const src = sources.find(s => s.id === parseInt(id) && s.type === type);
                             if (src) {
-                              const baseUrl = `https://gynsys.net/p/${doctor?.slug_url || 'clinica'}`;
+                              const baseUrl = `${window.location.origin}/${doctor?.slug_url || 'mariel-herrera'}`;
                               const fullUrl = src.url?.startsWith('http') ? src.url : `${baseUrl}${src.url}`;
                               
                               setSelectedSourceMeta({
