@@ -272,7 +272,7 @@ export default function CampaignsPage() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <div className={`p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className={`p-4 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700/50 ${isDarkTheme ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex bg-gray-100/80 dark:bg-gray-900/50 p-1.5 rounded-2xl w-fit mb-8 border border-gray-200/50 dark:border-gray-700">
             <button 
               onClick={() => setActiveTab('new')} 
@@ -385,11 +385,11 @@ export default function CampaignsPage() {
                              </button>
                           )}
                        </div>
-                       <div className="md:max-h-[350px] md:overflow-y-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all overflow-hidden">
+                       <div className="md:max-h-[350px] md:overflow-y-auto overflow-x-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all">
                           <table className="w-full text-left border-collapse text-xs">
                              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 shadow-sm border-b">
                                 <tr>
-                                   <th className="p-4 w-10">
+                                   <th className="px-2 py-4 md:p-4 w-10">
                                       <input 
                                         type="checkbox" checked={selectedContactIds.length > 0 && contacts.filter(c => {
                                           if (formData.target_type === 'all') return true;
@@ -413,10 +413,10 @@ export default function CampaignsPage() {
                                         className="rounded cursor-pointer"
                                       />
                                    </th>
-                                   <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
-                                   <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
-                                   <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
-                                   <th className="p-4 text-right font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Acciones</th>
+                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
+                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
+                                   <th className="px-2 py-4 md:p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
+                                   <th className="px-2 py-4 md:p-4 text-right font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Acciones</th>
                                 </tr>
                              </thead>
                              <tbody>
@@ -429,7 +429,7 @@ export default function CampaignsPage() {
                                   })
                                   .map(c => (
                                   <tr key={c.id} className="group border-t border-gray-50 dark:border-gray-700 transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/20">
-                                    <td className="p-4">
+                                    <td className="px-2 py-4 md:p-4">
                                        <input 
                                           type="checkbox" 
                                           checked={selectedContactIds.includes(c.id)}
@@ -441,17 +441,17 @@ export default function CampaignsPage() {
                                           style={selectedContactIds.includes(c.id) ? { accentColor: primaryColor } : {}}
                                        />
                                     </td>
-                                    <td className="p-4">
+                                    <td className="px-2 py-4 md:p-4">
                                        <div className="font-bold">{c.full_name}</div>
                                        <div className="md:hidden text-[10px] text-gray-500">{c.email}</div>
                                     </td>
-                                    <td className="p-4 text-gray-700 dark:text-gray-400 hidden md:table-cell font-medium">{c.email}</td>
-                                    <td className="p-4">
+                                    <td className="px-2 py-4 md:p-4 text-gray-700 dark:text-gray-400 hidden md:table-cell font-medium">{c.email}</td>
+                                    <td className="px-2 py-4 md:p-4">
                                        <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[8px] font-black uppercase text-gray-500">
                                           {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
                                        </span>
                                     </td>
-                                    <td className="p-4 text-right">
+                                    <td className="px-2 py-4 md:p-4 text-right">
                                       <div className="flex items-center justify-end gap-2 transition-opacity">
                                          <button 
                                            type="button" 
