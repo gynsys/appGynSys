@@ -996,6 +996,16 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       case 'combine_dysmenorrhea_info':
         return { nextId: node.next_node || 'ASK_FUM' };
 
+      case 'decide_if_ask_menopause': {
+        const age = parseInt(answers.age) || 0;
+        return { nextId: age >= 45 ? node.next_if_yes : node.next_if_no };
+      }
+
+      case 'decide_if_menopause_skip': {
+        const isMenopause = answers.is_menopause === 'Sí' || answers.is_menopause === 'Si' || answers.is_menopause === true;
+        return { nextId: isMenopause ? node.next_if_skip : node.next_if_stay };
+      }
+
       case 'finish_preconsultation':
       case 'generate_summaries':
         return { nextId: null, isFinished: true };
@@ -1695,7 +1705,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     setPreconsultaState(prev => ({
       ...prev,
       answers: { ...prev.answers, ...initialMedicalAnswers },
-      currentNodeId: 'ASK_MOTHER_HISTORY_BOOL' // STARTING MEDICAL NODE
+      currentNodeId: 'DECIDE_IF_ASK_MENOPAUSE' // STARTING MEDICAL NODE
     }));
 
     setStep(STEPS.PRECONSULTA_QUESTION);

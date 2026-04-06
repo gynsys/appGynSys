@@ -40,6 +40,18 @@
         "SHOW_SUMMARY": {
             "type": "action",
             "handler": "show_personal_info_summary",
+            "next_node": "DECIDE_IF_ASK_MENOPAUSE"
+        },
+        "DECIDE_IF_ASK_MENOPAUSE": {
+            "type": "action",
+            "handler": "decide_if_ask_menopause",
+            "next_if_yes": "ASK_IS_MENOPAUSE",
+            "next_if_no": "ASK_MOTHER_HISTORY_BOOL"
+        },
+        "ASK_IS_MENOPAUSE": {
+            "type": "yes_no",
+            "text_key": "preconsulta.ask_is_menopause",
+            "save_to": "is_menopause",
             "next_node": "ASK_MOTHER_HISTORY_BOOL"
         },
         "ASK_MOTHER_HISTORY_BOOL": {
@@ -239,13 +251,25 @@
             "save_to": "sexually_active",
             "value_on_no": "No",
             "next_on_yes": "CHECK_IF_PREGNANT_FOR_FERTILITY_QUESTION",
-            "next_on_no": "ASK_CYCLES_REGULAR"
+            "next_on_no": "DECIDE_IF_SKIP_CYCLES_MENOPAUSE"
         },
         "CHECK_IF_PREGNANT_FOR_FERTILITY_QUESTION": {
             "type": "action",
             "handler": "check_if_pregnant_for_fertility",
-            "next_if_ask_fertility": "ASK_FERTILITY_INTENT",
-            "next_if_skip_fertility": "ASK_CYCLES_REGULAR"
+            "next_if_ask_fertility": "DECIDE_IF_SKIP_FERTILITY_MENOPAUSE",
+            "next_if_skip_fertility": "DECIDE_IF_SKIP_CYCLES_MENOPAUSE"
+        },
+        "DECIDE_IF_SKIP_CYCLES_MENOPAUSE": {
+            "type": "action",
+            "handler": "decide_if_menopause_skip",
+            "next_if_skip": "ASK_FUM",
+            "next_if_stay": "ASK_CYCLES_REGULAR"
+        },
+        "DECIDE_IF_SKIP_FERTILITY_MENOPAUSE": {
+            "type": "action",
+            "handler": "decide_if_menopause_skip",
+            "next_if_skip": "DECIDE_IF_SKIP_CYCLES_MENOPAUSE",
+            "next_if_stay": "ASK_FERTILITY_INTENT"
         },
         "ASK_FERTILITY_INTENT": {
             "type": "buttons",
@@ -304,7 +328,13 @@
         "COMBINE_REGULAR_CYCLE_INFO": {
             "type": "action",
             "handler": "combine_regular_cycle_info",
-            "next_node": "ASK_DYSMENORRHEA_BOOL"
+            "next_node": "DECIDE_IF_SKIP_PAIN_MENOPAUSE"
+        },
+        "DECIDE_IF_SKIP_PAIN_MENOPAUSE": {
+            "type": "action",
+            "handler": "decide_if_menopause_skip",
+            "next_if_skip": "ASK_FUM",
+            "next_if_stay": "ASK_DYSMENORRHEA_BOOL"
         },
         "ASK_DYSMENORRHEA_BOOL": {
             "type": "yes_no",
@@ -364,8 +394,14 @@
         "CHECK_FUNCTIONAL_EXAM_ENABLED": {
             "type": "action",
             "handler": "check_functional_exam_enabled",
-            "next_if_enabled": "ASK_DISPAREUNIA_BOOL",
+            "next_if_enabled": "DECIDE_IF_SKIP_FUNCTIONAL_MENOPAUSE",
             "next_if_disabled": "ASK_PHYSICAL_ACTIVITY_BOOL"
+        },
+        "DECIDE_IF_SKIP_FUNCTIONAL_MENOPAUSE": {
+            "type": "action",
+            "handler": "decide_if_menopause_skip",
+            "next_if_skip": "ASK_MENOPAUSE_HOT_FLASHES",
+            "next_if_stay": "ASK_DISPAREUNIA_BOOL"
         },
         "ASK_DISPAREUNIA_BOOL": {
             "type": "yes_no",
@@ -579,6 +615,37 @@
             "type": "yes_no",
             "text_key": "preconsulta.ask_urinary_nocturia",
             "save_to": "functional_urinary_nocturia",
+            "next_node": "ASK_PHYSICAL_ACTIVITY_BOOL"
+        },
+        "ASK_MENOPAUSE_HOT_FLASHES": {
+            "type": "yes_no",
+            "text_key": "preconsulta.ask_menopause_hot_flashes",
+            "save_to": "menopause_hot_flashes",
+            "next_node": "ASK_MENOPAUSE_CONCENTRATION"
+        },
+        "ASK_MENOPAUSE_CONCENTRATION": {
+            "type": "yes_no",
+            "text_key": "preconsulta.ask_menopause_concentration",
+            "save_to": "menopause_concentration",
+            "next_node": "ASK_MENOPAUSE_VAGINAL_DRYNESS"
+        },
+        "ASK_MENOPAUSE_VAGINAL_DRYNESS": {
+            "type": "yes_no",
+            "text_key": "preconsulta.ask_menopause_vaginal_dryness",
+            "save_to": "menopause_vaginal_dryness",
+            "next_node": "ASK_MENOPAUSE_GASTRO"
+        },
+        "ASK_MENOPAUSE_GASTRO": {
+            "type": "checklist",
+            "text_key": "preconsulta.menopause_gastro_prompt",
+            "save_to": "menopause_gastro",
+            "options": [
+                "Diarrea",
+                "Estreñimiento",
+                "Gases",
+                "Distensión",
+                "Dolor"
+            ],
             "next_node": "ASK_PHYSICAL_ACTIVITY_BOOL"
         },
         "ASK_PHYSICAL_ACTIVITY_BOOL": {

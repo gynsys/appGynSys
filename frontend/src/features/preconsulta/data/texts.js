@@ -76,6 +76,11 @@ export const preconsultaTexts = {
   "preconsulta.ask_smoking": "¿Fumas?",
   "preconsulta.ask_alcohol": "¿Consumes alcohol?",
   "preconsulta.ask_substance_use": "¿Consumes alguna sustancia ilicita?",
+  "preconsulta.ask_is_menopause": "Entiendo. Por tu edad, ¿ya has pasado por la etapa de la menopausia o el cese de tus ciclos?",
+  "preconsulta.ask_menopause_hot_flashes": "¿Presentas calorones?",
+  "preconsulta.ask_menopause_concentration": "¿Presentas pérdidas de concentración?",
+  "preconsulta.ask_menopause_vaginal_dryness": "¿Presentas molestias o resequedad vaginal?",
+  "preconsulta.menopause_gastro_prompt": "¿Presentas síntomas gastrointestinales (Diarrea, Estreñimiento, Gases, Distensión, Dolor)?",
 };
 
 export const fieldLabels = {
@@ -133,5 +138,10 @@ export const fieldLabels = {
   "habits_activity_goal": "Objetivo Actividad",
   "habits_smoking": "Tabaquismo",
   "habits_alcohol": "Alcohol",
-  "habits_substance_use": "Otras Sustancias"
+  "habits_substance_use": "Otras Sustancias",
+  "is_menopause": "Menopausia",
+  "menopause_hot_flashes": "Calorones",
+  "menopause_concentration": "Pérdida Concentración",
+  "menopause_vaginal_dryness": "Resequedad Vaginal",
+  "menopause_gastro": "Síntomas Gastro (Menopausia)"
 };
