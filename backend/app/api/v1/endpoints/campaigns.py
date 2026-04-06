@@ -11,6 +11,7 @@ from app.db.models.campaign import DiffusionCampaign, CampaignContact
 from app.db.models.recommendation import Recommendation
 from app.db.models.patient import Patient
 from app.db.models.cycle_user import CycleUser
+from app.db.models.consultation import Consultation
 from app.blog.models import BlogPost
 from app.schemas.campaign import (
     DiffusionCampaignCreate, 
@@ -247,25 +248,24 @@ async def sync_contacts_from_patients(
         if not existing:
             contact = CampaignContact(
                 tenant_id=current_user.id,
-                full_name=p.nombre_completo or "Paciente",
+                full_name=p.name or "Paciente",
                 email=email,
-                phone=p.telefono,
-                ci=p.ci,
-                city=p.direccion,
+                phone=p.phone,
                 patient_id=p.id,
                 source="sync_patient"
             )
             db.add(contact)
             added_count += 1
-        elif not existing.patient_id:
-            # Upgrade existing contact with patient details
-            existing.patient_id = p.id
-            if p.ci and not existing.ci: existing.ci = p.ci
-            if p.direccion and not existing.city: existing.city = p.direccion
+        else:
+            if not existing.patient_id:
+                existing.patient_id = p.id
+            if not existing.phone and p.phone:
+                existing.phone = p.phone
             
     # 2. Sync CycleUsers (App Users)
     users = db.query(CycleUser).filter(CycleUser.doctor_id == current_user.id).all()
     for u in users:
+        if not u.email: continue
         email = u.email.lower().strip()
         existing = db.query(CampaignContact).filter(
             CampaignContact.tenant_id == current_user.id,
@@ -283,8 +283,39 @@ async def sync_contacts_from_patients(
             db.add(contact)
             added_count += 1
         elif not existing.cycle_user_id:
-            # Upgrade existing contact with cycle_user_id
             existing.cycle_user_id = u.id
+
+    # 3. Sync from History (Consultations) - New universal sync
+    # This captures Adis and other historical snapshots
+    consultations = db.query(Consultation).filter(Consultation.doctor_id == current_user.id).all()
+    for c in consultations:
+        if not c.patient_email: continue
+        email = c.patient_email.lower().strip()
+        existing = db.query(CampaignContact).filter(
+            CampaignContact.tenant_id == current_user.id,
+            CampaignContact.email == email
+        ).first()
+
+        if not existing:
+            contact = CampaignContact(
+                tenant_id=current_user.id,
+                full_name=c.patient_name or "Paciente (Historial)",
+                email=email,
+                phone=c.patient_phone,
+                ci=c.patient_ci,
+                city=c.address,
+                source="sync_history"
+            )
+            db.add(contact)
+            added_count += 1
+        else:
+            # Enrich existing contact with missing data from consultation snapshot
+            if not existing.ci and c.patient_ci:
+                existing.ci = c.patient_ci
+            if not existing.city and c.address:
+                existing.city = c.address
+            if not existing.phone and c.patient_phone:
+                existing.phone = c.patient_phone
             
     db.commit()
     return {"status": "success", "added": added_count}
