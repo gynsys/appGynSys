@@ -262,16 +262,20 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
                 type="button"
                 onClick={() => {
                   if (isCapacitor()) {
-                    // Manual Implicit Flow for Capacitor to bypass SDK origin issues
-                    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013444456950-r1v7m72v7673p5f5v486745674567456.apps.googleusercontent.com'; // Fallback to avoid crashes if env is missing
-                    const redirectUri = window.location.origin; // Solo el origin (https://gynsys.net) — debe coincidir exactamente con Google Cloud Console
+                    // Abrir Google OAuth en Chrome Custom Tab (in-app browser)
+                    // NO usar window.location.href que abandona la app
+                    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013444456950-r1v7m72v7673p5f5v486745674567456.apps.googleusercontent.com';
+                    const redirectUri = window.location.origin;
                     const scope = 'openid email profile';
                     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
                     
                     // Guardar la ruta actual para redirigir de vuelta después del login
                     localStorage.setItem('google_oauth_return_path', window.location.pathname);
-                    console.log("[GynSys] Starting manual Google Oauth redirect for Capacitor...");
-                    window.location.href = url;
+                    console.log("[GynSys] Starting Google OAuth via Chrome Custom Tab...");
+                    
+                    import('@capacitor/browser').then(({ Browser }) => {
+                      Browser.open({ url, windowName: '_blank' });
+                    });
                   } else {
                     googleLogin();
                   }
