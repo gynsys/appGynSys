@@ -40,6 +40,7 @@ import CycleLogsPage from './pages/cycle-predictor/CycleLogsPage'
 import NotificationsPage from './pages/cycle-predictor/NotificationsPage'
 import ProfilePage from './pages/cycle-predictor/ProfilePage'
 import VerifyEmailPage from './pages/cycle-predictor/VerifyEmailPage'
+import PublicCTAWrapper from './components/PublicCTAWrapper'
 
 import LocationsManager from './pages/dashboard/LocationsManager'
 import ServicesManager from './pages/dashboard/ServicesManager'
@@ -253,9 +254,9 @@ function App() {
 
 
         {/* Public Doctor Routes */}
-        <Route path="/:slug" element={<DoctorProfilePage />} />
-        <Route path="/:slug/blog" element={<BlogPublicPage />} />
-        <Route path="/:slug/blog/:postSlug" element={<BlogPostPage />} />
+        <Route path="/:slug" element={<PublicCTAWrapper><DoctorProfilePage /></PublicCTAWrapper>} />
+        <Route path="/:slug/blog" element={<PublicCTAWrapper><BlogPublicPage /></PublicCTAWrapper>} />
+        <Route path="/:slug/blog/:postSlug" element={<PublicCTAWrapper><BlogPostPage /></PublicCTAWrapper>} />
 
         {/* Wizard Setup Route (Sidebar-free) */}
         <Route path="/dashboard/setup" element={

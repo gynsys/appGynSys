@@ -16,36 +16,37 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <style>
     /* Critical CSS for Background color matching the OS theme */
-    :root {
-      background-color: #030712;
+    :root, html, body {
+      background-color: #ffffff;
     }
 
     @media (prefers-color-scheme: dark) {
-
-      :root,
-      html,
-      body {
+      :root, html, body {
         background-color: #030712 !important;
       }
     }
 
-    /* Prevent white flash before theme script */
-    html {
-      background-color: #030712;
-    }
-
-    /* Critical CSS for Dark Mode to prevent FOUC */
+    /* Prevent FOUC using exact classes */
     html.dark {
-      background-color: #030712;
+      background-color: #030712 !important;
     }
 
     html.dark body {
-      background-color: #030712;
+      background-color: #030712 !important;
       color: #f3f4f6;
     }
 
     html.dark #root {
-      background-color: #030712;
+      background-color: #030712 !important;
+    }
+    
+    html.light {
+      background-color: #ffffff !important;
+    }
+    
+    html.light body {
+      background-color: #ffffff !important;
+      color: #111827;
     }
   </style>
   <script>
@@ -56,10 +57,12 @@
         const color = isDark ? '#030712' : '#ffffff';
 
         if (isDark) {
+          document.documentElement.classList.remove('light');
           document.documentElement.classList.add('dark');
+          document.documentElement.style.backgroundColor = '#030712';
         } else {
           document.documentElement.classList.remove('dark');
-          // Only use white if specifically in light mode
+          document.documentElement.classList.add('light');
           document.documentElement.style.backgroundColor = '#ffffff';
         }
 
