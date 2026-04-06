@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react'
 export function useDarkMode() {
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme_preference') === 'dark' ||
-        (!('theme_preference' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      // Solo usar lo que el inquilino configuró (grabado en localStorage por DoctorProfilePage).
+      // NUNCA usar prefers-color-scheme del sistema: el tema del doctor manda.
+      return localStorage.getItem('theme_preference') === 'dark'
     }
     return false
   })
