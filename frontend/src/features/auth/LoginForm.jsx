@@ -264,7 +264,7 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
                   if (isCapacitor()) {
                     // Manual Implicit Flow for Capacitor to bypass SDK origin issues
                     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1013444456950-r1v7m72v7673p5f5v486745674567456.apps.googleusercontent.com'; // Fallback to avoid crashes if env is missing
-                    const redirectUri = window.location.origin + window.location.pathname;
+                    const redirectUri = window.location.origin; // Solo el origin (https://gynsys.net) — debe coincidir exactamente con Google Cloud Console
                     const scope = 'openid email profile';
                     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
                     
