@@ -491,10 +491,11 @@ export default function CampaignsPage() {
                                                 {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
                                              </span>
                                           </div>
-                                                            </div>
+                                        </div>
+                                     </div>
                                   </div>
                                 ))}
-                           </div>                 </div>
+                           </div>
                         </div>
                     </div>
                   )}
