@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiMapPin, FiClipboard, FiFolder, FiEdit3,
   FiCalendar, FiSettings, FiClock, FiBriefcase,
-  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell, FiSend
+  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell, FiSend, FiUsers
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
 import { toast } from 'sonner';
