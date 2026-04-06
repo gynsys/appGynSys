@@ -42,6 +42,8 @@ import ProfilePage from './pages/cycle-predictor/ProfilePage'
 import VerifyEmailPage from './pages/cycle-predictor/VerifyEmailPage'
 import PublicCTAWrapper from './components/PublicCTAWrapper'
 
+import DirectoryManager from './pages/dashboard/DirectoryManager'
+
 import LocationsManager from './pages/dashboard/LocationsManager'
 import ServicesManager from './pages/dashboard/ServicesManager'
 import RecommendationsManager from './pages/dashboard/RecommendationsManager'
@@ -286,6 +288,7 @@ function App() {
           <Route path="recommendations" element={<RecommendationsManager />} />
           <Route path="appointments" element={<AppointmentManager />} />
           <Route path="patients" element={<PatientsManager />} />
+          <Route path="directory" element={<DirectoryManager />} />
           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
           <Route path="campaigns" element={<CampaignsPage />} />
         </Route>

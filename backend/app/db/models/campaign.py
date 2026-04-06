@@ -59,6 +59,8 @@ class CampaignContact(Base):
     full_name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, index=True)
     phone = Column(String(50), nullable=True)
+    ci = Column(String(50), nullable=True)
+    city = Column(String(255), nullable=True)
     
     # Link to existing records if applicable
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True)

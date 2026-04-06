@@ -21,7 +21,8 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
         { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
         { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
         { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
-        { icon: FiSend, label: 'Difusión (Campañas)', path: '/dashboard/campaigns' },
+        { icon: FiSend, label: 'Difusión', path: '/dashboard/campaigns' },
+        { icon: FiUsers, label: 'Directorio', path: '/dashboard/directory' },
         { 
           icon: FiLink, 
           label: 'Link Onboarding', 

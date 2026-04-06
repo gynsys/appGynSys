@@ -39,6 +39,8 @@ class CampaignContactBase(BaseModel):
     full_name: str
     email: str
     phone: Optional[str] = None
+    ci: Optional[str] = None
+    city: Optional[str] = None
     patient_id: Optional[int] = None
     cycle_user_id: Optional[int] = None
     source: str = "manual"
@@ -50,6 +52,8 @@ class CampaignContactUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
+    ci: Optional[str] = None
+    city: Optional[str] = None
 
 class CampaignContactResponse(CampaignContactBase):
     model_config = ConfigDict(from_attributes=True)

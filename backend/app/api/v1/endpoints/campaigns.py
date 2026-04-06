@@ -250,11 +250,18 @@ async def sync_contacts_from_patients(
                 full_name=p.nombre_completo or "Paciente",
                 email=email,
                 phone=p.telefono,
+                ci=p.ci,
+                city=p.direccion,
                 patient_id=p.id,
                 source="sync_patient"
             )
             db.add(contact)
             added_count += 1
+        elif not existing.patient_id:
+            # Upgrade existing contact with patient details
+            existing.patient_id = p.id
+            if p.ci and not existing.ci: existing.ci = p.ci
+            if p.direccion and not existing.city: existing.city = p.direccion
             
     # 2. Sync CycleUsers (App Users)
     users = db.query(CycleUser).filter(CycleUser.doctor_id == current_user.id).all()

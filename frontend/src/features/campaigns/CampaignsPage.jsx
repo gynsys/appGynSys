@@ -301,8 +301,7 @@ export default function CampaignsPage() {
                     {[
                       { id: 'all', label: 'Todos', count: contacts.length, icon: <FiUsers /> },
                       { id: 'app_users', label: 'Usuarios App', count: contacts.filter(c => c.source === 'sync_cycle').length, icon: <FiSmartphone /> },
-                      { id: 'patients', label: 'Pacientes', count: contacts.filter(c => c.source !== 'sync_cycle').length, icon: <FiUser /> },
-                      { id: 'add_manual', label: `Nuevo`, count: null, icon: <FiPlus /> }
+                      { id: 'patients', label: 'Pacientes', count: contacts.filter(c => c.source !== 'sync_cycle').length, icon: <FiUser /> }
                     ].map(t => (
                       <button 
                         key={t.id} type="button" onClick={() => setFormData({...formData, target_type: t.id})}
@@ -422,7 +421,6 @@ export default function CampaignsPage() {
                                     <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Nombre</th>
                                     <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px] hidden md:table-cell">Email</th>
                                     <th className="p-4 font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Origen</th>
-                                    <th className="p-4 text-right font-black text-gray-700 dark:text-gray-400 uppercase text-[9px]">Acciones</th>
                                  </tr>
                               </thead>
                               <tbody>
@@ -456,31 +454,6 @@ export default function CampaignsPage() {
                                            {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
                                         </span>
                                      </td>
-                                     <td className="p-4 text-right">
-                                      <div className="flex items-center justify-end gap-2 transition-opacity">
-                                         <button 
-                                           type="button" 
-                                           onClick={(e) => {
-                                              e.stopPropagation();
-                                              setEditingContact(c);
-                                              setIsEditModalOpen(true);
-                                           }}
-                                           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-blue-500 transition-all"
-                                         >
-                                           <FiEdit2 className="w-3.5 h-3.5" />
-                                         </button>
-                                         <button 
-                                           type="button" 
-                                           onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleDeleteContact(c.id);
-                                           }} 
-                                           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-red-500 transition-all"
-                                         >
-                                           <FiTrash2 className="w-3.5 h-3.5" />
-                                         </button>
-                                      </div>
-                                    </td>
                                    </tr>
                                  ))}
                               </tbody>
@@ -518,31 +491,10 @@ export default function CampaignsPage() {
                                                 {c.source === 'sync_cycle' ? 'App' : c.source === 'sync_patient' ? 'Paciente' : 'Manual'}
                                              </span>
                                           </div>
-                                       </div>
-                                    </div>
-                                    
-                                    <div className="flex flex-col gap-2 shrink-0 border-l pl-3 dark:border-gray-700">
-                                       <button 
-                                         type="button" 
-                                         onClick={() => {
-                                            setEditingContact(c);
-                                            setIsEditModalOpen(true);
-                                         }}
-                                         className="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-blue-500 shadow-sm"
-                                       >
-                                         <FiEdit2 className="w-5 h-5" />
-                                       </button>
-                                       <button 
-                                         type="button" 
-                                         onClick={() => handleDeleteContact(c.id)} 
-                                         className="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-red-500 shadow-sm"
-                                       >
-                                         <FiTrash2 className="w-5 h-5" />
-                                       </button>
-                                    </div>
+                                                            </div>
                                   </div>
                                 ))}
-                           </div>
+                           </div>                 </div>
                         </div>
                     </div>
                   )}
