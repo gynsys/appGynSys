@@ -3,11 +3,14 @@
   "appName": "GynSys",
   "webDir": "dist",
   "server": {
-    "url": "https://gynsys.net/dr/mariel-herrera",
+    "url": "https://gynsys.net/mariel-herrera",
     "cleartext": true,
     "allowNavigation": [
       "gynsys.net",
-      "*.gynsys.net"
+      "*.gynsys.net",
+      "accounts.google.com",
+      "*.google.com",
+      "*.gstatic.com"
     ]
   },
   "plugins": {
