@@ -423,9 +423,13 @@ export default function DoctorProfilePage() {
     if (isDark) {
       document.documentElement.classList.add('dark')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#111827') // gray-950
+      // Persistir el tema del doctor en localStorage para que el próximo load sea inmediato
+      localStorage.setItem('theme_preference', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#ffffff')
+      // Persistir el tema claro: eliminar 'dark' del localStorage para que App.jsx no lo aplique
+      localStorage.setItem('theme_preference', 'light')
     }
 
     // --- Bridge nativo Android (Capacitor) ---
