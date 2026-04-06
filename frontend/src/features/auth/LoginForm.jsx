@@ -268,6 +268,8 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
                     const scope = 'openid email profile';
                     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
                     
+                    // Guardar la ruta actual para redirigir de vuelta después del login
+                    localStorage.setItem('google_oauth_return_path', window.location.pathname);
                     console.log("[GynSys] Starting manual Google Oauth redirect for Capacitor...");
                     window.location.href = url;
                   } else {

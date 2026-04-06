@@ -164,6 +164,54 @@ function App() {
     initApp().then(() => setIsInitializing(false));
   }, []);
 
+  // --- Google OAuth Redirect Handler (Root Level) ---
+  // When Google redirects to https://gynsys.net#access_token=...,
+  // LoginForm is not mounted. We capture the token here and redirect
+  // back to the tenant's profile page.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token=')) return;
+
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    if (!accessToken) return;
+
+    // Clean URL immediately to prevent re-processing on refresh
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    const processGoogleToken = async () => {
+      try {
+        const { authService } = await import('./services/authService');
+        const response = await authService.loginGoogle(accessToken, false);
+
+        if (response?.access_token) {
+          localStorage.setItem('access_token', response.access_token);
+          await useAuthStore.getState().loadUser();
+        }
+
+        // Redirect back to the tenant's page
+        const returnPath = localStorage.getItem('google_oauth_return_path');
+        localStorage.removeItem('google_oauth_return_path');
+
+        if (returnPath && returnPath !== '/') {
+          window.location.href = returnPath;
+        } else {
+          // Fallback: use last known slug or dashboard
+          const lastSlug = localStorage.getItem('last_doctor_slug');
+          window.location.href = lastSlug ? `/${lastSlug}` : '/dashboard';
+        }
+      } catch (err) {
+        console.error('[GynSys] Google OAuth redirect login failed:', err);
+        const returnPath = localStorage.getItem('google_oauth_return_path');
+        localStorage.removeItem('google_oauth_return_path');
+        // Even on error, redirect back so user sees something useful
+        if (returnPath) window.location.href = returnPath;
+      }
+    };
+
+    processGoogleToken();
+  }, []);
+
   // Show loading screen during initialization
   if (isInitializing) {
     return <GynSysLoader />
