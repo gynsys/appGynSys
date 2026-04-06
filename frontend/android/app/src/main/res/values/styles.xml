@@ -12,6 +12,9 @@
         <!-- Fondo oscuro para toda transición: evita el fogonazo blanco -->
         <item name="android:windowBackground">#000000</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- Status Bar: transparente y con iconos negros nítidos -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">#000000</item>
     </style>
 
