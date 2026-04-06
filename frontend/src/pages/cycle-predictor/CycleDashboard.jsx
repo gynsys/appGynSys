@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Heart, Calendar, TrendingUp, Bell, Baby, Loader2 } from 'lucide-react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { Heart, Calendar, TrendingUp, Bell, Baby, Loader2, LogOut, User } from 'lucide-react';
 import { isCapacitor } from '../../utils/platform';
 import { useAuthStore } from '../../store/authStore';
 import cycleService from '../../services/cycleService';
@@ -9,13 +9,13 @@ import PregnancyDashboard from '../../components/cycle-predictor/PregnancyDashbo
 import Button from '../../components/common/Button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
-import { LogOut, User } from 'lucide-react';
 
 /**
  * CycleDashboard - Main dashboard page for Cycle Predictor
  * Shows pregnancy dashboard if active, otherwise shows cycle dashboard
  */
 export default function CycleDashboard() {
+    const { openLogin } = useOutletContext() || {};
     const { cycleUser, isCycleAuthenticated } = useAuthStore();
     const navigate = useNavigate();
     const [activePregnancy, setActivePregnancy] = useState(null);
@@ -144,6 +144,16 @@ export default function CycleDashboard() {
                             >
                                 <LogOut className="w-5 h-5" />
                             </button>
+                        </div>
+                    )}
+
+                    {!isCycleAuthenticated && (
+                        <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm border border-transparent dark:border-gray-700"
+                            onClick={() => openLogin && openLogin()}
+                            title="Iniciar Sesión"
+                        >
+                            <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         </div>
                     )}
                 </div>

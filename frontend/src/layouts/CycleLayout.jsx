@@ -79,7 +79,7 @@ export default function CycleLayout() {
         >
             {/* Page Content */}
             <main className="max-w-4xl mx-auto pt-6">
-                <Outlet />
+                <Outlet context={{ openLogin: () => setIsLoginModalOpen(true) }} />
             </main>
 
             {/* Bottom Navigation - Mobile Only */}
