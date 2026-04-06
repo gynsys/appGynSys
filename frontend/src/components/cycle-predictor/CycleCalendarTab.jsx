@@ -537,7 +537,7 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
 
                 {/* Right Column: Calendar */}
                 <Card className="border-0 shadow-none bg-transparent">
-                    <CardContent className="p-0 mt-12">
+                    <CardContent className="p-0 mt-0">
                         <div className="flex flex-col items-center justify-center gap-6">
                             {/* Contenedor Externo Centrado */}
                             <div className="rounded-xl w-full max-w-md mx-auto bg-white dark:bg-gray-800 border dark:border-gray-700 shadow-sm p-6 flex flex-col items-center">
