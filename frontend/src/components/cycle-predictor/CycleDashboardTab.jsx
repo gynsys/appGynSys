@@ -141,31 +141,31 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
                      {/* Anillo de color dinámico */}
                      <div className={`absolute inset-0 border-[12px] ${ringColor} rounded-full clip-path-75 opacity-70 transition-colors duration-1000`} />
                      
-                     <span className={`text-xs font-bold uppercase tracking-widest ${textColor}`}>
+                     <span className={`text-lg font-bold uppercase tracking-widest ${textColor}`}>
                          {activeCycle ? `Día ${displayDay}` : 'Sin Registro'}
                      </span>
                      <span className="text-gray-900 dark:text-white text-3xl font-black my-1">
                          {activeCycle ? phaseText : 'No Activo'}
                      </span>
-                     <span className="text-gray-500 dark:text-gray-400 text-[10px]">
+                     <span className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                          {activeCycle ? `Probabilidad ${probability}` : 'Toca para registrar'}
                      </span>
                   </div>
 
                    <div className="grid grid-cols-2 gap-3 mt-8">
                         <div 
-                            className="h-16 bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3 flex flex-col justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer" 
+                            className="h-20 bg-gray-100 dark:bg-gray-700/80 rounded-2xl p-4 flex flex-col justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer shadow-sm border border-transparent dark:border-gray-600" 
                             onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs') }}
                         >
-                            <span className="text-gray-900 dark:text-white text-[10px] font-bold flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-purple-500"/> Calendario</span>
-                            <span className="text-gray-500 text-[9px] truncate mt-0.5">Próximo: {predictions?.nextPeriod ? format(predictions.nextPeriod, 'd MMM', {locale: es}) : '--'}</span>
+                            <span className="text-gray-900 dark:text-white text-sm font-bold flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-500"/> Calendario</span>
+                            <span className="text-gray-500 dark:text-gray-300 text-xs truncate mt-1">Próximo: {predictions?.nextPeriod ? format(predictions.nextPeriod, 'd MMM', {locale: es}) : '--'}</span>
                         </div>
                         <div 
-                            className="h-16 bg-pink-50/50 dark:bg-pink-500/10 rounded-2xl p-3 flex flex-col justify-center hover:bg-pink-100 dark:hover:bg-pink-500/20 transition-colors cursor-pointer" 
+                            className="h-20 bg-pink-50 dark:bg-pink-900/40 rounded-2xl p-4 flex flex-col justify-center hover:bg-pink-100 dark:hover:bg-pink-800/60 transition-colors cursor-pointer shadow-sm border border-transparent dark:border-pink-800/50" 
                             onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs') }}
                         >
-                            <span className="text-pink-600 dark:text-pink-400 text-[10px] font-bold flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" /> Registro</span>
-                            <span className="text-gray-500 text-[9px] truncate mt-0.5">Síntomas hoy</span>
+                            <span className="text-pink-600 dark:text-pink-400 text-sm font-bold flex items-center gap-2"><Heart className="w-5 h-5" /> Registro</span>
+                            <span className="text-gray-500 dark:text-pink-200/70 text-xs truncate mt-1">Síntomas hoy</span>
                         </div>
                     </div>
                 </div>

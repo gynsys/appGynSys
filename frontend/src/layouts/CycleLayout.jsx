@@ -97,24 +97,13 @@ export default function CycleLayout() {
                         </svg>
                     </button>
 
-                    {/* Title */}
+                    {/* Title (left mostly empty for native feel) */}
                     <h1 className="text-base font-semibold text-gray-900 dark:text-white">
-                        {activePregnancy ? 'Asistente Prenatal' : 'Calculadora Menstrual'}
+                        {activePregnancy ? 'Asistente Prenatal' : ''}
                     </h1>
 
-                    {/* User Avatar */}
-                    <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${isCycleAuthenticated ? 'bg-pink-100 dark:bg-pink-900' : 'bg-gray-100 dark:bg-gray-800'}`}
-                        onClick={() => !isCycleAuthenticated && setIsLoginModalOpen(true)}
-                    >
-                        {isCycleAuthenticated ? (
-                            <span className="text-sm font-medium text-pink-600 dark:text-pink-300">
-                                {cycleUser?.name?.charAt(0).toUpperCase() || cycleUser?.nombre_completo?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                        ) : (
-                            <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                        )}
-                    </div>
+                    {/* Right space filler to keep title centered if needed, or just let flex handle it */}
+                    <div className="w-8"></div>
                 </div>
             </header>
 

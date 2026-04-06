@@ -87,16 +87,42 @@ export default function CycleDashboard() {
                     </p>
                 </div>
 
-                {activePregnancy && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-[10px] h-7 px-3 text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-900/40 flex items-center justify-center"
-                        onClick={() => setShowEndDialog(true)}
-                    >
-                        <span className="leading-none mt-0.5">Finalizar</span>
-                    </Button>
-                )}
+                <div className="flex items-center gap-3">
+                    {activePregnancy && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-[10px] h-7 px-3 text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-900/40 flex items-center justify-center"
+                            onClick={() => setShowEndDialog(true)}
+                        >
+                            <span className="leading-none mt-0.5">Finalizar</span>
+                        </Button>
+                    )}
+                    
+                    {isCycleAuthenticated && (
+                        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full pr-2 p-1">
+                            {/* Avatar */}
+                            <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center shadow-sm">
+                                <span className="text-sm font-bold text-pink-600 dark:text-pink-300">
+                                    {(cycleUser?.nombre_completo || cycleUser?.name || 'U').charAt(0).toUpperCase()}
+                                </span>
+                            </div>
+                            {/* Logout Icon */}
+                            <button 
+                                onClick={() => {
+                                    useAuthStore.getState().logoutPatient();
+                                    navigate('/login');
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+                                title="Cerrar sesión"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Dashboard Content */}
