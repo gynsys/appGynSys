@@ -19,6 +19,12 @@ export default function CycleLogsPage() {
     const { isCycleAuthenticated } = useAuthStore();
 
     useEffect(() => {
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state?.tab]);
+
+    useEffect(() => {
         if (isCycleAuthenticated) {
             cycleService.getActivePregnancy()
                 .then(preg => setActivePregnancy(preg))

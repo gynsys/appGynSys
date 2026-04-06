@@ -8,7 +8,6 @@ import CycleDashboardTab from '../../components/cycle-predictor/CycleDashboardTa
 import PregnancyDashboard from '../../components/cycle-predictor/PregnancyDashboard';
 import Button from '../../components/common/Button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { LogOut, User } from 'lucide-react';
 
 /**
@@ -90,7 +89,7 @@ export default function CycleDashboard() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div>
                     {activePregnancy && (
                         <Button
                             variant="outline"
@@ -100,38 +99,6 @@ export default function CycleDashboard() {
                         >
                             <span className="leading-none mt-0.5">Finalizar</span>
                         </Button>
-                    )}
-                    
-                    {isCycleAuthenticated && (
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button className="w-9 h-9 rounded-full flex items-center justify-center shadow-sm border border-transparent hover:border-gray-300 dark:hover:border-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900" style={{ backgroundColor: `${tenantPrimaryColor}20`, color: tenantPrimaryColor }}>
-                                    <span className="text-sm font-bold" style={{ color: 'inherit' }}>
-                                        {(cycleUser?.nombre_completo || cycleUser?.name || 'U').charAt(0).toUpperCase()}
-                                    </span>
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent align="end" className="w-56 p-2 rounded-xl">
-                                <div className="px-2 py-2 border-b dark:border-gray-700 mb-1">
-                                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-white truncate">
-                                        {cycleUser?.nombre_completo || cycleUser?.name || "Usuaria"}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                                        {cycleUser?.email}
-                                    </p>
-                                </div>
-                                <button 
-                                    onClick={() => {
-                                        useAuthStore.getState().logoutPatient();
-                                        navigate('/login');
-                                    }}
-                                    className="w-full flex items-center gap-2 px-2 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    Cerrar sesión
-                                </button>
-                            </PopoverContent>
-                        </Popover>
                     )}
                 </div>
             </div>
