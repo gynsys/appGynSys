@@ -409,6 +409,12 @@ export default function DoctorProfilePage() {
       )
       // Persist for Cycle App (Guest Mode)
       localStorage.setItem('tenant_theme_primary', doctor.theme_primary_color)
+      if (doctor.logo_url) {
+        localStorage.setItem('tenant_logo', doctor.logo_url)
+      }
+      if (doctor.nombre_completo) {
+        localStorage.setItem('tenant_name', doctor.nombre_completo)
+      }
 
       // Persist for Smart Redirect (SaaS Flow)
       if (doctor.slug_url) {

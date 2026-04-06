@@ -4,6 +4,8 @@ import { LayoutDashboard, FileText, Bell, User } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { BottomNav } from '../components/common/BottomNav';
 import CycleAuthDialog from '../components/cycle-predictor/CycleAuthDialog';
+import DownloadCTADialog from '../components/cycle-predictor/DownloadCTADialog';
+import { isCapacitor } from '../utils/platform';
 import cycleService from '../services/cycleService';
 
 /**
@@ -13,6 +15,36 @@ import cycleService from '../services/cycleService';
 export default function CycleLayout() {
     const { isCycleAuthenticated, cycleUser } = useAuthStore();
     const tenantPrimaryColor = localStorage.getItem('tenant_theme_primary') || '#ec4899';
+    
+    // Manejar Popup CTA
+    const [showCTADialog, setShowCTADialog] = useState(false);
+
+    useEffect(() => {
+        if (!isCycleAuthenticated && !isCapacitor()) {
+            const hasSeen = localStorage.getItem('has_seen_app_cta');
+            
+            // Check if we need to show it
+            let shouldShow = false;
+            if (!hasSeen) {
+                shouldShow = true;
+            } else if (hasSeen !== 'installed' && hasSeen !== 'registered') {
+                // If it's a timestamp, check if 15 days have passed
+                const timestamp = parseInt(hasSeen, 10);
+                if (!isNaN(timestamp)) {
+                    const daysPassed = (new Date().getTime() - timestamp) / (1000 * 3600 * 24);
+                    if (daysPassed > 15) shouldShow = true;
+                }
+            }
+
+            if (shouldShow) {
+                const timer = setTimeout(() => {
+                    setShowCTADialog(true);
+                }, 7000);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [isCycleAuthenticated]);
+
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [activePregnancy, setActivePregnancy] = useState(null);
     const navigate = useNavigate();
@@ -89,6 +121,12 @@ export default function CycleLayout() {
                 open={isLoginModalOpen}
                 onOpenChange={setIsLoginModalOpen}
                 initialView="login"
+            />
+
+            <DownloadCTADialog 
+                open={showCTADialog}
+                onOpenChange={setShowCTADialog}
+                onRegisterClick={() => setIsLoginModalOpen(true)}
             />
         </div>
     );
