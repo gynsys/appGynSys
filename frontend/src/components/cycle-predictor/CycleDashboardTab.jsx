@@ -16,6 +16,7 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
     const { isCycleAuthenticated, cycleUser } = useAuthStore()
     const [mode, setMode] = useState(() => localStorage.getItem('cycle_dashboard_mode') || 'calculator')
     const [showStartDialog, setShowStartDialog] = useState(false) // For pregnancy start
+    const tenantPrimaryColor = localStorage.getItem('tenant_theme_primary') || '#ec4899'
     
     // Auth users state
     const [activeCycle, setActiveCycle] = useState(null)
@@ -68,6 +69,15 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
     const handleModeChange = (newMode) => {
         setMode(newMode)
         localStorage.setItem('cycle_dashboard_mode', newMode)
+    }
+
+    // FIX: Show a subtle skeleton or empty div while loading to prevent the onboarding screen from flashing
+    if (loadingData) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 opacity-50 my-10 space-y-4">
+                <div className="w-64 h-64 border-[8px] border-gray-200 dark:border-gray-800 rounded-full animate-pulse border-t-pink-200 dark:border-t-pink-900 border-r-indigo-100 dark:border-r-indigo-900 mx-auto" />
+            </div>
+        )
     }
 
     // --- NUEVA UI PARA USUARIAS REGISTRADAS ---
@@ -132,14 +142,24 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
             <div className="py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div 
                     className="relative bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-xl p-6 w-full max-w-sm mx-auto overflow-hidden cursor-pointer transform transition-transform active:scale-95" 
-                    onClick={() => navigate('/cycle/logs')}
+                    onClick={() => navigate('/cycle/logs', { state: { tab: 'calendar' } })}
                     title="Toca para ir al calendario"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/5 to-indigo-500/5 dark:from-pink-500/10 dark:to-indigo-500/10 rounded-3xl blur-3xl opacity-50 transition-opacity" />
+                  {/* Degradado de fondo interno con el color del doctor */}
+                  <div 
+                      className="absolute inset-0 rounded-3xl blur-3xl opacity-20 dark:opacity-30 transition-opacity" 
+                      style={{ background: `linear-gradient(to top right, ${tenantPrimaryColor}, #6366f1)` }} 
+                  />
                   
                   <div className="relative aspect-square rounded-full border-[12px] border-gray-50 dark:border-gray-800/50 flex flex-col items-center justify-center text-center p-6 mt-4">
-                     {/* Anillo de color dinámico */}
-                     <div className={`absolute inset-0 border-[12px] ${ringColor} rounded-full clip-path-75 opacity-70 transition-colors duration-1000`} />
+                     {/* Anillo de color dinámico usando el color del tenant */}
+                     <div 
+                         className="absolute inset-0 border-[12px] rounded-full clip-path-75 opacity-80" 
+                         style={{ 
+                             borderColor: phaseText === 'No Activo' ? 'transparent' : tenantPrimaryColor,
+                             transition: 'border-color 1s ease'
+                         }}
+                     />
                      
                      <span className={`text-lg font-bold uppercase tracking-widest ${textColor}`}>
                          {activeCycle ? `Día ${displayDay}` : 'Sin Registro'}
@@ -155,16 +175,16 @@ export default function CycleDashboardTab({ onPregnancyChange }) {
                    <div className="grid grid-cols-2 gap-3 mt-8">
                         <div 
                             className="h-20 bg-gray-100 dark:bg-gray-700/80 rounded-2xl p-4 flex flex-col justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer shadow-sm border border-transparent dark:border-gray-600" 
-                            onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs') }}
+                            onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs', { state: { tab: 'calendar' } }) }}
                         >
-                            <span className="text-gray-900 dark:text-white text-sm font-bold flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-500"/> Calendario</span>
+                            <span className="text-gray-900 dark:text-white text-sm font-bold flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-500" /> Calendario</span>
                             <span className="text-gray-500 dark:text-gray-300 text-xs truncate mt-1">Próximo: {predictions?.nextPeriod ? format(predictions.nextPeriod, 'd MMM', {locale: es}) : '--'}</span>
                         </div>
                         <div 
                             className="h-20 bg-pink-50 dark:bg-pink-900/40 rounded-2xl p-4 flex flex-col justify-center hover:bg-pink-100 dark:hover:bg-pink-800/60 transition-colors cursor-pointer shadow-sm border border-transparent dark:border-pink-800/50" 
-                            onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs') }}
+                            onClick={(e) => { e.stopPropagation(); navigate('/cycle/logs', { state: { tab: 'symptoms' } }) }}
                         >
-                            <span className="text-pink-600 dark:text-pink-400 text-sm font-bold flex items-center gap-2"><Heart className="w-5 h-5" /> Registro</span>
+                            <span className="text-sm font-bold flex items-center gap-2" style={{ color: tenantPrimaryColor }}><Heart className="w-5 h-5" /> Registro</span>
                             <span className="text-gray-500 dark:text-pink-200/70 text-xs truncate mt-1">Síntomas hoy</span>
                         </div>
                     </div>

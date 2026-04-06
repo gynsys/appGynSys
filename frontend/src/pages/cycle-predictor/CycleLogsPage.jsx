@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Calendar, History } from 'lucide-react';
 import CycleSymptomsTab from '../../components/cycle-predictor/CycleSymptomsTab';
@@ -12,7 +13,8 @@ import { useAuthStore } from '../../store/authStore';
  * Includes full calendar view option
  */
 export default function CycleLogsPage() {
-    const [activeTab, setActiveTab] = useState('symptoms');
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.state?.tab || 'symptoms');
     const [activePregnancy, setActivePregnancy] = useState(null);
     const { isCycleAuthenticated } = useAuthStore();
 
