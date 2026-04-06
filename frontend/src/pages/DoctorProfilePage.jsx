@@ -650,18 +650,18 @@ export default function DoctorProfilePage() {
                   <div className="relative group perspective-1000">
                     <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 scale-110" />
                     {doctor.photo_url ? (
-                      <img
-                        src={getImageUrl(doctor.photo_url)}
-                        alt={doctor.nombre_completo}
-                        className={`relative w-96 h-96 md:w-[30rem] md:h-[30rem] object-cover rounded-full shadow-2xl ${doctor.profile_image_border !== false ? 'border-4 border-white/50' : ''} transition-transform duration-500 hover:scale-105 hover:rotate-1`}
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                          e.target.nextElementSibling.style.display = 'flex'
-                        }}
-                      />
+                        <img
+                          src={getImageUrl(doctor.photo_url)}
+                          alt={doctor.nombre_completo}
+                          className={`relative w-72 h-72 sm:w-96 sm:h-96 md:w-[30rem] md:h-[30rem] aspect-square object-cover rounded-full shadow-2xl ${doctor.profile_image_border !== false ? 'border-4 border-white/50' : ''} transition-transform duration-500 hover:scale-105 hover:rotate-1`}
+                          onError={(e) => {
+                            e.target.style.display = 'none'
+                            e.target.nextElementSibling.style.display = 'flex'
+                          }}
+                        />
                     ) : (
                       <div
-                        className={`w-96 h-96 md:w-[30rem] md:h-[30rem] flex items-center justify-center text-8xl font-bold text-white shadow-2xl rounded-full ${doctor.profile_image_border !== false ? 'border-4 border-white/50' : ''}`}
+                        className={`w-72 h-72 sm:w-96 sm:h-96 md:w-[30rem] md:h-[30rem] aspect-square flex items-center justify-center text-8xl font-bold text-white shadow-2xl rounded-full ${doctor.profile_image_border !== false ? 'border-4 border-white/50' : ''}`}
                         style={{ backgroundColor: primaryColor }}
                       >
                         {doctor.nombre_completo.charAt(0)}
