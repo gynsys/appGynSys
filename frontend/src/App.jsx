@@ -130,7 +130,9 @@ function App() {
 
       const applyTheme = () => {
         const theme = localStorage.getItem('theme_preference');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Solo aplicar dark si el inquilino lo tiene configurado explícitamente.
+        // NO usar prefers-color-scheme del sistema: el tema del doctor manda.
+        if (theme === 'dark') {
           document.documentElement.classList.add('dark');
         } else {
           document.documentElement.classList.remove('dark');
