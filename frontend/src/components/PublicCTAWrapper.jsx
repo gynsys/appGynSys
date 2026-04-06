@@ -28,12 +28,31 @@ export default function PublicCTAWrapper({ children }) {
                 }
             }
 
-            if (shouldShow) {
-                const timer = setTimeout(() => {
+            if (!shouldShow) return;
+
+            // 1. Disparador por tiempo: Failsafe para quienes no hacen scroll vertical (ej. vistas cortas)
+            const timer = setTimeout(() => {
+                setShowCTADialog(prev => !prev ? true : prev);
+            }, 7000);
+
+            // 2. Disparador por Scroll Profundo: Salta orgánicamente si lee hasta casi el final de la página (70%)
+            const handleScroll = () => {
+                const scrolledToY = window.scrollY + window.innerHeight;
+                const thresholdY = document.documentElement.scrollHeight * 0.70;
+                
+                if (scrolledToY >= thresholdY) {
                     setShowCTADialog(true);
-                }, 7000);
-                return () => clearTimeout(timer);
-            }
+                    window.removeEventListener('scroll', handleScroll);
+                    clearTimeout(timer); // Previene disparos dobles
+                }
+            };
+
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('scroll', handleScroll);
+            };
         }
     }, [isCycleAuthenticated, location.pathname]);
 
