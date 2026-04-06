@@ -399,9 +399,9 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
     return (
         <div className="space-y-6">
             {/* Two Column Layout: Cards Left, Calendar Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-6">
-                {/* Left Column: Info Cards Stacked */}
-                <div className="space-y-4 flex flex-col justify-center h-full">
+            <div className="flex flex-col lg:grid lg:grid-cols-[300px,1fr] gap-6">
+                {/* Left Column: Info Cards Grid */}
+                <div className="grid grid-cols-2 gap-3 h-auto lg:flex lg:flex-col lg:space-y-4 lg:gap-0 lg:justify-center lg:h-full mb-2">
                     {activePregnancy ? (
                         <>
                             {/* Prenatal Card 1: Día de Gestación */}
@@ -432,7 +432,8 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                             {/* Prenatal Card 3: Cronograma General */}
                             <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border dark:border-gray-700 flex flex-col items-center text-center">
                                 <span className="text-xs font-medium text-muted-foreground dark:text-gray-400 mb-2">CRONOLOGÍA MÉDICA</span>
-                                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1.5 w-full">
+                                <span className="text-[10px] font-medium text-muted-foreground dark:text-gray-400 mb-2">CRONOLOGÍA MÉDICA</span>
+                                <div className="text-[10px] text-gray-600 dark:text-gray-300 space-y-1.5 w-full">
                                     <div className="flex justify-between border-b pb-1 dark:border-gray-700"><span>11-14 sem:</span> <b>Eco Genética</b></div>
                                     <div className="flex justify-between border-b pb-1 dark:border-gray-700"><span>20-24 sem:</span> <b>Morfológica</b></div>
                                     <div className="flex justify-between border-b pb-1 dark:border-gray-700"><span>24-28 sem:</span> <b>Glucosa</b></div>
@@ -444,14 +445,14 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                     ) : (
                         <>
                             {/* Card 1: Estado Actual */}
-                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs font-medium text-muted-foreground dark:text-gray-400 mb-1">DÍA DEL CICLO</span>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                                <span className="text-[10px] font-semibold text-muted-foreground dark:text-gray-400 mb-1 leading-tight">DÍA DEL CICLO</span>
 
                                 {activeCycle ? (
                                     <>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Droplets className="w-4 h-4 text-pink-500" />
-                                            <span className="text-xl font-bold text-gray-900 dark:text-white">
+                                        <div className="flex items-center gap-1.5 mb-1 text-center justify-center w-full">
+                                            <Droplets className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                                            <span className="text-base font-bold text-gray-900 dark:text-white">
                                                 {isValidDate(activeCycle.startDate)
                                                     ? `Día ${differenceInCalendarDays(new Date(), activeCycle.startDate instanceof Date ? activeCycle.startDate : parseISO(activeCycle.startDate)) + 1}`
                                                     : "--"}
@@ -468,13 +469,13 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                                     </>
                                 ) : (
                                     <>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xl font-bold text-gray-400">Inactivo</span>
+                                        <div className="flex items-center justify-center gap-1.5 mb-1 w-full text-center">
+                                            <span className="text-base font-bold text-gray-400">Inactivo</span>
                                         </div>
                                         <Button
                                             size="sm"
                                             onClick={handleStartPeriod}
-                                            className="h-7 text-xs rounded-full bg-pink-600 hover:bg-pink-700 text-white"
+                                            className="h-6 px-3 text-[10px] rounded-full bg-pink-600 hover:bg-pink-700 text-white w-full max-w-[120px] mx-auto truncate"
                                         >
                                             Iniciar Período
                                         </Button>
@@ -483,17 +484,17 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                             </div>
 
                             {/* Card 2: Próximo Período */}
-                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs font-medium text-muted-foreground dark:text-gray-400 mb-1">PRÓXIMO PERÍODO</span>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <CalendarIcon className="w-4 h-4 text-purple-500" />
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                                <span className="text-[10px] font-semibold text-muted-foreground dark:text-gray-400 mb-1 leading-tight w-full truncate">PRÓXIMO PERÍODO</span>
+                                <div className="flex items-center gap-1.5 mb-0.5 justify-center w-full">
+                                    <CalendarIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                                    <span className="text-base font-bold text-gray-900 dark:text-white truncate">
                                         {predictions && isValidDate(predictions.nextPeriod)
                                             ? format(predictions.nextPeriod, "d MMM", { locale: es })
                                             : "--"}
                                     </span>
                                 </div>
-                                <span className="text-xs text-muted-foreground dark:text-gray-500">
+                                <span className="text-[10px] text-muted-foreground dark:text-gray-500 truncate w-full">
                                     {predictions && isValidDate(predictions.nextPeriod)
                                         ? `En ${differenceInCalendarDays(predictions.nextPeriod, new Date())} días`
                                         : "Sin datos"}
@@ -501,30 +502,30 @@ export default function CycleCalendarTab({ onPregnancyChange, activePregnancy })
                             </div>
 
                             {/* Card 3: Ventana Fértil */}
-                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs font-medium text-muted-foreground dark:text-gray-400 mb-1">VENTANA FÉRTIL</span>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Heart className="w-4 h-4 text-teal-500" />
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center line-clamp-1">
+                                <span className="text-[10px] font-semibold text-muted-foreground dark:text-gray-400 mb-1 leading-tight w-full truncate">VENTANA FÉRTIL</span>
+                                <div className="flex items-center gap-1.5 mb-0.5 justify-center w-full">
+                                    <Heart className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                                    <span className="text-base font-bold text-gray-900 dark:text-white truncate">
                                         {predictions && isValidDate(predictions.fertileWindow.start)
-                                            ? `${format(predictions.fertileWindow.start, "d")} - ${format(predictions.fertileWindow.end, "d MMM", { locale: es })}`
+                                            ? `${format(predictions.fertileWindow.start, "d")}-${format(predictions.fertileWindow.end, "d MMM", { locale: es })}`
                                             : "--"}
                                     </span>
                                 </div>
-                                <span className="text-xs text-teal-600 dark:text-teal-400 font-medium">
+                                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-medium truncate w-full">
                                     {predictions ? "Probabilidad Alta" : "Sin datos"}
                                 </span>
                             </div>
 
                             {/* Card 4: Último Período (Explicit) */}
-                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs font-medium text-muted-foreground dark:text-gray-400 mb-1">ÚLTIMO PERÍODO</span>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Droplets className="w-4 h-4 text-pink-400" />
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                                <span className="text-[10px] font-semibold text-muted-foreground dark:text-gray-400 mb-1 leading-tight w-full truncate">ÚLTIMO PERÍODO</span>
+                                <div className="flex items-center gap-1.5 mb-1 justify-center w-full">
+                                    <Droplets className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                                    <span className="text-base font-bold text-gray-900 dark:text-white truncate">
                                         {activeCycle && isValidDate(activeCycle.startDate)
-                                            ? format(activeCycle.startDate, "d 'de' MMMM", { locale: es })
-                                            : "No registrado"}
+                                            ? format(activeCycle.startDate, "d MMM", { locale: es })
+                                            : "--"}
                                     </span>
                                 </div>
                             </div>

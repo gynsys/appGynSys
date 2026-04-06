@@ -17,6 +17,13 @@ export default function CycleLogsPage() {
     const [activeTab, setActiveTab] = useState(location.state?.tab || 'symptoms');
     const [activePregnancy, setActivePregnancy] = useState(null);
     const { isCycleAuthenticated } = useAuthStore();
+    const tenantPrimaryColor = localStorage.getItem('tenant_theme_primary') || '#ec4899';
+
+    const getTabStyle = (tabName) => {
+        return activeTab === tabName 
+            ? { backgroundColor: `${tenantPrimaryColor}20`, color: tenantPrimaryColor }
+            : {};
+    };
 
     useEffect(() => {
         if (location.state?.tab) {
@@ -46,17 +53,17 @@ export default function CycleLogsPage() {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="symptoms" className="flex items-center gap-2">
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-100 dark:bg-gray-800">
+                    <TabsTrigger value="symptoms" className="flex items-center gap-2 transition-all duration-300" style={getTabStyle('symptoms')}>
                         <Calendar className="w-4 h-4" />
                         <span className="hidden sm:inline">Síntomas</span>
                         <span className="sm:hidden">Hoy</span>
                     </TabsTrigger>
-                    <TabsTrigger value="calendar" className="flex items-center gap-2">
+                    <TabsTrigger value="calendar" className="flex items-center gap-2 transition-all duration-300" style={getTabStyle('calendar')}>
                         <Calendar className="w-4 h-4" />
                         <span>Calendario</span>
                     </TabsTrigger>
-                    <TabsTrigger value="history" className="flex items-center gap-2">
+                    <TabsTrigger value="history" className="flex items-center gap-2 transition-all duration-300" style={getTabStyle('history')}>
                         <History className="w-4 h-4" />
                         <span>Historial</span>
                     </TabsTrigger>
