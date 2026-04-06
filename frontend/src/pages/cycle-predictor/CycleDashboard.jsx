@@ -137,12 +137,11 @@ export default function CycleDashboard() {
 
                             <button 
                                 onClick={() => {
-                                    useAuthStore.getState().logoutPatient();
                                     const lastSlug = localStorage.getItem('last_doctor_slug');
                                     navigate(lastSlug ? `/${lastSlug}` : '/');
                                 }}
                                 className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                                title="Cerrar sesión"
+                                title="Volver al inicio"
                             >
                                 <LogOut className="w-5 h-5" />
                             </button>
@@ -150,12 +149,24 @@ export default function CycleDashboard() {
                     )}
 
                     {!isCycleAuthenticated && (
-                        <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm border border-transparent dark:border-gray-700"
-                            onClick={() => openLogin && openLogin()}
-                            title="Iniciar Sesión"
-                        >
-                            <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <div className="flex items-center gap-2">
+                            <div
+                                className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm border border-transparent dark:border-gray-700"
+                                onClick={() => openLogin && openLogin()}
+                                title="Iniciar Sesión"
+                            >
+                                <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    const lastSlug = localStorage.getItem('last_doctor_slug');
+                                    navigate(lastSlug ? `/${lastSlug}` : '/');
+                                }}
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                                title="Volver al inicio"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
                         </div>
                     )}
                 </div>
