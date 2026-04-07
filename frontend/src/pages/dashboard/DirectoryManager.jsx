@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { FiUsers, FiSearch, FiPlus, FiPhone, FiMail, FiMapPin, FiCreditCard, FiEdit2, FiTrash2, FiSmartphone, FiUserCheck, FiUserPlus } from 'react-icons/fi';
+import { FiUsers, FiSearch, FiPlus, FiPhone, FiMail, FiMapPin, FiCreditCard, FiEdit2, FiTrash2, FiSmartphone, FiUserCheck, FiUserPlus, FiAlertTriangle } from 'react-icons/fi';
 import { campaignService } from '../../services/campaignService';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
@@ -40,6 +40,10 @@ export default function DirectoryManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+
+  // Delete status
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
   
   // Forms
   const baseContactState = { full_name: '', email: '', phone: '', ci: '', city: '' };
@@ -126,15 +130,25 @@ export default function DirectoryManager() {
     }
   };
 
-  const handleDelete = async (contact) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar permanentemente a ${contact.full_name}?`)) return;
+  const handleDeleteClick = (contact) => {
+    setContactToDelete(contact);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!contactToDelete) return;
     
     try {
-      await campaignService.deleteContact(contact.id);
-      setContacts(prev => prev.filter(c => c.id !== contact.id));
+      setIsSubmitting(true);
+      await campaignService.deleteContact(contactToDelete.id);
+      setContacts(prev => prev.filter(c => c.id !== contactToDelete.id));
       showToast("Contacto eliminado", "success");
+      setIsDeleteModalOpen(false);
     } catch (error) {
        showToast("Error al eliminar", "error");
+    } finally {
+      setIsSubmitting(false);
+      setContactToDelete(null);
     }
   };
 
@@ -257,7 +271,7 @@ export default function DirectoryManager() {
                          <FiEdit2 /> Editar
                       </button>
                       <button
-                         onClick={() => handleDelete(contact)}
+                         onClick={() => handleDeleteClick(contact)}
                          className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all font-bold"
                          title="Remover de Directorio"
                       >
@@ -328,7 +342,7 @@ export default function DirectoryManager() {
                                   <FiEdit2 className="w-4 h-4" />
                                </button>
                                <button
-                                  onClick={() => handleDelete(contact)}
+                                  onClick={() => handleDeleteClick(contact)}
                                   className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 transition-all font-bold"
                                   title="Eliminar de Directorio"
                                >
@@ -429,7 +443,42 @@ export default function DirectoryManager() {
                   {isSubmitting ? 'Guardando...' : 'Confirmar Datos'}
                </button>
             </div>
-         </form>
+          </form>
+      </Modal>
+
+      {/* DISPATCH CONFIRMAR ELIMINAR (ALERT) */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => !isSubmitting && setIsDeleteModalOpen(false)}
+        size="alert"
+      >
+        <div className="flex flex-col items-center text-center py-2">
+            <div className="w-16 h-16 rounded-3xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-6 animate-pulse">
+                <FiAlertTriangle className="w-8 h-8" />
+            </div>
+            
+            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">¿Eliminar contacto?</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-8 leading-relaxed">
+                Estás a punto de eliminar a <span className="text-gray-900 dark:text-white font-black underline">{contactToDelete?.full_name}</span> permanentemente. Esta acción no se puede deshacer.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3 w-full">
+                <button
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    disabled={isSubmitting}
+                    className="py-3 px-4 rounded-2xl border-2 border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={confirmDelete}
+                    disabled={isSubmitting}
+                    className="py-3 px-4 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-500/20 transition-all active:scale-95 disabled:opacity-50"
+                >
+                    {isSubmitting ? 'Eliminando...' : 'Sí, Eliminar'}
+                </button>
+            </div>
+        </div>
       </Modal>
     </div>
   );
