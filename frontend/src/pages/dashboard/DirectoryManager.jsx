@@ -160,7 +160,7 @@ export default function DirectoryManager() {
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8 w-full">
-      <div className="mb-8 px-4 sm:px-0">
+      <div className="mb-8 px-2 sm:px-0">
          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -224,7 +224,7 @@ export default function DirectoryManager() {
        ) : (
         <>
           {/* VISTA MÓVIL (TARJETAS) - Visible solo en telas pequeñas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0 pb-12 md:hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2 sm:px-0 pb-12 md:hidden">
              {filteredContacts.map((contact) => (
                  <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
                     
