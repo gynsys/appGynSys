@@ -874,6 +874,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     NAME: 'NAME',
     DNI: 'DNI',        // Moved up
     AGE: 'AGE',
+    MENOPAUSE_BASIC: 'MENOPAUSE_BASIC', // Check menopause if age >= 45
     RESIDENCE: 'RESIDENCE', // New Step
     TYPE: 'TYPE',
     REASON: 'REASON',
@@ -1432,10 +1433,31 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
   const handleAgeSubmit = (value) => {
     addMessage(value, 'user');
+    const age = parseInt(value) || 0;
     setFormData(prev => ({ ...prev, patient_age: value }));
+    
+    setTimeout(() => {
+      if (age >= 45) {
+        addMessage("Entiendo. Por tu edad, ¿ya has pasado por la etapa de la menopausia o el cese de tus ciclos?", 'bot');
+        setStep(STEPS.MENOPAUSE_BASIC);
+      } else {
+        addMessage("¿En cual ciudad reside actualmente?", 'bot');
+        setStep(STEPS.RESIDENCE); // Go to Residence
+      }
+    }, 600);
+  };
+
+  const handleMenopauseBasicSubmit = (value) => {
+    addMessage(value, 'user');
+    // Also save it to preconsulta answers directly if possible
+    setPreconsultaState(prev => ({
+      ...prev,
+      answers: { ...prev.answers, is_menopause: value }
+    }));
+    
     setTimeout(() => {
       addMessage("¿En cual ciudad reside actualmente?", 'bot');
-      setStep(STEPS.RESIDENCE); // Go to Residence
+      setStep(STEPS.RESIDENCE); // Resume normal flow
     }, 600);
   };
 

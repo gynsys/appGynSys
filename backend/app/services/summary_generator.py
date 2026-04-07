@@ -337,24 +337,28 @@ class GeneradorResumenes:
             texto_sex = f"Sexarquía a los {sex}" if str(sex).lower() not in ['niega', 'no', 'nunca'] else "Sexarquía niega"
             partes.append(f"{texto_sex}.")
 
-        # --- Ciclos y dismenorrea ---
-        ciclos = self.d.get('gyn_cycles', 'Regulares')
-        if 'irregulares' in str(ciclos).lower():
-            ciclo_desc = "ciclos menstruales irregulares"
+        # --- Ciclos y dismenorrea (Omitir si es menopausia) ---
+        is_menopause = _es_si(self.d.get('is_menopause'))
+        if is_menopause:
+            partes.append("Paciente refiere estar en etapa de menopausia / climaterio, con cese de ciclos menstruales.")
         else:
-            ciclo_desc = "ciclos menstruales regulares"
-
-        dism = self.d.get('gyn_dysmenorrhea')
-        escala_dism = self.d.get('gyn_dysmenorrhea_scale_value')
-        if dism and str(dism).lower() not in ['no', 'niega']:
-            if escala_dism:
-                ciclo_desc += f", asociados a dismenorrea de intensidad {escala_dism}/10"
+            ciclos = self.d.get('gyn_cycles', 'Regulares')
+            if 'irregulares' in str(ciclos).lower():
+                ciclo_desc = "ciclos menstruales irregulares"
             else:
-                ciclo_desc += ", asociados a dismenorrea"
-        else:
-            ciclo_desc += ", sin dismenorrea"
+                ciclo_desc = "ciclos menstruales regulares"
 
-        partes.append(f"Refiere {ciclo_desc}.")
+            dism = self.d.get('gyn_dysmenorrhea')
+            escala_dism = self.d.get('gyn_dysmenorrhea_scale_value')
+            if dism and str(dism).lower() not in ['no', 'niega']:
+                if escala_dism:
+                    ciclo_desc += f", asociados a dismenorrea de intensidad {escala_dism}/10"
+                else:
+                    ciclo_desc += ", asociados a dismenorrea"
+            else:
+                ciclo_desc += ", sin dismenorrea"
+
+            partes.append(f"Refiere {ciclo_desc}.")
 
         # --- FUR ---
         fur = self.d.get('gyn_fum')
@@ -408,7 +412,8 @@ class GeneradorResumenes:
         claves_funcionales = [
             'functional_dispareunia', 'functional_leg_pain', 'functional_gastro_before',
             'functional_gastro_during', 'functional_dischezia', 'functional_bowel_freq',
-            'functional_urinary_problem', 'functional_urinary_pain'
+            'functional_urinary_problem', 'functional_urinary_pain', 'is_menopause',
+            'menopause_hot_flashes', 'menopause_concentration', 'menopause_vaginal_dryness'
         ]
         if not any(self.d.get(k) for k in claves_funcionales):
             return None
@@ -532,8 +537,34 @@ class GeneradorResumenes:
                 partes.append("En el sistema urinario, confirma problemas, con " + ", ".join(urinario_parts) + ".")
             else:
                 partes.append("En el sistema urinario, confirma problemas no especificados.")
-        else:
-            partes.append("Hábito miccional conservado.")
+        # 5. Síndrome Climatérico / Menopausia
+        if _es_si(self.d.get('is_menopause')):
+            climaterio_parts = []
+            
+            # Calorones
+            if _es_si(self.d.get('menopause_hot_flashes')):
+                climaterio_parts.append("presencia de sofocos (calorones)")
+            else:
+                climaterio_parts.append("niega sofocos")
+                
+            # Concentración
+            if _es_si(self.d.get('menopause_concentration')):
+                climaterio_parts.append("pérdida de concentración")
+            
+            # Vaginal
+            if _es_si(self.d.get('menopause_vaginal_dryness')):
+                climaterio_parts.append("resequedad vaginal")
+            else:
+                climaterio_parts.append("niega molestias vulvovaginales")
+                
+            # Gastro específico de menopausia
+            m_gastro = self.d.get('menopause_gastro', [])
+            if m_gastro:
+                g_str = _normalize_value(m_gastro)
+                climaterio_parts.append(f"síntomas gastrointestinales ({g_str})")
+
+            prefix = "En relación a su estado climatérico, manifiesta "
+            partes.append(prefix + ", ".join(climaterio_parts) + ".")
 
         return " ".join(partes)
 
