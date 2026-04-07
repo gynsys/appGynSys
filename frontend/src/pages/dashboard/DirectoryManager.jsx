@@ -247,7 +247,7 @@ export default function DirectoryManager() {
                     </div>
 
                    <div className="mb-4 pt-2">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate pr-20">{contact.full_name}</h2>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 break-words pr-20">{contact.full_name}</h2>
                       {contact.ci ? (
                          <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
                             <FiCreditCard className="w-3" /> CI: {contact.ci}
