@@ -999,6 +999,10 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
       case 'decide_if_ask_menopause': {
         const age = parseInt(answers.age) || 0;
+        // If already answered in basic flow, skip it
+        if (answers.is_menopause) {
+          return { nextId: node.next_if_no }; 
+        }
         return { nextId: age >= 45 ? node.next_if_yes : node.next_if_no };
       }
 
