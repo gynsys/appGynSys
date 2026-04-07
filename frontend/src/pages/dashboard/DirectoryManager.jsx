@@ -207,76 +207,166 @@ export default function DirectoryManager() {
          <div className="bg-white dark:bg-gray-800 sm:rounded-[32px] border-y sm:border-x border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center text-gray-500 font-medium">
             No encontramos ningún contacto con esa información.
          </div>
-      ) : (
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-0 pb-12">
-            {filteredContacts.map((contact) => (
-               <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md hover:border-gray-200 flex flex-col justify-between overflow-hidden relative group">
-                  
-                  {/* Etiqueta de Origen */}
-                  <div className="absolute top-0 right-0 px-3 py-1.5 rounded-bl-xl font-black text-[9px] uppercase transition-colors"
-                       style={{ 
-                          backgroundColor: hexToRgba(primaryColor, contact.source === 'sync_cycle' ? 0.9 : contact.source === 'sync_patient' ? 0.15 : 0.05),
-                          color: contact.source === 'sync_cycle' ? '#ffffff' : contact.source === 'sync_patient' ? primaryColor : '#6b7280'
-                       }}>
-                       {contact.source === 'sync_cycle' ? <span className="flex items-center gap-1"><FiSmartphone/> APP</span> : 
-                        contact.source === 'sync_patient' ? <span className="flex items-center gap-1"><FiUserCheck/> PACIENTE</span> : 
-                        <span className="flex items-center gap-1"><FiUserPlus/> EXTERNO</span>}
-                  </div>
+       ) : (
+        <>
+          {/* VISTA MÓVIL (TARJETAS) - Visible solo en telas pequeñas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0 pb-12 md:hidden">
+             {filteredContacts.map((contact) => (
+                <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
+                   
+                   {/* Etiqueta de Origen */}
+                   <div className="absolute top-0 right-0 px-3 py-1.5 rounded-bl-xl font-black text-[9px] uppercase transition-colors"
+                        style={{ 
+                           backgroundColor: hexToRgba(primaryColor, contact.source === 'sync_cycle' ? 0.9 : contact.source === 'sync_patient' ? 0.15 : 0.05),
+                           color: contact.source === 'sync_cycle' ? '#ffffff' : contact.source === 'sync_patient' ? primaryColor : '#6b7280'
+                        }}>
+                        {contact.source === 'sync_cycle' ? <span className="flex items-center gap-1"><FiSmartphone/> APP</span> : 
+                         contact.source === 'sync_patient' ? <span className="flex items-center gap-1"><FiUserCheck/> PACIENTE</span> : 
+                         <span className="flex items-center gap-1"><FiUserPlus/> EXTERNO</span>}
+                   </div>
 
-                  <div className="mb-4 pt-2">
-                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate pr-8">{contact.full_name}</h2>
-                     {contact.ci ? (
-                        <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                           <FiCreditCard className="w-3" /> CI: {contact.ci}
-                        </p>
-                     ) : (
-                        <p className="text-xs font-black text-gray-300 dark:text-gray-600 italic">Sin identificación</p>
-                     )}
-                  </div>
+                   <div className="mb-4 pt-2">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate pr-8">{contact.full_name}</h2>
+                      {contact.ci ? (
+                         <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                            <FiCreditCard className="w-3" /> CI: {contact.ci}
+                         </p>
+                      ) : (
+                         <p className="text-xs font-black text-gray-300 dark:text-gray-600 italic">Sin identificación</p>
+                      )}
+                   </div>
 
-                  <div className="space-y-2 mb-6">
-                     <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 overflow-hidden" 
-                          title={contact.email}>
-                        <FiMail className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
-                        <span className="truncate">{contact.email}</span>
-                     </div>
-                     {(contact.phone || contact.city) && (
-                        <>
-                           {contact.phone && (
-                              <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300">
-                                 <FiPhone className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
-                                 <span className="truncate">{contact.phone}</span>
-                              </div>
-                           )}
-                           {contact.city && (
-                              <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300">
-                                 <FiMapPin className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
-                                 <span className="truncate text-xs opacity-80">{contact.city}</span>
-                              </div>
-                           )}
-                        </>
-                     )}
-                  </div>
+                   <div className="space-y-2 mb-6">
+                      <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 overflow-hidden" 
+                           title={contact.email}>
+                         <FiMail className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
+                         <span className="truncate">{contact.email}</span>
+                      </div>
+                      {(contact.phone || contact.city) && (
+                         <>
+                            {contact.phone && (
+                               <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300">
+                                  <FiPhone className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
+                                  <span className="truncate">{contact.phone}</span>
+                               </div>
+                            )}
+                            {contact.city && (
+                               <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300">
+                                  <FiMapPin className="w-4 h-4 mr-2 flex-shrink-0 opacity-50" />
+                                  <span className="truncate text-xs opacity-80">{contact.city}</span>
+                               </div>
+                            )}
+                         </>
+                      )}
+                   </div>
 
-                  <div className="flex items-center gap-2 border-t border-gray-100 dark:border-gray-700/50 pt-4">
-                     <button
-                        onClick={() => openEditModal(contact)}
-                        className="flex-1 flex justify-center items-center gap-2 rounded-xl py-2.5 font-bold text-[11px] uppercase tracking-wider bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-gray-600"
-                     >
-                        <FiEdit2 /> Editar
-                     </button>
-                     <button
-                        onClick={() => handleDelete(contact)}
-                        className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all font-bold"
-                        title="Remover de Directorio"
-                     >
-                        <FiTrash2 />
-                     </button>
-                  </div>
-               </div>
-            ))}
-         </div>
-      )}
+                   <div className="flex items-center gap-2 border-t border-gray-100 dark:border-gray-700/50 pt-4">
+                      <button
+                         onClick={() => openEditModal(contact)}
+                         className="flex-1 flex justify-center items-center gap-2 rounded-xl py-2.5 font-bold text-[11px] uppercase tracking-wider bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-gray-600"
+                      >
+                         <FiEdit2 /> Editar
+                      </button>
+                      <button
+                         onClick={() => handleDelete(contact)}
+                         className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all font-bold"
+                         title="Remover de Directorio"
+                      >
+                         <FiTrash2 />
+                      </button>
+                   </div>
+                </div>
+             ))}
+          </div>
+
+          {/* VISTA ESCRITORIO (TABLA) - Visible en PC */}
+          <div className="hidden md:block overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-[32px] shadow-sm mb-12">
+             <table className="w-full text-left border-collapse">
+                <thead>
+                   <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Origen</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Nombre Completo</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Identificación</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Contacto</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Ciudad</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Acciones</th>
+                   </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                   {filteredContacts.map((contact) => (
+                      <tr key={contact.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5"
+                                  style={{ 
+                                     backgroundColor: hexToRgba(primaryColor, contact.source === 'sync_cycle' ? 0.9 : contact.source === 'sync_patient' ? 0.1 : 0.05),
+                                     color: contact.source === 'sync_cycle' ? '#ffffff' : contact.source === 'sync_patient' ? primaryColor : '#6b7280'
+                                  }}>
+                                {contact.source === 'sync_cycle' ? <FiSmartphone className="w-3" /> : 
+                                 contact.source === 'sync_patient' ? <FiUserCheck className="w-3" /> : <FiUserPlus className="w-3" />}
+                                {contact.source === 'sync_cycle' ? 'APP' : 
+                                 contact.source === 'sync_patient' ? 'PACIENTE' : 'EXTERNO'}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4">
+                            <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                               {contact.full_name}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-xs font-black text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                               {contact.ci ? (
+                                  <><FiCreditCard className="opacity-50" /> {contact.ci}</>
+                               ) : (
+                                  <span className="text-gray-300 dark:text-gray-600 font-normal italic">N/A</span>
+                               )}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                               <div className="flex items-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                                  <FiMail className="w-3.5 mr-2 opacity-50" /> {contact.email}
+                               </div>
+                               {contact.phone && (
+                                  <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                     <FiPhone className="w-3.5 mr-2 opacity-50" /> {contact.phone}
+                                  </div>
+                               )}
+                            </div>
+                         </td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                               {contact.city ? (
+                                  <><FiMapPin className="opacity-50" /> {contact.city}</>
+                               ) : (
+                                  <span className="text-gray-300 dark:text-gray-600 font-normal italic">N/A</span>
+                               )}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-2">
+                               <button
+                                  onClick={() => openEditModal(contact)}
+                                  className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold"
+                                  title="Editar Contacto"
+                               >
+                                  <FiEdit2 className="w-4 h-4" />
+                               </button>
+                               <button
+                                  onClick={() => handleDelete(contact)}
+                                  className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 transition-all font-bold"
+                                  title="Eliminar de Directorio"
+                               >
+                                  <FiTrash2 className="w-4 h-4" />
+                               </button>
+                            </div>
+                         </td>
+                      </tr>
+                   ))}
+                </tbody>
+             </table>
+          </div>
+        </>
+     )}
 
       {/* MODAL CREAR / EDITAR */}
       <Modal 
