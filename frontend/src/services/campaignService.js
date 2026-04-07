@@ -36,6 +36,11 @@ export const campaignService = {
     return response.data;
   },
 
+  updateContact: async (contactId, contactData) => {
+    const response = await api.patch(`/campaigns/contacts/${contactId}`, contactData);
+    return response.data;
+  },
+
   async uploadCampaignImage(file) {
     const formData = new FormData();
     formData.append('file', file);
