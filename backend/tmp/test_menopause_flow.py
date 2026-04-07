@@ -7,7 +7,7 @@ from datetime import datetime
 if os.path.exists('/app'):
     sys.path.append('/app')
 
-from app.db.session import SessionLocal
+from app.db.base import SessionLocal
 from app.db.models.appointment import Appointment
 from app.db.models.doctor import Doctor
 from app.services.summary_generator import GeneradorResumenes
@@ -26,19 +26,19 @@ def simulate_menopause_record():
 
         # Mock preconsulta answers for a menopausal patient
         mock_answers = {
-            "full_name": "Paciente Marta Prueba Menopausia",
+            "full_name": "Sra. Marta Menopausia (Simulación)",
             "age": "52",
-            "ci": "87654321",
+            "ci": "99888777",
             "address": "Maracay, Aragua",
             "is_menopause": "Sí",
             "menopause_hot_flashes": "Sí",
-            "menopause_concentration": "Sí",
+            "menopause_concentration": "No",
             "menopause_vaginal_dryness": "Sí",
-            "menopause_gastro": ["Gases", "Diarrea"],
-            "family_history_mother_bool": "Sí",
-            "family_history_mother": ["Osteoporosis"],
-            "surgical_history_bool": "No",
-            "gyn_menarche": "13",
+            "menopause_gastro": ["Gases", "Estreñimiento"],
+            "family_history_mother_bool": "No",
+            "surgical_history_bool": "Sí",
+            "surgical_history": "Apendicectomía a los 20 años",
+            "gyn_menarche": "12",
             "gyn_sexarche": "19",
             "obstetric_history_type": "Multigesta",
             "ho_table_results": {
@@ -47,14 +47,14 @@ def simulate_menopause_record():
                 "cesareas": 0,
                 "abortos": 1,
                 "children": [
-                    {"year": "1995", "weight": "3.1", "height": "49", "complications": "Ninguna"},
-                    {"year": "1998", "weight": "3.3", "height": "51", "complications": "Ninguna"}
+                    {"year": "1994", "weight": "3.1", "height": "50", "complications": "Ninguna"},
+                    {"year": "1997", "weight": "3.4", "height": "51", "complications": "Ninguna"}
                 ]
             },
             "sexually_active": "Sí",
             "gyn_mac_bool": "No",
-            "gyn_previous_checkups": "2023-05-01",
-            "gyn_last_pap_smear": "2023-05-01"
+            "gyn_previous_checkups": "2023-11-15",
+            "gyn_last_pap_smear": "2023-11-15"
         }
 
         # Create the Appointment record
@@ -62,12 +62,13 @@ def simulate_menopause_record():
             doctor_id=doctor.id,
             patient_name=mock_answers["full_name"],
             patient_dni=mock_answers["ci"],
-            patient_phone="04241234567",
-            patient_email="marta_test@example.com",
+            patient_phone="04245555555",
+            patient_email="marta_simulacion@example.com",
             appointment_date=datetime.now(),
-            appointment_time="11:00",
-            status="preconsulta_completed", # Show summary
+            status="preconsulta_completed", # Mark as completed to show summary
             preconsulta_answers=mock_answers,
+            patient_age=52,
+            residence="Maracay",
             created_at=datetime.now()
         )
 
@@ -75,7 +76,7 @@ def simulate_menopause_record():
         db.commit()
         db.refresh(new_app)
 
-        print(f"Record created for 'Marta Prueba' with ID: {new_app.id}")
+        print(f"✅ Record created successfully for '{new_app.patient_name}' with ID: {new_app.id}")
         
         # Test the Narrative Generator
         gen = GeneradorResumenes(mock_answers)
@@ -91,7 +92,7 @@ def simulate_menopause_record():
 
     except Exception as e:
         db.rollback()
-        print(f"Error creating record: {e}")
+        print(f"❌ Error creating record: {e}")
     finally:
         db.close()
 
