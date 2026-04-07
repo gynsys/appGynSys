@@ -229,17 +229,17 @@ export default function DirectoryManager() {
                  <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
                     
                     {/* Botones de Acción (Top Right) */}
-                    <div className="absolute top-3 right-3 flex items-center gap-1">
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
                        <button
                           onClick={() => openEditModal(contact)}
-                          className="p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold backdrop-blur-sm"
+                          className="p-1.5 rounded-lg bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold backdrop-blur-sm"
                           title="Editar"
                        >
                           <FiEdit2 className="w-4 h-4" />
                        </button>
                        <button
                           onClick={() => handleDeleteClick(contact)}
-                          className="p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-red-500 transition-all font-bold backdrop-blur-sm"
+                          className="p-1.5 rounded-lg bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-red-500 transition-all font-bold backdrop-blur-sm"
                           title="Eliminar"
                        >
                           <FiTrash2 className="w-4 h-4" />
@@ -247,7 +247,7 @@ export default function DirectoryManager() {
                     </div>
 
                    <div className="mb-4 pt-2">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate">{contact.full_name}</h2>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate pr-20">{contact.full_name}</h2>
                       {contact.ci ? (
                          <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
                             <FiCreditCard className="w-3" /> CI: {contact.ci}
@@ -286,10 +286,10 @@ export default function DirectoryManager() {
           </div>
 
           {/* VISTA ESCRITORIO (TABLA) - Visible en PC */}
-          <div className="hidden md:block overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-[32px] shadow-sm mb-12">
+          <div className="hidden md:block overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm mb-12">
              <table className="w-full text-left border-collapse">
                 <thead>
-                   <tr className="border-b border-gray-100 dark:border-gray-700" style={{ backgroundColor: hexToRgba(primaryColor, 0.5) }}>
+                   <tr className="border-b border-gray-200 dark:border-gray-700" style={{ backgroundColor: hexToRgba(primaryColor, 0.5) }}>
                       <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Nombre Completo</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Identificación</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Contacto</th>
@@ -297,7 +297,7 @@ export default function DirectoryManager() {
                       <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest text-center">Acciones</th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
                    {filteredContacts.map((contact) => (
                       <tr key={contact.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                          <td className="px-6 py-4">
