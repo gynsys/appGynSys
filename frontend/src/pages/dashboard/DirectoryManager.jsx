@@ -297,7 +297,7 @@ export default function DirectoryManager() {
                       <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest text-center">Acciones</th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700/50">
                    {filteredContacts.map((contact) => (
                       <tr key={contact.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                          <td className="px-6 py-4">
