@@ -62,6 +62,9 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     Envia por Push + Email de forma DUAL (Soporta Usuaria o Doctora).
     Si log_id está presente, se incluye en el payload de Push para tracking.
     """
+    actor = None
+    email_address = None
+    
     # 1. IDENTIFICAR ACTOR (Quién recibe la notificación en su dispositivo - Push)
     if item.recipient_id:
         # Destinatario es una Paciente (CycleUser)
