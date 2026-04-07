@@ -1934,20 +1934,10 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         )}
 
         {step === STEPS.MENOPAUSE_BASIC && (
-          <div className="flex gap-3 justify-center w-full pb-2">
-            <button
-              onClick={() => handleMenopauseBasicSubmit('Sí')}
-              className="flex-1 max-w-[120px] py-4 bg-white dark:bg-gray-800 border-2 border-green-500 text-green-600 dark:text-green-400 font-black rounded-2xl shadow-lg hover:bg-green-500 hover:text-white transition-all transform active:scale-95"
-            >
-              SÍ
-            </button>
-            <button
-              onClick={() => handleMenopauseBasicSubmit('No')}
-              className="flex-1 max-w-[120px] py-4 bg-white dark:bg-gray-800 border-2 border-red-500 text-red-600 dark:text-red-400 font-black rounded-2xl shadow-lg hover:bg-red-500 hover:text-white transition-all transform active:scale-95"
-            >
-              NO
-            </button>
-          </div>
+          <YesNoInput 
+            onNext={handleMenopauseBasicSubmit} 
+            primaryColor={primaryColor} 
+          />
         )}
 
         {step === STEPS.TYPE && (
