@@ -214,19 +214,8 @@ export default function DirectoryManager() {
              {filteredContacts.map((contact) => (
                 <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
                    
-                   {/* Etiqueta de Origen */}
-                   <div className="absolute top-0 right-0 px-3 py-1.5 rounded-bl-xl font-black text-[9px] uppercase transition-colors"
-                        style={{ 
-                           backgroundColor: hexToRgba(primaryColor, contact.source === 'sync_cycle' ? 0.9 : contact.source === 'sync_patient' ? 0.15 : 0.05),
-                           color: contact.source === 'sync_cycle' ? '#ffffff' : contact.source === 'sync_patient' ? primaryColor : '#6b7280'
-                        }}>
-                        {contact.source === 'sync_cycle' ? <span className="flex items-center gap-1"><FiSmartphone/> APP</span> : 
-                         contact.source === 'sync_patient' ? <span className="flex items-center gap-1"><FiUserCheck/> PACIENTE</span> : 
-                         <span className="flex items-center gap-1"><FiUserPlus/> EXTERNO</span>}
-                   </div>
-
                    <div className="mb-4 pt-2">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate pr-8">{contact.full_name}</h2>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate">{contact.full_name}</h2>
                       {contact.ci ? (
                          <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
                             <FiCreditCard className="w-3" /> CI: {contact.ci}
@@ -284,7 +273,6 @@ export default function DirectoryManager() {
              <table className="w-full text-left border-collapse">
                 <thead>
                    <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Origen</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Nombre Completo</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Identificación</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Contacto</th>
@@ -295,18 +283,6 @@ export default function DirectoryManager() {
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
                    {filteredContacts.map((contact) => (
                       <tr key={contact.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                         <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5"
-                                  style={{ 
-                                     backgroundColor: hexToRgba(primaryColor, contact.source === 'sync_cycle' ? 0.9 : contact.source === 'sync_patient' ? 0.1 : 0.05),
-                                     color: contact.source === 'sync_cycle' ? '#ffffff' : contact.source === 'sync_patient' ? primaryColor : '#6b7280'
-                                  }}>
-                                {contact.source === 'sync_cycle' ? <FiSmartphone className="w-3" /> : 
-                                 contact.source === 'sync_patient' ? <FiUserCheck className="w-3" /> : <FiUserPlus className="w-3" />}
-                                {contact.source === 'sync_cycle' ? 'APP' : 
-                                 contact.source === 'sync_patient' ? 'PACIENTE' : 'EXTERNO'}
-                            </span>
-                         </td>
                          <td className="px-6 py-4">
                             <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                {contact.full_name}
