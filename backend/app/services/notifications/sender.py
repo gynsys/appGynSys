@@ -180,7 +180,6 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
         doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
         if doctor and doctor.photo_url:
             final_image_to_log = doctor.photo_url
-            from app.core.config import settings
             if final_image_to_log and not final_image_to_log.startswith(("http://", "https://")):
                 if not final_image_to_log.startswith("/"):
                     final_image_to_log = f"/{final_image_to_log}"
