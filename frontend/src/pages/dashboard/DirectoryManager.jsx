@@ -160,7 +160,7 @@ export default function DirectoryManager() {
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8 w-full">
-      <div className="mb-8 px-2 sm:px-0">
+      <div className="mb-8 px-0 sm:px-0">
          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -224,9 +224,9 @@ export default function DirectoryManager() {
        ) : (
         <>
           {/* VISTA MÓVIL (TARJETAS) - Visible solo en telas pequeñas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2 sm:px-0 pb-12 md:hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-0 sm:px-0 pb-12 md:hidden">
              {filteredContacts.map((contact) => (
-                 <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
+                 <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
                     
                     {/* Botones de Acción (Top Right) */}
                     <div className="absolute top-2 right-2 flex items-center gap-1">
@@ -246,10 +246,10 @@ export default function DirectoryManager() {
                        </button>
                     </div>
 
-                   <div className="mb-4 pt-2">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 break-words pr-20">{contact.full_name}</h2>
+                   <div className="mb-3 pt-1">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-0.5 break-words pr-16">{contact.full_name}</h2>
                       {contact.ci ? (
-                         <p className="text-xs font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                         <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 flex items-center gap-1">
                             <FiCreditCard className="w-3" /> CI: {contact.ci}
                          </p>
                       ) : (
