@@ -226,8 +226,26 @@ export default function DirectoryManager() {
           {/* VISTA MÓVIL (TARJETAS) - Visible solo en telas pequeñas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0 pb-12 md:hidden">
              {filteredContacts.map((contact) => (
-                <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
-                   
+                 <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col justify-between overflow-hidden relative group">
+                    
+                    {/* Botones de Acción (Top Right) */}
+                    <div className="absolute top-3 right-3 flex items-center gap-1">
+                       <button
+                          onClick={() => openEditModal(contact)}
+                          className="p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold backdrop-blur-sm"
+                          title="Editar"
+                       >
+                          <FiEdit2 className="w-4 h-4" />
+                       </button>
+                       <button
+                          onClick={() => handleDeleteClick(contact)}
+                          className="p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/80 text-gray-400 hover:text-red-500 transition-all font-bold backdrop-blur-sm"
+                          title="Eliminar"
+                       >
+                          <FiTrash2 className="w-4 h-4" />
+                       </button>
+                    </div>
+
                    <div className="mb-4 pt-2">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-0.5 truncate">{contact.full_name}</h2>
                       {contact.ci ? (
@@ -263,22 +281,7 @@ export default function DirectoryManager() {
                       )}
                    </div>
 
-                   <div className="flex items-center gap-2 border-t border-gray-100 dark:border-gray-700/50 pt-4">
-                      <button
-                         onClick={() => openEditModal(contact)}
-                         className="flex-1 flex justify-center items-center gap-2 rounded-xl py-2.5 font-bold text-[11px] uppercase tracking-wider bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-200 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-gray-600"
-                      >
-                         <FiEdit2 /> Editar
-                      </button>
-                      <button
-                         onClick={() => handleDeleteClick(contact)}
-                         className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all font-bold"
-                         title="Remover de Directorio"
-                      >
-                         <FiTrash2 />
-                      </button>
-                   </div>
-                </div>
+                 </div>
              ))}
           </div>
 
@@ -286,12 +289,12 @@ export default function DirectoryManager() {
           <div className="hidden md:block overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-[32px] shadow-sm mb-12">
              <table className="w-full text-left border-collapse">
                 <thead>
-                   <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Nombre Completo</th>
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Identificación</th>
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Contacto</th>
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Ciudad</th>
-                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Acciones</th>
+                   <tr className="border-b border-gray-100 dark:border-gray-700" style={{ backgroundColor: hexToRgba(primaryColor, 0.5) }}>
+                      <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Nombre Completo</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Identificación</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Contacto</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Ciudad</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest text-center">Acciones</th>
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
