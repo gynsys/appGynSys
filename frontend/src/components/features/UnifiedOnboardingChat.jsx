@@ -387,9 +387,10 @@ const DatePicker = ({ onSubmit, primaryColor }) => {
         onClick={handleSubmit}
         disabled={!selectedDate}
         style={{ backgroundColor: selectedDate ? primaryColor : undefined }}
-        className={`mt-3 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg ${!selectedDate ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
+        className={`mt-3 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg relative flex items-center justify-center ${!selectedDate ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
       >
-        CONTINUAR
+        <span>CONTINUAR</span>
+        <MdSend size={18} className="absolute right-4" />
       </button>
     </div>
   );
@@ -458,9 +459,10 @@ const MonthYearPicker = ({ onSubmit, primaryColor }) => {
         onClick={handleSubmit}
         disabled={selectedMonth === null}
         style={{ backgroundColor: selectedMonth !== null ? primaryColor : undefined }}
-        className={`mt-2 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg ${selectedMonth === null ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
+        className={`mt-2 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg relative flex items-center justify-center ${selectedMonth === null ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'text-white hover:transform hover:scale-[1.02] hover:opacity-90'}`}
       >
-        CONTINUAR
+        <span>CONTINUAR</span>
+        <MdSend size={18} className="absolute right-4" />
       </button>
     </div>
   );
@@ -611,10 +613,11 @@ const ChecklistInput = ({ options, keyboardType, onNext, primaryColor }) => {
         <button
           onClick={handleSubmit}
           disabled={selected.length === 0}
-          className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+          className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 relative flex items-center justify-center active:scale-95"
           style={{ backgroundColor: primaryColor }}
         >
-          CONTINUAR <MdSend size={18} />
+          <span>CONTINUAR</span>
+          <MdSend size={18} className="absolute right-4" />
         </button>
       </div>
     );
@@ -647,10 +650,11 @@ const ChecklistInput = ({ options, keyboardType, onNext, primaryColor }) => {
       <button
         onClick={handleSubmit}
         disabled={selected.length === 0}
-        className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+        className="w-full py-3 rounded-xl text-white font-black text-sm shadow-lg transition-all disabled:opacity-50 relative flex items-center justify-center active:scale-95"
         style={{ backgroundColor: primaryColor }}
       >
-        CONTINUAR <MdSend size={18} />
+        <span>CONTINUAR</span>
+        <MdSend size={18} className="absolute right-4" />
       </button>
     </div>
   );
@@ -708,9 +712,10 @@ const YearInput = ({ label, onNext, primaryColor }) => {
         onClick={() => onNext(selectedYear.toString())}
         disabled={!selectedYear}
         style={{ backgroundColor: selectedYear ? primaryColor : undefined }}
-        className={`mt-4 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg text-white disabled:bg-gray-200 disabled:text-gray-500`}
+        className={`mt-4 w-full py-3 px-6 rounded-xl font-black text-sm transition-all shadow-lg text-white disabled:bg-gray-200 disabled:text-gray-500 relative flex items-center justify-center`}
       >
-        CONTINUAR
+        <span>CONTINUAR</span>
+        <MdSend size={18} className="absolute right-4" />
       </button>
     </div>
   );
@@ -2121,32 +2126,32 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
               
               switch (node.type) {
                 case 'text_input': 
-                  return <SimpleInput {...common} placeholder="Escribe aquí..." />;
+                  return <SimpleInput key={node.id || preconsultaState.currentNodeId} {...common} placeholder="Escribe aquí..." />;
                 case 'numeric_input': case 'loop_numeric_input': case 'number_grid': case 'sexarche_picker':
-                  return <SimpleInput {...common} placeholder="0" numericOnly />;
+                  return <SimpleInput key={node.id || preconsultaState.currentNodeId} {...common} placeholder="0" numericOnly />;
                 case 'yes_no': 
-                  return <YesNoInput {...common} />;
+                  return <YesNoInput key={node.id || preconsultaState.currentNodeId} {...common} />;
                 case 'buttons': case 'loop_buttons':
                   const btnOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
-                  return btnOptions.length > 0 ? <ButtonSelection {...common} options={btnOptions} /> : null;
+                  return btnOptions.length > 0 ? <ButtonSelection key={node.id || preconsultaState.currentNodeId} {...common} options={btnOptions} /> : null;
                 case 'dropdown':
                   const dropOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
-                  return dropOptions.length > 0 ? <SelectInput {...common} label={label} options={dropOptions} /> : null;
+                  return dropOptions.length > 0 ? <SelectInput key={node.id || preconsultaState.currentNodeId} {...common} label={label} options={dropOptions} /> : null;
                 case 'checklist': case 'loop_checklist':
                   const checkOptions = node.options || PRECONSULTA_OPTIONS[node.keyboard_type] || [];
-                  return checkOptions.length > 0 ? <ChecklistInput {...common} options={checkOptions} keyboardType={node.keyboard_type} /> : null;
+                  return checkOptions.length > 0 ? <ChecklistInput key={node.id || preconsultaState.currentNodeId} {...common} options={checkOptions} keyboardType={node.keyboard_type} /> : null;
                 case 'scale':
-                  return <ScaleInput {...common} />;
+                  return <ScaleInput key={node.id || preconsultaState.currentNodeId} {...common} />;
                 case 'date': case 'calendar':
-                  return <DatePicker {...common} />;
+                  return <DatePicker key={node.id || preconsultaState.currentNodeId} {...common} />;
                 case 'month_year_picker': case 'month_picker':
-                  return <MonthYearPicker {...common} />;
+                  return <MonthYearPicker key={node.id || preconsultaState.currentNodeId} {...common} />;
                 case 'year_picker':
-                  return <YearInput {...common} label={label} />;
+                  return <YearInput key={node.id || preconsultaState.currentNodeId} {...common} label={label} />;
                 case 'ho_table':
-                  return <ObstetricTable {...common} />;
+                  return <ObstetricTable key={node.id || preconsultaState.currentNodeId} {...common} />;
                 default:
-                  return <div className="text-xs text-red-400">Tipo no soportado: {node.type} <button onClick={() => goToNextPreconsulta('Saltado')} className="underline">Saltar</button></div>;
+                  return <div key={node.id || preconsultaState.currentNodeId} className="text-xs text-red-400">Tipo no soportado: {node.type} <button onClick={() => goToNextPreconsulta('Saltado')} className="underline">Saltar</button></div>;
               }
             })()}
           </div>

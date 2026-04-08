@@ -375,13 +375,21 @@ class GeneradorResumenes:
         activa = self.d.get('sexually_active')
         if activa and str(activa).lower() in ['sí', 'si', 'true']:
             fert = self.d.get('gyn_fertility_intent', '')
+            
             if 'no tiene' in fert.lower():
                 texto_fert = "sin deseo de fertilidad"
             elif fert:
                 texto_fert = f"con {fert.lower()}"
+            elif is_menopause:
+                # Si es menopausia y no hay deseo explícito, omitimos la coletilla técnica
+                texto_fert = ""
             else:
                 texto_fert = "sin deseo de fertilidad especificado"
-            partes.append(f"Mantiene actividad sexual activa {texto_fert}.")
+            
+            if texto_fert:
+                partes.append(f"Mantiene actividad sexual activa {texto_fert}.")
+            else:
+                partes.append("Mantiene actividad sexual activa.")
         else:
             partes.append("No mantiene actividad sexual actualmente.")
 

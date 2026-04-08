@@ -143,14 +143,19 @@ def format_full_gyn_obstetric_summary(data: Dict[str, Any]) -> str:
 
     # 5. Sexual activity
     sex = data.get('sexually_active')
+    is_menopause = str(data.get('is_menopause')).lower() in ['sí', 'si', 'true', '1']
+    
     if sex and str(sex).lower() in ['sí', 'si', 'true']:
         fert = data.get('gyn_fertility_intent')
-        f_text = (
-            f"con {str(fert).lower()}"
-            if fert and 'no tiene' not in str(fert).lower()
-            else "sin deseo de fertilidad"
-        )
-        parts.append(f"Mantiene actividad sexual activa {f_text}.")
+        f_text = ""
+        
+        if fert and 'no tiene' not in str(fert).lower():
+            f_text = f" con {str(fert).lower()}"
+        elif not is_menopause:
+            # Solo añadir la coletilla de "sin deseo" si NO es menopausia
+            f_text = " sin deseo de fertilidad"
+            
+        parts.append(f"Mantiene actividad sexual activa{f_text}.")
     elif sex and str(sex).lower() == 'no':
         parts.append("No mantiene actividad sexual actualmente.")
 
