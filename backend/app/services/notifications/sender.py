@@ -6,7 +6,7 @@ from app.db.models.doctor import Doctor
 from app.tasks.email_tasks import _send_integrated_email
 from app.services.push_service import send_push_to_actor
 from .base import logger, push_circuit, log_notification_event
-from .registry import NOTIFICATION_MAP
+from .registry import NOTIFICATION_MAP, _RuleData
 from app.core.config import settings
 
 def safe_render_content(rule: Union[NotificationRule, "_RuleData"], context: dict) -> Optional[dict]:
@@ -138,7 +138,8 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                     title=item.subject, 
                     body=item.message_text or item.subject,
                     data=push_data,
-                    image=final_image_url
+                    icon=final_image_url,  # Foto del médico como miniatura/avatar
+                    image=None             # Eliminamos el banner para evitar truncamiento de texto
                 )
                 
                 if result.get("success"):
