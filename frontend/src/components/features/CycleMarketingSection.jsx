@@ -95,48 +95,51 @@ export default function CycleMarketingSection({ primaryColor, theme, containerBg
                         <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/10 to-indigo-500/10 rounded-3xl blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
 
                         {/* Styled Dashboard Simulation */}
-                        <div className="relative bg-gray-900 rounded-[2.5rem] border-[8px] border-gray-800 shadow-2xl p-6 aspect-[9/16] max-w-[320px] mx-auto overflow-hidden">
-                            <div className="space-y-6">
-                                {/* Header Mock */}
-                                <div className="flex justify-between items-center mb-8">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">
-                                            <Heart className="w-4 h-4 text-pink-500" />
+                        <div className="relative bg-white dark:bg-gray-900 rounded-[2.5rem] border-[8px] border-gray-200 dark:border-gray-800 shadow-2xl p-6 aspect-[9/16] max-w-[320px] mx-auto overflow-hidden">
+                            <div className="flex flex-col h-full">
+                                {/* Scrollable/Header Content Area */}
+                                <div className="flex-1 space-y-4 overflow-hidden">
+                                    {/* Header Mock */}
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">
+                                                <Heart className="w-4 h-4 text-pink-500" />
+                                            </div>
+                                            <span className="text-gray-900 dark:text-white text-xs font-bold">Mi Ciclo</span>
                                         </div>
-                                        <span className="text-white text-xs font-bold">Mi Ciclo</span>
+                                        <Bell className="w-4 h-4 text-gray-500" />
                                     </div>
-                                    <Bell className="w-4 h-4 text-gray-500" />
+
+                                    {/* Main Circle Mock */}
+                                    <div className="aspect-square rounded-full border-[10px] border-pink-500/20 flex flex-col items-center justify-center text-center p-8 relative">
+                                        <div className="absolute inset-0 border-[10px] border-pink-500 rounded-full clip-path-75 opacity-50" />
+                                        <span className="text-pink-500 text-xs font-bold uppercase tracking-widest">Día 14</span>
+                                        <span className="text-gray-900 dark:text-white text-3xl font-black my-1">Fértil</span>
+                                        <span className="text-gray-500 dark:text-gray-400 text-[10px]">Probabilidad Alta</span>
+                                    </div>
+
+                                    {/* Pills Mock */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="h-14 bg-gray-100/80 dark:bg-gray-800/50 rounded-2xl p-3 flex flex-col justify-center">
+                                            <span className="text-gray-900 dark:text-white text-[10px] font-bold">Calendario</span>
+                                            <span className="text-gray-500 text-[9px]">Próximo: 12 Nov</span>
+                                        </div>
+                                        <div className="h-14 bg-pink-50/80 dark:bg-pink-500/10 rounded-2xl p-3 flex flex-col justify-center">
+                                            <span className="text-pink-500 dark:text-pink-400 text-[10px] font-bold">Registro</span>
+                                            <span className="text-gray-500 text-[9px]">Síntomas hoy</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Main Circle Mock */}
-                                <div className="aspect-square rounded-full border-[10px] border-pink-500/20 flex flex-col items-center justify-center text-center p-8 relative">
-                                    <div className="absolute inset-0 border-[10px] border-pink-500 rounded-full clip-path-75 opacity-50" />
-                                    <span className="text-pink-500 text-xs font-bold uppercase tracking-widest">Día 14</span>
-                                    <span className="text-white text-3xl font-black my-1">Fértil</span>
-                                    <span className="text-gray-400 text-[10px]">Probabilidad Alta</span>
-                                </div>
-
-                                {/* Pills Mock */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="h-14 bg-gray-800/50 rounded-2xl p-3 flex flex-col justify-center">
-                                        <span className="text-white text-[10px] font-bold">Calendario</span>
-                                        <span className="text-gray-500 text-[9px]">Próximo: 12 Nov</span>
-                                    </div>
-                                    <div className="h-14 bg-pink-500/10 rounded-2xl p-3 flex flex-col justify-center">
-                                        <span className="text-pink-400 text-[10px] font-bold">Registro</span>
-                                        <span className="text-gray-500 text-[9px]">Síntomas hoy</span>
-                                    </div>
-                                </div>
-
-                                {/* Bottom Nav Mock */}
-                                <div className="absolute bottom-6 left-0 right-0 px-6">
-                                    <div className="flex justify-between items-center bg-gray-800/80 backdrop-blur-md rounded-2xl p-3">
+                                {/* Bottom Nav Mock - Fixed at bottom */}
+                                <div className="mt-4">
+                                    <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-3 border border-gray-200/50 dark:border-gray-700/50">
                                         <div className="w-6 h-6 rounded-full bg-pink-500/20 flex items-center justify-center">
                                             <Calendar className="w-3 h-3 text-pink-500" />
                                         </div>
-                                        <Heart className="w-3 h-3 text-gray-500" />
-                                        <Bell className="w-3 h-3 text-gray-500" />
-                                        <User className="w-3 h-3 text-gray-500" />
+                                        <Heart className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                                        <Bell className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                                        <User className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                                     </div>
                                 </div>
                             </div>
