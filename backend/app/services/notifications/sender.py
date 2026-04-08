@@ -138,8 +138,7 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                     title=item.subject, 
                     body=item.message_text or item.subject,
                     data=push_data,
-                    icon=final_image_url,  # Foto del médico como miniatura/avatar
-                    image=None             # Eliminamos el banner para evitar truncamiento de texto
+                    image=final_image_url
                 )
                 
                 if result.get("success"):
