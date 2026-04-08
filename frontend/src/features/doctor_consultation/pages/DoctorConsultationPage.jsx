@@ -328,6 +328,9 @@ export const DoctorConsultationPage = () => {
     // or the empty state if absolutely nothing exists.
     if (!patientData) return null;
 
+    const isMenopause = patientData.is_menopause === 'Sí' || patientData.is_menopause === true;
+    const negLabel = isMenopause ? "No aplica" : "Niega";
+
     const Section = ({ title, children }) => (
       <div className="mb-6 last:mb-0">
         {title && <h4 className="text-base font-bold text-black border-b border-gray-200 pb-1 mb-2 uppercase tracking-wider">{title}</h4>}
@@ -448,7 +451,7 @@ export const DoctorConsultationPage = () => {
                       {patientData.functional_dispareunia_type && ` - ${patientData.functional_dispareunia_type}`}
                       {(patientData.functional_dispareunia_deep_scale !== null && patientData.functional_dispareunia_deep_scale !== undefined) && ` (${patientData.functional_dispareunia_deep_scale}/10)`}
                     </>
-                  ) : <span className="text-gray-500 dark:text-white italic">Niega</span>}
+                  ) : <span className="text-gray-500 dark:text-white italic">{negLabel}</span>}
                 </span>
               </div>
 
@@ -463,7 +466,7 @@ export const DoctorConsultationPage = () => {
                       {patientData.functional_leg_pain_zone && patientData.functional_leg_pain_zone.length > 0 &&
                         ` (${Array.isArray(patientData.functional_leg_pain_zone) ? patientData.functional_leg_pain_zone.join(', ') : patientData.functional_leg_pain_zone})`}
                     </>
-                  ) : <span className="text-gray-500 dark:text-white italic">Niega</span>}
+                  ) : <span className="text-gray-500 dark:text-white italic">{negLabel}</span>}
                 </span>
               </div>
 
@@ -475,7 +478,7 @@ export const DoctorConsultationPage = () => {
                       <span className="font-bold text-blue-700 dark:text-white">Refiere</span>
                       {(patientData.functional_dischezia_scale !== null && patientData.functional_dischezia_scale !== undefined) && ` ${patientData.functional_dischezia_scale}/10`}
                     </>
-                  ) : (patientData.functional_dischezia === 'Eventual' ? 'Eventual' : <span className="text-gray-500 dark:text-white italic">Niega</span>)}
+                  ) : (patientData.functional_dischezia === 'Eventual' ? 'Eventual' : <span className="text-gray-500 dark:text-white italic">{negLabel}</span>)}
                 </span>
               </div>
             </div>
@@ -487,11 +490,11 @@ export const DoctorConsultationPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field
                 label="Antes de menstruación"
-                value={(Array.isArray(patientData.functional_gastro_before) ? patientData.functional_gastro_before.join(', ') : patientData.functional_gastro_before) || "Niega"}
+                value={(Array.isArray(patientData.functional_gastro_before) ? patientData.functional_gastro_before.join(', ') : patientData.functional_gastro_before) || negLabel}
               />
               <Field
                 label="Durante menstruación"
-                value={(Array.isArray(patientData.functional_gastro_during) ? patientData.functional_gastro_during.join(', ') : patientData.functional_gastro_during) || "Niega"}
+                value={(Array.isArray(patientData.functional_gastro_during) ? patientData.functional_gastro_during.join(', ') : patientData.functional_gastro_during) || negLabel}
               />
               <Field
                 label="Hábito Evacuatorio"
