@@ -1453,11 +1453,26 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
 
   const handleMenopauseBasicSubmit = (value) => {
     addMessage(value, 'user');
-    // Also save it to preconsulta answers directly if possible
+    
+    // Determine if we should auto-set the type
+    const isMenopause = value === 'Sí' || value === 'Si' || value === true;
+    
+    // Save to preconsulta answers
     setPreconsultaState(prev => ({
       ...prev,
       answers: { ...prev.answers, is_menopause: value }
     }));
+    
+    // If menopause is true, we know it's Ginecología
+    if (isMenopause) {
+      setFormData(prev => ({ 
+        ...prev, 
+        appointment_type: 'Ginecología',
+        is_menopause: true 
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, is_menopause: false }));
+    }
     
     setTimeout(() => {
       addMessage("¿En cual ciudad reside actualmente?", 'bot');
@@ -1713,6 +1728,10 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     setTimeout(() => {
       if (formData.date_part && formData.time_part) {
         handleConfirm();
+      } else if (formData.appointment_type) {
+        // Skip type selection if already set (e.g. by menopause logic)
+        addMessage("Entendido. ¿Cuál es el motivo de tu consulta?", 'bot');
+        setStep(STEPS.REASON);
       } else {
         addMessage("¿Qué tipo de consulta deseas agendar?", 'bot');
         setStep(STEPS.TYPE);
