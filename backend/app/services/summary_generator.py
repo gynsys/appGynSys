@@ -427,6 +427,7 @@ class GeneradorResumenes:
             return None
 
         partes = []
+        is_menopause = _es_si(self.d.get('is_menopause'))
 
         # 1. Dispareunia
         if _es_si(self.d.get('functional_dispareunia')):
@@ -456,7 +457,7 @@ class GeneradorResumenes:
                     partes.append(f"La paciente refiere dispareunia de tipo {tipo_str.lower()}.")
                 else:
                     partes.append("La paciente refiere dispareunia.")
-        else:
+        elif not is_menopause:
             partes.append("Niega dispareunia.")
 
         # 2. Dolor piernas
@@ -469,7 +470,7 @@ class GeneradorResumenes:
                 partes.append(f"Presenta dolor en miembros inferiores, descrito como '{tipo_str.lower()}' en {zona_str.lower()}.")
             else:
                 partes.append("Refiere dolor en miembros inferiores no especificado.")
-        else:
+        elif not is_menopause:
             partes.append("Niega dolor en miembros inferiores durante la menstruación.")
 
         # 3. Gastrointestinal
@@ -546,7 +547,7 @@ class GeneradorResumenes:
             else:
                 partes.append("En el sistema urinario, confirma problemas no especificados.")
         # 5. Síndrome Climatérico / Menopausia
-        if _es_si(self.d.get('is_menopause')):
+        if is_menopause:
             climaterio_parts = []
             
             # Calorones
