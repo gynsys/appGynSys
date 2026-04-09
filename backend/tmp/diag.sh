@@ -1,0 +1,2 @@
+docker exec appgynsys-db-1 psql -U postgres -d gynsys -c "SELECT id, notification_type, recipient_id, doctor_id, recipient_email_direct FROM pending_notifications WHERE notification_type = 'doctor_unified_onboarding' ORDER BY id DESC LIMIT 5"
+docker exec appgynsys-db-1 psql -U postgres -d gynsys -c "SELECT id, notification_type, recipient_id, doctor_id, channel_used FROM notification_logs WHERE notification_type = 'doctor_unified_onboarding' ORDER BY id DESC LIMIT 5"
