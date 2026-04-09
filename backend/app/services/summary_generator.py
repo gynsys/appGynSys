@@ -503,14 +503,22 @@ class GeneradorResumenes:
             gastro_text += "."
 
             if bowel_freq and bowel_freq != 'N/A':
+                freq_val = _normalize_value(bowel_freq).lower()
+                # Ajuste gramatical: "diario" -> "diaria"
+                if freq_val == 'diario':
+                    freq_val = 'diaria'
+                
                 if not lista_sint and tiene_dischezia and 'eventual' in str(dischezia).lower():
-                    gastro_text += f" Su frecuencia evacuatoria {_normalize_value(bowel_freq).lower()}."
+                    gastro_text += f" Su frecuencia evacuatoria {freq_val}."
                 else:
-                    gastro_text += f" Su frecuencia evacuatoria es de {_normalize_value(bowel_freq).lower()}."
+                    gastro_text += f" Su frecuencia evacuatoria es {freq_val}."
             partes.append(gastro_text)
         else:
             if bowel_freq and bowel_freq != 'N/A':
-                partes.append(f"A nivel gastrointestinal, no refiere síntomas significativos, con una frecuencia evacuatoria {_normalize_value(bowel_freq).lower()}.")
+                freq_val = _normalize_value(bowel_freq).lower()
+                if freq_val == 'diario':
+                    freq_val = 'diaria'
+                partes.append(f"A nivel gastrointestinal, no refiere síntomas significativos. Su frecuencia evacuatoria es {freq_val}.")
 
         # 4. Urinario
         if _es_si(self.d.get('functional_urinary_problem')):
