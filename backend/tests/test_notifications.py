@@ -265,6 +265,7 @@ class TestSafeRenderContent:
             channel="dual",
             title_template="💊 Recordatorio Anticonceptivo",
             message_text_template="Hola {patient_name}, es hora de tu pastilla.",
+            image_url=None,
             is_active=True,
             priority=10,
         )
@@ -289,6 +290,7 @@ class TestSafeRenderContent:
             channel="dual",
             title_template="💊 Recordatorio",
             message_text_template="Hola {patient_name}, toma tu pastilla.",
+            image_url=None,
             is_active=True,
             priority=10,
         )
@@ -312,6 +314,7 @@ class TestSafeRenderContent:
             channel="push",
             title_template=None,
             message_text_template=None,
+            image_url=None,
             is_active=True,
             priority=99,
         )
@@ -344,6 +347,7 @@ class TestRuleData:
             "channel": "dual",
             "title_template": "Test Title",
             "message_text_template": "Test Message for {patient_name}",
+            "image_url": None,
             "is_active": True,
             "priority": 50,
         }

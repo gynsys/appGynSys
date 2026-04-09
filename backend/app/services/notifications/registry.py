@@ -163,13 +163,14 @@ class _RuleData:
     )
 
     def __init__(self, rule: "NotificationRule") -> None:
-        self.id: int = rule.id
-        self.notification_type: str = rule.notification_type
-        self.send_time: Optional[str] = rule.send_time
-        self.channel: str = rule.channel
-        self.title_template: Optional[str] = rule.title_template
+        self.id: int = getattr(rule, 'id', None)
+        self.notification_type: str = getattr(rule, 'notification_type', None)
+        self.send_time: Optional[str] = getattr(rule, 'send_time', None)
+        self.channel: str = getattr(rule, 'channel', 'push')
+        self.title_template: Optional[str] = getattr(rule, 'title_template', None)
         self.message_template: Optional[str] = getattr(rule, 'message_template', None)
-        self.message_text_template: Optional[str] = rule.message_text_template
-        self.image_url: Optional[str] = rule.image_url
-        self.is_active: bool = rule.is_active
-        self.priority: int = rule.priority if rule.priority is not None else 99
+        self.message_text_template: Optional[str] = getattr(rule, 'message_text_template', None)
+        self.image_url: Optional[str] = getattr(rule, 'image_url', None)
+        self.is_active: bool = getattr(rule, 'is_active', True)
+        priority = getattr(rule, 'priority', 99)
+        self.priority: int = priority if priority is not None else 99
