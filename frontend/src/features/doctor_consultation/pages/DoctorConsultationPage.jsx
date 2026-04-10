@@ -838,7 +838,7 @@ export const DoctorConsultationPage = () => {
     }
 
     return (
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+      <div className="bg-white dark:bg-gray-800 p-4 py-8 md:p-8 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
         <h3 className="text-xl font-medium mb-6 dark:text-white">¿Desea usar la plantilla de examen físico normal?</h3>
         <div className="flex flex-col gap-4">
           <button
