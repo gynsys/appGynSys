@@ -775,7 +775,7 @@ export const DoctorConsultationPage = () => {
       if (isFinished) {
         const summary = formatPhysicalExamSummary(answers);
         return (
-          <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-none sm:rounded-lg border-y border-x-0 sm:border border-green-200 dark:border-green-800">
+          <div className="bg-green-50 dark:bg-green-900/20 px-0 py-8 md:p-8 rounded-none sm:rounded-lg border-y border-x-0 sm:border border-green-200 dark:border-green-800">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-bold text-green-800 dark:text-green-300">Examen Físico Completado</h3>

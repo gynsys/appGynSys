@@ -193,22 +193,29 @@ export const formatFullGynObstetricSummary = (data) => {
 
     if (sexuallyActive && (sexuallyActive === true || String(sexuallyActive).toLowerCase() === 'sí' || String(sexuallyActive).toLowerCase() === 'si')) {
         let fertilityText = "sin deseo de fertilidad";
-        if (fertilityIntent) {
+        const isPrenatal = data.appointment_type === 'Prenatal';
+
+        if (isPrenatal) {
+            // Omit fertility intent if already pregnant
+            fertilityText = "";
+        } else if (fertilityIntent) {
             const intent = String(fertilityIntent).toLowerCase();
             if (intent.includes('más de un año')) {
                 fertilityText = "con deseo de fertilidad (>1 año)";
             } else if (intent.includes('no tiene')) {
                 fertilityText = "sin deseo de fertilidad";
             } else if (intent.includes('prefiere no')) {
-                // If prefers not to say, maybe omit or say explicitly? 
-                // "Mantiene actividad sexual activa (no especifica deseo de fertilidad)."
                 fertilityText = "(no especifica deseo de fertilidad)";
             } else {
-                // Catch-all
                 fertilityText = `con ${intent}`;
             }
         }
-        parts.push(`Mantiene actividad sexual activa ${fertilityText}.`);
+        
+        if (fertilityText) {
+            parts.push(`Mantiene actividad sexual activa ${fertilityText}.`);
+        } else {
+            parts.push("Mantiene actividad sexual activa.");
+        }
     } else if (sexuallyActive === false || (sexuallyActive && String(sexuallyActive).toLowerCase() === 'no')) {
         parts.push("No mantiene actividad sexual actualmente.");
     }

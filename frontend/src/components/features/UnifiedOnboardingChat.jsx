@@ -924,7 +924,9 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       phone: data.patient_phone || '',
       address: data.residence || '',
       occupation: data.occupation || '',
-      email: data.patient_email || ''
+      email: data.patient_email || '',
+      appointment_type: data.appointment_type || '',
+      reason_for_visit: data.reason_for_visit || ''
     };
   };
 
@@ -969,8 +971,10 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       
       case 'check_if_pregnant_for_fertility':
         const obstetricType = answers.obstetric_history_type;
+        const appType = answers.appointment_type;
         const hasBeenPregnant = obstetricType === 'Primigesta' || obstetricType === 'Multigesta';
-        return { nextId: hasBeenPregnant ? node.next_if_skip_fertility : node.next_if_ask_fertility };
+        const isPrenatal = appType === 'Prenatal';
+        return { nextId: (hasBeenPregnant || isPrenatal) ? node.next_if_skip_fertility : node.next_if_ask_fertility };
 
       case 'decide_if_ask_mac_checklist':
         return { nextId: answers.gyn_mac_bool === 'Sí' ? node.next_if_yes : node.next_if_no };

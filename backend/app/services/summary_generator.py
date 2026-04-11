@@ -372,11 +372,15 @@ class GeneradorResumenes:
                 partes.append(f"Utiliza como método anticonceptivo: {_normalize_value(metodos).lower()}.")
 
         # --- Actividad sexual y deseo de fertilidad ---
+        is_prenatal = self.d.get('appointment_type') == 'Prenatal'
         activa = self.d.get('sexually_active')
         if activa and str(activa).lower() in ['sí', 'si', 'true']:
             fert = self.d.get('gyn_fertility_intent', '')
             
-            if 'no tiene' in fert.lower():
+            if is_prenatal:
+                # Si es prenatal, omitimos el deseo de fertilidad ya que está embarazada
+                texto_fert = ""
+            elif 'no tiene' in fert.lower():
                 texto_fert = "sin deseo de fertilidad"
             elif fert:
                 texto_fert = f"con {fert.lower()}"
