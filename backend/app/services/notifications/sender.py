@@ -118,17 +118,12 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                 if log_id:
                     push_data["notification_id"] = log_id
 
-                # Resolve Image URL (Priority: Item specific -> Doctor Photo)
+                # Resolve Image URL: Only use explicitly set image, NOT doctor photo fallback
+                # This keeps notifications compact (Instagram-style) instead of showing a large photo
                 final_image_url = item.image_url
-                if not final_image_url and item.doctor_id:
-                    # Fetch doctor if not already loaded
-                    doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
-                    if doctor and doctor.photo_url:
-                        final_image_url = doctor.photo_url
                 
                 # Make URL absolute if relative
                 if final_image_url and not final_image_url.startswith(("http://", "https://")):
-                    # Ensure starts with /
                     if not final_image_url.startswith("/"):
                         final_image_url = f"/{final_image_url}"
                     final_image_url = f"{settings.BACKEND_URL}{final_image_url}"
@@ -176,16 +171,11 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     final_channel = "+".join(channels_sent) if channels_sent else None
     final_error = "; ".join(errors) if errors else None
     
-    # Resolve the image URL to return it for logging
-    # We re-calculate it here to be explicit and safe
+    # Resolve the image URL to return it for logging (consistent with push logic)
     final_image_to_log = item.image_url
-    if not final_image_to_log and item.doctor_id:
-        doctor = db.query(Doctor).filter(Doctor.id == item.doctor_id).first()
-        if doctor and doctor.photo_url:
-            final_image_to_log = doctor.photo_url
-            if final_image_to_log and not final_image_to_log.startswith(("http://", "https://")):
-                if not final_image_to_log.startswith("/"):
-                    final_image_to_log = f"/{final_image_to_log}"
-                final_image_to_log = f"{settings.BACKEND_URL}{final_image_to_log}"
+    if final_image_to_log and not final_image_to_log.startswith(("http://", "https://")):
+        if not final_image_to_log.startswith("/"):
+            final_image_to_log = f"/{final_image_to_log}"
+        final_image_to_log = f"{settings.BACKEND_URL}{final_image_to_log}"
 
     return success, final_channel, final_error, final_image_to_log

@@ -9,4 +9,7 @@
     <color name="colorPrimary">#6366F1</color>
     <color name="colorPrimaryDark">#4F46E5</color>
     <color name="colorAccent">#818CF8</color>
+
+    <!-- FCM notification icon tint color (GynSys pink) -->
+    <color name="notification_accent">#EC4899</color>
 </resources>

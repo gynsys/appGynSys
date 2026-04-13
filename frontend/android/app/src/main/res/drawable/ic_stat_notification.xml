@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GynSys notification small icon: Stylized "G" with flowing wave -->
+<!-- White on transparent, 24x24dp as per Android notification icon guidelines -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Outer G shape -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10c3.51,0 6.58,-1.81 8.36,-4.54l-0.01,-0.01C18.73,19.72 15.56,21 12,21c-4.97,0 -9,-4.03 -9,-9s4.03,-9 9,-9c3.21,0 6.02,1.68 7.62,4.22L18,7.5v4.5h-4.5l1.7,-1.7C13.92,8.33 12,7 12,7c-2.76,0 -5,2.24 -5,5s2.24,5 5,5c1.93,0 3.6,-1.1 4.43,-2.7H18v0.5c0,0 -1.17,4.2 -6,4.2c-3.87,0 -7,-3.13 -7,-7s3.13,-7 7,-7c2.57,0 4.82,1.39 6.04,3.46L19.5,7L19.5,2H18l0.36,2.19C16.38,2.82 14.31,2 12,2z"/>
+
+    <!-- Wave/ribbon accent through the middle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7,12c0,0 1.5,-2.5 5,-2.5s5,2.5 5,2.5s-1.5,2.5 -5,2.5S7,12 7,12z"
+        android:strokeWidth="0.8"
+        android:strokeColor="#FFFFFF"
+        android:fillAlpha="0.3"/>
+</vector>
