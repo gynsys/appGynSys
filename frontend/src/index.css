@@ -11,9 +11,15 @@
   --total-bottom-offset: calc(var(--nav-height) + var(--safe-area-bottom));
 }
 
-/* Android 15+ edge-to-edge: add top padding when inside Capacitor app */
+/* Android 15+ edge-to-edge: shift content below status bar when inside Capacitor app */
 html.is-capacitor body {
   padding-top: var(--safe-area-top);
+}
+
+/* Fix sticky headers that use top-0: shift them below the safe area */
+html.is-capacitor .sticky.top-0,
+html.is-capacitor [class*="sticky"][class*="top-0"] {
+  top: var(--safe-area-top) !important;
 }
 
 .font-playfair {
