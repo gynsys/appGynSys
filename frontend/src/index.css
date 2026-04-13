@@ -22,6 +22,13 @@ html.is-capacitor [class*="sticky"][class*="top-0"] {
   top: var(--safe-area-top) !important;
 }
 
+/* Exception: sticky headers INSIDE full-viewport flex containers (e.g. DashboardLayout)
+   already get pushed down by body padding, so they should NOT get the extra offset */
+html.is-capacitor .h-\[100dvh\] .sticky.top-0,
+html.is-capacitor .h-\[100dvh\] [class*="sticky"][class*="top-0"] {
+  top: 0 !important;
+}
+
 .font-playfair {
   font-family: 'Playfair Display', serif;
 }
