@@ -64,8 +64,7 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
           ${!effectiveBgColor ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md' : ''}
         `}
         style={{
-          ...(effectiveBgColor ? { backgroundColor: effectiveBgColor } : {}),
-          paddingTop: 'env(safe-area-inset-top, 0px)'
+          ...(effectiveBgColor ? { backgroundColor: effectiveBgColor } : {})
         }}
       >
         <div className="max-w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">

@@ -6,8 +6,14 @@
 
 :root {
   --nav-height: 4rem;
+  --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom);
   --total-bottom-offset: calc(var(--nav-height) + var(--safe-area-bottom));
+}
+
+/* Android 15+ edge-to-edge: add top padding when inside Capacitor app */
+html.is-capacitor body {
+  padding-top: var(--safe-area-top);
 }
 
 .font-playfair {
