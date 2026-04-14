@@ -542,7 +542,7 @@ export default function DoctorProfilePage() {
     }
   }
 
-  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isTestModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
+  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isAppointmentRequestModalOpen || isTestModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
 
   // Bottom Navigation Handlers
   const scrollToTop = () => {
@@ -563,7 +563,7 @@ export default function DoctorProfilePage() {
   }
 
   const navigateToBooking = () => {
-    setIsAppointmentModalOpen(true)
+    setIsAppointmentRequestModalOpen(true)
   }
 
   // Bottom nav configuration
@@ -760,7 +760,7 @@ export default function DoctorProfilePage() {
               containerBgColor={containerBgColor}
               sectionTitle={doctor.services_section_title || 'Nuestros Servicios'}
               theme={theme}
-              onAppointmentClick={() => setIsAppointmentModalOpen(true)}
+              onAppointmentClick={() => setIsAppointmentRequestModalOpen(true)}
             />
           </ScrollReveal>
         )}
