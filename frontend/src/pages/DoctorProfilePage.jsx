@@ -254,12 +254,12 @@ export default function DoctorProfilePage() {
           setHistoryPdfUrl(`${API_BASE}/consultations/${data.consultation_id}/history_pdf`)
           setShowHistoryModal(true)
         } else {
-          window.alert('Aún no tienes una historia médica registrada con esta doctora.')
+          toast.info('Aún no tienes una historia médica registrada con esta doctora.')
         }
       }
     } catch (e) {
       console.error("Error fetching history:", e)
-      window.alert('Error al obtener tu historia médica. Intenta nuevamente.')
+      toast.error('Error al obtener tu historia médica. Intenta nuevamente.')
     } finally {
       setLoadingHistory(false)
     }
