@@ -7,6 +7,9 @@ from app.core.config import settings
 from app.api.v1.api import api_router
 from app.core.backup_service import backup_scheduler
 import logging
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +20,9 @@ app = FastAPI(
     version="1.0.0",
     debug=settings.DEBUG
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def log_user_agent(request, call_next):

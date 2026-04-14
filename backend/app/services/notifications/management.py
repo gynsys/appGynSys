@@ -39,9 +39,17 @@ def sync_notification_registry_to_db(db: Session):
             db.add(new_rule)
             created_count += 1
             existing_types.add(rtype) # Track it to avoid duplicates in loop if registry has issues
+        else:
+            # Force update specific templates that have changed drastically (like the HTML contact message)
+            if rtype == "doctor_new_contact_message":
+                existing_rule = db.query(NotificationRule).filter_by(notification_type=rtype, tenant_id=None).first()
+                if existing_rule:
+                    existing_rule.message_template = rule_def.get("message", existing_rule.message_template)
+                    db.add(existing_rule)
+                    created_count += 1
     
     if created_count > 0:
         db.commit()
-        logger.info(f"Successfully registered {created_count} new notification types.")
+        logger.info(f"Successfully registered or updated {created_count} notification types.")
     else:
         logger.info("Notification registry is already up to date in the database.")

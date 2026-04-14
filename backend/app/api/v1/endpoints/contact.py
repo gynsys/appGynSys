@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.crud import admin as crud_admin
+from app.core.limiter import limiter
 from app.tasks.email_tasks import _send_integrated_email
 from app.services.notifications import trigger_doctor_event
 
@@ -16,7 +17,9 @@ class ContactRequest(BaseModel):
     message: str
 
 @router.post("/", status_code=200)
+@limiter.limit("3/minute")
 def send_contact_email(
+    request: Request,
     contact_data: ContactRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -41,6 +44,7 @@ def send_contact_email(
         context={
             "event": "new_contact_message",
             "doctor_name": doctor.nombre_completo,
+            "doctor_slug": getattr(doctor, "slug_url", ""),
             "patient_name": contact_data.name,
             "patient_email": contact_data.email,
             "patient_phone": contact_data.phone,

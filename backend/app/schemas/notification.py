@@ -95,6 +95,7 @@ class NotificationLogResponse(BaseModel):
     recipient_name: Optional[str] = None
     recipient_email: Optional[str] = None
     image_url: Optional[str] = None
+    event_metadata: Optional[Dict[str, Any]] = None
     
     class Config:
         from_attributes = True
