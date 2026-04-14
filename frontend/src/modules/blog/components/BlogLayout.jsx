@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { doctorService } from '../../../services/doctorService'
 import Spinner from '../../../components/common/Spinner'
-import AppointmentModal from '../../../components/features/AppointmentModal'
+import AppointmentRequestModal from '../../../components/features/AppointmentRequestModal'
 import EndometriosisTestModal from '../../../components/features/EndometriosisTestModal'
 import CyclePredictorModal from '../../../components/cycle-predictor/CyclePredictorModal'
 import { getImageUrl } from '../../../lib/imageUtils'
@@ -17,7 +17,7 @@ export default function BlogLayout({ children }) {
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
+  const [isAppointmentRequestModalOpen, setIsAppointmentRequestModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
   const { isAuthenticated, user } = useAuthStore()
@@ -90,11 +90,10 @@ export default function BlogLayout({ children }) {
       style={bodyBgStyle}
     >
       {/* Modals */}
-      <AppointmentModal
-        isOpen={isAppointmentModalOpen}
-        onClose={() => setIsAppointmentModalOpen(false)}
-        doctorId={doctor.id}
-        doctor={doctor}
+      <AppointmentRequestModal
+        isOpen={isAppointmentRequestModalOpen}
+        onClose={() => setIsAppointmentRequestModalOpen(false)}
+        doctorSlug={slug}
         primaryColor={primaryColor}
       />
 
@@ -104,7 +103,7 @@ export default function BlogLayout({ children }) {
           onClose={() => setIsTestModalOpen(false)}
           primaryColor={primaryColor}
           isDarkMode={isDarkTheme}
-          onSchedule={() => setIsAppointmentModalOpen(true)}
+          onSchedule={() => setIsAppointmentRequestModalOpen(true)}
         />
       )}
 
@@ -162,11 +161,11 @@ export default function BlogLayout({ children }) {
               )}
 
               <button
-                onClick={() => setIsAppointmentModalOpen(true)}
+                onClick={() => setIsAppointmentRequestModalOpen(true)}
                 className="px-4 py-2 rounded-lg text-white font-bold hover:opacity-90 transition shadow-md"
                 style={{ backgroundColor: primaryColor }}
               >
-                Agendar Cita
+                Solicitar Cita
               </button>
             </div>
           </div>
@@ -220,8 +219,8 @@ export default function BlogLayout({ children }) {
           } : {
             icon: <NavIcons.Calendar />,
             label: 'Citas',
-            action: () => setIsAppointmentModalOpen(true),
-            isActive: isAppointmentModalOpen
+            action: () => setIsAppointmentRequestModalOpen(true),
+            isActive: isAppointmentRequestModalOpen
           },
           {
             icon: <NavIcons.Blog />,

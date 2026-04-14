@@ -104,7 +104,7 @@ export default function ServicesSection({ doctorSlug, primaryColor = '#4F46E5', 
           style={{ backgroundColor: primaryColor }}
         >
           <FiCalendar className="mr-3 w-6 h-6 group-hover:rotate-12 transition-transform" />
-          Agendar Cita
+          Solicitar Cita
         </button>
       </div>
     </SectionCard>

@@ -14,6 +14,7 @@ import AppointmentModal from '../components/features/AppointmentModal'
 import RecommendationsCarousel from '../components/features/RecommendationsCarousel'
 import PreconsultaWidget from '../features/preconsulta/components/PreconsultaWidget'
 import EndometriosisTestModal from '../components/features/EndometriosisTestModal'
+import AppointmentRequestModal from '../components/features/AppointmentRequestModal'
 import CyclePredictorModal from '../components/cycle-predictor/CyclePredictorModal'
 import ServicesSection from '../components/features/ServicesSection'
 import BlogSection from '../components/features/BlogSection'
@@ -266,6 +267,7 @@ export default function DoctorProfilePage() {
   }
 
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
+  const [isAppointmentRequestModalOpen, setIsAppointmentRequestModalOpen] = useState(false)
   const [isUnifiedOnboarding, setIsUnifiedOnboarding] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isOnlineConsultationModalOpen, setIsOnlineConsultationModalOpen] = useState(false)
@@ -283,8 +285,7 @@ export default function DoctorProfilePage() {
   // Modal Handlers
   const handleOpenTest = () => setIsTestModalOpen(true)
   const handleOpenAppointment = () => {
-    setIsUnifiedOnboarding(false) // Standard button click
-    setIsAppointmentModalOpen(true)
+    setIsAppointmentRequestModalOpen(true)
   }
 
   // Manejar visibilidad del botón "Ir arriba" basado en scroll
@@ -885,6 +886,12 @@ export default function DoctorProfilePage() {
           setIsRegisterModalOpen(true);
         }}
         isUnified={isUnifiedOnboarding}
+      />
+      <AppointmentRequestModal
+        isOpen={isAppointmentRequestModalOpen}
+        onClose={() => setIsAppointmentRequestModalOpen(false)}
+        doctorSlug={slug}
+        primaryColor={primaryColor}
       />
 
       <PreconsultaWidget
