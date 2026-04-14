@@ -110,9 +110,13 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
     if "push" in channels_to_try and actor:
         if push_circuit.can_execute():
             try:
-                # Si es para doctora, el link debe ser al dash de admin
-                url = "/admin/dashboard" if hasattr(actor, "slug_url") else "/cycle/dashboard"
+                # Doctors use /dashboard, Cycle users use /cycle/dashboard
+                url = "/dashboard" if hasattr(actor, "slug_url") else "/cycle/dashboard"
                 
+                # If it's a contact lead, point directly to the directory to save a click
+                if item.rule and item.rule.notification_type == "doctor_new_contact_message":
+                    url = "/dashboard/directory"
+
                 # Payload data con tracking ID
                 push_data = {"url": url}
                 if log_id:
