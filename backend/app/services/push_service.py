@@ -3,12 +3,15 @@ import logging
 import re
 import os
 from html import unescape
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db.models.doctor import Doctor
 
 from pywebpush import webpush, WebPushException
 try:
-    import firebase_admin
-    from firebase_admin import messaging, credentials
+    import firebase_admin # type: ignore
+    from firebase_admin import messaging, credentials # type: ignore
 except ImportError:
     firebase_admin = None
 
