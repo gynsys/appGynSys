@@ -214,6 +214,7 @@ class PendingNotification(Base):
     status = Column(String(20), default="pending") # pending, sent, failed, retrying
     retry_count = Column(Integer, default=0)
     last_error = Column(Text, nullable=True)
+    event_metadata = Column(JSON, nullable=True, default={})
     
     # Direct Recipient Info (for patients without App account)
     recipient_email_direct = Column(String(255), nullable=True, index=True)

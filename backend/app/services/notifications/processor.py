@@ -394,7 +394,8 @@ def trigger_doctor_event(doctor_id: int, notification_type: str, context: dict, 
             image_url=rendered.get("image_url"),
             scheduled_for=now,
             channel=rule.channel,
-            status="pending"
+            status="pending",
+            event_metadata=full_context
         )
         db.add(pending)
         db.commit()
