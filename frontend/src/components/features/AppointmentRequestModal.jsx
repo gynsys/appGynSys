@@ -9,7 +9,9 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorSlug, p
     name: '',
     email: '',
     phone: '',
-    message: ''
+    reason: 'Control Ginecologico',
+    date: '',
+    time: ''
   })
   const [loading, setLoading] = useState(false)
   const { showToast } = useToastStore()
@@ -18,15 +20,21 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorSlug, p
     e.preventDefault()
     setLoading(true)
     try {
+      const formattedMessage = `
+Motivo: ${formData.reason}
+Fecha Solicitada: ${formData.date}
+Hora Solicitada: ${formData.time}
+`.trim();
+
       // Re-using the contactService to send the lead directly to the doctor's inbox/email
       await contactService.sendMessage({
         doctor_slug: doctorSlug,
         ...formData,
         // Prefijo opcional para distinguir que es una solicitud de cita
-        message: `[SOLICITUD DE CITA] ${formData.message}`
+        message: `[SOLICITUD DE CITA] ${formattedMessage}`
       })
       showToast('Solicitud enviada con éxito. La doctora te contactará pronto.', 'success')
-      setFormData({ name: '', email: '', phone: '', message: '' })
+      setFormData({ name: '', email: '', phone: '', reason: 'Control Ginecologico', date: '', time: '' })
       onClose()
     } catch (error) {
       showToast('Error al enviar la solicitud', 'error')
@@ -73,14 +81,40 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorSlug, p
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Motivo de la Cita</label>
-          <textarea
+          <select
             required
-            rows={4}
-            value={formData.message}
-            onChange={(e) => setFormData({...formData, message: e.target.value})}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
-            placeholder="Breve descripción del motivo de tu consulta..."
-          />
+            value={formData.reason}
+            onChange={(e) => setFormData({...formData, reason: e.target.value})}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          >
+            <option value="Control Ginecologico">Control Ginecologico</option>
+            <option value="Control Prenatal">Control Prenatal</option>
+            <option value="Dolor pelvico">Dolor pelvico</option>
+            <option value="Sangrado">Sangrado</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha solicitada</label>
+            <input
+              type="date"
+              required
+              value={formData.date}
+              onChange={(e) => setFormData({...formData, date: e.target.value})}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hora solicitada</label>
+            <input
+              type="time"
+              required
+              value={formData.time}
+              onChange={(e) => setFormData({...formData, time: e.target.value})}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            />
+          </div>
         </div>
         <div className="flex justify-end space-x-3 pt-4">
           <Button type="button" variant="secondary" onClick={onClose}>
