@@ -882,7 +882,7 @@ export default function DoctorProfilePage() {
         primaryColor={primaryColor}
         onRequireAuth={() => {
           setIsAppointmentModalOpen(false);
-          setIsLoginModalOpen(true);
+          setIsRegisterModalOpen(true);
         }}
         isUnified={isUnifiedOnboarding}
       />

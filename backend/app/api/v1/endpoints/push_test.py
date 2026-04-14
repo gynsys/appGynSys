@@ -277,7 +277,7 @@ async def diagnose_user_notification(
     from app.db.models.cycle_predictor import CycleNotificationSettings, CycleLog
     from app.cycle_predictor.logic import calculate_predictions
     from app.db.models.notification import NotificationLog
-    from datetime import date
+    from datetime import date, datetime
 
     # 1. Base response
     report = {
