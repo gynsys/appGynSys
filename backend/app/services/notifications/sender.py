@@ -113,9 +113,14 @@ def send_dual_notification_logic(db: Session, item: PendingNotification, log_id:
                 # Doctors use /dashboard, Cycle users use /cycle/dashboard
                 url = "/dashboard" if hasattr(actor, "slug_url") else "/cycle/dashboard"
                 
-                # If it's a contact lead, point directly to the directory to save a click
+                # If it's a contact lead, point directly to the directory with auto-filter and reply hints
                 if item.rule and item.rule.notification_type == "doctor_new_contact_message":
-                    url = "/dashboard/directory"
+                    meta = item.event_metadata or {}
+                    p_name = meta.get("patient_name", "")
+                    p_phone = meta.get("patient_phone", "")
+                    import urllib.parse
+                    safe_name = urllib.parse.quote(p_name)
+                    url = f"/dashboard/directory?search={safe_name}&reply_phone={p_phone}&auto_reply=1"
 
                 # Payload data con tracking ID
                 push_data = {"url": url}

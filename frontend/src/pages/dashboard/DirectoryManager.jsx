@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
-import { FiUsers, FiSearch, FiPlus, FiPhone, FiMail, FiMapPin, FiCreditCard, FiEdit2, FiTrash2, FiSmartphone, FiUserCheck, FiUserPlus, FiAlertTriangle } from 'react-icons/fi';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
+import { FiUsers, FiSearch, FiPlus, FiPhone, FiMail, FiMapPin, FiCreditCard, FiEdit2, FiTrash2, FiSmartphone, FiUserCheck, FiUserPlus, FiAlertTriangle, FiArrowRight } from 'react-icons/fi';
 import { campaignService } from '../../services/campaignService';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
@@ -35,6 +35,12 @@ export default function DirectoryManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
+  const [searchParams] = useSearchParams();
+  
+  const searchParam = searchParams.get('search');
+  const replyPhone = searchParams.get('reply_phone');
+  // const autoReply = searchParams.get('auto_reply');
+
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,7 +61,12 @@ export default function DirectoryManager() {
 
   useEffect(() => {
     fetchContacts();
-  }, []);
+    
+    // Auto-filter if search param is present
+    if (searchParam) {
+      setSearchTerm(decodeURIComponent(searchParam));
+    }
+  }, [searchParam]);
 
   const fetchContacts = async () => {
     try {
@@ -160,6 +171,32 @@ export default function DirectoryManager() {
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8 w-full">
+      
+      {/* Magic Reply Banner (Deep Link Response) */}
+      {replyPhone && (
+        <div className="mb-8 p-4 md:p-6 rounded-[24px] bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl shadow-green-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                <FiPhone className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Respuesta Rápida Detectada</h3>
+                <p className="text-green-50 text-sm font-medium">¿Deseas responder a {searchTerm || 'este contacto'} ahora vía WhatsApp?</p>
+              </div>
+            </div>
+            <a 
+              href={`https://wa.me/${replyPhone}?text=Hola%20${encodeURIComponent(searchTerm || 'colega')}!%20He%20recibido%20tu%20solicitud%20de%20cita.%20Para%20agendar,%20por%20favor%20ingresa%20aquí:%20https://gynsys.net/${doctor?.slug_url}/onboarding`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-white text-green-600 rounded-xl font-black shadow-lg hover:scale-105 active:scale-95 transition-all"
+            >
+              Responder Ahora <FiArrowRight />
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8 px-0 sm:px-0">
          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
             <div className="flex-1">
