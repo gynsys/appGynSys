@@ -126,13 +126,13 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
 
   // Pre-fill if logged in
   useEffect(() => {
-    if (cycleUser && isOpen && !formData.patient_email) {
+    if (cycleUser && isOpen) {
       setFormData(prev => ({
         ...prev,
-        patient_name: cycleUser.nombre_completo || '',
-        patient_email: cycleUser.email || '',
+        patient_name: prev.patient_name || cycleUser.nombre_completo || '',
+        patient_email: prev.patient_email || cycleUser.email || '',
       }))
-      if (cycleUser.email) {
+      if (cycleUser.email && !formData.patient_email) {
         handleVerification(cycleUser.email, 'email')
       }
     }
@@ -187,13 +187,13 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
         const pd = result.patient_data || result
         setFormData(prev => ({
           ...prev,
-          patient_name: pd.patient_name || prev.patient_name,
-          patient_email: pd.patient_email || prev.patient_email,
-          patient_dni: pd.patient_dni || prev.patient_dni,
-          patient_phone: pd.patient_phone || prev.patient_phone,
-          patient_age: pd.patient_age || prev.patient_age,
-          residence: pd.residence || prev.residence,
-          occupation: pd.occupation || prev.occupation,
+          patient_name: prev.patient_name || pd.patient_name || '',
+          patient_phone: prev.patient_phone || pd.patient_phone || '',
+          patient_email: prev.patient_email || pd.patient_email || pd.email || '',
+          patient_dni: prev.patient_dni || pd.patient_dni || pd.ci || '',
+          patient_age: prev.patient_age || pd.patient_age || pd.age || '',
+          residence: prev.residence || pd.residence || '',
+          occupation: prev.occupation || pd.occupation || ''
         }))
         showToast('Datos de paciente encontrados y cargados.', 'success')
       }

@@ -50,6 +50,7 @@ import RecommendationsManager from './pages/dashboard/RecommendationsManager'
 import PdfConfigurationPage from './pages/dashboard/PdfConfigurationPage'
 import PreconsultationConfigPage from './pages/dashboard/PreconsultationConfigPage'
 import PatientsManager from './pages/dashboard/PatientsManager'
+import AppointmentRequestList from './pages/dashboard/AppointmentRequestList'
 import QuickSetupPage from './pages/dashboard/QuickSetupPage'
 // Removed OnboardingPage import
 
@@ -287,6 +288,7 @@ function App() {
           <Route path="services" element={<ServicesManager />} />
           <Route path="recommendations" element={<RecommendationsManager />} />
           <Route path="appointments" element={<AppointmentManager />} />
+          <Route path="requests" element={<AppointmentRequestList />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="directory" element={<DirectoryManager />} />
           <Route path="online-consultations" element={<OnlineConsultationSettings />} />

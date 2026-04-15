@@ -6,7 +6,7 @@ import { appointmentService } from '../../services/appointmentService';
 import { authService } from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
 import { BottomNav } from '../common/BottomNav';
-import { FiLink, FiCalendar, FiUsers, FiClipboard } from 'react-icons/fi';
+import { FiLink, FiCalendar, FiUsers, FiClipboard, FiBell } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { copyToClipboard } from '../../utils/platform';
 // We won't strictly use PROFILE_THEMES constants for layout classes yet, but we will use the ID
@@ -126,6 +126,13 @@ export const DashboardLayout = () => {
               label: 'Historias',
               action: () => navigate('/dashboard/patients'),
               isActive: location.pathname.includes('/patients')
+            },
+            {
+              icon: <FiBell className="w-5 h-5" />,
+              label: 'Solicitudes',
+              action: () => navigate('/dashboard/requests'),
+              isActive: location.pathname.includes('/requests'),
+              badge: pendingAppointmentsCount
             }
           ]}
         />
