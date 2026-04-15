@@ -5,7 +5,7 @@ import { useToastStore } from '../../store/toastStore'
 import { appointmentService } from '../../services/appointmentService'
 import { locationService } from '../../services/locationService'
 import { useAuthStore } from '../../store/authStore'
-import { MdCalendarToday, MdAccessTime, MdLocationOn, MdPerson } from 'react-icons/md'
+import { MdCalendarToday, MdAccessTime, MdLocationOn, MdPerson, MdCheckCircle } from 'react-icons/md'
 
 // --- Helpers ported from ChatBooking.jsx ---
 
@@ -88,6 +88,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
   const [suggestedTimes, setSuggestedTimes] = useState([])
   const [bookedTimes, setBookedTimes] = useState([])
   const [isVerifying, setIsVerifying] = useState(false)
+  const [status, setStatus] = useState('editing') // 'editing', 'success'
 
   const [formData, setFormData] = useState({
     patient_name: '',
@@ -232,8 +233,14 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
       
       const successMsg = '¡Cita solicitada con éxito! Revisa tu correo.'
       showToast(successMsg, 'success')
-      window.alert(successMsg) // Bot-like alert requested by user
-      onClose()
+      
+      setStatus('success')
+      
+      setTimeout(() => {
+        onClose()
+        // Reset status after closing delay for next time modal opens
+        setTimeout(() => setStatus('editing'), 500)
+      }, 4000)
     } catch (error) {
       console.error("Booking error:", error)
       let errorMsg = 'Error al agendar la cita. Intenta de nuevo.'
@@ -256,283 +263,294 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Agendar Cita Médica">
+    <Modal isOpen={isOpen} onClose={onClose} title={status === 'editing' ? "Agendar Cita Médica" : null}>
       <div className="max-h-[75vh] overflow-y-auto px-1 custom-scrollbar">
-        <form onSubmit={handleSubmit} className="space-y-6 py-2">
-          
-          {/* Section: Patient Identity */}
-          <div className="space-y-4">
-            <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
-              <MdPerson className="text-lg" style={{ color: primaryColor }} /> Datos Personales
-            </h4>
+        {status === 'editing' ? (
+          <form onSubmit={handleSubmit} className="space-y-6 py-2">
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Nombre Completo</label>
-                <div className="relative">
+            {/* Section: Patient Identity */}
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
+                <MdPerson className="text-lg" style={{ color: primaryColor }} /> Datos Personales
+              </h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Nombre Completo</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={formData.patient_name}
+                      onChange={(e) => setFormData({...formData, patient_name: e.target.value})}
+                      className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
+                      placeholder="Ej. Ana María Pérez"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Cédula / DNI</label>
                   <input
                     type="text"
                     required
-                    value={formData.patient_name}
-                    onChange={(e) => setFormData({...formData, patient_name: e.target.value})}
+                    value={formData.patient_dni}
+                    onChange={(e) => setFormData({...formData, patient_dni: e.target.value})}
+                    onBlur={() => handleVerification(formData.patient_dni, 'dni')}
                     className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
-                    placeholder="Ej. Ana María Pérez"
+                    placeholder="Número de identificación"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Cédula / DNI</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.patient_dni}
-                  onChange={(e) => setFormData({...formData, patient_dni: e.target.value})}
-                  onBlur={() => handleVerification(formData.patient_dni, 'dni')}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  placeholder="Número de identificación"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Correo Electrónico</label>
-                <input
-                  type="email"
-                  required
-                  value={formData.patient_email}
-                  onChange={(e) => setFormData({...formData, patient_email: e.target.value})}
-                  onBlur={() => handleVerification(formData.patient_email, 'email')}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  placeholder="ejemplo@correo.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Teléfono (WhatsApp)</label>
-                <input
-                  type="tel"
-                  required
-                  value={formData.patient_phone}
-                  onChange={(e) => setFormData({...formData, patient_phone: e.target.value})}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  placeholder="Ej. 04141234567"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Edad</label>
-                <input
-                  type="number"
-                  required
-                  value={formData.patient_age}
-                  onChange={(e) => setFormData({...formData, patient_age: e.target.value})}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  placeholder="Ej. 28"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ciudad de Residencia</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.residence}
-                  onChange={(e) => setFormData({...formData, residence: e.target.value})}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                  placeholder="Ej. Caracas"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ocupación</label>
-              <input
-                type="text"
-                value={formData.occupation}
-                onChange={(e) => setFormData({...formData, occupation: e.target.value})}
-                className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                style={{ '--tw-ring-color': primaryColor }}
-                placeholder="¿A qué se dedica?"
-              />
-            </div>
-          </div>
-
-          <hr className="border-gray-100 dark:border-gray-700" />
-
-          {/* Section: Appointment Details */}
-          <div className="space-y-4">
-            <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
-              <MdLocationOn className="text-lg" style={{ color: primaryColor }} /> Detalles de la Cita
-            </h4>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sede de Atención</label>
-              <select
-                required
-                value={formData.location}
-                onChange={(e) => handleLocationChange(e.target.value)}
-                className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                style={{ '--tw-ring-color': primaryColor }}
-              >
-                {locations.length > 0 ? (
-                  locations.map(loc => (
-                    <option key={loc.id} value={loc.name}>{loc.name}</option>
-                  ))
-                ) : (
-                  <option value="">Cargando sedes...</option>
-                )}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tipo de Consulta</label>
-                <select
-                  required
-                  value={formData.appointment_type}
-                  onChange={(e) => setFormData({...formData, appointment_type: e.target.value})}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                >
-                  <option value="Consulta Presencial">Consulta Presencial</option>
-                  <option value="Control">Control / Seguimiento</option>
-                  <option value="Procedimiento">Procedimiento</option>
-                  <option value="Resultados">Entrega de Resultados</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Motivo de la Cita</label>
-                <select
-                  required
-                  value={formData.reason_for_visit}
-                  onChange={(e) => setFormData({...formData, reason_for_visit: e.target.value})}
-                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor }}
-                >
-                  <option value="Control Ginecologico">Control Ginecologico</option>
-                  <option value="Control Prenatal">Control Prenatal</option>
-                  <option value="Dolor pelvico">Dolor pelvico</option>
-                  <option value="Sangrado">Sangrado Anormal</option>
-                  <option value="Infertilidad">Evaluación Fertilidad</option>
-                  <option value="VPH">VPH / Citología</option>
-                  <option value="Otro">Otro Motivo</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="block text-xs font-bold text-gray-400 uppercase">Selecciona el Día</label>
-              <div className="flex flex-wrap gap-2">
-                {suggestedDates.map((date, idx) => {
-                  const iso = date.toISOString().split('T')[0]
-                  const isSelected = formData.date_part === iso
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleDateChange(iso)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                        isSelected 
-                          ? 'bg-primary-500 text-white border-transparent' 
-                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300'
-                      }`}
-                      style={{ 
-                        backgroundColor: isSelected ? primaryColor : undefined,
-                        borderColor: isSelected ? primaryColor : undefined
-                      }}
-                    >
-                      <div className="flex flex-col items-center">
-                        <span>{['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()]}</span>
-                        <span className="text-sm">{date.getDate()}</span>
-                      </div>
-                    </button>
-                  )
-                })}
-                <div className="relative">
-                   <input 
-                    type="date"
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                    onChange={(e) => handleDateChange(e.target.value)}
-                   />
-                   <div className="px-4 py-2 rounded-xl text-xs font-bold border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center min-w-[60px] h-full">
-                      <MdCalendarToday className="text-lg" />
-                      <span className="mt-0.5">Otro</span>
-                   </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.patient_email}
+                    onChange={(e) => setFormData({...formData, patient_email: e.target.value})}
+                    onBlur={() => handleVerification(formData.patient_email, 'email')}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                    placeholder="ejemplo@correo.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Teléfono (WhatsApp)</label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.patient_phone}
+                    onChange={(e) => setFormData({...formData, patient_phone: e.target.value})}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                    placeholder="Ej. 04141234567"
+                  />
                 </div>
               </div>
-              {formData.date_part && (
-                <p className="text-[10px] text-primary-600 font-bold uppercase italic">
-                  Fecha seleccionada: {new Date(formData.date_part + 'T12:00:00').toLocaleDateString('es-ES', { dateStyle: 'long' })}
-                </p>
-              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Edad</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.patient_age}
+                    onChange={(e) => setFormData({...formData, patient_age: e.target.value})}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                    placeholder="Ej. 28"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ciudad de Residencia</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.residence}
+                    onChange={(e) => setFormData({...formData, residence: e.target.value})}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                    placeholder="Ej. Caracas"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ocupación</label>
+                <input
+                  type="text"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                  style={{ '--tw-ring-color': primaryColor }}
+                  placeholder="¿A qué se dedica?"
+                />
+              </div>
             </div>
 
-            {formData.date_part && (
-              <div className="space-y-3 animate-fade-in">
-                <label className="block text-xs font-bold text-gray-400 uppercase">Selecciona la Hora</label>
+            <hr className="border-gray-100 dark:border-gray-700" />
+
+            {/* Section: Appointment Details */}
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
+                <MdLocationOn className="text-lg" style={{ color: primaryColor }} /> Detalles de la Cita
+              </h4>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sede de Atención</label>
+                <select
+                  required
+                  value={formData.location}
+                  onChange={(e) => handleLocationChange(e.target.value)}
+                  className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                  style={{ '--tw-ring-color': primaryColor }}
+                >
+                  {locations.length > 0 ? (
+                    locations.map(loc => (
+                      <option key={loc.id} value={loc.name}>{loc.name}</option>
+                    ))
+                  ) : (
+                    <option value="">Cargando sedes...</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tipo de Consulta</label>
+                  <select
+                    required
+                    value={formData.appointment_type}
+                    onChange={(e) => setFormData({...formData, appointment_type: e.target.value})}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                  >
+                    <option value="Consulta Presencial">Consulta Presencial</option>
+                    <option value="Control">Control / Seguimiento</option>
+                    <option value="Procedimiento">Procedimiento</option>
+                    <option value="Resultados">Entrega de Resultados</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Motivo de la Cita</label>
+                  <select
+                    required
+                    value={formData.reason_for_visit}
+                    onChange={(e) => setFormData({...formData, reason_for_visit: e.target.value})}
+                    className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
+                    style={{ '--tw-ring-color': primaryColor }}
+                  >
+                    <option value="Control Ginecologico">Control Ginecologico</option>
+                    <option value="Control Prenatal">Control Prenatal</option>
+                    <option value="Dolor pelvico">Dolor pelvico</option>
+                    <option value="Sangrado">Sangrado Anormal</option>
+                    <option value="Infertilidad">Evaluación Fertilidad</option>
+                    <option value="VPH">VPH / Citología</option>
+                    <option value="Otro">Otro Motivo</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-gray-400 uppercase">Selecciona el Día</label>
                 <div className="flex flex-wrap gap-2">
-                  {suggestedTimes.map((time, idx) => {
-                    const isBooked = bookedTimes.includes(time)
-                    const isSelected = formData.time_part === time
+                  {suggestedDates.map((date, idx) => {
+                    const iso = date.toISOString().split('T')[0]
+                    const isSelected = formData.date_part === iso
                     return (
                       <button
                         key={idx}
                         type="button"
-                        disabled={isBooked}
-                        onClick={() => setFormData({...formData, time_part: time})}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                        onClick={() => handleDateChange(iso)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                           isSelected 
-                            ? 'text-white border-transparent' 
-                            : isBooked 
-                              ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
-                              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                            ? 'bg-primary-500 text-white border-transparent' 
+                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300'
                         }`}
                         style={{ 
                           backgroundColor: isSelected ? primaryColor : undefined,
+                          borderColor: isSelected ? primaryColor : undefined
                         }}
                       >
-                        {time}
+                        <div className="flex flex-col items-center">
+                          <span>{['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()]}</span>
+                          <span className="text-sm">{date.getDate()}</span>
+                        </div>
                       </button>
                     )
                   })}
                   <div className="relative">
-                    <input 
-                      type="time"
+                     <input 
+                      type="date"
                       className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                      onChange={(e) => setFormData({...formData, time_part: e.target.value})}
-                    />
-                    <div className="px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                        <MdAccessTime />
-                        <span>Otra</span>
+                      onChange={(e) => handleDateChange(e.target.value)}
+                     />
+                     <div className="px-4 py-2 rounded-xl text-xs font-bold border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center min-w-[60px] h-full">
+                        <MdCalendarToday className="text-lg" />
+                        <span className="mt-0.5">Otro</span>
+                     </div>
+                  </div>
+                </div>
+                {formData.date_part && (
+                  <p className="text-[10px] text-primary-600 font-bold uppercase italic">
+                    Fecha seleccionada: {new Date(formData.date_part + 'T12:00:00').toLocaleDateString('es-ES', { dateStyle: 'long' })}
+                  </p>
+                )}
+              </div>
+
+              {formData.date_part && (
+                <div className="space-y-3 animate-fade-in">
+                  <label className="block text-xs font-bold text-gray-400 uppercase">Selecciona la Hora</label>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedTimes.map((time, idx) => {
+                      const isBooked = bookedTimes.includes(time)
+                      const isSelected = formData.time_part === time
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          disabled={isBooked}
+                          onClick={() => setFormData({...formData, time_part: time})}
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                            isSelected 
+                              ? 'text-white border-transparent' 
+                              : isBooked 
+                                ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                          }`}
+                          style={{ 
+                            backgroundColor: isSelected ? primaryColor : undefined,
+                          }}
+                        >
+                          {time}
+                        </button>
+                      )
+                    })}
+                    <div className="relative">
+                      <input 
+                        type="time"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                        onChange={(e) => setFormData({...formData, time_part: e.target.value})}
+                      />
+                      <div className="px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                          <MdAccessTime />
+                          <span>Otra</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800 pb-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || !formData.date_part || !formData.time_part} 
-              primaryColor={primaryColor}
-              className="px-8"
-            >
-              {loading ? 'Procesando...' : 'Confirmar Cita'}
-            </Button>
+            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800 pb-2">
+              <Button type="button" variant="secondary" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={loading || !formData.date_part || !formData.time_part} 
+                primaryColor={primaryColor}
+                className="px-8"
+              >
+                {loading ? 'Procesando...' : 'Confirmar Cita'}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-12 text-center animate-fade-in bg-white dark:bg-gray-800 min-h-[400px]">
+            <MdCheckCircle size={80} style={{ color: primaryColor }} className="mb-6 drop-shadow-md animate-bounce" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">¡Solicitud Enviada!</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xs mx-auto">
+              Tu cita ha sido registrada con éxito. Te contactaremos pronto para confirmarla.
+            </p>
+            <p className="text-sm text-gray-400 animate-pulse">Cerrando en unos segundos...</p>
           </div>
-        </form>
+        )}
       </div>
     </Modal>
   )
