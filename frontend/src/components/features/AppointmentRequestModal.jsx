@@ -205,6 +205,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    e.stopPropagation()
     
     if (!formData.date_part || !formData.time_part) {
       showToast('Por favor selecciona una fecha y hora para tu cita.', 'error')
@@ -213,17 +214,42 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
 
     setLoading(true)
     try {
-      // Direct appointment creation
-      await appointmentService.createAppointment({
-        doctor_id: doctorId,
-        ...formData,
-        patient_name: capitalizeWords(formData.patient_name)
-      })
+      // Combine date and time
+      const appointment_date = `${formData.date_part}T${formData.time_part}:00`
       
-      showToast('¡Cita solicitada con éxito! Revisa tu correo.', 'success')
+      // Prepare clean payload for backend
+      const { date_part, time_part, ...cleanData } = formData
+      const payload = {
+        ...cleanData,
+        doctor_id: parseInt(doctorId),
+        appointment_date,
+        patient_name: capitalizeWords(formData.patient_name),
+        patient_age: formData.patient_age ? parseInt(formData.patient_age) : null
+      }
+
+      // Direct appointment creation
+      await appointmentService.createAppointment(payload)
+      
+      const successMsg = '¡Cita solicitada con éxito! Revisa tu correo.'
+      showToast(successMsg, 'success')
+      window.alert(successMsg) // Bot-like alert requested by user
       onClose()
     } catch (error) {
-      showToast(error.response?.data?.detail || 'Error al agendar la cita. Intenta de nuevo.', 'error')
+      console.error("Booking error:", error)
+      let errorMsg = 'Error al agendar la cita. Intenta de nuevo.'
+      
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail
+        if (Array.isArray(detail)) {
+          errorMsg = `Error de validación: ${detail.map(d => d.msg).join(', ')}`
+        } else if (typeof detail === 'string') {
+          errorMsg = detail
+        }
+      } else if (error.response?.data?.detail) {
+        errorMsg = error.response.data.detail
+      }
+
+      showToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }
