@@ -93,6 +93,7 @@ export default function BlogLayout({ children }) {
       <AppointmentRequestModal
         isOpen={isAppointmentRequestModalOpen}
         onClose={() => setIsAppointmentRequestModalOpen(false)}
+        doctorId={doctor.id}
         doctorSlug={slug}
         primaryColor={primaryColor}
       />

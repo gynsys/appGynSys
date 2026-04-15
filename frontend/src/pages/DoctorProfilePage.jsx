@@ -890,6 +890,7 @@ export default function DoctorProfilePage() {
       <AppointmentRequestModal
         isOpen={isAppointmentRequestModalOpen}
         onClose={() => setIsAppointmentRequestModalOpen(false)}
+        doctorId={doctor.id}
         doctorSlug={slug}
         primaryColor={primaryColor}
       />
