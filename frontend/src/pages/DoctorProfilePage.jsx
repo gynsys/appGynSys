@@ -619,13 +619,14 @@ export default function DoctorProfilePage() {
       action: navigateToBooking,
       isActive: isAppointmentModalOpen
     },
-    {
-      icon: <NavIcons.Blog />,
-      label: 'Blog',
-      action: () => navigate(`/${slug}/blog`),
-      isActive: false
-    }
-  ]
+    isOwner ? {
+      icon: <FiBell className="w-5 h-5" />,
+      label: 'Solicitudes',
+      action: () => navigate('/dashboard/requests'),
+      isActive: false,
+      badge: pendingCount
+    } : null
+  ].filter(Boolean);
 
 
 
