@@ -126,13 +126,6 @@ export const DashboardLayout = () => {
               label: 'Historias',
               action: () => navigate('/dashboard/patients'),
               isActive: location.pathname.includes('/patients')
-            },
-            {
-              icon: <FiBell className="w-5 h-5" />,
-              label: 'Solicitudes',
-              action: () => navigate('/dashboard/requests'),
-              isActive: location.pathname.includes('/requests'),
-              badge: pendingAppointmentsCount
             }
           ]}
         />

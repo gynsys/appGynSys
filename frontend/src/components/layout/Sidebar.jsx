@@ -18,8 +18,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
     {
       title: 'Gestión Médico',
       items: [
-        { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments' },
-        { icon: FiBell, label: 'Solicitudes', path: '/dashboard/requests', count: counts.appointments },
+        { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
         { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
         { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
         { icon: FiSend, label: 'Difusión', path: '/dashboard/campaigns' },
