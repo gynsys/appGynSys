@@ -4,6 +4,7 @@ import { FiClipboard, FiCalendar, FiActivity, FiArrowUp, FiFileText, FiLink, FiB
 import { Phone, Mail, MapPin, Calendar, Award, Building2, Clock, ExternalLink, Star, MessageCircle, Heart, Share2, ChevronDown, Loader2 } from 'lucide-react'
 import ScrollReveal from '../components/common/ScrollReveal'
 import { doctorService } from '../services/doctorService'
+import { appointmentService } from '../services/appointmentService'
 import { blogService } from '../modules/blog/services/blogService'
 import { onlineConsultationService } from '../services/onlineConsultationService'
 import { useAuthStore } from '../store/authStore'
