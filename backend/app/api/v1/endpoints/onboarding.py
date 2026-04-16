@@ -67,6 +67,32 @@ def get_onboarding_questions(slug: str, db: Session = Depends(get_db)):
         
     return results
 
+@router.get("/appointment/{appointment_id}")
+def get_public_appointment_data(appointment_id: int, db: Session = Depends(get_db)):
+    """
+    Public endpoint to get basic appointment data for pre-consultation seeding.
+    """
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Return ONLY what is needed for the chat seeding
+    return {
+        "id": appointment.id,
+        "doctor_id": appointment.doctor_id,
+        "patient_name": appointment.patient_name,
+        "patient_dni": appointment.patient_dni,
+        "patient_age": appointment.patient_age,
+        "patient_phone": appointment.patient_phone,
+        "patient_email": appointment.patient_email,
+        "residence": appointment.residence,
+        "occupation": appointment.occupation,
+        "appointment_type": appointment.appointment_type,
+        "reason_for_visit": appointment.reason_for_visit,
+        "location": appointment.location,
+        "has_preconsulta": bool(appointment.preconsulta_answers)
+    }
+
 @router.post("/submit/{slug}")
 def submit_unified_onboarding(
     slug: str, 
@@ -84,6 +110,7 @@ def submit_unified_onboarding(
     # 1. Extract Data from Nested Payload
     p_data = payload.get("patient_data", {})
     a_data = payload.get("appointment_data", {})
+    appointment_id = payload.get("appointment_id")
     
     full_name = p_data.get("patient_name") or p_data.get("full_name")
     dni = p_data.get("patient_dni") or p_data.get("ci")
@@ -93,63 +120,84 @@ def submit_unified_onboarding(
     address = p_data.get("residence") or p_data.get("address")
     occupation = p_data.get("occupation")
     
+    # Validation
     if not full_name or not dni:
         raise HTTPException(status_code=400, detail="Nombre y Cédula son obligatorios")
     
-    # 2. Extract Patient Data
-    # GynSys stores patient info (name, dni, phone, email, etc.) directly in the Appointment record.
-    
-    # 3. Create Appointment (Fast Track Onboarding)
-    app_date_str = a_data.get("appointment_date")
-    app_date = datetime.now() # Fallback
-    if app_date_str:
-        try:
-            # Handle ISO format "2026-03-24T14:00:00.000Z"
-            app_date = datetime.fromisoformat(app_date_str.replace("Z", "+00:00"))
-        except Exception as e:
-            logger.warning(f"Error parsing date {app_date_str}: {e}")
+    # 2. Extract or Create Appointment
+    existing_appointment = None
+    if appointment_id:
+        existing_appointment = db.query(Appointment).filter(
+            Appointment.id == appointment_id,
+            Appointment.doctor_id == doctor.id
+        ).first()
 
-    new_appointment = Appointment(
-        doctor_id=doctor.id,
-        patient_name=full_name,
-        patient_dni=dni,
-        patient_phone=phone,
-        patient_email=email,
-        patient_age=age,
-        residence=address,
-        occupation=occupation,
-        appointment_type=a_data.get("appointment_type", "Consulta Médica (Onboarding)"),
-        reason_for_visit=a_data.get("reason_for_visit", "Primer Interrogatorio Unificado"),
-        location=a_data.get("location"),
-        status="pending_confirmation",
-        appointment_date=app_date,
-        preconsulta_answers=payload.get("answers", {}) # Save answers separately
-    )
-    
-    db.add(new_appointment)
+    if existing_appointment:
+        # Update existing
+        existing_appointment.patient_name = full_name
+        existing_appointment.patient_dni = dni
+        existing_appointment.patient_phone = phone
+        existing_appointment.patient_email = email
+        existing_appointment.patient_age = age
+        existing_appointment.residence = address
+        existing_appointment.occupation = occupation
+        existing_appointment.preconsulta_answers = payload.get("answers", {})
+        # Note: We don't change the scheduled date or location unless specifically asked,
+        # usually pre-consultation is just for the medical data.
+        target_appointment = existing_appointment
+    else:
+        # 3. Create NEW Appointment (Onboarding)
+        app_date_str = a_data.get("appointment_date")
+        app_date = datetime.now() # Fallback
+        if app_date_str:
+            try:
+                # Handle ISO format "2026-03-24T14:00:00.000Z"
+                app_date = datetime.fromisoformat(app_date_str.replace("Z", "+00:00"))
+            except Exception as e:
+                logger.warning(f"Error parsing date {app_date_str}: {e}")
+
+        target_appointment = Appointment(
+            doctor_id=doctor.id,
+            patient_name=full_name,
+            patient_dni=dni,
+            patient_phone=phone,
+            patient_email=email,
+            patient_age=age,
+            residence=address,
+            occupation=occupation,
+            appointment_type=a_data.get("appointment_type", "Consulta Médica (Onboarding)"),
+            reason_for_visit=a_data.get("reason_for_visit", "Primer Interrogatorio Unificado"),
+            location=a_data.get("location"),
+            status="pending_confirmation",
+            appointment_date=app_date,
+            preconsulta_answers=payload.get("answers", {})
+        )
+        db.add(target_appointment)
     
     try:
         db.commit()
-        db.refresh(new_appointment)
+        db.refresh(target_appointment)
         
-        # 4. Notify Doctor (Unified Onboarding Event)
+        # 4. Notify Doctor (Only triggered for NEW appointments in onboarding, or all?)
+        # For now, let's notify for both but with different event if needed.
         try:
-            date_str = new_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if new_appointment.appointment_date else "Fecha por definir"
+            date_str = target_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if target_appointment.appointment_date else "Fecha por definir"
             
             trigger_doctor_event(
                 doctor_id=doctor.id,
                 notification_type="doctor_unified_onboarding",
                 context={
-                    "event": "unified_onboarding",
+                    "event": "unified_onboarding" if not existing_appointment else "preconsulta_completed",
                     "doctor_name": doctor.nombre_completo,
-                    "patient_name": new_appointment.patient_name,
+                    "patient_name": target_appointment.patient_name,
                     "appointment_date": date_str,
-                    "appointment_type": new_appointment.appointment_type,
-                    "reason": new_appointment.reason_for_visit,
-                    "phone": new_appointment.patient_phone
+                    "appointment_type": target_appointment.appointment_type,
+                    "reason": target_appointment.reason_for_visit,
+                    "phone": target_appointment.patient_phone
                 },
                 db=db
             )
+
         except Exception as e:
             logger.error(f"Error triggering unified onboarding notification: {e}")
 
@@ -168,7 +216,7 @@ def submit_unified_onboarding(
                         email=email.lower().strip(),
                         token=reg_token,
                         doctor_id=doctor.id,
-                        appointment_id=new_appointment.id,
+                        appointment_id=target_appointment.id,
                         expires_at=datetime.now(timezone.utc) + timedelta(hours=48),
                     )
                     db.add(reg_token_record)
@@ -188,7 +236,7 @@ def submit_unified_onboarding(
         # 6. Success response
         return {
             "status": "success",
-            "appointment_id": new_appointment.id,
+            "appointment_id": target_appointment.id,
             "message": "Onboarding completado exitosamente"
         }
     except Exception as e:

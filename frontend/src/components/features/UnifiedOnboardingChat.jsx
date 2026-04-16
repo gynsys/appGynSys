@@ -867,7 +867,7 @@ const ObstetricTable = ({ onNext, primaryColor }) => {
   );
 };
 
-export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, onRequireAuth }) {
+export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, onRequireAuth, appointmentId = null }) {
   // Auth Store
   const { isCycleAuthenticated, cycleUser } = useAuthStore();
 
@@ -896,11 +896,12 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
     PRECONSULTA_QUESTION: 'PRECONSULTA_QUESTION', // New
     PRECONSULTA_FINISH: 'PRECONSULTA_FINISH',
     CONFIRM: 'CONFIRM',
-    SUCCESS: 'SUCCESS'
+    SUCCESS: 'SUCCESS',
+    LOADING_APPOINTMENT: 'LOADING_APPOINTMENT'
   };
 
   // State
-  const [step, setStep] = useState(STEPS.NAME);
+  const [step, setStep] = useState(appointmentId ? STEPS.LOADING_APPOINTMENT : STEPS.NAME);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
@@ -1134,6 +1135,60 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         finalPrefix = 'del';
       }
 
+      // --- SHORT PATH: Existing Appointment ---
+      if (appointmentId) {
+        try {
+          console.log("[UnifiedOnboarding] Short Path Init for Appointment:", appointmentId);
+          const res = await axios.get(`/onboarding/appointment/${appointmentId}`);
+          const appData = res.data;
+
+          if (appData) {
+            // Seed Form Data
+            const seededData = {
+              patient_name: appData.patient_name || '',
+              patient_dni: appData.patient_dni || '',
+              patient_age: appData.patient_age || '',
+              patient_phone: appData.patient_phone || '',
+              patient_email: appData.patient_email || '',
+              residence: appData.residence || '',
+              occupation: appData.occupation || '',
+              appointment_type: appData.appointment_type || '',
+              reason_for_visit: appData.reason_for_visit || '',
+              location: appData.location || ''
+            };
+            
+            setFormData(prev => ({ ...prev, ...seededData }));
+            
+            // Seed Preconsulta Engine Answers (crucial for age-based logic)
+            const initialAnswers = syncFormDataToAnswers(seededData);
+            setPreconsultaState(prev => ({
+              ...prev,
+              answers: { ...prev.answers, ...initialAnswers }
+            }));
+
+            const firstName = (appData.patient_name || 'Paciente').split(' ')[0];
+            
+            setHistory([
+              {
+                type: 'bot',
+                text: `<p class="mb-1">¡Hola Sra. <span class="font-bold">${firstName}</span>! 🎉</p><p class="mb-1">He recuperado los datos de tu cita.</p><p class="font-bold">Para aprovechar al máximo el tiempo en consulta, te haré unas breves preguntas médicas antes de empezar:</p>`
+              }
+            ]);
+            
+            setStep(STEPS.PRECONSULTA_QUESTION);
+            setPreconsultaState(prev => ({
+                ...prev,
+                currentNodeId: 'DECIDE_IF_ASK_MENOPAUSE' // Start exactly here
+            }));
+            return;
+          }
+        } catch (err) {
+          console.error("[UnifiedOnboarding] Error fetching short-path appointment", err);
+          addMessage("Lo siento, no pude encontrar la información de tu cita. Vamos a empezar de nuevo.", 'bot');
+        }
+      }
+
+      // --- LONG PATH: Normal Onboarding ---
       if (isCycleAuthenticated && cycleUser) {
         try {
           const res = await appointmentService.getPatientByEmail(cycleUser.email);
@@ -1229,7 +1284,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       }
     };
     initFlow();
-  }, [doctor, history.length, isCycleAuthenticated, cycleUser]);
+  }, [doctor, history.length, isCycleAuthenticated, cycleUser, appointmentId]);
 
   // Fetch Locations and Questions on Mount
   useEffect(() => {
@@ -1809,6 +1864,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
       }
 
       const payload = {
+        appointment_id: appointmentId, // Critical for Short Path
         patient_data: {
           patient_name: currentData.patient_name,
           patient_dni: currentData.patient_dni,

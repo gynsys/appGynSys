@@ -13,7 +13,6 @@ import { useAuth } from '../features/auth/useAuth'
 import Navbar from '../components/layout/Navbar'
 import AppointmentModal from '../components/features/AppointmentModal'
 import RecommendationsCarousel from '../components/features/RecommendationsCarousel'
-import PreconsultaWidget from '../features/preconsulta/components/PreconsultaWidget'
 import EndometriosisTestModal from '../components/features/EndometriosisTestModal'
 import AppointmentRequestModal from '../components/features/AppointmentRequestModal'
 import CyclePredictorModal from '../components/cycle-predictor/CyclePredictorModal'
@@ -304,7 +303,8 @@ export default function DoctorProfilePage() {
 
   useEffect(() => {
     if (location.pathname.includes('/preconsulta') && appointmentId) {
-      setIsPreconsultaOpen(true)
+      setIsUnifiedOnboarding(true)
+      setIsAppointmentModalOpen(true)
     }
     // Auto-open unified onboarding if ?onboarding=true
     if (onboardingParam === 'true') {
@@ -917,21 +917,7 @@ export default function DoctorProfilePage() {
           setIsRegisterModalOpen(true);
         }}
         isUnified={isUnifiedOnboarding}
-      />
-      <AppointmentRequestModal
-        isOpen={isAppointmentRequestModalOpen}
-        onClose={() => setIsAppointmentRequestModalOpen(false)}
-        doctorId={doctor.id}
-        doctorSlug={slug}
-        primaryColor={primaryColor}
-      />
-
-      <PreconsultaWidget
-        isOpen={isPreconsultaOpen}
-        onClose={() => setIsPreconsultaOpen(false)}
         appointmentId={appointmentId}
-        primaryColor={primaryColor}
-        doctorName={doctor?.nombre_completo}
       />
 
       {/* Social Links */}

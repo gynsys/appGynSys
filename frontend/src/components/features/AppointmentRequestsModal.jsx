@@ -86,9 +86,9 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
     }
 
     const slug = doctorSlug || user?.slug_url || 'admin';
-    const onboardingUrl = `https://gynsys.net/${slug}/onboarding`;
+    const preconsultaUrl = `https://gynsys.net/${slug}/preconsulta?appointment_id=${app.id}`;
 
-    const message = `Hola ${app.patient_name}! Te informo que he confirmado tu solicitud de cita. Para aprovechar al máximo el tiempo en consulta, por favor realiza la preconsulta ingresando aquí: ${onboardingUrl}`;
+    const message = `¡Hola ${app.patient_name}! Te informo que he confirmado tu solicitud de cita. Para aprovechar al máximo el tiempo en consulta, por favor completa tu preconsulta médica ingresando aquí: ${preconsultaUrl}`;
     const encodedMsg = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${app.patient_phone.replace(/\D/g, '')}?text=${encodedMsg}`;
     

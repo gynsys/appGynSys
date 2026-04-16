@@ -67,7 +67,8 @@ def _trigger_patient_appointment_notifications(db: Session, appointment: Appoint
     # Generate preconsulta link ONLY if NOT recurrent
     preconsulta_link = None
     if not is_recurrent and email_status == "confirmed":
-        preconsulta_link = f"{settings.FRONTEND_URL}/preconsulta?appointment_id={appointment.id}"
+        slug = doctor.slug_url or "doctor"
+        preconsulta_link = f"{settings.FRONTEND_URL}/{slug}/preconsulta?appointment_id={appointment.id}"
     
     # Format date safely
     date_str = appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if appointment.appointment_date else "Fecha por definir"
