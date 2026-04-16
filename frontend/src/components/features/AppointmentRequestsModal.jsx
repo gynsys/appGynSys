@@ -111,6 +111,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
       onClose={onClose}
       title="Solicitudes de Cita"
       size="lg"
+      fullScreenOnMobile
     >
       <div className="max-w-full mx-auto pb-4">
         {loading ? (
@@ -158,6 +159,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
         onClose={() => setSelectedApp(null)}
         title="Detalles de Solicitud"
         size="md"
+        fullScreenOnMobile
       >
         {selectedApp && (
           <div className="space-y-6">
