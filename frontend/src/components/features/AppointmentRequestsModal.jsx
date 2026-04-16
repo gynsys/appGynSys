@@ -5,7 +5,8 @@ import { useAuthStore } from '../../store/authStore';
 import { 
   FiCalendar, FiPhone, FiCreditCard, 
   FiBriefcase, FiMapPin, FiClock, FiCheck, 
-  FiX, FiMessageCircle, FiChevronRight, FiBell
+  FiX, FiMessageCircle, FiChevronRight, FiBell,
+  FiActivity, FiFileText
 } from 'react-icons/fi';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
@@ -186,13 +187,37 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold mb-1">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold">
                   <FiCalendar /> {formatDate(selectedApp.appointment_date)}
                 </div>
+                
+                {selectedApp.appointment_type && (
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <FiActivity className="text-gray-400" />
+                    <span className="font-semibold text-gray-500">Tipo:</span> {selectedApp.appointment_type}
+                  </div>
+                )}
+                
+                {selectedApp.reason_for_visit && (
+                  <div className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <FiFileText className="text-gray-400 mt-1" />
+                    <div>
+                      <span className="font-semibold text-gray-500">Motivo:</span> {selectedApp.reason_for_visit}
+                    </div>
+                  </div>
+                )}
+
                 <div className="text-xs text-gray-500 flex items-center gap-2">
                   <FiMapPin /> {selectedApp.location || 'Sede Principal'}
                 </div>
+
+                {selectedApp.notes && (
+                  <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-xs text-amber-800 dark:text-amber-200 border border-amber-100 dark:border-amber-900/30 italic">
+                    <span className="font-bold not-italic block mb-1 uppercase tracking-wider text-[10px]">Nota:</span>
+                    {selectedApp.notes}
+                  </div>
+                )}
               </div>
             </div>
 
