@@ -27,6 +27,7 @@ import CertificationsSection from '../components/features/CertificationsSection'
 import SectionCard from '../components/common/SectionCard'
 import SocialLinks from '../components/common/SocialLinks'
 import { BottomNav, NavIcons } from '../components/common/BottomNav'
+import AppointmentRequestsModal from '../components/features/AppointmentRequestsModal'
 
 import { getImageUrl } from '../lib/imageUtils'
 
@@ -236,6 +237,7 @@ export default function DoctorProfilePage() {
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
+  const [isAppointmentRequestsModalOpen, setIsAppointmentRequestsModalOpen] = useState(false)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
@@ -623,7 +625,7 @@ export default function DoctorProfilePage() {
     isOwner ? {
       icon: <FiBell className="w-5 h-5" />,
       label: 'Solicitudes',
-      action: () => navigate('/dashboard/requests'),
+      action: () => setIsAppointmentRequestsModalOpen(true),
       isActive: false,
       badge: pendingCount
     } : null
@@ -648,6 +650,7 @@ export default function DoctorProfilePage() {
         onMedicalHistoryClick={handleMedicalHistoryClick}
         pendingCount={pendingCount}
         isOwner={isOwner}
+        onRequestsClick={() => setIsAppointmentRequestsModalOpen(true)}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />
@@ -1037,7 +1040,11 @@ export default function DoctorProfilePage() {
       {/* Bottom Navigation - Mobile Only */}
       <BottomNav items={navItems} theme={primaryColor} className="md:hidden" />
 
+      <AppointmentRequestsModal
+        isOpen={isAppointmentRequestsModalOpen}
+        onClose={() => setIsAppointmentRequestsModalOpen(false)}
+        doctorSlug={slug}
+      />
     </div >
   )
 }
-

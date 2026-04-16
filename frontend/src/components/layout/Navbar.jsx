@@ -19,7 +19,8 @@ export default function Navbar({
   containerShadow = true, 
   containerBgColor,
   pendingCount = 0,
-  isOwner = false
+  isOwner = false,
+  onRequestsClick
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -298,7 +299,7 @@ export default function Navbar({
                 <div className="flex items-center space-x-3">
                   {isOwner && (
                     <button
-                      onClick={() => navigate('/dashboard/requests')}
+                      onClick={() => onRequestsClick ? onRequestsClick() : navigate('/dashboard/requests')}
                       className="relative p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all hover:scale-110"
                       title="Ver Solicitudes"
                     >
