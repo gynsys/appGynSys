@@ -137,13 +137,13 @@ async def create_public_appointment(
     if not doctor:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Doctor not found"
+            detail="Especialista no encontrado."
         )
     
     if not doctor.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Doctor is not accepting appointments"
+            detail="El especialista no está recibiendo citas en este momento."
         )
         
     # Check if patient is registered and enforce 1-appointment verification grace period
@@ -189,7 +189,7 @@ async def create_public_appointment(
     if existing_appointment:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="The selected time slot is already booked."
+            detail="El horario seleccionado ya no está disponible. Por favor, elige otro bloque."
         )
     
     db_appointment = Appointment(**appointment_data.model_dump())
@@ -244,7 +244,7 @@ async def create_appointment(
     if appointment_data.doctor_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot create appointment for another doctor"
+            detail="No puedes crear citas para otro especialista."
         )
     
     # Check for double booking (exact match of timestamp)
@@ -257,7 +257,7 @@ async def create_appointment(
     if existing_appointment:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="The selected time slot is already booked."
+            detail="El horario seleccionado ya no está disponible. Por favor, elige otro bloque."
         )
     
     db_appointment = Appointment(**appointment_data.model_dump())

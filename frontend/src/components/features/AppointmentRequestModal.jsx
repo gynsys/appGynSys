@@ -498,7 +498,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
                             isSelected 
                               ? 'text-white border-transparent' 
                               : isBooked 
-                                ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
+                                ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed line-through opacity-60'
                                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300'
                           }`}
                           style={{ 
