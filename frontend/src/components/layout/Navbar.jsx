@@ -166,22 +166,6 @@ export default function Navbar({
                   )}
                 </div>
 
-                {/* Doctor Notifications Bell (Mobile) */}
-                {isAuthenticated && isOwner && (
-                  <button
-                    onClick={() => navigate('/dashboard/requests')}
-                    className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400"
-                    title="Ver Solicitudes"
-                  >
-                    <FiBell className="w-6 h-6" />
-                    {pendingCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black h-4 w-4 flex items-center justify-center rounded-full animate-pulse shadow-sm">
-                        {pendingCount}
-                      </span>
-                    )}
-                  </button>
-                )}
-
                 {isAuthenticated && (
                   <Link
                     to="/dashboard"
