@@ -5,8 +5,8 @@ import { useAuthStore } from '../../store/authStore';
 import { 
   FiCalendar, FiPhone, FiCreditCard, 
   FiBriefcase, FiMapPin, FiClock, FiCheck, 
-  FiX, FiMessageCircle, FiChevronRight, FiBell,
-  FiActivity, FiFileText
+  FiMessageCircle, FiChevronRight, FiBell,
+  FiActivity, FiFileText, FiTrash2
 } from 'react-icons/fi';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
@@ -228,11 +228,27 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
 
             <div className="space-y-3">
               <Button 
-                onClick={() => handleWhatsApp(selectedApp)}
-                className="w-full justify-center gap-2 py-4 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black"
+                onClick={async () => {
+                  try {
+                    setIsActionLoading(true);
+                    // Silently confirm in system to trigger backend emails
+                    await appointmentService.updateAppointment(selectedApp.id, { status: 'confirmed' });
+                    // Open WhatsApp
+                    handleWhatsApp(selectedApp);
+                    success("Cita confirmada y link de preconsulta enviado por correo");
+                    setSelectedApp(null);
+                    loadRequests();
+                  } catch (err) {
+                    toastError("Error al confirmar cita");
+                  } finally {
+                    setIsActionLoading(false);
+                  }
+                }}
+                className="w-full justify-center gap-2 py-4 rounded-2xl text-white font-black border-none shadow-lg transform active:scale-95 transition-all"
+                style={{ backgroundColor: '#25D366' }}
                 disabled={isActionLoading}
               >
-                <FiMessageCircle size={20} /> Confirmar vía WhatsApp
+                <FiMessageCircle size={24} /> Confirmar vía WhatsApp
               </Button>
               
               <div className="grid grid-cols-2 gap-3">
@@ -247,28 +263,34 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                     setRescheduleTime(localDate.toISOString().split('T')[1].slice(0, 5));
                     setIsRescheduleOpen(true);
                   }}
-                  className="justify-center gap-2 rounded-2xl border-indigo-200 text-indigo-600 dark:text-indigo-400 py-3 text-sm"
+                  className="justify-center gap-2 rounded-2xl border-indigo-200 text-indigo-600 dark:text-indigo-400 py-4 text-sm font-bold"
                   disabled={isActionLoading}
                 >
                   Reagendar
                 </Button>
                 <Button 
                   variant="secondary"
-                  onClick={() => handleStatusChange(selectedApp.id, 'cancelled')}
-                  className="justify-center gap-2 rounded-2xl border-red-200 text-red-500 py-3 text-sm"
+                  onClick={async () => {
+                    if (window.confirm("¿Estás seguro de que deseas eliminar esta solicitud?")) {
+                      try {
+                        setIsActionLoading(true);
+                        await appointmentService.deleteAppointment(selectedApp.id);
+                        success("Solicitud eliminada");
+                        setSelectedApp(null);
+                        loadRequests();
+                      } catch (err) {
+                        toastError("Error al eliminar solicitud");
+                      } finally {
+                        setIsActionLoading(false);
+                      }
+                    }
+                  }}
+                  className="justify-center gap-2 rounded-2xl border-red-200 text-red-500 py-4 text-sm font-bold"
                   disabled={isActionLoading}
                 >
-                  <FiX /> Cancelar
+                  <FiTrash2 /> Eliminar
                 </Button>
               </div>
-
-              <Button 
-                onClick={() => handleStatusChange(selectedApp.id, 'confirmed')}
-                className="w-full justify-center gap-2 py-3 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                disabled={isActionLoading}
-              >
-                Confirmar en Sistema
-              </Button>
             </div>
           </div>
         )}
