@@ -18,13 +18,14 @@ class AppointmentBase(BaseModel):
     appointment_date: datetime
     appointment_type: Optional[str] = None
     reason_for_visit: Optional[str] = None
-    location: str
+    location: Optional[str] = None
     notes: Optional[str] = None
 
 
 class AppointmentCreate(AppointmentBase):
     """Schema for creating a new appointment."""
     doctor_id: int
+    location: str
 
 
 class AppointmentUpdate(BaseModel):
