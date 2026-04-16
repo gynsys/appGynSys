@@ -208,8 +208,8 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     e.preventDefault()
     e.stopPropagation()
     
-    if (!formData.date_part || !formData.time_part) {
-      showToast('Por favor selecciona una fecha y hora para tu cita.', 'error')
+    if (!formData.date_part || !formData.time_part || !formData.location) {
+      showToast('Por favor selecciona sede, fecha y hora para tu cita.', 'error')
       return
     }
 

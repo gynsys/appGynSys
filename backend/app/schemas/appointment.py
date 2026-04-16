@@ -18,6 +18,7 @@ class AppointmentBase(BaseModel):
     appointment_date: datetime
     appointment_type: Optional[str] = None
     reason_for_visit: Optional[str] = None
+    location: str
     notes: Optional[str] = None
 
 
@@ -37,6 +38,7 @@ class AppointmentUpdate(BaseModel):
     residence: Optional[str] = None
     appointment_date: Optional[datetime] = None
     appointment_type: Optional[str] = None
+    location: Optional[str] = None
     notes: Optional[str] = None
     status: Optional[str] = None
 
