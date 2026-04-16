@@ -234,6 +234,7 @@ export default function DoctorProfilePage() {
   const [historyData, setHistoryData] = useState(null)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
@@ -401,6 +402,29 @@ export default function DoctorProfilePage() {
       fetchDoctor()
     }
   }, [slug])
+
+  // Fetch pending appointments count if owner
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      // Check if current user owns this profile
+      const isOwner = isAuthenticated && user && (
+        (user.slug_url?.toLowerCase() === slug?.toLowerCase()) || 
+        (user.id?.toString() === slug)
+      )
+
+      if (isOwner) {
+        try {
+          const appointments = await appointmentService.getAppointments();
+          const pending = appointments.filter(a => a.status === 'scheduled').length;
+          setPendingCount(pending);
+        } catch (err) {
+          console.error("Error fetching pending count for owner", err);
+        }
+      }
+    };
+
+    fetchPendingCount();
+  }, [isAuthenticated, user, slug]);
 
   useEffect(() => {
     if (doctor?.theme_primary_color) {
@@ -620,6 +644,8 @@ export default function DoctorProfilePage() {
         onLoginClick={() => setIsLoginModalOpen(true)}
         onRegisterClick={() => setIsNavbarRegisterOpen(true)}
         onMedicalHistoryClick={handleMedicalHistoryClick}
+        pendingCount={pendingCount}
+        isOwner={isOwner}
         containerShadow={doctor.container_shadow}
         containerBgColor={containerBgColor}
       />

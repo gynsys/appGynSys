@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '../../services/appointmentService';
 import { useToastStore } from '../../store/toastStore';
+import { useAuthStore } from '../../store/authStore';
 import { 
   FiCalendar, FiPhone, FiMail, FiCreditCard, 
   FiBriefcase, FiMapPin, FiClock, FiCheck, 
@@ -13,6 +14,7 @@ import Input from '../../components/common/Input';
 
 export default function AppointmentRequestList() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { success, error: toastError } = useToastStore();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,10 @@ export default function AppointmentRequestList() {
       minute: '2-digit'
     });
 
-    const message = `Hola ${app.patient_name}, te contacto desde el consultorio para confirmar tu cita solicitada para el ${dateStr} a las ${timeStr}. ¿Confirmas tu asistencia?`;
+    const slug = user?.slug_url || 'admin';
+    const onboardingUrl = `https://gynsys.net/${slug}/onboarding`;
+
+    const message = `Hola ${app.patient_name}! Te informo que he confirmado tu solicitud de cita. Para aprovechar al máximo el tiempo en consulta, por favor realiza la preconsulta ingresando aquí: ${onboardingUrl}`;
     const encodedMsg = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${app.patient_phone.replace(/\D/g, '')}?text=${encodedMsg}`;
     

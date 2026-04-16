@@ -11,10 +11,8 @@ import { getImageUrl } from '../lib/imageUtils'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { dashboardService } from '../services/dashboardService'
 import DashboardCalendar from '../components/dashboard/DashboardCalendar'
-import { useAppointmentStore } from '../store/appointmentStore'
 import WelcomeTourModal from '../components/dashboard/WelcomeTourModal'
 import PushSubscriptionWidget from '../components/dashboard/PushSubscriptionWidget'
-import AppointmentRequestsWidget from '../components/dashboard/AppointmentRequestsWidget'
 
 export default function DashboardOverviewPage() {
   const navigate = useNavigate()
@@ -121,12 +119,8 @@ export default function DashboardOverviewPage() {
 
         </div>
 
-        {/* Notifications and Requests Widgets (Dra. Mariel/Inquilina) */}
-        <div className="mb-6 max-w-6xl mx-auto w-full px-0 sm:px-2 space-y-4">
-          <AppointmentRequestsWidget 
-            pendingCount={pendingAppointmentsCount} 
-            primaryColor={primaryColor} 
-          />
+        {/* Push Subscription Alert (Dra. Mariel/Inquilina) */}
+        <div className="mb-6 max-w-6xl mx-auto w-full px-0 sm:px-2">
           <PushSubscriptionWidget primaryColor={primaryColor} />
         </div>
 

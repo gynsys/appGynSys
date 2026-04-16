@@ -1,13 +1,26 @@
 import { useState, useRef, useEffect } from 'react'
 import { getImageUrl } from '../../lib/imageUtils'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity, FiUserPlus, FiUser, FiFileText, FiLogOut, FiSettings } from 'react-icons/fi'
+import { FiMenu, FiX, FiLogIn, FiBarChart2, FiActivity, FiUserPlus, FiUser, FiFileText, FiLogOut, FiSettings, FiBell } from 'react-icons/fi'
 import MegaMenu from './MegaMenu'
 import { useAuthStore } from '../../store/authStore'
 import usePWAStore from '../../store/pwaStore'
 import PWAInstallButton from '../common/PWAInstallButton'
 
-export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointmentClick, onTestClick, onCycleClick, onLoginClick, onRegisterClick, onMedicalHistoryClick, containerShadow = true, containerBgColor }) {
+export default function Navbar({ 
+  doctor, 
+  primaryColor = '#4F46E5', 
+  onAppointmentClick, 
+  onTestClick, 
+  onCycleClick, 
+  onLoginClick, 
+  onRegisterClick, 
+  onMedicalHistoryClick, 
+  containerShadow = true, 
+  containerBgColor,
+  pendingCount = 0,
+  isOwner = false
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef(null)
@@ -153,6 +166,22 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
                   )}
                 </div>
 
+                {/* Doctor Notifications Bell (Mobile) */}
+                {isAuthenticated && isOwner && (
+                  <button
+                    onClick={() => navigate('/dashboard/requests')}
+                    className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400"
+                    title="Ver Solicitudes"
+                  >
+                    <FiBell className="w-6 h-6" />
+                    {pendingCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black h-4 w-4 flex items-center justify-center rounded-full animate-pulse shadow-sm">
+                        {pendingCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+
                 {isAuthenticated && (
                   <Link
                     to="/dashboard"
@@ -283,6 +312,20 @@ export default function Navbar({ doctor, primaryColor = '#4F46E5', onAppointment
               {/* Doctor Authentication Logic */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
+                  {isOwner && (
+                    <button
+                      onClick={() => navigate('/dashboard/requests')}
+                      className="relative p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all hover:scale-110"
+                      title="Ver Solicitudes"
+                    >
+                      <FiBell className="w-5 h-5" />
+                      {pendingCount > 0 && (
+                        <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-black h-3.5 w-3.5 flex items-center justify-center rounded-full animate-pulse shadow-sm">
+                          {pendingCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
                   <button
                     onClick={() => logout()}
                     className="text-sm font-medium text-red-500 hover:text-red-600 transition"
