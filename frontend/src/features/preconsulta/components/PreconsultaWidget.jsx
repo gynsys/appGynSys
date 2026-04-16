@@ -125,12 +125,14 @@ export default function PreconsultaWidget({ isOpen, onClose, appointmentId, prim
                     full_name: config.patient_name || '',
                     phone: config.patient_phone || '',
                     occupation: config.occupation || '',
-                    address: config.residence || ''
+                    address: config.residence || '',
+                    age: config.patient_age || ''
                 };
                 setInitialAnswers(seeded);
 
-                if (activeFlow.start_node === 'ASK_FULL_NAME' || !activeFlow.start_node) {
-                    activeFlow.start_node = 'ASK_MOTHER_HISTORY_BOOL';
+                if (appointmentId) {
+                    // Skip personal info but RETAIN menopause logic starting at DECIDE_IF_ASK_MENOPAUSE
+                    activeFlow.start_node = 'DECIDE_IF_ASK_MENOPAUSE';
                 }
 
                 setFlowData(activeFlow);

@@ -410,10 +410,8 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
                     className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                   >
-                    <option value="Consulta Presencial">Consulta Presencial</option>
-                    <option value="Control">Control / Seguimiento</option>
-                    <option value="Procedimiento">Procedimiento</option>
-                    <option value="Resultados">Entrega de Resultados</option>
+                    <option value="Ginecológica">Ginecológica</option>
+                    <option value="Prenatal">Prenatal</option>
                   </select>
                 </div>
                 <div>

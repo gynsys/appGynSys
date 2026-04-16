@@ -263,7 +263,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                     setRescheduleTime(localDate.toISOString().split('T')[1].slice(0, 5));
                     setIsRescheduleOpen(true);
                   }}
-                  className="justify-center gap-2 rounded-2xl border-indigo-200 text-indigo-600 dark:text-indigo-400 py-4 text-sm font-bold"
+                  className="justify-center gap-2 rounded-2xl border-2 border-indigo-200 text-indigo-600 dark:text-indigo-400 py-4 text-sm font-bold shadow-sm"
                   disabled={isActionLoading}
                 >
                   Reagendar
@@ -285,7 +285,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                       }
                     }
                   }}
-                  className="justify-center gap-2 rounded-2xl border-red-200 text-red-500 py-4 text-sm font-bold"
+                  className="justify-center gap-2 rounded-2xl border-2 border-red-200 text-red-500 py-4 text-sm font-bold shadow-sm"
                   disabled={isActionLoading}
                 >
                   <FiTrash2 /> Eliminar

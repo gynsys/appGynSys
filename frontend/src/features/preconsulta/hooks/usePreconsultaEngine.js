@@ -83,6 +83,18 @@ export const usePreconsultaEngine = (flowData = defaultFlowData, config = {}) =>
       case 'show_personal_info_summary':
         return node.next_node || null;
 
+      case 'decide_if_ask_menopause': {
+        const age = parseInt(answers.age || 0);
+        if (age >= 45) return node.next_if_yes || null;
+        return node.next_if_no || null;
+      }
+
+      case 'decide_if_menopause_skip': {
+        const isMenopause = answers.is_menopause === 'Sí' || answers.is_menopause === true;
+        if (isMenopause) return node.next_if_skip || null;
+        return node.next_if_stay || null;
+      }
+
       case 'decide_obstetric_flow':
         // Simple logic: if female (assumed) -> check if pregnant or has children? 
         // For now, just go to next_if_needed to show the table
