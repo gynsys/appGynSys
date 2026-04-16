@@ -212,11 +212,10 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                   </div>
                 )}
 
-                {selectedApp.location && (
-                  <div className="text-xs text-gray-500 flex items-center gap-2">
-                    <FiMapPin /> {selectedApp.location}
-                  </div>
-                )}
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <FiMapPin className="text-indigo-400" /> 
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Sede:</span> {selectedApp.location || 'Sede Principal'}
+                </div>
 
                 {selectedApp.notes && (
                   <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-xs text-amber-800 dark:text-amber-200 border border-amber-100 dark:border-amber-900/30 italic">
