@@ -19,7 +19,8 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-  const [newDate, setNewDate] = useState('');
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
@@ -59,12 +60,13 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
 
   const handleReschedule = async (e) => {
     e.preventDefault();
-    if (!selectedApp || !newDate) return;
+    if (!selectedApp || !rescheduleDate || !rescheduleTime) return;
 
     try {
-      setIsActionLoading(true);
+      // Combine date and time
+      const datetime = new Date(`${rescheduleDate}T${rescheduleTime}`);
       await appointmentService.updateAppointment(selectedApp.id, {
-        appointment_date: new Date(newDate).toISOString(),
+        appointment_date: datetime.toISOString(),
       });
       success("Cita reagendada exitosamente");
       setIsRescheduleOpen(false);
@@ -240,8 +242,10 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
                   onClick={() => {
                     const date = new Date(selectedApp.appointment_date);
                     const offset = date.getTimezoneOffset() * 60000;
-                    const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
-                    setNewDate(localISOTime);
+                    const localDate = new Date(date.getTime() - offset);
+                    
+                    setRescheduleDate(localDate.toISOString().split('T')[0]);
+                    setRescheduleTime(localDate.toISOString().split('T')[1].slice(0, 5));
                     setIsRescheduleOpen(true);
                   }}
                   className="justify-center gap-2 rounded-2xl border-indigo-200 text-indigo-600 dark:text-indigo-400 py-3 text-sm"
@@ -279,13 +283,22 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
         size="sm"
       >
         <form onSubmit={handleReschedule} className="space-y-4">
-          <Input
-            label="Nueva Fecha y Hora"
-            type="datetime-local"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            required
-          />
+          <div className="grid grid-cols-1 gap-4">
+            <Input
+              label="Fecha"
+              type="date"
+              value={rescheduleDate}
+              onChange={(e) => setRescheduleDate(e.target.value)}
+              required
+            />
+            <Input
+              label="Hora"
+              type="time"
+              value={rescheduleTime}
+              onChange={(e) => setRescheduleTime(e.target.value)}
+              required
+            />
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="secondary" onClick={() => setIsRescheduleOpen(false)}>
               Volver
