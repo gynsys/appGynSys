@@ -40,8 +40,12 @@ def _trigger_patient_appointment_notifications(db: Session, appointment: Appoint
     is_recurrent = False
 
     # Check 1: Current appointment already has answers
-    if appointment.preconsulta_answers and len(appointment.preconsulta_answers.strip()) > 5:
-        is_recurrent = True
+    if appointment.preconsulta_answers:
+        if isinstance(appointment.preconsulta_answers, str):
+            if len(appointment.preconsulta_answers.strip()) > 5:
+                is_recurrent = True
+        elif len(appointment.preconsulta_answers) > 0:
+                is_recurrent = True
 
     # Check 2: History with same doctor
     if not is_recurrent and appointment.patient_dni:
@@ -53,8 +57,12 @@ def _trigger_patient_appointment_notifications(db: Session, appointment: Appoint
         ).first()
         
         if has_previous_answers:
-             if len(has_previous_answers.preconsulta_answers.strip()) > 5:
-                 is_recurrent = True
+            prev_answers = has_previous_answers.preconsulta_answers
+            if isinstance(prev_answers, str):
+                if len(prev_answers.strip()) > 5:
+                    is_recurrent = True
+            elif prev_answers and len(prev_answers) > 0:
+                is_recurrent = True
 
     # Generate preconsulta link ONLY if NOT recurrent
     preconsulta_link = None
