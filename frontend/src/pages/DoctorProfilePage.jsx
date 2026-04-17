@@ -568,7 +568,7 @@ export default function DoctorProfilePage() {
     }
   }
 
-  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isAppointmentRequestModalOpen || isTestModalOpen || isOnlineConsultationModalOpen || isPreconsultaOpen
+  const isAnyModalOpen = isLoginModalOpen || isAppointmentModalOpen || isAppointmentRequestModalOpen || isTestModalOpen || isOnlineConsultationModalOpen
 
   // Bottom Navigation Handlers
   const scrollToTop = () => {
