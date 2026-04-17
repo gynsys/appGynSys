@@ -76,10 +76,13 @@ def get_public_appointment_data(appointment_id: int, db: Session = Depends(get_d
     if not appointment:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     
+    doctor = db.query(Doctor).filter(Doctor.id == appointment.doctor_id).first()
+    
     # Return ONLY what is needed for the chat seeding
     return {
         "id": appointment.id,
         "doctor_id": appointment.doctor_id,
+        "doctor_slug": doctor.slug_url if doctor else None,
         "patient_name": appointment.patient_name,
         "patient_dni": appointment.patient_dni,
         "patient_age": appointment.patient_age,

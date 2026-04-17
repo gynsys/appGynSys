@@ -282,7 +282,6 @@ export default function DoctorProfilePage() {
   const [searchParams] = useSearchParams()
   const appointmentId = searchParams.get('appointment_id')
   const onboardingParam = searchParams.get('onboarding')
-  const [isPreconsultaOpen, setIsPreconsultaOpen] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
 
   // Modal Handlers
