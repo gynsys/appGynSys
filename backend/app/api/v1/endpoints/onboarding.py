@@ -9,9 +9,11 @@ from app.db.models.cycle_user import CycleUser as CycleUserModel
 from app.db.models.patient_activation_token import PatientActivationToken
 from app.schemas.appointment import AppointmentCreate
 from app.core.encryption import decrypt_text
-from app.core.config import settings
-from app.services.notifications import trigger_doctor_event
+from app.api.v1.endpoints.auth import get_current_user
+from app.services.notifications.processor import trigger_doctor_event
+from app.services.directory_service import sync_onboarding_to_directory
 from app.tasks.email_tasks import send_platform_registration_invitation
+from app.core.config import settings
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 import logging
@@ -180,6 +182,12 @@ def submit_unified_onboarding(
     try:
         db.commit()
         db.refresh(target_appointment)
+        
+        # 3.5 Sync to Directory and Broadcast List
+        try:
+            sync_onboarding_to_directory(target_appointment, db)
+        except Exception as e:
+            logger.error(f"Error syncing to directory: {e}")
         
         # 4. Notify Doctor
         try:
