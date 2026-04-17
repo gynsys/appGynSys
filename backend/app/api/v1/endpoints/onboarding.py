@@ -181,16 +181,20 @@ def submit_unified_onboarding(
         db.commit()
         db.refresh(target_appointment)
         
-        # 4. Notify Doctor (Only triggered for NEW appointments in onboarding, or all?)
-        # For now, let's notify for both but with different event if needed.
+        # 4. Notify Doctor
         try:
+            # Determine if it's a pre-consultation update (Short Path) or a full onboarding (Long Path)
+            is_preconsulta_only = bool(existing_appointment)
+            event_type = "preconsulta_completed" if is_preconsulta_only else "unified_onboarding"
+            notif_type = "doctor_preconsulta_completed" if is_preconsulta_only else "doctor_unified_onboarding"
+            
             date_str = target_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if target_appointment.appointment_date else "Fecha por definir"
             
             trigger_doctor_event(
                 doctor_id=doctor.id,
-                notification_type="doctor_unified_onboarding",
+                notification_type=notif_type,
                 context={
-                    "event": "unified_onboarding" if not existing_appointment else "preconsulta_completed",
+                    "event": event_type,
                     "doctor_name": doctor.nombre_completo,
                     "patient_name": target_appointment.patient_name,
                     "appointment_date": date_str,
