@@ -918,6 +918,14 @@ export default function DoctorProfilePage() {
         isUnified={isUnifiedOnboarding}
         appointmentId={appointmentId}
       />
+      
+      <AppointmentRequestModal
+        isOpen={isAppointmentRequestModalOpen}
+        onClose={() => setIsAppointmentRequestModalOpen(false)}
+        doctorId={doctor?.id}
+        doctorSlug={slug}
+        primaryColor={primaryColor}
+      />
 
       {/* Social Links */}
       <div className="flex justify-center mt-20 mb-8">
