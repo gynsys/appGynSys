@@ -492,7 +492,7 @@ export default function DirectoryManager() {
         onClose={() => !isSubmitting && setIsDeleteModalOpen(false)}
         size="alert"
       >
-        <div className="flex flex-col items-center text-center py-1">
+        <div className="flex flex-col items-center text-center pt-[5px] pb-2">
             <div className="w-16 h-16 rounded-3xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-4 animate-pulse">
                 <FiAlertTriangle className="w-8 h-8" />
             </div>

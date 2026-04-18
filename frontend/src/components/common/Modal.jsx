@@ -78,7 +78,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                   </div>
 
                   {/* Content - Scrollable */}
-                  <div className={`flex-1 overflow-y-auto custom-scrollbar ${fullScreenOnMobile ? 'px-4 py-4 pt-4 pb-8 md:px-6 md:py-6' : (size === 'alert' ? 'px-4 py-3 md:px-6 md:py-4' : 'px-4 py-4 md:p-6')}`}>
+                  <div className={`flex-1 overflow-y-auto custom-scrollbar ${fullScreenOnMobile ? 'px-4 py-4 pt-4 pb-8 md:px-6 md:py-6' : (size === 'alert' ? 'px-4 py-3 md:px-6 md:pt-[10px] md:pb-4' : 'px-4 py-4 md:p-6')}`}>
                     {children}
                   </div>
                 </Dialog.Panel>
