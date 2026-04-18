@@ -492,13 +492,13 @@ export default function DirectoryManager() {
         onClose={() => !isSubmitting && setIsDeleteModalOpen(false)}
         size="alert"
       >
-        <div className="flex flex-col items-center text-center py-2">
-            <div className="w-16 h-16 rounded-3xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-6 animate-pulse">
+        <div className="flex flex-col items-center text-center py-1">
+            <div className="w-16 h-16 rounded-3xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-4 animate-pulse">
                 <FiAlertTriangle className="w-8 h-8" />
             </div>
             
             <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">¿Eliminar contacto?</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-8 leading-relaxed">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-5 leading-relaxed">
                 Estás a punto de eliminar a <span className="text-gray-900 dark:text-white font-black underline">{contactToDelete?.full_name}</span> permanentemente. Esta acción no se puede deshacer.
             </p>
             

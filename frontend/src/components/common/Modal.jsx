@@ -47,7 +47,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
               <div className={(darkMode || isDarkMode) ? 'dark w-full flex justify-center' : 'w-full flex justify-center'}>
                 <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden bg-white dark:bg-gray-900 dark:text-white text-left align-middle shadow-xl transition-all border-gray-200 dark:border-gray-700 flex flex-col ${fullScreenOnMobile ? 'h-[100dvh] min-h-[100dvh] rounded-none border-0 px-0 pt-0 pb-0 md:h-auto md:min-h-0 md:max-h-[90vh] md:rounded-2xl md:border' : 'max-h-[90vh] rounded-2xl border'}`}>
                   {/* Header - Fixed */}
-                  <div className={`flex ${title ? 'justify-between items-center' : 'justify-end'} px-4 py-3 md:px-6 md:py-4 border-b border-gray-100 dark:border-gray-800 shrink-0`}>
+                  <div className={`flex ${title ? 'justify-between items-center' : 'justify-end'} px-4 py-2 md:px-6 ${size === 'alert' ? 'md:py-2' : 'md:py-4'} border-b border-gray-100 dark:border-gray-800 shrink-0`}>
                     {title && (
                       <Dialog.Title
                         as="h3"
@@ -78,7 +78,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', d
                   </div>
 
                   {/* Content - Scrollable */}
-                  <div className={`flex-1 overflow-y-auto custom-scrollbar ${fullScreenOnMobile ? 'px-4 py-4 pt-4 pb-8 md:px-6 md:py-6' : 'px-4 py-4 md:p-6'}`}>
+                  <div className={`flex-1 overflow-y-auto custom-scrollbar ${fullScreenOnMobile ? 'px-4 py-4 pt-4 pb-8 md:px-6 md:py-6' : (size === 'alert' ? 'px-4 py-3 md:px-6 md:py-4' : 'px-4 py-4 md:p-6')}`}>
                     {children}
                   </div>
                 </Dialog.Panel>
