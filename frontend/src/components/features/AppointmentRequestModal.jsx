@@ -163,7 +163,9 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
         const booked = await appointmentService.getBookedTimes(doctorId, date)
         const localBooked = booked.map(iso => {
           const d = new Date(iso)
-          return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+          const hh = String(d.getUTCHours()).padStart(2, '0')
+          const mm = String(d.getUTCMinutes()).padStart(2, '0')
+          return `${hh}:${mm}`
         })
         setBookedTimes(localBooked)
       } catch (err) {
