@@ -75,8 +75,8 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Funcionalidades</a>
               <a href="#pricing" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Plan Único</a>
-              {isAuthenticated ? (
-                <Link to={user?.role === 'admin' ? '/admin' : '/dashboard'} className="bg-indigo-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+              {isAuthenticated && user?.role === 'admin' ? (
+                <Link to="/admin" className="bg-indigo-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
                   Dashboard
                 </Link>
               ) : (
