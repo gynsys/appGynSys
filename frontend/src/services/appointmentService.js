@@ -13,8 +13,10 @@ export const appointmentService = {
     return response.data
   },
 
-  async getBookedTimes(doctorId, date) {
-    const response = await api.get(`/appointments/public/booked-times?doctor_id=${doctorId}&date=${date}`);
+  async getBookedTimes(doctorId, date, location = null) {
+    let url = `/appointments/public/booked-times?doctor_id=${doctorId}&date=${date}`;
+    if (location) url += `&location=${encodeURIComponent(location)}`;
+    const response = await api.get(url);
     return response.data;
   },
 

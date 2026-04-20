@@ -3,7 +3,7 @@ Appointment endpoints for managing appointments.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Annotated, List, Union
+from typing import Annotated, List, Optional, Union
 
 from app.core.config import settings
 from app.db.base import get_db
@@ -90,10 +90,12 @@ def _trigger_patient_appointment_notifications(db: Session, appointment: Appoint
 async def get_booked_times(
     doctor_id: int,
     date: str,
+    location: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
-    Get booked time slots for a specific doctor and date.
+    Get booked time slots for a specific doctor, date, and optionally a location (sede).
+    Filtering by location is critical to avoid showing slots from other sedes as occupied.
     Returns ISO strings so the frontend can correctly parse them into local time.
     """
     try:
@@ -104,12 +106,18 @@ async def get_booked_times(
         start_dt = datetime.combine(target_date - timedelta(days=1), time.min)
         end_dt = datetime.combine(target_date + timedelta(days=1), time.max)
         
-        appts = db.query(Appointment).filter(
+        query = db.query(Appointment).filter(
             Appointment.doctor_id == doctor_id,
             Appointment.appointment_date >= start_dt,
             Appointment.appointment_date <= end_dt,
             Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
-        ).all()
+        )
+
+        # If a specific sede is provided, only count appointments for that location
+        if location:
+            query = query.filter(Appointment.location == location)
+        
+        appts = query.all()
         
         slots = []
         for app in appts:

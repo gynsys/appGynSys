@@ -160,7 +160,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     setFormData(prev => ({ ...prev, date_part: date, time_part: '' }))
     if (date && doctorId) {
       try {
-        const booked = await appointmentService.getBookedTimes(doctorId, date)
+        const booked = await appointmentService.getBookedTimes(doctorId, date, formData.location)
         const localBooked = booked.map(iso => {
           const d = new Date(iso)
           const hh = String(d.getUTCHours()).padStart(2, '0')
