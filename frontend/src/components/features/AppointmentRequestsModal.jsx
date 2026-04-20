@@ -24,14 +24,20 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
+    let interval;
     if (isOpen) {
       loadRequests();
+      // Poll every 15 seconds to sync with mobile app processing
+      interval = setInterval(() => loadRequests(true), 15000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
     }
   }, [isOpen]);
 
-  const loadRequests = async () => {
+  const loadRequests = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       const data = await appointmentService.getAppointments();
       const pending = data
         .filter(a => a.status === 'scheduled')
@@ -40,7 +46,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
     } catch (err) {
       toastError("Error al cargar solicitudes");
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 

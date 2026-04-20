@@ -37,6 +37,14 @@ export default function DashboardOverviewPage() {
     }
   }, [appointmentsList.length, appointmentsLoading, fetchAppointments])
 
+  // Polling to keep dashboard appointments fresh natively across devices
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchAppointments(true) // Force fresh fetch
+    }, 15000)
+    return () => clearInterval(intervalId)
+  }, [fetchAppointments])
+
   // New Stats State
   const [stats, setStats] = useState({
     test_count: 0,

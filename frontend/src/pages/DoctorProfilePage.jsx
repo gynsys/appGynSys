@@ -407,11 +407,13 @@ export default function DoctorProfilePage() {
 
   // Fetch pending appointments count if owner
   useEffect(() => {
+    let intervalId;
     const fetchPendingCount = async () => {
       // Check if current user owns this profile
       const isOwner = isAuthenticated && user && (
         (user.slug_url?.toLowerCase() === slug?.toLowerCase()) || 
-        (user.id?.toString() === slug)
+        (user.id?.toString() === slug) ||
+        (doctor && (user.slug_url === doctor.slug_url || user.id === doctor.id))
       )
 
       if (isOwner) {
@@ -426,7 +428,16 @@ export default function DoctorProfilePage() {
     };
 
     fetchPendingCount();
-  }, [isAuthenticated, user, slug]);
+    
+    // Auto-refresh pending count to sync with mobile app actions
+    if (isAuthenticated && user) {
+      intervalId = setInterval(fetchPendingCount, 15000);
+    }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAuthenticated, user, slug, doctor]);
 
   useEffect(() => {
     if (doctor?.theme_primary_color) {
