@@ -1,51 +1,49 @@
 """
-Script de diagnóstico: Consulta quién tiene ocupado un horario específico
-para una sede y fecha dada.
-
-Uso: docker exec appgynsys-backend-1 python3 scripts/query_appointment_slot.py
+Script de diagnóstico: Muestra TODAS las citas para la sede santa paula
+y también verifica los valores exactos del campo 'location' en la BD.
 """
 from app.db.base import SessionLocal
 from app.db.models.appointment import Appointment
-from datetime import datetime, timedelta, timezone
-
-# --- PARÁMETROS DE CONSULTA ---
-TARGET_LOCATION = "santa paula"
-TARGET_DATE_STR = "2026-04-21"
-TARGET_HOUR = 8  # 8:00 AM (UTC)
-
-# ----------------------------------------------------------------
-
-target_date = datetime.strptime(TARGET_DATE_STR, "%Y-%m-%d").date()
-
-# Rango de búsqueda holgado (+/- 1 día) para cubrir posibles diferencias de zona horaria
-start_dt = datetime.combine(target_date - timedelta(days=1), datetime.min.time())
-end_dt = datetime.combine(target_date + timedelta(days=1), datetime.max.time())
+from datetime import timezone
 
 db = SessionLocal()
 try:
+    # 1. Mostrar todos los valores únicos del campo location para este doctor
+    print("\n=== Valores únicos de 'location' en appointments ===\n")
+    rows = db.query(Appointment.location, Appointment.doctor_id).distinct().all()
+    for loc, doc_id in rows:
+        print(f"  doctor_id={doc_id}  location='{loc}'")
+
+    # 2. Buscar todas las citas que contengan 'santa paula' (case-insensitive)
     appts = db.query(Appointment).filter(
-        Appointment.appointment_date >= start_dt,
-        Appointment.appointment_date <= end_dt,
-        Appointment.location.ilike(f"%{TARGET_LOCATION}%"),
+        Appointment.location.ilike("%santa paula%")
     ).all()
 
-    print(f"\n=== Citas encontradas en '{TARGET_LOCATION}' el {TARGET_DATE_STR} ===\n")
-    
+    print(f"\n=== Total citas en sedes que contienen 'santa paula': {len(appts)} ===\n")
+
     if not appts:
-        print("No se encontraron citas para esta sede y fecha.")
+        print("No se encontraron citas para esta sede.")
     else:
         for appt in appts:
             dt = appt.appointment_date
-            if dt.tzinfo is None:
+            if dt and dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
-            print(f"  ID: {appt.id}")
-            print(f"  Paciente: {appt.patient_name}")
-            print(f"  Email:    {appt.patient_email}")
-            print(f"  Teléfono: {appt.patient_phone}")
-            print(f"  Hora UTC: {dt.strftime('%H:%M')} ({dt.isoformat()})")
-            print(f"  Tipo:     {appt.appointment_type}")
-            print(f"  Estado:   {appt.status}")
-            print(f"  Doctor ID:{appt.doctor_id}")
-            print("-" * 40)
+            hora = dt.strftime('%Y-%m-%d %H:%M UTC') if dt else 'N/A'
+            print(f"  ID={appt.id} | Paciente={appt.patient_name} | Hora={hora} | Estado={appt.status} | location='{appt.location}'")
+
+    # 3. Mostrar citas de las últimas 24h en CUALQUIER sede para verificar
+    from datetime import datetime, timedelta
+    now = datetime.utcnow()
+    recent = db.query(Appointment).filter(
+        Appointment.created_at >= now - timedelta(hours=24)
+    ).all()
+    print(f"\n=== Citas creadas en las últimas 24h: {len(recent)} ===\n")
+    for appt in recent:
+        dt = appt.appointment_date
+        if dt and dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        hora = dt.strftime('%Y-%m-%d %H:%M UTC') if dt else 'N/A'
+        print(f"  ID={appt.id} | location='{appt.location}' | Hora={hora} | Estado={appt.status}")
+
 finally:
     db.close()
