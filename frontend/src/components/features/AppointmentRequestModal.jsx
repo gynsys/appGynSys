@@ -85,6 +85,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
   const [suggestedDates, setSuggestedDates] = useState([])
   const [suggestedTimes, setSuggestedTimes] = useState([])
   const [bookedTimes, setBookedTimes] = useState([])
+  const [isReturningPatient, setIsReturningPatient] = useState(false)
   const [status, setStatus] = useState('editing') // 'editing', 'success'
 
   const [formData, setFormData] = useState({
@@ -120,6 +121,11 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     }
     fetchLocations()
   }, [doctorSlug, isOpen])
+
+  // Reset returning-patient flag when modal opens fresh
+  useEffect(() => {
+    if (isOpen) setIsReturningPatient(false)
+  }, [isOpen])
 
   // No pre-fill from cycleUser — the form must be filled manually.
   // DNI lookup (below) handles recurring patient recognition.
@@ -160,14 +166,17 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     }
   }
 
-  // DNI lookup: only used to detect recurring patients.
-  // Does NOT auto-fill any form fields — it is purely a backend signal
-  // to tie this appointment to an existing patient record.
+  // DNI lookup: silently checks if the patient is a recurring visitor.
+  // Sets a flag to show a UI badge — does NOT auto-fill any fields.
   const handleDniLookup = async (dni) => {
     if (!dni || dni.length < 5) return
     try {
-      await appointmentService.checkPatient(formData.patient_name, dni)
-      // Backend records the match; no UI auto-fill is performed.
+      const result = await appointmentService.checkPatient(formData.patient_name, dni)
+      if (result && (result.exists || result.patient_data)) {
+        setIsReturningPatient(true)
+      } else {
+        setIsReturningPatient(false)
+      }
     } catch (err) {
       // Non-critical: if the lookup fails the appointment can still be created.
       console.warn('DNI lookup failed (non-blocking):', err)
@@ -266,12 +275,17 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
                     type="text"
                     required
                     value={formData.patient_dni}
-                    onChange={(e) => setFormData({...formData, patient_dni: e.target.value})}
+                    onChange={(e) => { setFormData({...formData, patient_dni: e.target.value}); setIsReturningPatient(false) }}
                     onBlur={() => handleDniLookup(formData.patient_dni)}
                     className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                     placeholder="Número de identificación"
                   />
+                  {isReturningPatient && (
+                    <p className="mt-1.5 text-xs font-bold flex items-center gap-1" style={{ color: primaryColor }}>
+                      <span>✓</span> Paciente recurrente identificado
+                    </p>
+                  )}
                 </div>
               </div>
 

@@ -188,14 +188,28 @@ async def create_public_appointment(
                     detail="unverified_second_appointment"
                 )
     
-    # Check for double booking: same doctor + same time + same location (sede).
-    # Filtering by location is critical so that different sedes can accept
-    # appointments at the same time independently.
+    # Check for double booking: same doctor + same location + same time window (±1 min).
+    # We use a range instead of exact equality to avoid timezone-naive vs timezone-aware
+    # comparison failures that silently pass the == check in PostgreSQL.
+    from datetime import timedelta
+    appt_dt = appointment_data.appointment_date
+    # Ensure we work with a naive UTC datetime for the comparison window
+    if hasattr(appt_dt, 'tzinfo') and appt_dt.tzinfo is not None:
+        from datetime import timezone as _tz
+        appt_dt_naive = appt_dt.astimezone(_tz.utc).replace(tzinfo=None)
+    else:
+        appt_dt_naive = appt_dt
+
+    window_start = appt_dt_naive - timedelta(minutes=1)
+    window_end   = appt_dt_naive + timedelta(minutes=1)
+
     double_booking_query = db.query(Appointment).filter(
         Appointment.doctor_id == appointment_data.doctor_id,
-        Appointment.appointment_date == appointment_data.appointment_date,
+        Appointment.appointment_date >= window_start,
+        Appointment.appointment_date <= window_end,
         Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
     )
+    # Scope conflict check to the same sede only
     if appointment_data.location:
         double_booking_query = double_booking_query.filter(
             Appointment.location == appointment_data.location
