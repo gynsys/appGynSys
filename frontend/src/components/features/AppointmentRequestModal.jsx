@@ -226,8 +226,23 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
       
       setTimeout(() => {
         onClose()
-        // Reset status after closing delay for next time modal opens
-        setTimeout(() => setStatus('editing'), 500)
+        // Reset status and form data after closing delay for next time modal opens
+        setTimeout(() => {
+          setStatus('editing')
+          setIsReturningPatient(false)
+          setFormData(prev => ({
+            ...prev,
+            patient_name: '',
+            patient_email: '',
+            patient_phone: '',
+            patient_dni: '',
+            patient_age: '',
+            residence: '',
+            occupation: '',
+            date_part: '',
+            time_part: '',
+          }))
+        }, 500)
       }, 4000)
     } catch (error) {
       console.error("Booking error:", error)
