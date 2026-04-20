@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Download, Bell, Sparkles, X, Smartphone, UserPlus } from 'lucide-react';
+import { Download, Sparkles, X, Smartphone, UserPlus } from 'lucide-react';
 import { isCapacitor } from '../../utils/platform';
 
 export default function DownloadCTADialog({ open, onOpenChange, onRegisterClick }) {
@@ -86,35 +86,15 @@ export default function DownloadCTADialog({ open, onOpenChange, onRegisterClick 
                 <div className="px-6 pb-6 pt-2 text-center">
                     <DialogHeader>
                         <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
-                            Lleva el control de tu ciclo en el bolsillo
+                            La app de tu doctora, en tu teléfono
                         </DialogTitle>
                         <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 text-center">
                             Descarga la App nativa de {tenantName} para registrar tus síntomas, recibir proyecciones exactas y activar <strong className="text-gray-900 dark:text-white">notificaciones push automáticas</strong>.
                         </DialogDescription>
                     </DialogHeader>
 
-                    {/* Features List */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 my-6 text-left space-y-3">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 p-1 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500">
-                                <Sparkles className="w-3.5 h-3.5" />
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                                <strong>Calculadora Mi Ciclo:</strong> Identifica tus ventanas fértiles con presición.
-                            </p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 p-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-500">
-                                <Bell className="w-3.5 h-3.5" />
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                                <strong>Alertas Push:</strong> Recordatorios de pastillas y próximos sangrados.
-                            </p>
-                        </div>
-                    </div>
-
                     {/* Acciones */}
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 mt-5">
                         <button
                             onClick={handleDownload}
                             className="w-full py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-white font-bold transition-transform active:scale-[0.98] shadow-md hover:shadow-lg"
