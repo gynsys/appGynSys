@@ -31,7 +31,8 @@ export const appointmentService = {
   },
 
   async getAppointments() {
-    const response = await api.get('/appointments/')
+    // Add cache-busting timestamp to prevent browser from returning stale 304 cache during polling
+    const response = await api.get(`/appointments/?t=${new Date().getTime()}`)
     return response.data
   },
 
