@@ -4,7 +4,6 @@ import Button from '../common/Button'
 import { useToastStore } from '../../store/toastStore'
 import { appointmentService } from '../../services/appointmentService'
 import { locationService } from '../../services/locationService'
-import { useAuthStore } from '../../store/authStore'
 import { MdCalendarToday, MdAccessTime, MdLocationOn, MdPerson, MdCheckCircle } from 'react-icons/md'
 
 // --- Helpers ported from ChatBooking.jsx ---
@@ -79,7 +78,6 @@ const capitalizeWords = (str) => {
 }
 
 export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doctorSlug, primaryColor = '#4F46E5' }) {
-  const { cycleUser } = useAuthStore()
   const { showToast } = useToastStore()
   
   const [loading, setLoading] = useState(false)
@@ -87,7 +85,6 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
   const [suggestedDates, setSuggestedDates] = useState([])
   const [suggestedTimes, setSuggestedTimes] = useState([])
   const [bookedTimes, setBookedTimes] = useState([])
-  const [isVerifying, setIsVerifying] = useState(false)
   const [status, setStatus] = useState('editing') // 'editing', 'success'
 
   const [formData, setFormData] = useState({
@@ -124,19 +121,8 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     fetchLocations()
   }, [doctorSlug, isOpen])
 
-  // Pre-fill if logged in
-  useEffect(() => {
-    if (cycleUser && isOpen) {
-      setFormData(prev => ({
-        ...prev,
-        patient_name: prev.patient_name || cycleUser.nombre_completo || '',
-        patient_email: prev.patient_email || cycleUser.email || '',
-      }))
-      if (cycleUser.email && !formData.patient_email) {
-        handleVerification(cycleUser.email, 'email')
-      }
-    }
-  }, [cycleUser, isOpen])
+  // No pre-fill from cycleUser — the form must be filled manually.
+  // DNI lookup (below) handles recurring patient recognition.
 
   const updateSmartSchedules = (loc) => {
     const scheduleStr = loc?.schedule?.label || loc?.schedule || ''
@@ -174,35 +160,17 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     }
   }
 
-  const handleVerification = async (value, field) => {
-    if (!value || value.length < 5) return
-    setIsVerifying(true)
+  // DNI lookup: only used to detect recurring patients.
+  // Does NOT auto-fill any form fields — it is purely a backend signal
+  // to tie this appointment to an existing patient record.
+  const handleDniLookup = async (dni) => {
+    if (!dni || dni.length < 5) return
     try {
-      let result = null
-      if (field === 'dni') {
-        result = await appointmentService.checkPatient(formData.patient_name, value)
-      } else {
-        result = await appointmentService.getPatientByEmail(value)
-      }
-
-      if (result && (result.exists || result.patient_data)) {
-        const pd = result.patient_data || result
-        setFormData(prev => ({
-          ...prev,
-          patient_name: prev.patient_name || pd.patient_name || '',
-          patient_phone: prev.patient_phone || pd.patient_phone || '',
-          patient_email: prev.patient_email || pd.patient_email || pd.email || '',
-          patient_dni: prev.patient_dni || pd.patient_dni || pd.ci || '',
-          patient_age: prev.patient_age || pd.patient_age || pd.age || '',
-          residence: prev.residence || pd.residence || '',
-          occupation: prev.occupation || pd.occupation || ''
-        }))
-        showToast('Datos de paciente encontrados y cargados.', 'success')
-      }
+      await appointmentService.checkPatient(formData.patient_name, dni)
+      // Backend records the match; no UI auto-fill is performed.
     } catch (err) {
-      console.warn("Verification failed", err)
-    } finally {
-      setIsVerifying(false)
+      // Non-critical: if the lookup fails the appointment can still be created.
+      console.warn('DNI lookup failed (non-blocking):', err)
     }
   }
 
@@ -299,7 +267,7 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
                     required
                     value={formData.patient_dni}
                     onChange={(e) => setFormData({...formData, patient_dni: e.target.value})}
-                    onBlur={() => handleVerification(formData.patient_dni, 'dni')}
+                    onBlur={() => handleDniLookup(formData.patient_dni)}
                     className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                     placeholder="Número de identificación"
@@ -315,7 +283,6 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
                     required
                     value={formData.patient_email}
                     onChange={(e) => setFormData({...formData, patient_email: e.target.value})}
-                    onBlur={() => handleVerification(formData.patient_email, 'email')}
                     className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm p-3 focus:ring-2"
                     style={{ '--tw-ring-color': primaryColor }}
                     placeholder="ejemplo@correo.com"
