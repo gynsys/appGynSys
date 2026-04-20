@@ -166,19 +166,28 @@ export default function AppointmentRequestModal({ isOpen, onClose, doctorId, doc
     }
   }
 
-  // DNI lookup: silently checks if the patient is a recurring visitor.
-  // Sets a flag to show a UI badge — does NOT auto-fill any fields.
+  // DNI lookup: identifies recurring patients and auto-fills their data.
+  // For new patients, the form stays empty for manual entry.
   const handleDniLookup = async (dni) => {
     if (!dni || dni.length < 5) return
     try {
       const result = await appointmentService.checkPatient(formData.patient_name, dni)
       if (result && (result.exists || result.patient_data)) {
+        const pd = result.patient_data || result
+        setFormData(prev => ({
+          ...prev,
+          patient_name:  pd.patient_name  || pd.nombre_completo || prev.patient_name,
+          patient_email: pd.patient_email || pd.email           || prev.patient_email,
+          patient_phone: pd.patient_phone || pd.phone           || prev.patient_phone,
+          patient_age:   pd.patient_age   || pd.age             || prev.patient_age,
+          residence:     pd.residence                           || prev.residence,
+          occupation:    pd.occupation                          || prev.occupation,
+        }))
         setIsReturningPatient(true)
       } else {
         setIsReturningPatient(false)
       }
     } catch (err) {
-      // Non-critical: if the lookup fails the appointment can still be created.
       console.warn('DNI lookup failed (non-blocking):', err)
     }
   }

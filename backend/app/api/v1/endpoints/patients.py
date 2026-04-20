@@ -25,9 +25,9 @@ def check_patient_existence(
     Check if a patient exists by matching Name and DNI in past appointments.
     Also checks if the user's account is verified.
     """
-    # Case insensitive search for name, exact match for DNI (ignoring whitespace)
+    # Search by DNI only — the name field may still be empty when the user
+    # tabs out of the DNI input, so we cannot rely on name for the lookup.
     appointment = db.query(Appointment).filter(
-        Appointment.patient_name.ilike(f"{data.name.strip()}"),
         Appointment.patient_dni == data.dni.strip()
     ).order_by(Appointment.id.desc()).first()
     
