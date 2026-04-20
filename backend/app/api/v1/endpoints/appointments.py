@@ -188,18 +188,26 @@ async def create_public_appointment(
                     detail="unverified_second_appointment"
                 )
     
-    # Check for double booking (exact match of timestamp)
-    existing_appointment = db.query(Appointment).filter(
+    # Check for double booking: same doctor + same time + same location (sede).
+    # Filtering by location is critical so that different sedes can accept
+    # appointments at the same time independently.
+    double_booking_query = db.query(Appointment).filter(
         Appointment.doctor_id == appointment_data.doctor_id,
         Appointment.appointment_date == appointment_data.appointment_date,
         Appointment.status.in_(["scheduled", "confirmed", "paid", "pending"])
-    ).first()
-    
+    )
+    if appointment_data.location:
+        double_booking_query = double_booking_query.filter(
+            Appointment.location == appointment_data.location
+        )
+    existing_appointment = double_booking_query.first()
+
     if existing_appointment:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="El horario seleccionado ya no está disponible. Por favor, elige otro bloque."
         )
+
     
     db_appointment = Appointment(**appointment_data.model_dump())
     db.add(db_appointment)
