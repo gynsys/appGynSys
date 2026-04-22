@@ -8,8 +8,17 @@ export default function DownloadCTADialog({ open, onOpenChange, onRegisterClick 
     const tenantLogo = localStorage.getItem('tenant_logo');
     const tenantName = localStorage.getItem('tenant_name') || 'nuestra app';
     
-    // Ocultar si ya estamos en app nativa
-    if (isCapacitor()) return null;
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Ocultar si ya estamos en app nativa o si es pantalla grande (no responsive)
+    if (isCapacitor() || !isMobile) return null;
 
     const isIOS = () => {
         return [
@@ -89,7 +98,7 @@ export default function DownloadCTADialog({ open, onOpenChange, onRegisterClick 
                             La app de tu doctora, en tu teléfono
                         </DialogTitle>
                         <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                            Descarga la App nativa de {tenantName} para registrar tus síntomas, recibir proyecciones exactas y activar <strong className="text-gray-900 dark:text-white">notificaciones push automáticas</strong>.
+                            Descarga la App de {tenantName}, para recibir <strong className="text-gray-900 dark:text-white">notificaciones push automáticas</strong>, y adicionalmente puedes disfrutar de una excelente Calculadora menstrual, o una valiosa herramienta para el control prenatal.
                         </DialogDescription>
                     </DialogHeader>
 
