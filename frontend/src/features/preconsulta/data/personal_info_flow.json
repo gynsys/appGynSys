@@ -633,6 +633,12 @@
             "type": "yes_no",
             "text_key": "preconsulta.ask_menopause_vaginal_dryness",
             "save_to": "menopause_vaginal_dryness",
+            "next_node": "ASK_MENOPAUSE_SLEEP_ISSUES"
+        },
+        "ASK_MENOPAUSE_SLEEP_ISSUES": {
+            "type": "yes_no",
+            "text_key": "preconsulta.ask_menopause_sleep_issues",
+            "save_to": "menopause_sleep_issues",
             "next_node": "ASK_MENOPAUSE_GASTRO"
         },
         "ASK_MENOPAUSE_GASTRO": {

@@ -558,36 +558,43 @@ class GeneradorResumenes:
                 partes.append("En el sistema urinario, confirma problemas, con " + ", ".join(urinario_parts) + ".")
             else:
                 partes.append("En el sistema urinario, confirma problemas no especificados.")
-        # 5. Síndrome Climatérico / Menopausia
-        if is_menopause:
-            climaterio_parts = []
-            
-            # Calorones
-            if _es_si(self.d.get('menopause_hot_flashes')):
-                climaterio_parts.append("presencia de sofocos (calorones)")
-            else:
-                climaterio_parts.append("niega sofocos")
-                
-            # Concentración
-            if _es_si(self.d.get('menopause_concentration')):
-                climaterio_parts.append("pérdida de concentración")
-            
-            # Vaginal
-            if _es_si(self.d.get('menopause_vaginal_dryness')):
-                climaterio_parts.append("resequedad vaginal")
-            else:
-                climaterio_parts.append("niega molestias vulvovaginales")
-                
-            # Gastro específico de menopausia
-            m_gastro = self.d.get('menopause_gastro', [])
-            if m_gastro:
-                g_str = _normalize_value(m_gastro)
-                climaterio_parts.append(f"síntomas gastrointestinales ({g_str})")
-
-            prefix = "En relación a su estado climatérico, manifiesta "
-            partes.append(prefix + ", ".join(climaterio_parts) + ".")
-
         return " ".join(partes)
+
+    # -------------------------------------------------------------------------
+    # Examen funcional (Menopausia)
+    # -------------------------------------------------------------------------
+    def generar_funcional_menopausia(self) -> Optional[str]:
+        """Resume el examen funcional exclusivo para pacientes en menopausia."""
+        climaterio_parts = []
+        
+        # Calorones
+        if _es_si(self.d.get('menopause_hot_flashes')):
+            climaterio_parts.append("presencia de sofocos (calorones)")
+        else:
+            climaterio_parts.append("niega sofocos")
+            
+        # Concentración
+        if _es_si(self.d.get('menopause_concentration')):
+            climaterio_parts.append("pérdida de concentración")
+            
+        # Sueño
+        if _es_si(self.d.get('menopause_sleep_issues')):
+            climaterio_parts.append("problemas para conciliar el sueño")
+        
+        # Vaginal
+        if _es_si(self.d.get('menopause_vaginal_dryness')):
+            climaterio_parts.append("resequedad vaginal")
+        else:
+            climaterio_parts.append("niega molestias vulvovaginales")
+            
+        # Gastro específico de menopausia
+        m_gastro = self.d.get('menopause_gastro', [])
+        if m_gastro:
+            g_str = _normalize_value(m_gastro)
+            climaterio_parts.append(f"síntomas gastrointestinales ({g_str})")
+
+        prefix = "En relación a su estado climatérico, manifiesta "
+        return prefix + ", ".join(climaterio_parts) + "."
 
     # -------------------------------------------------------------------------
     # Estilo de vida
@@ -638,11 +645,14 @@ class GeneradorResumenes:
     # -------------------------------------------------------------------------
     def generar_todo(self, nombre_paciente: str = "Paciente") -> Dict[str, str]:
         """Retorna un diccionario con todas las secciones del resumen."""
+        is_menopause = _es_si(self.d.get('is_menopause'))
+        funcional_text = self.generar_funcional_menopausia() if is_menopause else self.generar_funcional()
+        
         return {
             "general": self.generar_general(nombre_paciente),
             "antecedentes": self.generar_antecedentes().capitalize(),
             "gineco": self.generar_gineco(),
-            "funcional": self.generar_funcional() or "",
+            "funcional": funcional_text or "",
             "estilo_vida": self.generar_estilo_vida().capitalize()
         }
 

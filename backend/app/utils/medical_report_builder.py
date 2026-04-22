@@ -103,11 +103,20 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
         findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
 
     # D. Deseo de fertilidad
-    infertility = report_data.get('gyn_fertility_intent', '')
-    if infertility and "Con deseo" in str(infertility):
-        findings_parts.append("con deseo de fertilidad no logrado")
-    else:
-        findings_parts.append("sin deseo de fertilidad aparente")
+    is_menopause_raw = report_data.get('is_menopause')
+    is_menopause = False
+    if is_menopause_raw is not None:
+        if isinstance(is_menopause_raw, bool):
+            is_menopause = is_menopause_raw is True
+        else:
+            is_menopause = str(is_menopause_raw).lower() in ['sí', 'si', 'true', '1']
+            
+    if not is_menopause:
+        infertility = report_data.get('gyn_fertility_intent', '')
+        if infertility and "Con deseo" in str(infertility):
+            findings_parts.append("con deseo de fertilidad no logrado")
+        else:
+            findings_parts.append("sin deseo de fertilidad aparente")
 
     # Unir todo en un solo párrafo estilo Bot
     if findings_parts:

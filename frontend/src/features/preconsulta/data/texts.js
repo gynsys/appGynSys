@@ -80,6 +80,7 @@ export const preconsultaTexts = {
   "preconsulta.ask_menopause_hot_flashes": "¿Presentas calorones?",
   "preconsulta.ask_menopause_concentration": "¿Presentas pérdidas de concentración?",
   "preconsulta.ask_menopause_vaginal_dryness": "¿Presentas molestias o resequedad vaginal?",
+  "preconsulta.ask_menopause_sleep_issues": "¿Presentas problemas para conciliar el sueño?",
   "preconsulta.menopause_gastro_prompt": "¿Presentas síntomas gastrointestinales (Diarrea, Estreñimiento, Gases, Distensión, Dolor)?",
 };
 
@@ -143,5 +144,6 @@ export const fieldLabels = {
   "menopause_hot_flashes": "Calorones",
   "menopause_concentration": "Pérdida Concentración",
   "menopause_vaginal_dryness": "Resequedad Vaginal",
+  "menopause_sleep_issues": "Problemas de Sueño",
   "menopause_gastro": "Síntomas Gastro (Menopausia)"
 };
