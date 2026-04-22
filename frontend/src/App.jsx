@@ -63,7 +63,7 @@ import { CapacitorPushListener } from './components/notifications/CapacitorPushL
 import CampaignsPage from './features/campaigns/CampaignsPage'
 
 import { isCapacitor } from './utils/platform'
-
+import { applyDynamicTheme } from './utils/themeUtils'
 const RootRedirector = () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   const isNative = isCapacitor();
@@ -140,6 +140,15 @@ function App() {
           document.documentElement.classList.add('dark');
         } else {
           document.documentElement.classList.remove('dark');
+        }
+
+        // Aplica el color primario dinámico del inquilino (White-Label)
+        const primaryColor = localStorage.getItem('tenant_theme_primary');
+        if (primaryColor) {
+          applyDynamicTheme(primaryColor);
+        } else {
+          // Color por defecto si no hay inquilino configurado (Indigo 600)
+          applyDynamicTheme('#4f46e5');
         }
       };
 
