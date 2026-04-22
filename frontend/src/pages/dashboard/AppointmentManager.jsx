@@ -24,23 +24,30 @@ export default function AppointmentManager() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
 
-  useEffect(() => {
-    loadAppointments();
-  }, []);
-
-  const loadAppointments = async () => {
+  const loadAppointments = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const data = await appointmentService.getAppointments();
       // Sort by date descending
       const sorted = data.sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
       setAppointments(sorted);
     } catch (err) {
-      toastError("Error al cargar citas");
+      if (showLoading) toastError("Error al cargar citas");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadAppointments(true);
+
+    // Polling en segundo plano para actualizar confirmaciones en tiempo real
+    const intervalId = setInterval(() => {
+      loadAppointments(false);
+    }, 10000); // Cada 10 segundos
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleStatusChange = async (id, newStatus) => {
     if (newStatus === 'confirmed') setConfirmingId(id);
@@ -52,7 +59,7 @@ export default function AppointmentManager() {
 
       await appointmentService.updateAppointment(id, { status: newStatus });
       success(`Cita ${newStatus === 'confirmed' ? 'confirmada' : 'actualizada'}`);
-      loadAppointments();
+      loadAppointments(false);
     } catch (err) {
       toastError("Error al actualizar estado");
     } finally {
@@ -72,7 +79,7 @@ export default function AppointmentManager() {
       success("Cita eliminada");
       setIsDeleteModalOpen(false);
       setAppointmentToDelete(null);
-      loadAppointments();
+      loadAppointments(false);
     } catch (err) {
       toastError("Error al eliminar cita");
     }
@@ -99,7 +106,7 @@ export default function AppointmentManager() {
       });
       success("Cita reagendada exitosamente");
       setIsRescheduleModalOpen(false);
-      loadAppointments();
+      loadAppointments(false);
     } catch (err) {
       toastError("Error al reagendar cita");
     }
