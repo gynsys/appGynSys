@@ -56,53 +56,9 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
         else:
             narrative_parts.append(f"Paciente quien acude a consulta por presentar {reason}.")
 
-    # 2. Hallazgos Funcionales (Bot Parity: Solo 4 ítems clave)
+    # 2. Hallazgos Funcionales (Bot Parity)
     findings_parts = []
-
-    # A. Dismenorrea (Extraída de report_data o preconsulta_answers)
-    dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
-    if not dismenorrhea or str(dismenorrhea).lower() in ['no', 'niega', 'none']:
-        findings_parts.append("no presentar dismenorrea")
-    else:
-        # Intentar extraer escala del string o de campo separado
-        eva_match = re.search(r'intensidad: (\d+)/10', str(dismenorrhea))
-        score = int(eva_match.group(1)) if eva_match else report_data.get('gyn_dysmenorrhea_scale_value', 0)
-        intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
-        findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
-
-    # B. Dispareunia
-    dispareunia = report_data.get('functional_dispareunia', '')
-    if not dispareunia or str(dispareunia).lower() in ['no', 'niega', 'none', 'false']:
-        findings_parts.append("niega dispareunia")
-    else:
-        eva_match = re.search(r'intensidad: (\d+)/10', str(dispareunia), re.IGNORECASE)
-        score = int(eva_match.group(1)) if eva_match else report_data.get('functional_dispareunia_deep_scale', 0)
-        
-        if score >= 10: intensity_desc = "de máxima intensidad"
-        elif score >= 7: intensity_desc = "de alta intensidad"
-        elif score >= 4: intensity_desc = "moderada"
-        else: intensity_desc = "leve"
-        
-        findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
-
-    # C. Disquecia
-    dischezia = report_data.get('functional_dischezia', '')
-    if not dischezia or str(dischezia).lower() in ['no', 'niega', 'none', 'false']:
-        findings_parts.append("niega disquecia")
-    elif 'eventual' in str(dischezia).lower():
-        findings_parts.append("disquecia eventual")
-    else:
-        eva_match = re.search(r'intensidad: (\d+)/10', str(dischezia), re.IGNORECASE)
-        score = int(eva_match.group(1)) if eva_match else (report_data.get('functional_dischezia_scale') or report_data.get('functional_dischezia_scale_value', 0))
-        
-        if score >= 10: intensity_desc = "de máxima intensidad"
-        elif score >= 7: intensity_desc = "de alta intensidad"
-        elif score >= 4: intensity_desc = "moderada"
-        else: intensity_desc = "leve"
-        
-        findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
-
-    # D. Deseo de fertilidad
+    
     is_menopause_raw = report_data.get('is_menopause')
     is_menopause = False
     if is_menopause_raw is not None:
@@ -110,8 +66,71 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
             is_menopause = is_menopause_raw is True
         else:
             is_menopause = str(is_menopause_raw).lower() in ['sí', 'si', 'true', '1']
+
+    if is_menopause:
+        # A. Calorones
+        hf = report_data.get('menopause_hot_flashes')
+        if hf and str(hf).lower() in ['sí', 'si', 'true', '1']:
+            findings_parts.append("presencia de sofocos")
+        else:
+            findings_parts.append("niega sofocos")
             
-    if not is_menopause:
+        # B. Concentración
+        conc = report_data.get('menopause_concentration')
+        if conc and str(conc).lower() in ['sí', 'si', 'true', '1']:
+            findings_parts.append("pérdida de concentración")
+            
+        # C. Sueño
+        sleep = report_data.get('menopause_sleep_issues')
+        if sleep and str(sleep).lower() in ['sí', 'si', 'true', '1']:
+            findings_parts.append("problemas para conciliar el sueño")
+            
+        # D. Resequedad vaginal
+        dry = report_data.get('menopause_vaginal_dryness')
+        if dry and str(dry).lower() in ['sí', 'si', 'true', '1']:
+            findings_parts.append("resequedad vaginal")
+        else:
+            findings_parts.append("niega resequedad vaginal")
+    else:
+        # A. Dismenorrea
+        dismenorrhea = report_data.get('gyn_dysmenorrhea', '')
+        if not dismenorrhea or str(dismenorrhea).lower() in ['no', 'niega', 'none']:
+            findings_parts.append("no presentar dismenorrea")
+        else:
+            eva_match = re.search(r'intensidad: (\d+)/10', str(dismenorrhea))
+            score = int(eva_match.group(1)) if eva_match else report_data.get('gyn_dysmenorrhea_scale_value', 0)
+            intensity_desc = "severa" if score >= 7 else "moderada" if score >= 4 else "leve"
+            findings_parts.append(f"dismenorrea {intensity_desc} ({score}/10)")
+    
+        # B. Dispareunia
+        dispareunia = report_data.get('functional_dispareunia', '')
+        if not dispareunia or str(dispareunia).lower() in ['no', 'niega', 'none', 'false']:
+            findings_parts.append("niega dispareunia")
+        else:
+            eva_match = re.search(r'intensidad: (\d+)/10', str(dispareunia), re.IGNORECASE)
+            score = int(eva_match.group(1)) if eva_match else report_data.get('functional_dispareunia_deep_scale', 0)
+            if score >= 10: intensity_desc = "de máxima intensidad"
+            elif score >= 7: intensity_desc = "de alta intensidad"
+            elif score >= 4: intensity_desc = "moderada"
+            else: intensity_desc = "leve"
+            findings_parts.append(f"dispareunia {intensity_desc} ({score}/10)")
+    
+        # C. Disquecia
+        dischezia = report_data.get('functional_dischezia', '')
+        if not dischezia or str(dischezia).lower() in ['no', 'niega', 'none', 'false']:
+            findings_parts.append("niega disquecia")
+        elif 'eventual' in str(dischezia).lower():
+            findings_parts.append("disquecia eventual")
+        else:
+            eva_match = re.search(r'intensidad: (\d+)/10', str(dischezia), re.IGNORECASE)
+            score = int(eva_match.group(1)) if eva_match else (report_data.get('functional_dischezia_scale') or report_data.get('functional_dischezia_scale_value', 0))
+            if score >= 10: intensity_desc = "de máxima intensidad"
+            elif score >= 7: intensity_desc = "de alta intensidad"
+            elif score >= 4: intensity_desc = "moderada"
+            else: intensity_desc = "leve"
+            findings_parts.append(f"disquecia {intensity_desc} ({score}/10)")
+    
+        # D. Deseo de fertilidad
         infertility = report_data.get('gyn_fertility_intent', '')
         if infertility and "Con deseo" in str(infertility):
             findings_parts.append("con deseo de fertilidad no logrado")
