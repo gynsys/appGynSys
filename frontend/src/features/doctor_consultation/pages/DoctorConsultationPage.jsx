@@ -126,6 +126,8 @@ export const DoctorConsultationPage = () => {
 
             return isActive && isReady;
           });
+          
+          withPreconsulta.sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
           setAppointments(withPreconsulta);
         } catch (error) {
         } finally {

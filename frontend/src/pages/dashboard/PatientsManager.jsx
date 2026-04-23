@@ -378,7 +378,8 @@ export default function PatientsManager({ isEmbedded = false }) {
           grouped[ci] = consultation;
         }
       });
-      setConsultations(Object.values(grouped));
+      const sortedConsultations = Object.values(grouped).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setConsultations(sortedConsultations);
     } catch (error) {
       console.error('Error fetching consultations:', error);
     } finally {
