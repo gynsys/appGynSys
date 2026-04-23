@@ -1,4 +1,7 @@
+import logging
 from typing import List, Any, Union, Optional
+
+logger = logging.getLogger(__name__)
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 from sqlalchemy.orm import Session
 from app.db.base import get_db
@@ -88,7 +91,7 @@ def subscribe_push(
         sub_in = PushSubscriptionSchema(**subscription) if isinstance(subscription, dict) else subscription
     except Exception as e:
         _logger.error(f"[GynSysPush] Validation error: {e}")
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail="Error de validación en la suscripción push.")
 
     user_id = current_actor.id if isinstance(current_actor, CycleUser) else None
     doctor_id = current_actor.id if isinstance(current_actor, Doctor) else None
@@ -291,7 +294,8 @@ def force_user_evaluation(
             "user_id": user_id,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Evaluation error: {str(e)}")
+        logger.error(f"Evaluation error for user {user_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error al evaluar notificaciones del usuario.")
 
 
 # =============================================================================

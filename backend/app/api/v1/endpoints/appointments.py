@@ -1,7 +1,7 @@
 """
 Appointment endpoints for managing appointments.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional, Union
 
@@ -132,8 +132,12 @@ async def get_booked_times(
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
 
 
+from app.core.limiter import limiter
+
 @router.post("/public", response_model=AppointmentInDB, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def create_public_appointment(
+    request: Request,
     appointment_data: AppointmentCreate,
     db: Session = Depends(get_db)
 ):
@@ -343,7 +347,8 @@ async def get_appointments(
                     patient_name=app.patient_name
                 )
                 app.preconsulta_answers = json.dumps(answers)
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to inject dynamic summary for appointment {app.id}: {e}", exc_info=True)
                 continue
 
     return appointments
@@ -641,7 +646,7 @@ async def submit_preconsulta(
                 except Exception as reg_err:
                     logger.error(f"Error sending registration invitation for appointment {appointment_id}: {reg_err}", exc_info=True)
     except Exception as e:
-        pass
+        logger.error(f"Error in preconsulta notification pipeline for appointment {appointment_id}: {e}", exc_info=True)
     
     return {"status": "success", "message": "Preconsulta saved"}
 

@@ -10,6 +10,7 @@ module.exports = {
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh', 'security'],
   rules: {
+    'react/no-danger': 'error',
     'react-refresh/only-export-components': 'warn',
     'security/detect-object-injection': 'warn',
     'security/detect-non-literal-regexp': 'warn',

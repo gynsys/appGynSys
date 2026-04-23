@@ -155,7 +155,9 @@ def get_available_slots(
     try:
         req_start_time = datetime.strptime(start_time_str, "%H:%M").time()
         req_end_time = datetime.strptime(end_time_str, "%H:%M").time()
-    except:
+    except (ValueError, TypeError) as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Invalid time format in online consultation settings: {e}")
         return []
 
     # 3. Get Existing Appointments (Confirmed/Pending/Scheduled)

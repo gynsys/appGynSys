@@ -1,4 +1,5 @@
 import os
+import logging
 import shutil
 import uuid
 from typing import List
@@ -19,6 +20,7 @@ from app.db.models.doctor import Doctor
 from app.services.consultation_service import ConsultationService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/my-history")
@@ -90,8 +92,8 @@ async def create_consultation(
             doctor_id=current_user.id
         )
     except Exception as e:
-        pass
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        logger.error(f"Database error creating consultation: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al guardar la consulta.")
 
     return {
         "status": "success",
@@ -216,7 +218,8 @@ async def sync_bot_consultation(
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Sync error: {str(e)}")
+        logger.error(f"Sync error for bot consultation: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al sincronizar historia.")
 
 @router.get("/")
 def get_consultations(
@@ -345,7 +348,8 @@ async def upload_consultation_asset(
             
         file_size = os.path.getsize(file_path)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+        logger.error(f"Failed to save consultation asset file: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error al guardar el archivo.")
         
     # Relative path for the URL
     relative_path = f"/uploads/consultations/{consultation_id}/{unique_filename}"
@@ -388,7 +392,7 @@ def delete_consultation_asset(
         if file_path.exists():
             os.remove(file_path)
     except Exception as e:
-        print(f"File physical delete failed: {e}") # Non fatal log
+        logger.warning(f"File physical delete failed for asset: {e}", exc_info=True)
         
     db.delete(asset)
     db.commit()
@@ -450,7 +454,8 @@ def update_consultation(
         db.refresh(db_consultation)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating consultation: {str(e)}")
+        logger.error(f"Error updating consultation {consultation_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al actualizar la consulta.")
 
     return {"status": "success", "message": "Consultation updated", "consultation": db_consultation}
 
@@ -627,9 +632,8 @@ def get_consultation_history_image(
         img_buffer = convert_pdf_to_image(pdf_buffer)
         return Response(content=img_buffer.getvalue(), media_type="image/png")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error generating image: {str(e)}")
+        logger.error(f"Error generating history image for consultation {id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error al generar la imagen del reporte.")
 
 from pydantic import BaseModel, EmailStr
 

@@ -17,10 +17,29 @@ class Settings(BaseSettings):
     # DATABASE_URL: str = "sqlite:///./gynsys.db"
     DATABASE_URL: str = "postgresql://postgres:gyn13409534@db:5432/gynsys"
 
-    # JWT Security
+    # JWT Security — Validated at startup (see validator below)
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    @field_validator("SECRET_KEY", mode="before")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        """Prevent production deployments with default/empty SECRET_KEY."""
+        import secrets as _secrets
+        import logging as _logging
+        if not v or v == "your-secret-key-change-in-production":
+            env = os.getenv("ENVIRONMENT", "development")
+            if env == "production":
+                raise ValueError(
+                    "SECRET_KEY must be explicitly set in production. "
+                    "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(64))\""
+                )
+            _logging.getLogger(__name__).warning(
+                "⚠️ Using auto-generated SECRET_KEY. Set it explicitly via .env for consistency."
+            )
+            return _secrets.token_urlsafe(64)
+        return v
     
     # URLs
     FRONTEND_URL: str = "https://www.gynsys.net"

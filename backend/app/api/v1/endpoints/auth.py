@@ -1,7 +1,7 @@
 """
 Authentication endpoints for login, registration, and OAuth.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Annotated, Union, Optional
@@ -14,7 +14,10 @@ from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.schemas.doctor import DoctorCreate, DoctorInDB
 import secrets
+import logging
 from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger(__name__)
 from app.schemas.token import Token, PasswordResetRequest, PasswordResetConfirm
 from app.core.security import (
     hash_password,
@@ -29,6 +32,7 @@ from app.tasks.email_tasks import (
 )
 
 from app.crud.admin import seed_tenant_data
+from app.core.limiter import limiter
 
 router = APIRouter()
 
@@ -63,7 +67,9 @@ def get_user_by_slug(db: Session, slug: str) -> Doctor | None:
 
 
 @router.post("/register", response_model=DoctorInDB, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/hour")
 async def register(
+    request: Request,
     doctor_data: DoctorCreate,
     db: Session = Depends(get_db)
 ):
@@ -133,13 +139,15 @@ async def register(
             "payment_reference": db_doctor.payment_reference
         })
     except Exception as e:
-        pass
+        logger.error(f"Failed to queue new tenant notification for doctor {db_doctor.id}: {e}", exc_info=True)
     
     return db_doctor
 
 
 @router.post("/token", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db)
 ):
@@ -329,11 +337,11 @@ async def login_google(
         return {"access_token": access_token, "token_type": "bearer"}
         
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        logger.error(f"Google login validation error: {e}", exc_info=True)
+        raise HTTPException(status_code=401, detail="Error de autenticación con Google.")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Google Login Failed: {str(e)}")
+        logger.error(f"Google login error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error de autenticación con Google. Intente nuevamente.")
 
 
 
@@ -347,7 +355,9 @@ class GuestUser(BaseModel):
     nombre_completo: str
 
 @router.post("/guest-login")
+@limiter.limit("10/minute")
 async def guest_login(
+    request: Request,
     body: dict, # { "doctor_id": str, "name": str }
     db: Session = Depends(get_db)
 ):
@@ -390,7 +400,10 @@ async def guest_login(
         from sqlalchemy import text
         
         # Set RLS context for the doctor's tenant
-        db.execute(text(f"SET app.current_tenant = '{doctor_id}'"))
+        db.execute(
+            text("SET app.current_tenant = :tenant_id"),
+            {"tenant_id": str(doctor_id)}
+        )
         
         # Check if a room already exists for this guest
         # (In case they're logging in again with the same guest_id somehow, or this is a retry)

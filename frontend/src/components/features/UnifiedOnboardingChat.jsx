@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { sanitizeHtml } from '../../lib/sanitize';
 import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale'; // New import
 import { useAuthStore } from '../../store/authStore';
@@ -1958,7 +1959,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
               }}
             >
               {msg.type === 'bot' ? (
-                <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.text) }} />
               ) : (
                 msg.text
               )}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { sanitizeHtml } from '../../lib/sanitize';
 import api from '../../lib/axios';
 import { useAuthStore } from '../../store/authStore';
 import { isCapacitor } from '../../utils/platform';
@@ -1035,7 +1036,7 @@ export default function OnlineChatBooking({ doctorId, doctor = {}, onClose, isOp
                                         }}
                                     >
                                         {msg.type === 'bot' ? (
-                                            <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+                                            <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.text) }} />
                                         ) : (
                                             msg.text
                                         )}

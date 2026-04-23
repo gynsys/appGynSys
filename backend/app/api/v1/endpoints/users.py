@@ -59,11 +59,11 @@ async def get_current_user_info(
         
         return doctor_data
     except Exception as e:
-        import traceback
-        pass
+        import logging
+        logging.getLogger(__name__).error(f"Error retrieving user info: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving user information: {str(e)}"
+            detail="Error interno al obtener información del usuario."
         )
 
 

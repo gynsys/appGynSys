@@ -89,4 +89,6 @@ def delete_my_account(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.getLogger(__name__).error(f"Error deleting account for user {current_actor.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al eliminar la cuenta.")

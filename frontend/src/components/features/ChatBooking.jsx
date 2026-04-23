@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { sanitizeHtml } from '../../lib/sanitize';
 import { useAuthStore } from '../../store/authStore';
 import { getImageUrl } from '../../lib/imageUtils';
 import PropTypes from 'prop-types';
@@ -907,7 +908,7 @@ export default function ChatBooking({ doctorId, doctor = {}, onClose, onRequireA
               }}
             >
               {msg.type === 'bot' ? (
-                <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.text) }} />
               ) : (
                 msg.text
               )}

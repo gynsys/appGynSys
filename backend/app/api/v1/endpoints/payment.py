@@ -1,4 +1,7 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 from app.db.base import Base, get_db
 # from app.api import deps  <-- REMOVED
@@ -57,7 +60,8 @@ def create_order(
         order = paypal_service.create_order(amount=str(price), currency=currency)
         return order
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating PayPal order: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error al procesar el pago. Intente nuevamente.")
 
 @router.post("/capture-order/{order_id}")
 def capture_order(
@@ -67,4 +71,5 @@ def capture_order(
         capture = paypal_service.capture_order(order_id)
         return capture
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error capturing PayPal order {order_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error al capturar el pago. Intente nuevamente.")

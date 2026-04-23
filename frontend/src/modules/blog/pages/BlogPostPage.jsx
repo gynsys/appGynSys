@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { sanitizeHtml } from '../../../lib/sanitize'
 import { useParams, Link } from 'react-router-dom'
 import { blogService } from '../services/blogService'
 import { doctorService } from '../../../services/doctorService'
@@ -191,10 +192,12 @@ export default function BlogPostPage() {
 
               <div className="prose prose-indigo dark:prose-invert prose-lg lg:prose-xl mx-auto text-gray-700 dark:text-gray-300 mb-16">
                 <div dangerouslySetInnerHTML={{
-                  __html: post.content
-                    .replace(/\[\[CTA_CICLO\]\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
-                    .replace(/\[CTA_CICLO\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
-                    .replace(/\[\[CTA_CICLO_NO_BORRAR\]\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
+                  __html: sanitizeHtml(
+                    post.content
+                      .replace(/\[\[CTA_CICLO\]\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
+                      .replace(/\[CTA_CICLO\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
+                      .replace(/\[\[CTA_CICLO_NO_BORRAR\]\]/g, getCycleCtaHtml(doctor?.theme_primary_color))
+                  )
                 }} />
               </div>
 
