@@ -988,16 +988,6 @@ export default function PatientsManager({ isEmbedded = false }) {
                     <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
                       <input
                         type="checkbox"
-                        checked={includeWatermark}
-                        onChange={(e) => setIncludeWatermark(e.target.checked)}
-                        className="w-4 h-4 rounded focus:ring-0 transition-colors"
-                        style={{ color: doctor?.theme_primary_color || '#4f46e5' }}
-                      />
-                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
-                      <input
-                        type="checkbox"
                         checked={includeColor}
                         onChange={(e) => setIncludeColor(e.target.checked)}
                         className="w-4 h-4 rounded focus:ring-0 transition-colors"
@@ -1005,6 +995,18 @@ export default function PatientsManager({ isEmbedded = false }) {
                       />
                       <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
                     </label>
+                    {includeColor && (
+                      <label className="flex items-center gap-2 cursor-pointer border-r pr-4 border-gray-200 dark:border-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={includeWatermark}
+                          onChange={(e) => setIncludeWatermark(e.target.checked)}
+                          className="w-4 h-4 rounded focus:ring-0 transition-colors"
+                          style={{ color: doctor?.theme_primary_color || '#4f46e5' }}
+                        />
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
+                      </label>
+                    )}
                   </>
                 )}
 
