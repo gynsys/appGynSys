@@ -870,10 +870,8 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
             doc.footer_url = pdf_config.get('doctor_url') or base_domain
             
         doc.use_color = use_color
-        # Fixed Footer Data (QR ONLY)
-        doc.footer_fixed_data = {
-            'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
-        }
+        # Fixed Footer Data (No QR in Medical History)
+        doc.footer_fixed_data = {}
 
         doc.build(story, onFirstPage=draw_page_background, onLaterPages=draw_page_background)
     except Exception as e:
