@@ -255,13 +255,13 @@ export default function PdfConfigurationPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <ImageUpload
-              label="Logo Izquierdo"
+              label="Logo Principal (Encabezado)"
               currentImage={settings.logo_header_1}
               onImageChange={(file, url) => handleImageChange('logo_header_1', file, url)}
             />
 
             <ImageUpload
-              label="Logo Derecho"
+              label="Código QR (Pie de Página)"
               currentImage={settings.logo_header_2}
               onImageChange={(file, url) => handleImageChange('logo_header_2', file, url)}
             />

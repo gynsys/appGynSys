@@ -163,21 +163,24 @@ BRAND_LILAC_MEDIUM = HexColor('#9C27B0')
 BRAND_LILAC_LIGHT = HexColor('#E1BEE7')
 BRAND_LILAC_BG = colors.white
 
-def draw_color_background(canvas, doc):
+def draw_page_background(canvas, doc):
     canvas.saveState()
     width, height = doc.pagesize
     
-    # Base fill to eliminate any white gaps
-    canvas.setFillColor(BRAND_LILAC_BG)
-    canvas.rect(0, 0, width, height, stroke=0, fill=1)
+    use_color = getattr(doc, 'use_color', False)
     
-    # 1. Background Image (Full Page) - Restored over white background for premium feel
-    bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
-    if os.path.exists(bg_path):
-        canvas.saveState()
-        canvas.setFillAlpha(0.35) # Texture over white
-        canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
-        canvas.restoreState()
+    if use_color:
+        # Base fill to eliminate any white gaps
+        canvas.setFillColor(BRAND_LILAC_BG)
+        canvas.rect(0, 0, width, height, stroke=0, fill=1)
+    
+        # 1. Background Image (Full Page) - Restored over white background for premium feel
+        bg_path = os.path.join(os.path.dirname(__file__), "..", "assets", "backgrounds", "lilac_premium.png")
+        if os.path.exists(bg_path):
+            canvas.saveState()
+            canvas.setFillAlpha(0.35) # Texture over white
+            canvas.drawImage(bg_path, 0, 0, width=width, height=height, mask='auto')
+            canvas.restoreState()
     
     # 2. Watermark Logo (Dynamic implementation)
     include_watermark = getattr(doc, 'include_watermark', True)
@@ -231,7 +234,7 @@ def draw_color_background(canvas, doc):
     # 4. Bottom Center URL (Scale increased 30%: 10 -> 13)
     canvas.saveState()
     canvas.setFont("Helvetica", 13)
-    canvas.setFillColor(BRAND_LILAC_DARK)
+    canvas.setFillColor(BRAND_LILAC_DARK if use_color else colors.black)
     footer_url = getattr(doc, 'footer_url', "www.gynsys.net")
     canvas.drawCentredString(width/2, 0.3*inch, footer_url)
     canvas.restoreState()
@@ -274,13 +277,12 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     else:
         doc.footer_url = pdf_config.get('doctor_url') or base_domain
         
-    # Fixed Footer Data (QR in background only if NOT in color flow)
-    if not use_color:
-        doc.footer_fixed_data = {
-            'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
-        }
-    else:
-        doc.footer_fixed_data = {}
+    doc.use_color = use_color
+    
+    # Fixed Footer Data (QR always in background)
+    doc.footer_fixed_data = {
+        'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
+    }
     
     story = []
 
@@ -329,7 +331,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         header_data = [[
             logo_image if logo_image else "",
             safe_p(header_text, style_center),
-            logo_image_right if logo_image_right else ""
+            ""
         ]]
     
     # Total width ~ 7.5 inches (0.5 margins). 1.3 + 4.9 + 1.3 = 7.5
@@ -443,18 +445,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     doctor_ci_val = pdf_config.get('doctor_ci', '')
     sig_ci = f"C.I.: {format_ci_v(doctor_ci_val)}" if doctor_ci_val else ""
     
-    # QR Image for Flow
-    qr_item = None
-    if use_color:
-        qr_source = pdf_config.get('logo_header_2')
-        if qr_source:
-            try:
-                qr_path = get_local_path_from_url(qr_source)
-                if qr_path and os.path.exists(qr_path):
-                    qr_item = Image(qr_path, width=0.9*inch, height=0.9*inch)
-                    qr_item.hAlign = 'LEFT'
-            except:
-                pass
+    # QR Image for Flow (Removed, always printed in footer)
     
     # Signature Image
     signature_source = pdf_config.get('logo_signature')
@@ -496,11 +487,11 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     if use_color:
         # standard 7.5" layout for perfect page centering with 0.5 margins
-        # Col 1: QR (1.3") | Col 2: Signature Block (4.9") | Col 3: Empty (1.3")
+        # Col 1: Empty (1.3") | Col 2: Signature Block (4.9") | Col 3: Empty (1.3")
         # Center of Col 2 is at 1.3 + 2.45 = 3.75 (Perfect center of 7.5" total width)
         
         footer_data = [
-            [qr_item if qr_item else "", sig_elements, ""]
+            ["", sig_elements, ""]
         ]
         
         footer_table = Table(footer_data, colWidths=[1.3*inch, 4.9*inch, 1.3*inch])
@@ -551,7 +542,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         header_data_p2 = [[
             logo_image if logo_image else "",
             safe_p(header_text, ParagraphStyle(name='HeaderCenterP2', parent=styleN, alignment=TA_CENTER)),
-            logo_image_right if (logo_image_right and not use_color) else ""
+            ""
         ]]
         header_table_p2 = Table(header_data_p2, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
         header_table_p2.setStyle(TableStyle([
@@ -625,10 +616,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         story.append(img_table)
 
     try:
-        if use_color:
-            doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
-        else:
-            doc.build(story)
+        doc.build(story, onFirstPage=draw_page_background, onLaterPages=draw_page_background)
     except Exception as e:
         logger.error(f"Error building summary PDF: {e}", exc_info=True)
         raise
@@ -674,7 +662,7 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     header_data = [[
         logo_image if logo_image else "",
         safe_p(header_text, style_center),
-        logo_image_right if (logo_image_right and not use_color) else ""
+        ""
     ]]
     header_table = Table(header_data, colWidths=[1.2*inch, 4.6*inch, 1.2*inch])
     header_table.setStyle(TableStyle([
@@ -876,16 +864,13 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
         else:
             doc.footer_url = pdf_config.get('doctor_url') or base_domain
             
+        doc.use_color = use_color
         # Fixed Footer Data (QR ONLY)
-        if use_color:
-            doc.footer_fixed_data = {
-                'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
-            }
+        doc.footer_fixed_data = {
+            'qr_path': get_local_path_from_url(pdf_config.get('logo_header_2'))
+        }
 
-        if use_color:
-            doc.build(story, onFirstPage=draw_color_background, onLaterPages=draw_color_background)
-        else:
-            doc.build(story)
+        doc.build(story, onFirstPage=draw_page_background, onLaterPages=draw_page_background)
     except Exception as e:
         logger.error(f"Error building medical history PDF: {e}", exc_info=True)
         raise
