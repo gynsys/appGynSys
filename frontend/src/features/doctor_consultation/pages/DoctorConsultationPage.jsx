@@ -1047,6 +1047,12 @@ export const DoctorConsultationPage = () => {
             </button>
             <h1 className="text-3xl font-bold ml-2 text-gray-900 dark:text-white">Consulta Médica</h1>
           </div>
+          {appointmentId && (
+            <div className="text-sm font-medium px-3 py-1.5 bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2 shadow-sm">
+              <span>ID Preconsulta:</span>
+              <span className="font-bold text-gray-900 dark:text-white font-mono">{appointmentId}</span>
+            </div>
+          )}
         </div>
 
         {renderPatientSummary()}
