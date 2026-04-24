@@ -120,7 +120,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
                           />
                           <span className={`${isActive ? 'font-black' : 'font-medium'} flex-1 text-left`}>{item.label}</span>
                           {item.count > 0 && (
-                            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                            <span className="bg-red-500 text-white text-[10px] font-black min-w-[20px] h-[20px] flex items-center justify-center rounded-full shadow-sm animate-pulse px-1">
                               {item.count}
                             </span>
                           )}
