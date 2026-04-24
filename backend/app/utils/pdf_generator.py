@@ -351,14 +351,17 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         line_table = Table([['']], colWidths=[7.5*inch])
         line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.black)]))
         story.append(line_table)
-    story.append(Spacer(1, 0.15*inch))
+    story.append(Spacer(1, 0.4*inch))
     
     report_title = pdf_config.get('report_title') or "INFORME MÉDICO"
     story.append(safe_p(f"<u>{report_title}</u>", styleH1))
     story.append(Spacer(1, 0.15*inch))
 
+    age_val = str(report_context.get('age', ''))
+    age_str = f"{age_val} años" if age_val and "año" not in age_val.lower() else age_val
+
     story.append(safe_p(f"<b>Nombre y Apellidos:</b> {report_context.get('full_name')}", style_patient_data))
-    story.append(safe_p(f"<b>Edad:</b> {report_context.get('age')}", style_patient_data))
+    story.append(safe_p(f"<b>Edad:</b> {age_str}", style_patient_data))
     story.append(safe_p(f"<b>C.I.:</b> {format_ci_v(report_context.get('ci'))}", style_patient_data))
     story.append(Spacer(1, 0.2*inch))
 
@@ -681,9 +684,11 @@ def generate_medical_report(report_data: dict, doctor_id: int, db: Session = Non
     story.append(Spacer(1, 0.2*inch))
 
     # Patient Table
+    age_val = get_str('age')
+    age_str = f"{age_val} años" if age_val and "año" not in age_val.lower() else age_val
     patient_table_data = [
         [safe_p("<b>Nombre:</b>", styleB), safe_p(get_str('full_name').title(), styleN),
-         safe_p("<b>Edad:</b>", styleB), safe_p(get_str('age'), styleN)],
+         safe_p("<b>Edad:</b>", styleB), safe_p(age_str, styleN)],
         [safe_p("<b>C.I.:</b>", styleB), safe_p(format_ci_v(get_str('ci')), styleN),
          safe_p("<b>TLF:</b>", styleB), safe_p(get_str('phone'), styleN)],
         [safe_p("<b>Dirección:</b>", styleB), safe_p(get_str('address').title(), styleN),
