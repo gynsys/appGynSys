@@ -77,7 +77,8 @@ export default function BlogEditor({ post, onSave, onCancel }) {
   const [aiForm, setAiForm] = useState({
     topic: '',
     tone: 'Profesional',
-    target_audience: 'Pacientes generales'
+    target_audience: 'Pacientes generales',
+    max_words: 500
   })
 
   const [formData, setFormData] = useState({
@@ -394,6 +395,20 @@ export default function BlogEditor({ post, onSave, onCancel }) {
                 <option>Colegas médicos</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Extensión (Palabras)</label>
+            <select
+              value={aiForm.max_words}
+              onChange={(e) => setAiForm({...aiForm, max_words: parseInt(e.target.value)})}
+              className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+            >
+              <option value={300}>Corto (~300 palabras)</option>
+              <option value={500}>Medio (~500 palabras)</option>
+              <option value={800}>Largo (~800 palabras)</option>
+              <option value={1200}>Extenso (~1200 palabras)</option>
+            </select>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md flex gap-2">

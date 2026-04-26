@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def generate_blog_content(topic: str, tone: str, target_audience: str) -> str:
+def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int) -> str:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
     
@@ -12,6 +12,7 @@ def generate_blog_content(topic: str, tone: str, target_audience: str) -> str:
         topic: El tema o título del artículo.
         tone: El tono deseado (ej. Profesional, Empático, Informativo).
         target_audience: El público objetivo (ej. Pacientes, Colegas).
+        max_words: El número máximo de palabras aproximado.
         
     Returns:
         str: El contenido generado en formato HTML (compatible con editores enriquecidos).
@@ -31,6 +32,7 @@ def generate_blog_content(topic: str, tone: str, target_audience: str) -> str:
         Parámetros del artículo:
         - Tono: {tone}
         - Público objetivo: {target_audience}
+        - Extensión aproximada: {max_words} palabras.
         - Formato: HTML (usa etiquetas <h2>, <h3>, <p>, <ul>, <li>, <strong> para énfasis).
         - Estructura: Introducción atractiva, desarrollo con puntos clave y una conclusión con un llamado a la acción (CTA) para consultar con un especialista.
         - Requisito: El contenido debe ser médicamente preciso pero fácil de entender para el público objetivo. No incluyas descargos de responsabilidad médicos genéricos al final, solo el contenido del artículo.

@@ -24,7 +24,8 @@ def generate_blog_ai(
         content = ai_service.generate_blog_content(
             topic=request_data.topic,
             tone=request_data.tone,
-            target_audience=request_data.target_audience
+            target_audience=request_data.target_audience,
+            max_words=request_data.max_words
         )
         return {"generated_content": content}
     except ValueError as e:
