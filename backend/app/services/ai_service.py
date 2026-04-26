@@ -27,26 +27,36 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 
-        Escribe un artículo de blog completo y profesional sobre el siguiente tema: "{topic}".
+        Escribe un artículo de blog completo, informativo y profesional sobre el siguiente tema: "{topic}".
         
-        Parámetros del artículo:
+        Parámetros obligatorios:
         - Tono: {tone}
         - Público objetivo: {target_audience}
-        - Extensión aproximada: {max_words} palabras.
-        - Formato: HTML (usa etiquetas <h2>, <h3>, <p>, <ul>, <li>, <strong> para énfasis).
-        - Estructura: Introducción atractiva, desarrollo con puntos clave y una conclusión con un llamado a la acción (CTA) para consultar con un especialista.
-        - Requisito: El contenido debe ser médicamente preciso pero fácil de entender para el público objetivo. No incluyas descargos de responsabilidad médicos genéricos al final, solo el contenido del artículo.
+        - Extensión deseada: aproximadamente {max_words} palabras.
+        - Formato: HTML puro (usa etiquetas <h2>, <h3>, <p>, <ul>, <li>, <strong> para énfasis).
+        - Estructura: Título <h2>, Introducción atractiva, desarrollo con varios subtítulos <h3>, y una conclusión con un llamado a la acción profesional.
+        - Requisito de contenido: Debe ser médicamente preciso, basado en evidencia pero accesible.
         
-        Genera solo el contenido del artículo envuelto en etiquetas HTML, sin bloques de código ```html ni explicaciones adicionales.
+        IMPORTANTE: Responde ÚNICAMENTE con el código HTML del cuerpo del artículo. No incluyas ```html, ni etiquetas <html>/<body>, ni comentarios, ni explicaciones. Solo el contenido para insertar en un editor.
         """
         
+        logger.info(f"Generando contenido con IA para tema: {topic} (max_words: {max_words})")
         response = model.generate_content(prompt)
         
         if not response or not response.text:
-            logger.error("Gemini devolvió una respuesta vacía.")
-            raise ValueError("No se pudo generar el contenido. Por favor intenta de nuevo.")
+            logger.error("Gemini devolvió una respuesta vacía o inválida.")
+            raise ValueError("No se pudo generar el contenido. La IA devolvió una respuesta vacía.")
             
-        return response.text
+        generated_html = response.text.strip()
+        
+        # Limpiar posibles bloques de código markdown si la IA ignora las instrucciones
+        if generated_html.startswith("```html"):
+            generated_html = generated_html.replace("```html", "").replace("```", "").strip()
+        elif generated_html.startswith("```"):
+            generated_html = generated_html.replace("```", "").strip()
+            
+        logger.info(f"Contenido generado exitosamente. Longitud: {len(generated_html)} caracteres.")
+        return generated_html
         
     except Exception as e:
         logger.error(f"Error al generar contenido con Gemini: {str(e)}", exc_info=True)
