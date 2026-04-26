@@ -49,5 +49,10 @@ export const blogService = {
   createComment: async (postSlug, commentData) => {
     const response = await api.post(`/blog/comments/${postSlug}`, commentData)
     return response.data
+  },
+
+  generateAI: async (aiData) => {
+    const response = await api.post('/blog/generate', aiData)
+    return response.data
   }
 }

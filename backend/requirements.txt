@@ -180,3 +180,4 @@ wcwidth==0.2.14
 websockets==15.0.1
     # via uvicorn
 slowapi==0.1.9
+google-generativeai

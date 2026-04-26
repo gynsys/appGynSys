@@ -2,10 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import ImageResize from 'quill-image-resize-module-react'
+import { FiCpu, FiPlus, FiSave, FiX, FiInfo } from 'react-icons/fi'
+import { blogService } from '../services/blogService'
 import Button from '../../../components/common/Button'
 import DragDropUpload from '../../../components/features/DragDropUpload'
 import { useAuthStore } from '../../../store/authStore'
+import { useToastStore } from '../../../store/toastStore'
+import Modal from '../../../components/common/Modal'
 import SEOConfiguration from './SEOConfiguration'
+import Spinner from '../../../components/common/Spinner'
 
 // Custom Image Blot to persist inline styles (alignment) and dimensions
 const BaseImage = Quill.import('formats/image')
@@ -63,7 +68,18 @@ const modules = {
 
 export default function BlogEditor({ post, onSave, onCancel }) {
   const { user } = useAuthStore() // Get current doctor info for SEO generation
+  const { showToast } = useToastStore()
   const summaryRef = useRef(null)
+  
+  // AI Modal States
+  const [aiModalOpen, setAiModalOpen] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [aiForm, setAiForm] = useState({
+    topic: '',
+    tone: 'Profesional',
+    target_audience: 'Pacientes generales'
+  })
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -148,6 +164,34 @@ export default function BlogEditor({ post, onSave, onCancel }) {
     }))
   }
 
+  const handleAiGenerate = async (e) => {
+    e.preventDefault()
+    if (!aiForm.topic) {
+      showToast('Por favor ingresa un tema', 'error')
+      return
+    }
+
+    try {
+      setGenerating(true)
+      const response = await blogService.generateAI(aiForm)
+      
+      // Update content
+      setFormData(prev => ({
+        ...prev,
+        content: response.generated_content,
+        title: prev.title || aiForm.topic // Use topic as title if title is empty
+      }))
+      
+      showToast('Contenido generado exitosamente', 'success')
+      setAiModalOpen(false)
+    } catch (error) {
+      console.error('Error generating AI content:', error)
+      showToast(error.response?.data?.detail || 'Error al generar contenido', 'error')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
 
@@ -183,6 +227,14 @@ export default function BlogEditor({ post, onSave, onCancel }) {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contenido Principal</label>
+              <button
+                type="button"
+                onClick={() => setAiModalOpen(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded"
+              >
+                <FiCpu className="w-3.5 h-3.5" />
+                Asistente de IA ✨
+              </button>
             </div>
             <div className="min-h-[500px] mb-12 bg-white dark:bg-gray-900">
               <ReactQuill
@@ -291,6 +343,90 @@ export default function BlogEditor({ post, onSave, onCancel }) {
         </div>
 
       </div>
+
+      {/* AI Assistant Modal */}
+      <Modal
+        isOpen={aiModalOpen}
+        onClose={() => !generating && setAiModalOpen(false)}
+        title="Asistente de IA para Blog ✨"
+      >
+        <form onSubmit={handleAiGenerate} className="space-y-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Nuestra IA generará un borrador profesional basado en el tema que elijas.
+          </p>
+          
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tema o Título del Artículo</label>
+            <input
+              type="text"
+              required
+              value={aiForm.topic}
+              onChange={(e) => setAiForm({...aiForm, topic: e.target.value})}
+              className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+              placeholder="Ej: Beneficios de la ecografía 4D"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tono</label>
+              <select
+                value={aiForm.tone}
+                onChange={(e) => setAiForm({...aiForm, tone: e.target.value})}
+                className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+              >
+                <option>Profesional</option>
+                <option>Empático</option>
+                <option>Informativo</option>
+                <option>Cercano</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Público Objetivo</label>
+              <select
+                value={aiForm.target_audience}
+                onChange={(e) => setAiForm({...aiForm, target_audience: e.target.value})}
+                className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+              >
+                <option>Pacientes generales</option>
+                <option>Mujeres embarazadas</option>
+                <option>Adolescentes</option>
+                <option>Colegas médicos</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md flex gap-2">
+            <FiInfo className="text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-blue-700 dark:text-blue-300">
+              Nota: La generación puede tardar unos segundos. El contenido generado reemplazará lo que tengas actualmente en el editor.
+            </p>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setAiModalOpen(false)}
+              disabled={generating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={generating}
+              className="min-w-[120px]"
+            >
+              {generating ? (
+                <div className="flex items-center gap-2">
+                  <Spinner size="sm" /> Generando...
+                </div>
+              ) : 'Generar Artículo'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </form>
   )
 }

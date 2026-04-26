@@ -101,6 +101,15 @@ class BlogPostSEOResponse(BlogPostSEOBase):
     class Config:
         from_attributes = True
 
+# AI Generation Schemas
+class AIGenerationRequest(BaseModel):
+    topic: str
+    tone: str
+    target_audience: str
+
+class AIGenerationResponse(BaseModel):
+    generated_content: str
+
 # Validating models after all definitions are complete
 BlogPostCreate.model_rebuild()
 BlogPostUpdate.model_rebuild()

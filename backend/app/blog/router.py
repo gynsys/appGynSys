@@ -8,8 +8,31 @@ from app.db.models.service import Service
 from app.blog import crud, schemas
 from app.blog.models import BlogPost
 from app.api.v1.endpoints.auth import get_current_user
+from app.services import ai_service
 
 router = APIRouter()
+
+@router.post("/generate", response_model=schemas.AIGenerationResponse)
+def generate_blog_ai(
+    request_data: schemas.AIGenerationRequest,
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Genera contenido para el blog usando IA. Solo accesible para doctores.
+    """
+    try:
+        content = ai_service.generate_blog_content(
+            topic=request_data.topic,
+            tone=request_data.tone,
+            target_audience=request_data.target_audience
+        )
+        return {"generated_content": content}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error en generación de IA: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al generar contenido con IA.")
 
 @router.get("/menu/mega/{doctor_slug}", response_model=List[schemas.MegaMenuItem])
 def get_mega_menu(

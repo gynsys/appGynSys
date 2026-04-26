@@ -158,6 +158,9 @@ class Settings(BaseSettings):
     # Firebase (Native Push)
     FIREBASE_SERVICE_ACCOUNT_PATH: Optional[str] = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
 
+    # Google Gemini AI
+    GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
+
     # Notificaciones — Modo Debug
     # Cuando True: bypasea la guardia de "1 notificación por tipo por día"
     # Permite re-enviar la misma notificación múltiples veces para pruebas.
