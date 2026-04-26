@@ -1,3 +1,4 @@
+import google.generativeai as genai
 from app.core.config import settings
 import logging
 import json
