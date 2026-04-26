@@ -480,6 +480,15 @@ export default function Navbar({
                     FAQ
                   </a>
                 )}
+                {showBlog && (
+                  <Link
+                    to={`/${doctor?.slug_url}/blog`}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Blog
+                  </Link>
+                )}
                 {isAuthenticated ? (
                   <button
                     onClick={() => {
