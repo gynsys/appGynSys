@@ -40,11 +40,11 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         IMPORTANTE: Responde ÚNICAMENTE con el código HTML del cuerpo del artículo. No incluyas ```html, ni etiquetas <html>/<body>, ni comentarios, ni explicaciones. Solo el contenido para insertar en un editor.
         """
         
-        logger.info(f"Generando contenido con IA para tema: {topic} (max_words: {max_words})")
+        print(f"DEBUG: Generando contenido con IA para tema: {topic} (max_words: {max_words})", flush=True)
         response = model.generate_content(prompt)
         
         if not response or not response.text:
-            logger.error("Gemini devolvió una respuesta vacía o inválida.")
+            print("DEBUG: Gemini devolvió una respuesta vacía o inválida.", flush=True)
             raise ValueError("No se pudo generar el contenido. La IA devolvió una respuesta vacía.")
             
         generated_html = response.text.strip()
@@ -55,7 +55,7 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         elif generated_html.startswith("```"):
             generated_html = generated_html.replace("```", "").strip()
             
-        logger.info(f"Contenido generado exitosamente. Longitud: {len(generated_html)} caracteres.")
+        print(f"DEBUG: Contenido generado exitosamente. Longitud: {len(generated_html)} caracteres.", flush=True)
         return generated_html
         
     except Exception as e:
