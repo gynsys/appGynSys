@@ -21,13 +21,13 @@ def generate_blog_ai(
     Genera contenido para el blog usando IA. Solo accesible para doctores.
     """
     try:
-        content = ai_service.generate_blog_content(
+        result = ai_service.generate_blog_content(
             topic=request_data.topic,
             tone=request_data.tone,
             target_audience=request_data.target_audience,
             max_words=request_data.max_words
         )
-        return {"generated_content": content}
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

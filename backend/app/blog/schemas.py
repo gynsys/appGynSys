@@ -109,6 +109,8 @@ class AIGenerationRequest(BaseModel):
     max_words: int = 500
 
 class AIGenerationResponse(BaseModel):
+    title: str
+    summary: str
     generated_content: str
 
 # Validating models after all definitions are complete

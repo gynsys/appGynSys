@@ -177,18 +177,23 @@ export default function BlogEditor({ post, onSave, onCancel }) {
       setGenerating(true)
       const response = await blogService.generateAI(aiForm)
       
+      // Super-paste method for Quill with delay to ensure state sync
       if (quillRef.current) {
         const quill = quillRef.current.getEditor();
-        quill.clipboard.dangerouslyPasteHTML(response.generated_content);
+        quill.setText(''); 
+        setTimeout(() => {
+          quill.clipboard.dangerouslyPasteHTML(response.generated_content);
+        }, 150);
       }
       
       setFormData(prev => ({
         ...prev,
-        content: response.generated_content,
-        title: prev.title || aiForm.topic
+        title: response.title || prev.title || aiForm.topic,
+        summary: response.summary || prev.summary,
+        content: response.generated_content
       }))
       
-      showToast('Contenido generado exitosamente', 'success')
+      showToast('¡Contenido generado exitosamente!', 'success')
       setAiExpanded(false)
     } catch (error) {
       console.error('Error generating AI content:', error)

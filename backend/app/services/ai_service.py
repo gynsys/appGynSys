@@ -1,10 +1,11 @@
-import google.generativeai as genai
 from app.core.config import settings
 import logging
+import json
+import re
 
 logger = logging.getLogger(__name__)
 
-def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int) -> str:
+def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int) -> dict:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
     
@@ -15,7 +16,7 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         max_words: El número máximo de palabras aproximado.
         
     Returns:
-        str: El contenido generado en formato HTML (compatible con editores enriquecidos).
+        dict: Un diccionario con {title, summary, content}.
     """
     if not settings.GEMINI_API_KEY:
         logger.error("GEMINI_API_KEY no está configurada.")
@@ -27,17 +28,24 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 
-        Escribe un artículo de blog completo, informativo y profesional sobre el siguiente tema: "{topic}".
+        Escribe un artículo de blog completo sobre el siguiente tema: "{topic}".
         
         Parámetros obligatorios:
         - Tono: {tone}
         - Público objetivo: {target_audience}
-        - Extensión deseada: aproximadamente {max_words} palabras.
-        - Formato: HTML puro (usa etiquetas <h2>, <h3>, <p>, <ul>, <li>, <strong> para énfasis).
-        - Estructura: Título <h2>, Introducción atractiva, desarrollo con varios subtítulos <h3>, y una conclusión con un llamado a la acción profesional.
-        - Requisito de contenido: Debe ser médicamente preciso, basado en evidencia pero accesible.
+        - Extensión del contenido: aproximadamente {max_words} palabras.
         
-        IMPORTANTE: Responde ÚNICAMENTE con el código HTML del cuerpo del artículo. No incluyas ```html, ni etiquetas <html>/<body>, ni comentarios, ni explicaciones. Solo el contenido para insertar en un editor.
+        Debes responder EXCLUSIVAMENTE con un objeto JSON con la siguiente estructura:
+        {{
+            "title": "Un título optimizado para SEO basado en el tema",
+            "summary": "Un resumen de 2 líneas para el extracto del blog",
+            "content": "El contenido del artículo formateado en HTML puro (usa <h2>, <h3>, <p>, <ul>, <li>, <strong>)"
+        }}
+        
+        IMPORTANTE: 
+        1. El campo "content" debe usar HTML puro, sin bloques de código ```html.
+        2. No incluyas explicaciones fuera del JSON.
+        3. Asegúrate de que el JSON sea válido.
         """
         
         print(f"DEBUG: Generando contenido con IA para tema: {topic} (max_words: {max_words})", flush=True)
@@ -47,16 +55,28 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
             print("DEBUG: Gemini devolvió una respuesta vacía o inválida.", flush=True)
             raise ValueError("No se pudo generar el contenido. La IA devolvió una respuesta vacía.")
             
-        generated_html = response.text.strip()
+        raw_text = response.text.strip()
         
-        # Limpiar posibles bloques de código markdown si la IA ignora las instrucciones
-        if generated_html.startswith("```html"):
-            generated_html = generated_html.replace("```html", "").replace("```", "").strip()
-        elif generated_html.startswith("```"):
-            generated_html = generated_html.replace("```", "").strip()
-            
-        print(f"DEBUG: Contenido generado exitosamente. Longitud: {len(generated_html)} caracteres.", flush=True)
-        return generated_html
+        # Intentar extraer JSON si la IA lo envuelve en bloques de código
+        json_match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+        if json_match:
+            try:
+                data = json.loads(json_match.group())
+                print(f"DEBUG: Contenido generado exitosamente. Longitud del contenido: {len(data.get('content', ''))} caracteres.", flush=True)
+                return {
+                    "title": data.get("title", topic),
+                    "summary": data.get("summary", ""),
+                    "generated_content": data.get("content", "")
+                }
+            except json.JSONDecodeError:
+                print(f"DEBUG: Error al decodificar JSON de Gemini: {raw_text[:200]}", flush=True)
+                
+        # Fallback si no es JSON válido
+        return {
+            "title": topic,
+            "summary": "",
+            "generated_content": raw_text
+        }
         
     except Exception as e:
         logger.error(f"Error al generar contenido con Gemini: {str(e)}", exc_info=True)
