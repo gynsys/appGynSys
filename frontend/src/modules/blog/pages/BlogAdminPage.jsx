@@ -140,7 +140,7 @@ export default function BlogAdminPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-medium text-indigo-600 dark:text-indigo-400 truncate">{post.title}</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">{post.title}</h3>
                       <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-3">
                         <span className="flex items-center gap-1">
                           {post.is_published ? (
