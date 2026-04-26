@@ -106,7 +106,7 @@ class AIGenerationRequest(BaseModel):
     topic: str
     tone: str
     target_audience: str
-    max_words: int
+    max_words: int = 500
 
 class AIGenerationResponse(BaseModel):
     generated_content: str
