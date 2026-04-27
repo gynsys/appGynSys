@@ -108,25 +108,31 @@ export default function SocialGeneratorPage() {
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">1. Selecciona un artículo</h2>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 no-scrollbar">
-                {posts.map(post => (
-                  <button
-                    key={post.id}
-                    onClick={() => { setSelectedPost(post); setGeneratedContent(null); }}
-                    className={`w-full text-left p-3 rounded-xl border transition-all ${
-                      selectedPost?.id === post.id 
-                      ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600' 
-                      : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    <p className={`text-sm font-bold truncate ${selectedPost?.id === post.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'}`}>
+              <div className="space-y-4">
+                <select
+                  value={selectedPost?.id || ''}
+                  onChange={(e) => {
+                    const post = posts.find(p => p.id === parseInt(e.target.value))
+                    setSelectedPost(post);
+                    setGeneratedContent(null);
+                  }}
+                  className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 border"
+                >
+                  <option value="" disabled>Elegir un artículo del blog...</option>
+                  {posts.map(post => (
+                    <option key={post.id} value={post.id}>
                       {post.title}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </p>
-                  </button>
-                ))}
+                    </option>
+                  ))}
+                </select>
+                
+                {selectedPost && (
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700 animate-fadeIn">
+                    <p className="text-[10px] text-gray-400 uppercase font-black mb-1">Artículo Seleccionado</p>
+                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200 line-clamp-2">{selectedPost.title}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Publicado el {new Date(selectedPost.created_at).toLocaleDateString()}</p>
+                  </div>
+                )}
               </div>
             </div>
 
