@@ -6,6 +6,7 @@ import Button from '../../../components/common/Button'
 import Spinner from '../../../components/common/Spinner'
 import { useToastStore } from '../../../store/toastStore'
 import { getImageUrl } from '../../../lib/imageUtils'
+import html2canvas from 'html2canvas'
 
 export default function SocialGeneratorPage() {
   const [posts, setPosts] = useState([])
@@ -40,42 +41,37 @@ export default function SocialGeneratorPage() {
       setGenerating(true)
       setActiveTab(type)
       
-      // We'll implement the backend endpoint soon
-      // For now, let's simulate a placeholder response to show the UI
-      setTimeout(() => {
-        if (type === 'reel') {
-          setGeneratedContent({
-            hook: "¡Descubre el secreto de " + selectedPost.title + "!",
-            scenes: [
-              { time: "0:00 - 0:05", text: "Gancho visual impactante", audio: "Sabías que..." },
-              { time: "0:05 - 0:20", text: "Explicación del problema", audio: "Muchos pacientes sufren de..." },
-              { time: "0:20 - 0:45", text: "La solución ideal", audio: "En nuestra clínica aplicamos..." },
-              { time: "0:45 - 0:55", text: "Resultados reales", audio: "Mira cómo cambia la vida de..." }
-            ],
-            cta: "Síguenos para más consejos sobre salud femenina."
-          })
-        } else {
-          setGeneratedContent({
-            slides: [
-              { title: selectedPost.title, content: "Guía rápida para entender este tema." },
-              { title: "¿Qué es?", content: "Un breve resumen de la condición o servicio." },
-              { title: "Beneficios", content: "Por qué es importante para ti." },
-              { title: "Primeros Pasos", content: "Lo que debes hacer hoy mismo." },
-              { title: "¡Agenda ya!", content: "Toda la info en el link de la bio." }
-            ],
-            image_prompts: [
-              "Una doctora profesional explicando con una tablet, estilo minimalista.",
-              "Iconos de salud femenina en colores pasteles."
-            ]
-          })
-        }
-        setGenerating(false)
-        showToast('¡Estrategia generada!', 'success')
-      }, 2000)
+      const response = await blogService.generateSocialContent(selectedPost.id, type)
+      setGeneratedContent(response)
+      
+      setGenerating(false)
+      showToast('¡Estrategia generada con éxito!', 'success')
       
     } catch (error) {
-      showToast('Error al generar contenido', 'error')
+      showToast('Error al generar contenido con IA', 'error')
       setGenerating(false)
+    }
+  }
+
+  const downloadCarousel = async () => {
+    const element = document.getElementById('carousel-container')
+    if (!element) return
+
+    try {
+      showToast('Generando imágenes...', 'loading')
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 2 // Higher quality
+      })
+      const image = canvas.toDataURL('image/png')
+      const link = document.createElement('a')
+      link.href = image
+      link.download = `carrusel-${selectedPost.slug_url}.png`
+      link.click()
+      showToast('¡Carrusel descargado!', 'success')
+    } catch (error) {
+      showToast('Error al descargar carrusel', 'error')
     }
   }
 
@@ -202,14 +198,18 @@ export default function SocialGeneratorPage() {
                   <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                       <div>
-                        <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Guion Estratégico</h3>
+                        <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Guion Estratégico para Reel</h3>
                         <p className="text-xs text-gray-500 mt-1">Optimizado para retención de audiencia.</p>
                       </div>
                       <button 
-                        onClick={() => copyToClipboard(JSON.stringify(generatedContent), 'full')}
-                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        onClick={() => {
+                          const text = `HOOK: ${generatedContent.hook}\n\nESCENAS:\n${generatedContent.scenes.map(s => `${s.time} - ${s.text}\nAudio: ${s.audio}`).join('\n\n')}\n\nCTA: ${generatedContent.cta}`
+                          copyToClipboard(text, 'full')
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg transition-colors text-xs font-bold"
                       >
                         {copiedField === 'full' ? <FiCheck className="text-green-500" /> : <FiCopy />}
+                        Copiar Guion
                       </button>
                     </div>
                     
@@ -248,19 +248,40 @@ export default function SocialGeneratorPage() {
                 ) : (
                   <div className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                      <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs mb-6">Estructura del Carrusel (Slides)</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex justify-between items-center mb-6">
+                        <div>
+                          <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Estructura del Carrusel (Diapositivas)</h3>
+                          <p className="text-[10px] text-gray-500 mt-1">IA generó {generatedContent.slides.length} diapositivas basadas en tu blog.</p>
+                        </div>
+                        <button 
+                          onClick={downloadCarousel}
+                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md active:scale-95"
+                        >
+                          Descargar Diapositivas 📸
+                        </button>
+                      </div>
+
+                      <div id="carousel-container" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl">
                         {generatedContent.slides.map((slide, i) => (
-                          <div key={i} className="aspect-square bg-gray-50 dark:bg-gray-700 rounded-2xl p-4 flex flex-col relative group overflow-hidden border border-gray-100 dark:border-gray-600">
-                            <span className="absolute top-2 right-2 text-4xl font-black text-black/5 dark:text-white/5">{i+1}</span>
-                            <h4 className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-2 z-10">{slide.title}</h4>
-                            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed z-10">{slide.content}</p>
-                            <button 
-                              onClick={() => copyToClipboard(slide.title + "\n" + slide.content, i)}
-                              className="absolute bottom-2 right-2 p-2 bg-white dark:bg-gray-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                            >
-                              {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={12} />}
-                            </button>
+                          <div key={i} className="aspect-square bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-2xl p-6 flex flex-col relative group overflow-hidden border border-gray-100 dark:border-gray-600 shadow-sm">
+                            <span className="absolute top-2 right-4 text-5xl font-black text-black/5 dark:text-white/5">{i+1}</span>
+                            <div className="mt-4">
+                              <h4 className="text-sm font-black text-indigo-600 dark:text-indigo-400 mb-3 z-10 leading-tight uppercase tracking-wide">{slide.title}</h4>
+                              <div className="h-0.5 w-8 bg-indigo-600/30 mb-4 rounded-full"></div>
+                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-medium z-10">{slide.content}</p>
+                            </div>
+                            <div className="mt-auto flex justify-between items-center">
+                                <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">GynSys IA</span>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(slide.title + "\n" + slide.content, i)
+                                  }}
+                                  className="p-2 bg-white dark:bg-gray-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-md border border-gray-100 dark:border-gray-500"
+                                >
+                                  {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={12} className="text-gray-400" />}
+                                </button>
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -113,6 +113,23 @@ class AIGenerationResponse(BaseModel):
     summary: str
     generated_content: str
 
+class SocialContentScene(BaseModel):
+    time: str
+    text: str
+    audio: str
+
+class SocialContentSlide(BaseModel):
+    title: str
+    content: str
+
+class SocialContentResponse(BaseModel):
+    type: str # 'reel' or 'carousel'
+    hook: Optional[str] = None
+    scenes: Optional[List[SocialContentScene]] = None
+    cta: Optional[str] = None
+    slides: Optional[List[SocialContentSlide]] = None
+    image_prompts: Optional[List[str]] = None
+
 # Validating models after all definitions are complete
 BlogPostCreate.model_rebuild()
 BlogPostUpdate.model_rebuild()

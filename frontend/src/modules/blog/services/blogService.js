@@ -54,5 +54,10 @@ export const blogService = {
   generateAI: async (aiData) => {
     const response = await api.post('/blog/generate', aiData)
     return response.data
+  },
+  
+  generateSocialContent: async (postId, genType) => {
+    const response = await api.post(`/blog/${postId}/generate-social?gen_type=${genType}`)
+    return response.data
   }
 }

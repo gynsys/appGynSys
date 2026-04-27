@@ -35,6 +35,36 @@ def generate_blog_ai(
         logger.error(f"Error en generación de IA: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno al generar contenido con IA.")
 
+@router.post("/{post_id}/generate-social", response_model=schemas.SocialContentResponse)
+def generate_social_ai(
+    post_id: int,
+    gen_type: str, # 'reel' or 'carousel'
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Generates social media content (Reel/Carousel) for a specific blog post.
+    """
+    post = db.query(BlogPost).filter(BlogPost.id == post_id, BlogPost.doctor_id == current_user.id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post no encontrado")
+        
+    try:
+        from app.services import social_service
+        result = social_service.generate_social_content(
+            post_title=post.title,
+            post_content=post.content,
+            generation_type=gen_type
+        )
+        return schemas.SocialContentResponse(**result)
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error en generación social: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error en la generación social: {str(e)}"
+        )
+
 @router.get("/menu/mega/{doctor_slug}", response_model=List[schemas.MegaMenuItem])
 def get_mega_menu(
     doctor_slug: str,
