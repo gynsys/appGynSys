@@ -24,12 +24,32 @@ export default function SocialGeneratorPage() {
   const [previewIndex, setPreviewIndex] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
   
+  const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
+  
   const { showToast } = useToastStore()
   const { user: doctor } = useAuthStore()
 
   useEffect(() => {
     loadPosts()
-  }, [])
+    if (doctor?.logo_url) {
+      loadDoctorLogo(getImageUrl(doctor.logo_url))
+    } else {
+      setDoctorLogoBase64(getFallbackLogo())
+    }
+  }, [doctor])
+
+  const loadDoctorLogo = async (url) => {
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => setDoctorLogoBase64(reader.result);
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error("Error loading doctor logo, using fallback:", error);
+      setDoctorLogoBase64(getFallbackLogo());
+    }
+  }
 
   const loadPosts = async () => {
     try {
@@ -225,18 +245,13 @@ export default function SocialGeneratorPage() {
                             {/* Header Aligned Left - Safe Logo Implementation */}
                             <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full">
                               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
-                                {doctor?.logo_url ? (
+                                {doctorLogoBase64 ? (
                                   <img 
-                                    src={getImageUrl(doctor.logo_url)} 
-                                    crossOrigin="anonymous" 
+                                    src={doctorLogoBase64} 
                                     alt="Logo" 
                                     className="w-full h-full object-contain"
-                                    onError={(e) => { 
-                                      e.target.onerror = null; // Evita bucle
-                                      e.target.src = getFallbackLogo(); 
-                                    }}
                                   />
-                                ) : <img src={getFallbackLogo()} className="w-full h-full object-contain" alt="Fallback" />}
+                                ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
                               </div>
                               <span className={`text-[10px] font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                                 {doctor?.nombre_completo}
@@ -320,14 +335,12 @@ export default function SocialGeneratorPage() {
           <div className="relative w-full max-w-lg aspect-square rounded-[50px] p-12 flex flex-col" style={{ backgroundColor: bgColor }}>
             <div className="flex items-center justify-start gap-4 mb-10 border-b border-gray-100/20 pb-6 w-full">
               <div className="w-14 h-14 bg-white rounded-xl overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center">
-                 {doctor?.logo_url ? (
+                 {doctorLogoBase64 ? (
                    <img 
-                    src={getImageUrl(doctor.logo_url)} 
-                    crossOrigin="anonymous" 
+                    src={doctorLogoBase64} 
                     className="w-full h-full object-contain" 
-                    onError={(e) => { e.target.onerror = null; e.target.src = getFallbackLogo(); }}
                    />
-                 ) : <img src={getFallbackLogo()} className="w-full h-full object-contain" />}
+                 ) : <div className="text-indigo-600 font-black">GS</div>}
               </div>
               <span className={`text-sm font-black uppercase ${bgColor === '#000000' ? 'text-white' : 'text-gray-900'}`}>{doctor?.nombre_completo}</span>
             </div>
