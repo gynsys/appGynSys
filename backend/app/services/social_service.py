@@ -12,7 +12,7 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     """
     try:
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-flash-latest')
 
         if generation_type == 'reel':
             prompt = f"""
