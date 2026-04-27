@@ -10,7 +10,6 @@ import { useToastStore } from '../../../store/toastStore'
 import { getImageUrl } from '../../../lib/imageUtils'
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
-import { TwitterPicker } from 'react-color'
 import { useAuthStore } from '../../../store/authStore'
 
 export default function SocialGeneratorPage() {
@@ -23,7 +22,6 @@ export default function SocialGeneratorPage() {
   const [copiedField, setCopiedField] = useState(null)
   const [bgColor, setBgColor] = useState('#ffffff')
   const [previewIndex, setPreviewIndex] = useState(null)
-  const [showColorPicker, setShowColorPicker] = useState(false)
   
   const { showToast } = useToastStore()
   const { user: doctor } = useAuthStore()
@@ -74,7 +72,8 @@ export default function SocialGeneratorPage() {
         const canvas = await html2canvas(slides[i], {
           useCORS: true,
           scale: 3,
-          backgroundColor: bgColor
+          backgroundColor: bgColor,
+          logging: false
         })
         const imgData = canvas.toDataURL('image/png').split(',')[1]
         zip.file(`Slide_${i + 1}.png`, imgData, { base64: true })
@@ -98,7 +97,6 @@ export default function SocialGeneratorPage() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
-  // Navigation for preview
   const nextSlide = () => {
     if (previewIndex < generatedContent.slides.length - 1) {
       setPreviewIndex(previewIndex + 1)
@@ -114,7 +112,7 @@ export default function SocialGeneratorPage() {
   if (loading) return <Spinner />
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 font-manrope">
       <div className="max-w-6xl mx-auto px-4 pt-6">
         
         <header className="mb-8">
@@ -220,71 +218,67 @@ export default function SocialGeneratorPage() {
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                         <div>
                           <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-[10px]">Configuración del Carrusel</h3>
-                          <p className="text-[10px] text-gray-500 mt-1">Logo y nombre incluidos automáticamente.</p>
                         </div>
-                        <div className="flex items-center gap-4 relative">
-                          {/* Custom Color Selector based on instructions */}
-                          <div className="flex flex-col gap-1">
-                             <p className="text-[9px] font-black uppercase text-gray-400">Color Fondo</p>
-                             <button 
-                               onClick={() => setShowColorPicker(!showColorPicker)}
-                               className="w-[80px] h-[40px] rounded-lg border border-gray-200 shadow-sm flex items-center justify-center p-1 bg-white hover:border-indigo-300 transition-all"
-                               style={{ backgroundColor: bgColor }}
+                        <div className="flex items-center gap-6">
+                          {/* Professional Color Selector (Same as Profile Appearance) */}
+                          <div className="flex items-center gap-4">
+                             <div className="text-right">
+                               <p className="text-[10px] font-black uppercase text-gray-400 mb-1 leading-none">Color Fondo</p>
+                               <span className="text-[10px] font-mono text-gray-300 uppercase leading-none">{bgColor}</span>
+                             </div>
+                             <input 
+                               type="color"
+                               value={bgColor}
+                               onChange={(e) => setBgColor(e.target.value)}
+                               className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm transition-all hover:scale-105 active:scale-95"
                                id="theme_body_bg_color"
-                             >
-                               <div className="w-full h-full rounded shadow-inner" style={{ backgroundColor: bgColor }}></div>
-                             </button>
-                             {showColorPicker && (
-                               <div className="absolute top-[60px] right-0 z-50 shadow-2xl animate-fadeIn">
-                                 <div className="fixed inset-0" onClick={() => setShowColorPicker(false)}></div>
-                                 <div className="relative">
-                                    <TwitterPicker color={bgColor} onChange={(c) => { setBgColor(c.hex); setShowColorPicker(false); }} triangle="hide" />
-                                 </div>
-                               </div>
-                             )}
+                             />
                           </div>
                           
                           <button onClick={downloadCarousel} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-indigo-700 transition-all">Descargar ZIP 📦</button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {generatedContent.slides.map((slide, i) => (
-                          <div key={i} className="carousel-slide-item aspect-square rounded-3xl p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden" style={{ backgroundColor: bgColor }}>
+                          <div key={i} className="carousel-slide-item aspect-square rounded-[40px] p-10 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden" style={{ backgroundColor: bgColor }}>
                             
-                            {/* Slide Header (Fixed Logo rendering) */}
-                            <div className="flex items-center gap-3 mb-8 border-b border-gray-100 dark:border-gray-700/50 pb-4">
-                              <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                            {/* Slide Header */}
+                            <div className="flex items-center justify-center gap-4 mb-10 border-b border-gray-100 dark:border-gray-700/50 pb-6 w-full">
+                              <div className="w-12 h-12 flex items-center justify-center bg-white rounded-xl overflow-hidden shadow-sm flex-shrink-0">
                                 {doctor?.logo_url ? (
                                   <img 
                                     src={getImageUrl(doctor.logo_url)} 
                                     crossOrigin="anonymous" 
                                     alt="Logo" 
                                     className="w-full h-full object-contain"
-                                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + (doctor?.nombre_completo || 'GS'); }}
+                                    onError={(e) => { 
+                                      e.target.onerror = null; 
+                                      e.target.src = 'https://ui-avatars.com/api/?background=4F46E5&color=fff&name=' + (doctor?.nombre_completo || 'GS'); 
+                                    }}
                                   />
                                 ) : (
                                   <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>
                                 )}
                               </div>
-                              <span className={`text-[11px] font-black uppercase whitespace-nowrap overflow-hidden text-ellipsis ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                              <span className={`text-[12px] font-black uppercase whitespace-nowrap overflow-hidden text-ellipsis ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                                 {doctor?.nombre_completo || 'Dra. Mariel Herrera'}
                               </span>
                             </div>
 
-                            <span className="absolute top-20 right-8 text-8xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
+                            <span className="absolute top-24 right-10 text-8xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
                             
-                            <div className="flex-1 flex flex-col justify-center">
-                              <h4 className={`text-xl font-black mb-4 uppercase leading-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}>{slide.title}</h4>
-                              <div className="h-1 w-12 bg-indigo-600/40 mb-4 rounded-full"></div>
-                              <p className={`text-[13px] font-bold leading-relaxed ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'}`}>{slide.content}</p>
+                            <div className="flex-1 flex flex-col justify-center text-center px-4">
+                              <h4 className={`text-2xl font-black mb-6 uppercase leading-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}>{slide.title}</h4>
+                              <div className="h-1.5 w-16 bg-indigo-600/40 mb-6 rounded-full mx-auto"></div>
+                              <p className={`text-base font-bold leading-relaxed ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}>{slide.content}</p>
                             </div>
 
-                            <div className="mt-6 flex justify-end items-center pt-4 slide-actions">
+                            <div className="mt-8 flex justify-end items-center absolute bottom-8 right-8 slide-actions z-20">
                                 <div className="flex gap-2">
-                                  <button onClick={() => setPreviewIndex(i)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><FiMaximize2 size={14}/></button>
-                                  <button onClick={() => copyToClipboard(`${slide.title}\n${slide.content}`, i)} className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-100 transition-colors">
-                                    {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={14} />}
+                                  <button onClick={() => setPreviewIndex(i)} className="p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-lg text-indigo-600 rounded-xl hover:bg-white transition-all"><FiMaximize2 size={16}/></button>
+                                  <button onClick={() => copyToClipboard(`${slide.title}\n${slide.content}`, i)} className="p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-lg text-gray-400 rounded-xl hover:bg-white transition-all">
+                                    {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={16} />}
                                   </button>
                                 </div>
                             </div>
@@ -299,7 +293,7 @@ export default function SocialGeneratorPage() {
               <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 p-8 text-center">
                 <FiCpu className="w-10 h-10 text-indigo-600 mx-auto mb-4" />
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2">Editor de Contenido IA</h3>
-                <p className="text-gray-500 text-sm">Selecciona un artículo del menú desplegable para comenzar.</p>
+                <p className="text-gray-500 text-sm">Selecciona un artículo para comenzar.</p>
               </div>
             )}
           </div>
@@ -308,15 +302,15 @@ export default function SocialGeneratorPage() {
 
       {/* Slide Preview Modal with Navigation */}
       {previewIndex !== null && generatedContent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
-          <button onClick={() => setPreviewIndex(null)} className="absolute top-6 right-6 p-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all z-[60]"><FiX size={24} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fadeIn">
+          <button onClick={() => setPreviewIndex(null)} className="absolute top-6 right-6 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all z-[60]"><FiX size={32} /></button>
           
-          <button onClick={prevSlide} disabled={previewIndex === 0} className="absolute left-4 md:left-10 p-4 text-white/50 hover:text-white disabled:opacity-0 transition-all z-[60]"><FiChevronLeft size={48} /></button>
-          <button onClick={nextSlide} disabled={previewIndex === generatedContent.slides.length - 1} className="absolute right-4 md:right-10 p-4 text-white/50 hover:text-white disabled:opacity-0 transition-all z-[60]"><FiChevronRight size={48} /></button>
+          <button onClick={prevSlide} disabled={previewIndex === 0} className="absolute left-4 md:left-10 p-6 text-white/50 hover:text-white disabled:opacity-0 transition-all z-[60]"><FiChevronLeft size={64} /></button>
+          <button onClick={nextSlide} disabled={previewIndex === generatedContent.slides.length - 1} className="absolute right-4 md:right-10 p-6 text-white/50 hover:text-white disabled:opacity-0 transition-all z-[60]"><FiChevronRight size={64} /></button>
 
-          <div className="relative w-full max-w-xl aspect-square rounded-[40px] p-12 shadow-2xl flex flex-col" style={{ backgroundColor: bgColor }}>
-            <div className="flex items-center gap-4 mb-10 border-b border-gray-100/20 pb-6">
-              <div className="w-14 h-14 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden shadow-sm">
+          <div className="relative w-full max-w-2xl aspect-square rounded-[60px] p-16 shadow-2xl flex flex-col" style={{ backgroundColor: bgColor }}>
+            <div className="flex items-center justify-center gap-6 mb-12 border-b border-gray-100/20 pb-8 w-full">
+              <div className="w-16 h-16 flex items-center justify-center bg-white rounded-2xl overflow-hidden shadow-md flex-shrink-0">
                 {doctor?.logo_url ? (
                   <img 
                     src={getImageUrl(doctor.logo_url)} 
@@ -328,16 +322,16 @@ export default function SocialGeneratorPage() {
                   <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-sm font-black">GS</div>
                 )}
               </div>
-              <span className={`text-sm font-black uppercase tracking-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-gray-900'}`}>{doctor?.nombre_completo}</span>
+              <span className={`text-base font-black uppercase tracking-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-gray-900'}`}>{doctor?.nombre_completo}</span>
             </div>
 
-            <div className="flex-1 flex flex-col justify-center">
-              <h4 className={`text-3xl font-black mb-6 uppercase leading-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-indigo-600'}`}>{generatedContent.slides[previewIndex].title}</h4>
-              <div className="h-2 w-20 bg-indigo-600/40 mb-8 rounded-full"></div>
-              <p className={`text-xl font-bold leading-relaxed ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-gray-200' : 'text-gray-700'}`}>{generatedContent.slides[previewIndex].content}</p>
+            <div className="flex-1 flex flex-col justify-center text-center">
+              <h4 className={`text-4xl font-black mb-10 uppercase leading-tight ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-white' : 'text-indigo-600'}`}>{generatedContent.slides[previewIndex].title}</h4>
+              <div className="h-3 w-24 bg-indigo-600/40 mb-12 rounded-full mx-auto"></div>
+              <p className={`text-2xl font-bold leading-relaxed ${bgColor === '#000000' || bgColor === '#2b2b2b' ? 'text-gray-200' : 'text-gray-700'}`}>{generatedContent.slides[previewIndex].content}</p>
             </div>
             
-            <div className="absolute bottom-12 right-12 text-sm font-black text-gray-400/30">{previewIndex + 1} / {generatedContent.slides.length}</div>
+            <div className="absolute bottom-16 right-16 text-lg font-black text-gray-400/30">{previewIndex + 1} / {generatedContent.slides.length}</div>
           </div>
         </div>
       )}
