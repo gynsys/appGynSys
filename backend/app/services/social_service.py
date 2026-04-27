@@ -9,80 +9,81 @@ logger = logging.getLogger(__name__)
 
 def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel'):
     """
-    Genera contenido para redes sociales (Reel o Carrusel) usando Gemini.
+    Genera contenido para redes sociales (Reel o Carrusel) usando Gemini en Modo JSON.
     """
     try:
       genai.configure(api_key=settings.GEMINI_API_KEY)
-      model = genai.GenerativeModel('gemini-flash-latest')
+      
+      # Configuración de la generación para forzar Modo JSON
+      generation_config = {
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_output_tokens": 8192,
+        "response_mime_type": "application/json",
+      }
+
+      model = genai.GenerativeModel(
+        model_name='gemini-1.5-flash', # Usamos la versión estable que soporta JSON mode
+        generation_config=generation_config
+      )
 
       if generation_type == 'reel':
           prompt = f"""
-          Actúa como un experto en marketing digital y Reels virales. 
-          Analiza el siguiente artículo de blog y crea un guion de Reel de 30-60 segundos.
+          Actúa como un experto en marketing digital. 
+          Analiza el artículo y crea un guion de Reel.
           
           ARTÍCULO:
           Título: {post_title}
           Contenido: {post_content}
           
-          Devuelve un objeto JSON estrictamente con esta estructura:
+          Responde estrictamente con este esquema JSON:
           {{
-            "hook": "Un gancho impactante para los primeros 3 segundos",
+            "hook": "string",
             "scenes": [
-              {{ "time": "00:00-00:05", "text": "Descripción visual de la escena", "audio": "Lo que se dice o música" }}
+              {{ "time": "string", "text": "string", "audio": "string" }}
             ],
-            "cta": "Llamada a la acción final",
-            "image_prompts": ["3 ideas de imágenes para este contenido"]
+            "cta": "string",
+            "image_prompts": ["string"]
           }}
           """
       else:
           prompt = f"""
-          Actúa como un diseñador de contenido para Instagram. 
-          Crea un carrusel de 5 a 10 diapositivas basado en este artículo.
+          Actúa como un diseñador de Instagram. 
+          Crea un carrusel de 5-10 diapositivas.
           
           ARTÍCULO:
           Título: {post_title}
           Contenido: {post_content}
           
-          Devuelve un objeto JSON estrictamente con esta estructura:
+          Responde estrictamente con este esquema JSON:
           {{
             "slides": [
-              {{ "title": "Título corto y llamativo", "content": "Texto breve y directo (máximo 150 caracteres)" }}
+              {{ "title": "string", "content": "string" }}
             ],
-            "image_prompts": ["Ideas de imágenes para las diapositivas"]
+            "image_prompts": ["string"]
           }}
           """
 
-      logger.info(f"Enviando prompt a Gemini para {generation_type}...")
+      logger.info(f"Generando {generation_type} en Modo JSON...")
       response = model.generate_content(prompt)
-      text = response.text
-      logger.info(f"Respuesta cruda de Gemini recibida: {text[:500]}...") # Loggeamos solo el inicio por seguridad
       
-      # Limpieza de la respuesta para extraer solo el JSON
-      json_match = re.search(r'\{.*\}', text, re.DOTALL)
-      if json_match:
-          json_str = json_match.group()
-          # Limpiar posibles caracteres de control o errores comunes de Gemini
-          json_str = json_str.replace('\n', ' ').replace('\r', '')
-          # Intentar corregir comas finales antes de cerrar llaves o corchetes
-          json_str = re.sub(r',\s*\}', '}', json_str)
-          json_str = re.sub(r',\s*\]', ']', json_str)
-          
-          try:
-            data = json.loads(json_str)
-            return data
-          except json.JSONDecodeError as e:
-            logger.error(f"Error parseando JSON de Gemini: {e}")
-            logger.error(f"Contenido problemático: {json_str}")
-            # Si falla, intentar un último recurso: remover bloques de código markdown
-            clean_json = re.sub(r'```json\s*|\s*```', '', text).strip()
-            # Segunda limpieza si hay texto fuera del JSON
-            json_match_2 = re.search(r'\{.*\}', clean_json, re.DOTALL)
-            if json_match_2:
-                return json.loads(json_match_2.group())
-            return json.loads(clean_json)
-      else:
-          logger.error(f"No se encontró JSON en: {text}")
-          raise ValueError("No se encontró un objeto JSON en la respuesta de la IA")
+      try:
+        # En Modo JSON, Gemini suele devolver el JSON directamente o dentro de un bloque
+        json_text = response.text.strip()
+        # Eliminar posibles decoradores de markdown si existieran
+        if json_text.startswith('```'):
+            json_text = re.sub(r'```json\s*|\s*```', '', json_text).strip()
+            
+        data = json.loads(json_text)
+        return data
+      except json.JSONDecodeError as e:
+        logger.error(f"Fallo en Modo JSON: {e}. Reintentando limpieza manual...")
+        # Fallback a limpieza manual si el modo JSON falla (poco probable)
+        json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+        if json_match:
+            return json.loads(json_match.group())
+        raise e
 
     except Exception as e:
       logger.error(f"Error crítico en generación social: {e}", exc_info=True)
