@@ -25,6 +25,13 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
+async def add_cors_header(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/uploads"):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+@app.middleware("http")
 async def log_user_agent(request, call_next):
     ua = request.headers.get("user-agent", "unknown")
     print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)

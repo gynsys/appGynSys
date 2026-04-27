@@ -14,8 +14,8 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     try:
       genai.configure(api_key=settings.GEMINI_API_KEY)
       
-      # Usamos gemini-pro que es el más compatible universalmente
-      model_name = 'gemini-pro' 
+      # Usamos gemini-flash-latest que es el que funciona en este entorno
+      model_name = 'gemini-flash-latest' 
       model = genai.GenerativeModel(model_name)
 
       if generation_type == 'reel':
