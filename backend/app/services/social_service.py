@@ -52,8 +52,10 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
           }}
           """
 
+      logger.info(f"Enviando prompt a Gemini para {generation_type}...")
       response = model.generate_content(prompt)
       text = response.text
+      logger.info(f"Respuesta cruda de Gemini recibida: {text[:500]}...") # Loggeamos solo el inicio por seguridad
       
       # Limpieza de la respuesta para extraer solo el JSON
       json_match = re.search(r'\{.*\}', text, re.DOTALL)
@@ -70,13 +72,18 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
             return data
           except json.JSONDecodeError as e:
             logger.error(f"Error parseando JSON de Gemini: {e}")
-            logger.error(f"Contenido original: {json_str}")
+            logger.error(f"Contenido problemático: {json_str}")
             # Si falla, intentar un último recurso: remover bloques de código markdown
             clean_json = re.sub(r'```json\s*|\s*```', '', text).strip()
+            # Segunda limpieza si hay texto fuera del JSON
+            json_match_2 = re.search(r'\{.*\}', clean_json, re.DOTALL)
+            if json_match_2:
+                return json.loads(json_match_2.group())
             return json.loads(clean_json)
       else:
+          logger.error(f"No se encontró JSON en: {text}")
           raise ValueError("No se encontró un objeto JSON en la respuesta de la IA")
 
     except Exception as e:
-      logger.error(f"Error en generación social: {e}", exc_info=True)
+      logger.error(f"Error crítico en generación social: {e}", exc_info=True)
       raise e
