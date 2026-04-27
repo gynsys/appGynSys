@@ -197,13 +197,13 @@ export default function SocialGeneratorPage() {
                 {/* Tabs */}
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                   <button
-                    onClick={() => handleGenerate('reel')}
+                    onClick={() => setActiveTab('reel')}
                     className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'reel' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'}`}
                   >
                     Guion de Reel
                   </button>
                   <button
-                    onClick={() => handleGenerate('carousel')}
+                    onClick={() => setActiveTab('carousel')}
                     className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'carousel' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'}`}
                   >
                     Carrusel de Imágenes
@@ -211,7 +211,7 @@ export default function SocialGeneratorPage() {
                 </div>
 
                 {activeTab === 'reel' ? (
-                  <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                  <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-slideIn">
                     <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                       <div>
                         <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Guion Estratégico para Reel</h3>
@@ -260,8 +260,9 @@ export default function SocialGeneratorPage() {
                         <p className="text-sm font-bold text-gray-800 dark:text-white">{generatedContent.cta}</p>
                       </div>
                     </div>
-                     ) : (
-                  <div className="space-y-6">
+                  </div>
+                ) : (
+                  <div className="space-y-6 animate-slideIn">
                     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                         <div>
@@ -344,7 +345,6 @@ export default function SocialGeneratorPage() {
                         ))}
                       </div>
                     </div>
-                 </div>
 
                     <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl">
                       <div className="flex justify-between items-center mb-4">
@@ -362,11 +362,6 @@ export default function SocialGeneratorPage() {
                             </button>
                           </div>
                         ))}
-                      </div>
-                      <div className="mt-6 flex justify-center">
-                         <Button variant="secondary" className="w-full bg-white text-indigo-600 hover:bg-indigo-50 font-black">
-                            Generar Imágenes con IA ✨ (Próximamente)
-                         </Button>
                       </div>
                     </div>
                   </div>
