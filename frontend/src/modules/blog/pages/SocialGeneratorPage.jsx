@@ -26,7 +26,6 @@ export default function SocialGeneratorPage() {
   
   const { showToast } = useToastStore()
   const { user: doctor } = useAuthStore()
-  const fileInputRef = useRef(null)
 
   useEffect(() => {
     loadPosts()
@@ -123,6 +122,19 @@ export default function SocialGeneratorPage() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
+  // Generador de Iniciales SVG (Inmune a CORS)
+  const getFallbackLogo = () => {
+    const name = doctor?.nombre_completo || 'GynSys';
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const svg = `
+      <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="20" fill="#4F46E5"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="40">${initials}</text>
+      </svg>
+    `.trim();
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
   if (loading) return <Spinner />
 
   return (
@@ -210,7 +222,7 @@ export default function SocialGeneratorPage() {
                         {generatedContent.slides.map((slide, i) => (
                           <div key={i} className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden" style={{ backgroundColor: bgColor }}>
                             
-                            {/* Header Aligned Left */}
+                            {/* Header Aligned Left - Safe Logo Implementation */}
                             <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full">
                               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
                                 {doctor?.logo_url ? (
@@ -219,9 +231,12 @@ export default function SocialGeneratorPage() {
                                     crossOrigin="anonymous" 
                                     alt="Logo" 
                                     className="w-full h-full object-contain"
-                                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + (doctor?.nombre_completo || 'GS'); }}
+                                    onError={(e) => { 
+                                      e.target.onerror = null; // Evita bucle
+                                      e.target.src = getFallbackLogo(); 
+                                    }}
                                   />
-                                ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
+                                ) : <img src={getFallbackLogo()} className="w-full h-full object-contain" alt="Fallback" />}
                               </div>
                               <span className={`text-[10px] font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                                 {doctor?.nombre_completo}
@@ -250,12 +265,10 @@ export default function SocialGeneratorPage() {
                                 <>
                                   <h4 className={`text-xl font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}>{slide.title}</h4>
                                   
-                                  {/* Reducción de espacio del 50% */}
                                   <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
                                   
                                   <p className={`text-sm font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}>{slide.content}</p>
                                   
-                                  {/* Custom Image Area */}
                                   {slide.customImage && (
                                     <div className="mt-4 relative group/img mx-auto max-w-[120px]">
                                       <img src={slide.customImage} className="rounded-xl shadow-md border-2 border-white/50 object-cover aspect-square" alt="Custom" />
@@ -266,7 +279,6 @@ export default function SocialGeneratorPage() {
                               )}
                             </div>
 
-                            {/* Floating Actions */}
                             <div className="mt-6 flex justify-end items-center absolute bottom-6 right-6 slide-actions z-20">
                                 <div className="flex gap-2">
                                   <button onClick={() => setPreviewIndex(i)} className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-sm text-indigo-600 rounded-lg hover:bg-white"><FiMaximize2 size={14}/></button>
@@ -281,31 +293,6 @@ export default function SocialGeneratorPage() {
                                     {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={14} />}
                                   </button>
                                 </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {activeTab === 'reel' && (
-                  <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-[10px]">Guion Estratégico</h3>
-                    </div>
-                    <div className="space-y-6">
-                      <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl">
-                        <label className="text-[10px] font-black text-indigo-600 uppercase mb-1 block">Hook</label>
-                        <p className="text-lg font-bold text-gray-800 dark:text-white italic">"{generatedContent.hook}"</p>
-                      </div>
-                      <div className="space-y-4">
-                        {generatedContent.scenes.map((scene, i) => (
-                          <div key={i} className="flex gap-4 p-4 border-b last:border-0 border-gray-50 dark:border-gray-700">
-                            <div className="text-[10px] font-black text-indigo-600">{scene.time}</div>
-                            <div className="flex-1">
-                              <p className="text-xs font-bold text-gray-400 mb-1">Visual: <span className="font-medium text-gray-800 dark:text-gray-200">{scene.text}</span></p>
-                              <p className="text-xs font-bold text-indigo-600">Audio: <span className="font-medium italic text-gray-800 dark:text-gray-200">"{scene.audio}"</span></p>
                             </div>
                           </div>
                         ))}
@@ -333,7 +320,14 @@ export default function SocialGeneratorPage() {
           <div className="relative w-full max-w-lg aspect-square rounded-[50px] p-12 flex flex-col" style={{ backgroundColor: bgColor }}>
             <div className="flex items-center justify-start gap-4 mb-10 border-b border-gray-100/20 pb-6 w-full">
               <div className="w-14 h-14 bg-white rounded-xl overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center">
-                 {doctor?.logo_url ? <img src={getImageUrl(doctor.logo_url)} crossOrigin="anonymous" className="w-full h-full object-contain" /> : <div className="text-indigo-600 font-black">GS</div>}
+                 {doctor?.logo_url ? (
+                   <img 
+                    src={getImageUrl(doctor.logo_url)} 
+                    crossOrigin="anonymous" 
+                    className="w-full h-full object-contain" 
+                    onError={(e) => { e.target.onerror = null; e.target.src = getFallbackLogo(); }}
+                   />
+                 ) : <img src={getFallbackLogo()} className="w-full h-full object-contain" />}
               </div>
               <span className={`text-sm font-black uppercase ${bgColor === '#000000' ? 'text-white' : 'text-gray-900'}`}>{doctor?.nombre_completo}</span>
             </div>
@@ -347,8 +341,6 @@ export default function SocialGeneratorPage() {
                 <img src={generatedContent.slides[previewIndex].customImage} className="mt-6 mx-auto rounded-2xl shadow-xl max-h-[150px] object-contain" alt="Preview" />
               )}
             </div>
-            
-            <div className="absolute bottom-10 right-10 text-sm font-black text-gray-400/30">{previewIndex + 1} / {generatedContent.slides.length}</div>
           </div>
         </div>
       )}
