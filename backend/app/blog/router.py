@@ -58,7 +58,8 @@ def generate_social_ai(
         )
         return schemas.SocialContentResponse(**result)
     except Exception as e:
-        from app.core.logging import logger
+        import logging
+        logger = logging.getLogger(__name__)
         logger.error(f"Error en generación social: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
