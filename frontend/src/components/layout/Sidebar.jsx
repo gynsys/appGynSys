@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiMapPin, FiClipboard, FiFolder, FiEdit3,
   FiCalendar, FiSettings, FiClock, FiBriefcase,
-  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell, FiSend, FiUsers
+  FiHome, FiChevronLeft, FiMenu, FiImage, FiHeart, FiStar, FiVideo, FiMessageSquare, FiBell, FiSend, FiUsers, FiCpu
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
 import { toast } from 'sonner';
@@ -36,11 +36,17 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
       ]
     },
     {
+      title: 'Marketing IA',
+      items: [
+        { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
+        { icon: FiCpu, label: 'Crear Contenido', path: '/dashboard/social-generator' },
+      ]
+    },
+    {
       title: 'Configuraciones',
       items: [
         { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
         { icon: FiVideo, label: 'Consultas Online', path: '/dashboard/online-consultations' },
-        { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
         { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },
         { icon: FiMapPin, label: 'Ubicaciones', path: '/dashboard/locations' },
         { icon: FiBriefcase, label: 'Servicios', path: '/dashboard/services' },

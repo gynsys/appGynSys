@@ -26,6 +26,7 @@ import AdminPlansPage from './pages/admin/AdminPlansPage'
 import AdminModulesPage from './pages/admin/AdminModulesPage'
 import AdminTemplatesPage from './pages/admin/AdminTemplatesPage'
 import BlogAdminPage from './modules/blog/pages/BlogAdminPage'
+import SocialGeneratorPage from './modules/blog/pages/SocialGeneratorPage'
 import BlogPublicPage from './modules/blog/pages/BlogPublicPage'
 import BlogPostPage from './modules/blog/pages/BlogPostPage'
 import ToastContainer from './components/common/Toast'
@@ -290,6 +291,7 @@ function App() {
           <Route path="preconsulta-config" element={<PreconsultationConfigPage />} />
           <Route path="pdf-config" element={<PdfConfigurationPage />} />
           <Route path="blog" element={<BlogAdminPage />} />
+          <Route path="social-generator" element={<SocialGeneratorPage />} />
           <Route path="profile" element={<ProfileEditorPage />} />
           <Route path="profile/testimonials" element={<TestimonialManager />} />
           <Route path="profile/gallery" element={<GalleryManager />} />
