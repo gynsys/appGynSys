@@ -7,6 +7,9 @@ import Spinner from '../../../components/common/Spinner'
 import { useToastStore } from '../../../store/toastStore'
 import { getImageUrl } from '../../../lib/imageUtils'
 import html2canvas from 'html2canvas'
+import JSZip from 'jszip'
+import { CirclePicker } from 'react-color'
+import { useAuthStore } from '../../../store/authStore'
 
 export default function SocialGeneratorPage() {
   const [posts, setPosts] = useState([])
@@ -16,7 +19,9 @@ export default function SocialGeneratorPage() {
   const [generatedContent, setGeneratedContent] = useState(null)
   const [activeTab, setActiveTab] = useState('reel') // 'reel' or 'carousel'
   const [copiedField, setCopiedField] = useState(null)
+  const [bgColor, setBgColor] = useState('#ffffff')
   const { showToast } = useToastStore()
+  const { user: doctor } = useAuthStore()
 
   useEffect(() => {
     loadPosts()
@@ -54,24 +59,35 @@ export default function SocialGeneratorPage() {
   }
 
   const downloadCarousel = async () => {
-    const element = document.getElementById('carousel-container')
-    if (!element) return
+    const zip = new JSZip()
+    const slides = document.querySelectorAll('.carousel-slide-item')
+    
+    if (slides.length === 0) return
 
     try {
-      showToast('Generando imágenes...', 'loading')
-      const canvas = await html2canvas(element, {
-        useCORS: true,
-        backgroundColor: null,
-        scale: 2 // Higher quality
-      })
-      const image = canvas.toDataURL('image/png')
+      showToast('Preparando paquete de imágenes...', 'loading')
+      
+      for (let i = 0; i < slides.length; i++) {
+        const canvas = await html2canvas(slides[i], {
+          useCORS: true,
+          backgroundColor: bgColor,
+          scale: 3, // Very high quality for IG
+          logging: false
+        })
+        const imgData = canvas.toDataURL('image/png').split(',')[1]
+        zip.file(`Slide_${i + 1}.png`, imgData, { base64: true })
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' })
       const link = document.createElement('a')
-      link.href = image
-      link.download = `carrusel-${selectedPost.slug_url}.png`
+      link.href = URL.createObjectURL(content)
+      link.download = `carrusel-${selectedPost.slug_url}.zip`
       link.click()
-      showToast('¡Carrusel descargado!', 'success')
+      
+      showToast('¡ZIP descargado con todas las diapositivas!', 'success')
     } catch (error) {
-      showToast('Error al descargar carrusel', 'error')
+      console.error(error)
+      showToast('Error al generar el ZIP', 'error')
     }
   }
 
@@ -244,48 +260,91 @@ export default function SocialGeneratorPage() {
                         <p className="text-sm font-bold text-gray-800 dark:text-white">{generatedContent.cta}</p>
                       </div>
                     </div>
-                  </div>
-                ) : (
+                     ) : (
                   <div className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                      <div className="flex justify-between items-center mb-6">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                         <div>
-                          <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Estructura del Carrusel (Diapositivas)</h3>
-                          <p className="text-[10px] text-gray-500 mt-1">IA generó {generatedContent.slides.length} diapositivas basadas en tu blog.</p>
+                          <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-xs">Personalización del Carrusel</h3>
+                          <p className="text-[10px] text-gray-500 mt-1">Elige el color de fondo y descarga el paquete.</p>
                         </div>
-                        <button 
-                          onClick={downloadCarousel}
-                          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md active:scale-95"
-                        >
-                          Descargar Diapositivas 📸
-                        </button>
+                        
+                        <div className="flex flex-wrap items-center gap-6">
+                          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-2xl border border-gray-100 dark:border-gray-600">
+                             <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Color de Fondo</p>
+                             <CirclePicker 
+                               width="180px" 
+                               circleSize={18} 
+                               circleSpacing={8}
+                               colors={["#ffffff", "#f9fafb", "#f3f4f6", "#fff1f2", "#f0fdf4", "#eff6ff", "#faf5ff", "#000000"]}
+                               onChange={(color) => setBgColor(color.hex)} 
+                             />
+                          </div>
+                          
+                          <button 
+                            onClick={downloadCarousel}
+                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black hover:bg-indigo-700 transition-all shadow-lg active:scale-95"
+                          >
+                            Descargar ZIP (Imágenes) 📦
+                          </button>
+                        </div>
                       </div>
 
-                      <div id="carousel-container" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                         {generatedContent.slides.map((slide, i) => (
-                          <div key={i} className="aspect-square bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-2xl p-6 flex flex-col relative group overflow-hidden border border-gray-100 dark:border-gray-600 shadow-sm">
-                            <span className="absolute top-2 right-4 text-5xl font-black text-black/5 dark:text-white/5">{i+1}</span>
-                            <div className="mt-4">
-                              <h4 className="text-sm font-black text-indigo-600 dark:text-indigo-400 mb-3 z-10 leading-tight uppercase tracking-wide">{slide.title}</h4>
-                              <div className="h-0.5 w-8 bg-indigo-600/30 mb-4 rounded-full"></div>
-                              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-medium z-10">{slide.content}</p>
+                          <div 
+                            key={i} 
+                            className="carousel-slide-item aspect-square rounded-3xl p-8 flex flex-col relative group overflow-hidden border border-gray-100 dark:border-gray-600 shadow-xl transition-transform hover:scale-[1.02]"
+                            style={{ backgroundColor: bgColor }}
+                          >
+                            {/* Slide Header (Branding) */}
+                            <div className="flex items-center gap-3 mb-8 border-b border-gray-100 dark:border-gray-700/50 pb-4">
+                              {doctor?.logo_url ? (
+                                <img src={getImageUrl(doctor.logo_url)} alt="Logo" className="w-8 h-8 object-contain rounded-md" />
+                              ) : (
+                                <div className="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center text-white text-[10px] font-black">GS</div>
+                              )}
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-none">
+                                  {doctor?.nombre_completo || 'GynSys'}
+                                </span>
+                                <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Especialista</span>
+                              </div>
                             </div>
-                            <div className="mt-auto flex justify-between items-center">
-                                <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">GynSys IA</span>
+
+                            <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
+                            
+                            <div className="flex-1 flex flex-col justify-center">
+                              <h4 
+                                className={`text-lg font-black mb-4 z-10 leading-tight uppercase tracking-wide ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
+                              >
+                                {slide.title}
+                              </h4>
+                              <div className="h-1 w-12 bg-indigo-600/30 mb-6 rounded-full"></div>
+                              <p 
+                                className={`text-sm leading-relaxed font-bold z-10 ${bgColor === '#000000' ? 'text-gray-300' : 'text-gray-700 dark:text-gray-300'}`}
+                              >
+                                {slide.content}
+                              </p>
+                            </div>
+
+                            <div className="mt-8 flex justify-between items-center border-t border-gray-100 dark:border-gray-700/50 pt-4">
+                                <span className="text-[9px] font-black text-gray-300 dark:text-gray-500 uppercase tracking-[0.2em]">GynSys Asistente IA</span>
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     copyToClipboard(slide.title + "\n" + slide.content, i)
                                   }}
-                                  className="p-2 bg-white dark:bg-gray-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-md border border-gray-100 dark:border-gray-500"
+                                  className="p-2 bg-white dark:bg-gray-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border border-gray-100 dark:border-gray-600 active:scale-90"
                                 >
-                                  {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={12} className="text-gray-400" />}
+                                  {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={14} className="text-gray-400" />}
                                 </button>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
+                 </div>
 
                     <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl">
                       <div className="flex justify-between items-center mb-4">
