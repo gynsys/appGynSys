@@ -56,6 +56,11 @@ def generate_social_ai(
             post_content=post.content,
             generation_type=gen_type
         )
+        
+        # Inject the type for schema validation
+        if isinstance(result, dict):
+            result['type'] = gen_type
+            
         return schemas.SocialContentResponse(**result)
     except Exception as e:
         import logging
