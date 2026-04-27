@@ -14,78 +14,68 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     try:
       genai.configure(api_key=settings.GEMINI_API_KEY)
       
-      # Usamos el nombre de modelo compatible con la versión v1beta de la API
-      model_name = 'gemini-1.5-flash-latest' 
-      
-      generation_config = {
-        "temperature": 0.7,
-        "top_p": 0.95,
-        "top_k": 40,
-        "max_output_tokens": 8192,
-        "response_mime_type": "application/json",
-      }
-
-      model = genai.GenerativeModel(
-        model_name=model_name,
-        generation_config=generation_config
-      )
+      # Usamos gemini-pro que es el más compatible universalmente
+      model_name = 'gemini-pro' 
+      model = genai.GenerativeModel(model_name)
 
       if generation_type == 'reel':
           prompt = f"""
+          Actúa como un experto en marketing digital. 
           Analiza el artículo y crea un guion de Reel.
           
           ARTÍCULO:
           Título: {post_title}
           Contenido: {post_content}
           
-          Responde estrictamente con este esquema JSON:
+          Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
           {{
-            "hook": "string",
+            "hook": "frase inicial",
             "scenes": [
-              {{ "time": "string", "text": "string", "audio": "string" }}
+              {{ "time": "00:00", "text": "descripción", "audio": "voz" }}
             ],
-            "cta": "string",
-            "image_prompts": ["string"]
+            "cta": "llamada a la acción",
+            "image_prompts": ["idea 1"]
           }}
           """
       else:
           prompt = f"""
+          Actúa como un diseñador de Instagram. 
           Crea un carrusel de 5-10 diapositivas.
           
           ARTÍCULO:
           Título: {post_title}
           Contenido: {post_content}
           
-          Responde estrictamente con este esquema JSON:
+          Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
           {{
             "slides": [
-              {{ "title": "string", "content": "string" }}
+              {{ "title": "título", "content": "cuerpo" }}
             ],
-            "image_prompts": ["string"]
+            "image_prompts": ["idea 1"]
           }}
           """
 
-      logger.info(f"Iniciando generación {generation_type} con {model_name}...")
+      logger.info(f"Generando {generation_type} con {model_name}...")
       response = model.generate_content(prompt)
       
-      json_text = response.text.strip()
-      # Limpiar bloques de código markdown si los hay
-      if json_text.startswith('```'):
-          json_text = re.sub(r'```json\s*|\s*```', '', json_text).strip()
-          
-      data = json.loads(json_text)
-      return data
+      text = response.text.strip()
+      
+      # Intentar extraer JSON de bloques de código o texto libre
+      json_match = re.search(r'(\{.*\})', text, re.DOTALL)
+      if json_match:
+          json_str = json_match.group(1)
+          try:
+              return json.loads(json_str)
+          except json.JSONDecodeError:
+              # Limpieza agresiva de JSON mal formado
+              json_str = re.sub(r'//.*', '', json_str) # Quitar comentarios
+              json_str = json_str.replace('\n', ' ').replace('\r', '')
+              json_str = re.sub(r',\s*\}', '}', json_str) # Comas finales en objetos
+              json_str = re.sub(r',\s*\]', ']', json_str) # Comas finales en arreglos
+              return json.loads(json_str)
+      
+      raise ValueError("No se pudo extraer JSON de la respuesta")
 
     except Exception as e:
       logger.error(f"Error crítico en generación social: {e}", exc_info=True)
-      # Reintentar sin modo JSON como último recurso si hay un error de modelo
-      try:
-          logger.info("Reintentando sin Modo JSON para compatibilidad...")
-          model_fallback = genai.GenerativeModel('gemini-pro')
-          response = model_fallback.generate_content(prompt)
-          json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
-          if json_match:
-              return json.loads(json_match.group())
-      except:
-          pass
       raise e

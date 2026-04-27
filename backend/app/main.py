@@ -61,10 +61,20 @@ app.include_router(api_router, prefix="/api/v1")
 # Mount static files for uploads
 
 
-# Mount static files for uploads
+# Mount static files for uploads with CORS support
 uploads_path = Path(settings.UPLOAD_DIR).resolve()
 uploads_path.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
+
+static_app = FastAPI()
+static_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allow all for static assets
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+static_app.mount("/", StaticFiles(directory=str(uploads_path)), name="static")
+app.mount("/uploads", static_app)
 
 # Mount static files for sample-gallery (default images)
 sample_gallery_path = Path(__file__).parent.parent / "sample-gallery"
