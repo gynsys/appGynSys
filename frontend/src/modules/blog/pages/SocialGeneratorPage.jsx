@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { 
   FiCpu, FiInstagram, FiImage, FiCopy, FiCheck, 
   FiLoader, FiMaximize2, FiX, FiChevronLeft, FiChevronRight,
@@ -24,10 +24,14 @@ export default function SocialGeneratorPage() {
   const [previewIndex, setPreviewIndex] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
   const [fontSize, setFontSize] = useState(14)
+  const [headerFontSize, setHeaderFontSize] = useState(10)
   const [watermarkImage, setWatermarkImage] = useState(null)
   const [imagePositions, setImagePositions] = useState({})
+  const [imageSize, setImageSize] = useState(100)
   const [dragging, setDragging] = useState(null)
-  
+  const [slideAlignments, setSlideAlignments] = useState({})
+  const slideRefs = useRef({})
+
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
   const { showToast } = useToastStore()
@@ -116,19 +120,31 @@ export default function SocialGeneratorPage() {
   }
 
   const handleDragStart = (e, slideIndex) => {
+    e.preventDefault()
+    const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
+    if (!rect) return
     const pos = imagePositions[slideIndex] || { x: 50, y: 70 }
-    setDragging({ slideIndex, startX: e.clientX - pos.x, startY: e.clientY - pos.y })
+    setDragging({
+      slideIndex,
+      offsetX: e.clientX - rect.left - (pos.x / 100) * rect.width,
+      offsetY: e.clientY - rect.top - (pos.y / 100) * rect.height,
+      rect
+    })
   }
 
   const handleDragMove = (e) => {
     if (!dragging) return
-    const { slideIndex, startX, startY } = dragging
-    const newX = Math.min(90, Math.max(10, e.clientX - startX))
-    const newY = Math.min(90, Math.max(10, e.clientY - startY))
-    setImagePositions(prev => ({ ...prev, [slideIndex]: { x: newX, y: newY } }))
+    const { slideIndex, offsetX, offsetY, rect } = dragging
+    const xPct = Math.min(90, Math.max(10, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
+    const yPct = Math.min(90, Math.max(10, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
+    setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
   }
 
   const handleDragEnd = () => setDragging(null)
+
+  const setSlideAlignment = (slideIndex, align) => {
+    setSlideAlignments(prev => ({ ...prev, [slideIndex]: align }))
+  }
 
   const downloadCarousel = async () => {
     const zip = new JSZip()
@@ -281,12 +297,30 @@ export default function SocialGeneratorPage() {
                            />
                         </div>
 
-                        {/* Font size */}
+                        {/* Font size - content */}
                         <div className="flex flex-col gap-1">
-                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Tamaño Fuente</p>
+                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Contenido</p>
                           <div className="flex items-center gap-2">
-                            <input type="range" min={10} max={24} step={1} value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-28 accent-indigo-600" />
+                            <input type="range" min={10} max={24} step={1} value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-24 accent-indigo-600" />
                             <span className="text-[10px] font-mono text-gray-600 w-8">{fontSize}px</span>
+                          </div>
+                        </div>
+
+                        {/* Font size - doctor name */}
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Nombre</p>
+                          <div className="flex items-center gap-2">
+                            <input type="range" min={8} max={20} step={1} value={headerFontSize} onChange={(e) => setHeaderFontSize(Number(e.target.value))} className="w-24 accent-purple-600" />
+                            <span className="text-[10px] font-mono text-gray-600 w-8">{headerFontSize}px</span>
+                          </div>
+                        </div>
+
+                        {/* Image size */}
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Tam. Imagen</p>
+                          <div className="flex items-center gap-2">
+                            <input type="range" min={60} max={200} step={10} value={imageSize} onChange={(e) => setImageSize(Number(e.target.value))} className="w-24 accent-blue-600" />
+                            <span className="text-[10px] font-mono text-gray-600 w-12">{imageSize}px</span>
                           </div>
                         </div>
 
@@ -313,6 +347,7 @@ export default function SocialGeneratorPage() {
                         {generatedContent.slides.map((slide, i) => (
                           <div
                              key={i}
+                             ref={el => slideRefs.current[i] = el}
                              className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden"
                              style={{ backgroundColor: bgColor }}
                              onMouseMove={handleDragMove}
@@ -323,26 +358,25 @@ export default function SocialGeneratorPage() {
                              {watermarkImage && (
                                <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
                              )}
-
-                            {/* Header Aligned Left - Safe Logo Implementation */}
-                            <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full">
-                              <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
-                                {doctorLogoBase64 ? (
-                                  <img 
-                                    src={doctorLogoBase64} 
-                                    alt="Logo" 
-                                    className="w-full h-full object-contain"
-                                  />
-                                ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
-                              </div>
-                              <span className={`text-[10px] font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-                                {doctor?.nombre_completo}
-                              </span>
-                            </div>
+                             {/* Header */}
+                             <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full relative z-10">
+                               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+                                 {doctorLogoBase64 ? (
+                                   <img src={doctorLogoBase64} alt="Logo" className="w-full h-full object-contain" />
+                                 ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
+                               </div>
+                               <span
+                                 style={{ fontSize: ${headerFontSize}px }}
+                                 className={ont-black uppercase tracking-tight + (bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white')}
+                               >{doctor?.nombre_completo}</span>
+                             </div>
 
                             <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
                             
-                            <div className="flex-1 flex flex-col justify-center text-center px-2">
+                             <div
+                               className="flex-1 flex flex-col px-2 text-center"
+                               style={{ justifyContent: slideAlignments[i] ?? 'center' }}
+                             >
                               {editingIndex === i ? (
                                 <div className="space-y-4 slide-actions">
                                   <input 
@@ -373,36 +407,55 @@ export default function SocialGeneratorPage() {
                                   >{slide.content}</p>
 
                                   {slide.customImage && (
-                                    <div
-                                      className="absolute cursor-grab active:cursor-grabbing z-20"
-                                      style={{ left: `${imagePositions[i]?.x ?? 50}%`, top: `${imagePositions[i]?.y ?? 70}%`, transform: 'translate(-50%, -50%)' }}
-                                      onMouseDown={(e) => handleDragStart(e, i)}
-                                    >
-                                      <div className="relative group/img">
-                                        <img src={slide.customImage} className="w-[100px] h-[100px] rounded-xl shadow-md border-2 border-white/50 object-cover" alt="Custom" />
-                                        <button onClick={() => removeCustomImage(i)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions"><FiTrash2 size={12}/></button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
+                                   {slide.customImage && (
+                                     <div
+                                       className="absolute z-20"
+                                       style={{
+                                         left: ${imagePositions[i]?.x ?? 50}%,
+                                         top: ${imagePositions[i]?.y ?? 70}%,
+                                         transform: 'translate(-50%, -50%)',
+                                         cursor: dragging?.slideIndex === i ? 'grabbing' : 'grab',
+                                         userSelect: 'none'
+                                       }}
+                                       onMouseDown={(e) => handleDragStart(e, i)}
+                                     >
+                                       <div className="relative group/img">
+                                         <img
+                                           src={slide.customImage}
+                                           className="rounded-xl shadow-md border-2 border-white/50 object-cover"
+                                           style={{ width: ${imageSize}px, height: ${imageSize}px }}
+                                           alt="Custom"
+                                           draggable={false}
+                                         />
+                                         <button onClick={() => removeCustomImage(i)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions"><FiTrash2 size={12}/></button>
+                                       </div>
+                                     </div>
+                                   )}
                               )}
                             </div>
 
-                            <div className="mt-6 flex justify-end items-center absolute bottom-6 right-6 slide-actions z-20">
-                                <div className="flex gap-2">
-                                  <button onClick={() => setPreviewIndex(i)} className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-sm text-indigo-600 rounded-lg hover:bg-white"><FiMaximize2 size={14}/></button>
-                                  <button onClick={() => setEditingIndex(i === editingIndex ? null : i)} className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-sm text-amber-500 rounded-lg hover:bg-white"><FiEdit3 size={14}/></button>
-                                  
-                                  <label className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-sm text-blue-500 rounded-lg hover:bg-white cursor-pointer">
-                                    <FiPlusCircle size={14}/>
-                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAddImage(i, e)} />
-                                  </label>
-
-                                  <button onClick={() => copyToClipboard(`${slide.title}\n${slide.content}`, i)} className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur shadow-sm text-gray-400 rounded-lg hover:bg-white">
-                                    {copiedField === i ? <FiCheck className="text-green-500" /> : <FiCopy size={14} />}
-                                  </button>
-                                </div>
-                            </div>
+                             <div className="absolute bottom-4 right-4 slide-actions z-20 flex gap-1">
+                               {/* Alignment buttons */}
+                               <div className="flex flex-col gap-1 mr-1">
+                                 <button onClick={() => setSlideAlignment(i, 'flex-start')} title="Arriba"
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-start' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&uarr;</button>
+                                 <button onClick={() => setSlideAlignment(i, 'center')} title="Centro"
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'center' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&updownarrow;</button>
+                                 <button onClick={() => setSlideAlignment(i, 'flex-end')} title="Abajo"
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-end' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&darr;</button>
+                               </div>
+                               <div className="flex flex-col gap-1">
+                                 <button onClick={() => setPreviewIndex(i)} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white"><FiMaximize2 size={12}/></button>
+                                 <button onClick={() => setEditingIndex(i === editingIndex ? null : i)} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white"><FiEdit3 size={12}/></button>
+                                 <label className="p-1.5 bg-white/80 text-blue-500 rounded-lg hover:bg-white cursor-pointer">
+                                   <FiPlusCircle size={12}/>
+                                   <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAddImage(i, e)} />
+                                 </label>
+                                 <button onClick={() => copyToClipboard(${slide.title}\n, i)} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white">
+                                   {copiedField === i ? <FiCheck className="text-green-500" size={12} /> : <FiCopy size={12} />}
+                                 </button>
+                               </div>
+                             </div>
                           </div>
                         ))}
                       </div>
