@@ -169,7 +169,7 @@ export default function SocialGeneratorPage() {
         </header>
 
         {selectedPost && (
-          <div className="mb-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn">
+          <div className="mb-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn relative">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex-1">
                 <h3 className="text-xl font-black mb-1">¿Qué quieres crear hoy?</h3>
@@ -197,8 +197,9 @@ export default function SocialGeneratorPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
+          {/* Element 1: Sidebar Selection */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 relative">
               <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Selecciona un artículo</h2>
               <select
                 value={selectedPost?.id || ''}
@@ -207,7 +208,7 @@ export default function SocialGeneratorPage() {
                   setSelectedPost(post);
                   setGeneratedContent(null);
                 }}
-                className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 border truncate"
+                className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base font-medium p-3 border truncate font-manrope"
               >
                 <option value="" disabled>Elegir artículo...</option>
                 {posts.map(post => (
@@ -219,11 +220,12 @@ export default function SocialGeneratorPage() {
             </div>
           </div>
 
+          {/* Main Area: Generated Content or Placeholder */}
           <div className="lg:col-span-8">
             {generating ? (
               <div className="h-[300px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
                 <FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
-                <p className="font-bold text-gray-900 dark:text-white">IA procesando contenido...</p>
+                <p className="font-bold text-gray-900 dark:text-white font-manrope">IA procesando contenido...</p>
               </div>
             ) : generatedContent ? (
               <div className="space-y-6 animate-fadeIn">
