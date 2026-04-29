@@ -219,10 +219,11 @@ export default function SocialGeneratorPage() {
               </select>
             </div>
           </div>
+        </div>
 
-          {/* Main Area: Generated Content or Placeholder */}
-          <div className="lg:col-span-8">
-            {generating ? (
+        {/* Main Area: Generated Content or Placeholder - Moved below as per magenta box */}
+        <div className="mt-8">
+          {generating ? (
               <div className="h-[300px] w-full lg:w-[1095px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
                 <FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
                 <p className="font-bold text-gray-900 dark:text-white font-manrope">IA procesando contenido...</p>
@@ -337,7 +338,6 @@ export default function SocialGeneratorPage() {
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-center">Editor de Contenido IA</h3>
                 <p className="text-gray-500 text-sm text-center">Selecciona un artículo para comenzar.</p>
               </div>
-            )}
           </div>
         </div>
       </div>
