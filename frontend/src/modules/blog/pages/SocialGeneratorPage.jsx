@@ -338,9 +338,9 @@ export default function SocialGeneratorPage() {
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-center">Editor de Contenido IA</h3>
                 <p className="text-gray-500 text-sm text-center">Selecciona un artículo para comenzar.</p>
               </div>
+            )}
           </div>
         </div>
-      </div>
 
       {/* Preview Modal */}
       {previewIndex !== null && generatedContent && (
