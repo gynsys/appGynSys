@@ -23,6 +23,10 @@ export default function SocialGeneratorPage() {
   const [bgColor, setBgColor] = useState('#ffffff')
   const [previewIndex, setPreviewIndex] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
+  const [fontSize, setFontSize] = useState(14)
+  const [watermarkImage, setWatermarkImage] = useState(null)
+  const [imagePositions, setImagePositions] = useState({})
+  const [dragging, setDragging] = useState(null)
   
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -102,6 +106,29 @@ export default function SocialGeneratorPage() {
     delete newSlides[index].customImage
     setGeneratedContent({ ...generatedContent, slides: newSlides })
   }
+
+  const handleWatermark = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => setWatermarkImage(reader.result)
+    reader.readAsDataURL(file)
+  }
+
+  const handleDragStart = (e, slideIndex) => {
+    const pos = imagePositions[slideIndex] || { x: 50, y: 70 }
+    setDragging({ slideIndex, startX: e.clientX - pos.x, startY: e.clientY - pos.y })
+  }
+
+  const handleDragMove = (e) => {
+    if (!dragging) return
+    const { slideIndex, startX, startY } = dragging
+    const newX = Math.min(90, Math.max(10, e.clientX - startX))
+    const newY = Math.min(90, Math.max(10, e.clientY - startY))
+    setImagePositions(prev => ({ ...prev, [slideIndex]: { x: newX, y: newY } }))
+  }
+
+  const handleDragEnd = () => setDragging(null)
 
   const downloadCarousel = async () => {
     const zip = new JSZip()
@@ -243,8 +270,8 @@ export default function SocialGeneratorPage() {
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                         <div className="flex items-center gap-4">
                            <div className="text-right">
-                             <p className="text-[10px] font-black uppercase text-gray-400 mb-1 leading-none">Color Fondo</p>
-                             <span className="text-[10px] font-mono text-gray-300 uppercase leading-none">{bgColor}</span>
+                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Fondo</p>
+                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{bgColor}</span>
                            </div>
                            <input 
                              type="color"
@@ -253,13 +280,50 @@ export default function SocialGeneratorPage() {
                              className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
                            />
                         </div>
+
+                        {/* Font size */}
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Tamaño Fuente</p>
+                          <div className="flex items-center gap-2">
+                            <input type="range" min={10} max={24} step={1} value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-28 accent-indigo-600" />
+                            <span className="text-[10px] font-mono text-gray-600 w-8">{fontSize}px</span>
+                          </div>
+                        </div>
+
+                        {/* Watermark */}
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Marca de Agua</p>
+                          <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer text-xs font-bold text-gray-700 transition-all">
+                              <FiUpload size={12} /> {watermarkImage ? 'Cambiar' : 'Subir'}
+                              <input type="file" className="hidden" accept="image/*" onChange={handleWatermark} />
+                            </label>
+                            {watermarkImage && (
+                              <button onClick={() => setWatermarkImage(null)} className="p-1 bg-red-100 text-red-500 rounded-lg hover:bg-red-200">
+                                <FiTrash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
                         <button onClick={downloadCarousel} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-indigo-700">Descargar ZIP 📦</button>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {generatedContent.slides.map((slide, i) => (
-                          <div key={i} className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden" style={{ backgroundColor: bgColor }}>
-                            
+                          <div
+                             key={i}
+                             className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden"
+                             style={{ backgroundColor: bgColor }}
+                             onMouseMove={handleDragMove}
+                             onMouseUp={handleDragEnd}
+                             onMouseLeave={handleDragEnd}
+                           >
+                             {/* Watermark */}
+                             {watermarkImage && (
+                               <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
+                             )}
+
                             {/* Header Aligned Left - Safe Logo Implementation */}
                             <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full">
                               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
@@ -296,16 +360,28 @@ export default function SocialGeneratorPage() {
                                 </div>
                               ) : (
                                 <>
-                                  <h4 className={`text-xl font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}>{slide.title}</h4>
-                                  
+                                  <h4
+                                    className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
+                                    style={{ fontSize: `${fontSize + 4}px` }}
+                                  >{slide.title}</h4>
+
                                   <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
-                                  
-                                  <p className={`text-sm font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}>{slide.content}</p>
-                                  
+
+                                  <p
+                                    className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
+                                    style={{ fontSize: `${fontSize}px` }}
+                                  >{slide.content}</p>
+
                                   {slide.customImage && (
-                                    <div className="mt-4 relative group/img mx-auto max-w-[120px]">
-                                      <img src={slide.customImage} className="rounded-xl shadow-md border-2 border-white/50 object-cover aspect-square" alt="Custom" />
-                                      <button onClick={() => removeCustomImage(i)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions"><FiTrash2 size={12}/></button>
+                                    <div
+                                      className="absolute cursor-grab active:cursor-grabbing z-20"
+                                      style={{ left: `${imagePositions[i]?.x ?? 50}%`, top: `${imagePositions[i]?.y ?? 70}%`, transform: 'translate(-50%, -50%)' }}
+                                      onMouseDown={(e) => handleDragStart(e, i)}
+                                    >
+                                      <div className="relative group/img">
+                                        <img src={slide.customImage} className="w-[100px] h-[100px] rounded-xl shadow-md border-2 border-white/50 object-cover" alt="Custom" />
+                                        <button onClick={() => removeCustomImage(i)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions"><FiTrash2 size={12}/></button>
+                                      </div>
                                     </div>
                                   )}
                                 </>
