@@ -354,11 +354,9 @@ export default function SocialGeneratorPage() {
                              onMouseUp={handleDragEnd}
                              onMouseLeave={handleDragEnd}
                            >
-                             {/* Watermark */}
                              {watermarkImage && (
                                <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
                              )}
-                             {/* Header */}
                              <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full relative z-10">
                                <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
                                  {doctorLogoBase64 ? (
@@ -369,51 +367,46 @@ export default function SocialGeneratorPage() {
                                  style={{ fontSize: headerFontSize + 'px' }}
                                  className={`font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}
                                >{doctor?.nombre_completo}</span>
-
-                            <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
-                            
+                             </div>
+                             <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
                              <div
                                className="flex-1 flex flex-col px-2 text-center"
                                style={{ justifyContent: slideAlignments[i] ?? 'center' }}
                              >
-                              {editingIndex === i ? (
-                                <div className="space-y-4 slide-actions">
-                                  <input 
-                                    className="w-full p-2 text-sm font-black uppercase border rounded-lg dark:bg-gray-700 dark:text-white"
-                                    value={slide.title}
-                                    onChange={(e) => handleEditSlide(i, 'title', e.target.value)}
-                                  />
-                                  <textarea 
-                                    className="w-full p-2 text-xs border rounded-lg dark:bg-gray-700 dark:text-white"
-                                    rows="4"
-                                    value={slide.content}
-                                    onChange={(e) => handleEditSlide(i, 'content', e.target.value)}
-                                  />
-                                  <button onClick={() => setEditingIndex(null)} className="w-full py-2 bg-green-500 text-white text-[10px] font-black uppercase rounded-lg">Guardar Cambios</button>
-                                </div>
-                              ) : (
-                                <>
-                                  <h4
-                                    className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
-                                    style={{ fontSize: `${fontSize + 4}px` }}
-                                  >{slide.title}</h4>
-
-                                  <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
-
-                                  <p
-                                    className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
-                                    style={{ fontSize: `${fontSize}px` }}
-                                  >{slide.content}</p>
-
-                                  {slide.customImage && (
+                               {editingIndex === i ? (
+                                 <div className="space-y-4 slide-actions">
+                                   <input
+                                     className="w-full p-2 text-sm font-black uppercase border rounded-lg dark:bg-gray-700 dark:text-white"
+                                     value={slide.title}
+                                     onChange={(e) => handleEditSlide(i, 'title', e.target.value)}
+                                   />
+                                   <textarea
+                                     className="w-full p-2 text-xs border rounded-lg dark:bg-gray-700 dark:text-white"
+                                     rows="4"
+                                     value={slide.content}
+                                     onChange={(e) => handleEditSlide(i, 'content', e.target.value)}
+                                   />
+                                   <button onClick={() => setEditingIndex(null)} className="w-full py-2 bg-green-500 text-white text-[10px] font-black uppercase rounded-lg">Guardar Cambios</button>
+                                 </div>
+                               ) : (
+                                 <>
+                                   <h4
+                                     className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
+                                     style={{ fontSize: (fontSize + 4) + 'px' }}
+                                   >{slide.title}</h4>
+                                   <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
+                                   <p
+                                     className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
+                                     style={{ fontSize: fontSize + 'px' }}
+                                   >{slide.content}</p>
                                    {slide.customImage && (
                                      <div
                                        className="absolute z-20"
                                        style={{
-                                         left: ${imagePositions[i]?.x ?? 50}%,
-                                         top: ${imagePositions[i]?.y ?? 70}%,
+                                         left: (imagePositions[i] ? imagePositions[i].x : 50) + '%',
+                                         top: (imagePositions[i] ? imagePositions[i].y : 70) + '%',
                                          transform: 'translate(-50%, -50%)',
-                                         cursor: dragging?.slideIndex === i ? 'grabbing' : 'grab',
+                                         cursor: (dragging && dragging.slideIndex === i) ? 'grabbing' : 'grab',
                                          userSelect: 'none'
                                        }}
                                        onMouseDown={(e) => handleDragStart(e, i)}
@@ -422,7 +415,7 @@ export default function SocialGeneratorPage() {
                                          <img
                                            src={slide.customImage}
                                            className="rounded-xl shadow-md border-2 border-white/50 object-cover"
-                                           style={{ width: ${imageSize}px, height: ${imageSize}px }}
+                                           style={{ width: imageSize + 'px', height: imageSize + 'px' }}
                                            alt="Custom"
                                            draggable={false}
                                          />
@@ -430,18 +423,17 @@ export default function SocialGeneratorPage() {
                                        </div>
                                      </div>
                                    )}
-                              )}
-                            </div>
-
+                                 </>
+                               )}
+                             </div>
                              <div className="absolute bottom-4 right-4 slide-actions z-20 flex gap-1">
-                               {/* Alignment buttons */}
                                <div className="flex flex-col gap-1 mr-1">
                                  <button onClick={() => setSlideAlignment(i, 'flex-start')} title="Arriba"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-start' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&uarr;</button>
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-start' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8593;</button>
                                  <button onClick={() => setSlideAlignment(i, 'center')} title="Centro"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'center' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&updownarrow;</button>
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'center' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8597;</button>
                                  <button onClick={() => setSlideAlignment(i, 'flex-end')} title="Abajo"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-end' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&darr;</button>
+                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-end' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8595;</button>
                                </div>
                                <div className="flex flex-col gap-1">
                                  <button onClick={() => setPreviewIndex(i)} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white"><FiMaximize2 size={12}/></button>
@@ -450,12 +442,12 @@ export default function SocialGeneratorPage() {
                                    <FiPlusCircle size={12}/>
                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAddImage(i, e)} />
                                  </label>
-                                 <button onClick={() => copyToClipboard(${slide.title}\n, i)} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white">
+                                 <button onClick={() => copyToClipboard(slide.title + '\n' + slide.content, i)} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white">
                                    {copiedField === i ? <FiCheck className="text-green-500" size={12} /> : <FiCopy size={12} />}
                                  </button>
                                </div>
                              </div>
-                          </div>
+                           </div>
                         ))}
                       </div>
                     </div>
