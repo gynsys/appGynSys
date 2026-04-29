@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.db.models.appointment import Appointment
-from app.schemas.appointment import AppointmentInDB, AppointmentUpdate, AppointmentCreate
+from app.schemas.appointment import AppointmentInDB, AppointmentUpdate, AppointmentCreate, AppointmentList
 from app.api.v1.endpoints.auth import get_current_user
 from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
