@@ -337,14 +337,12 @@ async def get_appointments(
                 else:
                     answers = app.preconsulta_answers or {}
                 
-                # For the list, we only inject if it hasn't been done or to ensure freshness
-                # We use the appointment's own data for the match
+                # Pasamos el objeto 'app' directamente para evitar re-consultar la DB en cada iteración
                 GeneradorResumenes.inyectar_dinamicamente(
                     db=db,
                     data=answers,
-                    patient_ci=app.patient_dni,
-                    doctor_id=app.doctor_id,
-                    patient_name=app.patient_name
+                    patient_name=app.patient_name,
+                    appointment=app
                 )
                 app.preconsulta_answers = json.dumps(answers)
             except Exception as e:

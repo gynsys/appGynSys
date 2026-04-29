@@ -168,6 +168,33 @@ export default function SocialGeneratorPage() {
           </h1>
         </header>
 
+        {selectedPost && (
+          <div className="mb-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-black mb-1">¿Qué quieres crear hoy?</h3>
+                <p className="text-indigo-100 text-sm">Transforma tu artículo en contenido viral para redes sociales.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto min-w-[400px]">
+                <button 
+                  onClick={() => handleGenerate('reel')} 
+                  disabled={generating} 
+                  className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"
+                >
+                  <FiInstagram className="text-xl" /> Guion para Reel
+                </button>
+                <button 
+                  onClick={() => handleGenerate('carousel')} 
+                  disabled={generating} 
+                  className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"
+                >
+                  <FiImage className="text-xl" /> Estructura Carrusel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <div className="lg:col-span-4 space-y-6">
@@ -190,20 +217,6 @@ export default function SocialGeneratorPage() {
                 ))}
               </select>
             </div>
-
-            {selectedPost && (
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl">
-                <h3 className="font-bold mb-4">¿Qué quieres crear?</h3>
-                <div className="space-y-3">
-                  <button onClick={() => handleGenerate('reel')} disabled={generating} className="w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 p-3 rounded-xl font-bold transition-all">
-                    <FiInstagram /> Guion para Reel
-                  </button>
-                  <button onClick={() => handleGenerate('carousel')} disabled={generating} className="w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 p-3 rounded-xl font-bold transition-all">
-                    <FiImage /> Estructura Carrusel
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="lg:col-span-8">

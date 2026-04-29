@@ -101,7 +101,7 @@ class GeneradorResumenes:
                 self.ho = {}
         
     @staticmethod
-    def inyectar_dinamicamente(db, data: dict, patient_ci: str, doctor_id: int, patient_name: str = "Paciente"):
+    def inyectar_dinamicamente(db, data: dict, patient_ci: str = None, doctor_id: int = None, patient_name: str = "Paciente", appointment=None):
         """
         Busca las respuestas crudas de preconsulta para un paciente e inyecta
         los resúmenes generados dinámicamente en el diccionario 'data'.
@@ -110,33 +110,33 @@ class GeneradorResumenes:
             from app.db.models.appointment import Appointment
             import json
             
-            # Busqueda robusta del appointment con respuestas
-            # 1. Intento por CI exacto
-            appointment = db.query(Appointment).filter(
-                Appointment.doctor_id == doctor_id,
-                Appointment.patient_dni == patient_ci,
-                Appointment.preconsulta_answers.is_not(None)
-            ).order_by(Appointment.created_at.desc()).first()
-            
-            # 2. Intento por CI normalizado (si falló el primero)
-            if not appointment and patient_ci:
-                clean_ci = str(patient_ci).strip().replace(".", "").replace("-", "")
-                # Buscamos appointments y comparamos en memoria o con ILIKE si es posible
-                # (Para simplicidad y rapidez, probamos ILIKE flexible)
+            # Si ya nos pasan el appointment, no hace falta buscarlo
+            if not appointment:
+                # Busqueda robusta del appointment con respuestas
+                # 1. Intento por CI exacto
                 appointment = db.query(Appointment).filter(
                     Appointment.doctor_id == doctor_id,
-                    Appointment.patient_dni.ilike(f"%{clean_ci}%"),
+                    Appointment.patient_dni == patient_ci,
                     Appointment.preconsulta_answers.is_not(None)
                 ).order_by(Appointment.created_at.desc()).first()
                 
-            # 3. Intento por Nombre (Fuzzy suave) si seguimos sin encontrar y tenemos nombre
-            if not appointment and patient_name and patient_name != "Paciente":
-                first_name = patient_name.split()[0]
-                appointment = db.query(Appointment).filter(
-                    Appointment.doctor_id == doctor_id,
-                    Appointment.patient_name.ilike(f"%{first_name}%"),
-                    Appointment.preconsulta_answers.is_not(None)
-                ).order_by(Appointment.created_at.desc()).first()
+                # 2. Intento por CI normalizado (si falló el primero)
+                if not appointment and patient_ci:
+                    clean_ci = str(patient_ci).strip().replace(".", "").replace("-", "")
+                    appointment = db.query(Appointment).filter(
+                        Appointment.doctor_id == doctor_id,
+                        Appointment.patient_dni.ilike(f"%{clean_ci}%"),
+                        Appointment.preconsulta_answers.is_not(None)
+                    ).order_by(Appointment.created_at.desc()).first()
+                    
+                # 3. Intento por Nombre (Fuzzy suave) si seguimos sin encontrar y tenemos nombre
+                if not appointment and patient_name and patient_name != "Paciente":
+                    first_name = patient_name.split()[0]
+                    appointment = db.query(Appointment).filter(
+                        Appointment.doctor_id == doctor_id,
+                        Appointment.patient_name.ilike(f"%{first_name}%"),
+                        Appointment.preconsulta_answers.is_not(None)
+                    ).order_by(Appointment.created_at.desc()).first()
 
             if appointment and appointment.preconsulta_answers:
                 ans = appointment.preconsulta_answers

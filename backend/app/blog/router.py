@@ -149,7 +149,7 @@ def read_post_public(
 @router.get("/my-posts", response_model=List[schemas.BlogPostResponse])
 def read_my_posts(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 20,
     db: Session = Depends(get_db),
     current_user: Doctor = Depends(get_current_user)
 ):
