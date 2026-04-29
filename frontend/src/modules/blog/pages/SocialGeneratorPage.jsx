@@ -31,6 +31,10 @@ export default function SocialGeneratorPage() {
   const [dragging, setDragging] = useState(null)
   const [slideAlignments, setSlideAlignments] = useState({})
   const slideRefs = useRef({})
+  const [imageSizes, setImageSizes] = useState({})
+  const [imageRotations, setImageRotations] = useState({})
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null)
+  const [transformState, setTransformState] = useState(null)
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -121,6 +125,8 @@ export default function SocialGeneratorPage() {
 
   const handleDragStart = (e, slideIndex) => {
     e.preventDefault()
+    e.stopPropagation()
+    setSelectedImageIndex(slideIndex)
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
     if (!rect) return
     const pos = imagePositions[slideIndex] || { x: 50, y: 70 }
@@ -132,18 +138,63 @@ export default function SocialGeneratorPage() {
     })
   }
 
-  const handleDragMove = (e) => {
-    if (!dragging) return
-    const { slideIndex, offsetX, offsetY, rect } = dragging
-    const xPct = Math.min(90, Math.max(10, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
-    const yPct = Math.min(90, Math.max(10, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
-    setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+  const handleTransformStart = (e, slideIndex, type) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedImageIndex(slideIndex)
+    const imgElement = document.getElementById(`custom-img-${slideIndex}`)
+    const rect = imgElement?.getBoundingClientRect()
+    if (!rect) return
+    setTransformState({
+      type,
+      slideIndex,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialSize: imageSizes[slideIndex] || imageSize,
+      initialRotation: imageRotations[slideIndex] || 0,
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2
+    })
   }
 
-  const handleDragEnd = () => setDragging(null)
+  useEffect(() => {
+    const handlePointerMove = (e) => {
+      if (dragging) {
+        const { slideIndex, offsetX, offsetY, rect } = dragging
+        const xPct = Math.min(90, Math.max(10, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
+        const yPct = Math.min(90, Math.max(10, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
+        setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+      } else if (transformState) {
+        const { type, slideIndex, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
+        if (type === 'resize') {
+          const deltaX = e.clientX - startX
+          const newSize = Math.max(50, initialSize + deltaX)
+          setImageSizes(prev => ({ ...prev, [slideIndex]: newSize }))
+        } else if (type === 'rotate') {
+          const startAngle = Math.atan2(startY - centerY, startX - centerX)
+          const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
+          const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
+          setImageRotations(prev => ({ ...prev, [slideIndex]: initialRotation + angleDiff }))
+        }
+      }
+    }
+    const handlePointerUp = () => {
+      setDragging(null)
+      setTransformState(null)
+    }
+    
+    if (dragging || transformState) {
+      window.addEventListener('mousemove', handlePointerMove)
+      window.addEventListener('mouseup', handlePointerUp)
+    }
+    return () => {
+      window.removeEventListener('mousemove', handlePointerMove)
+      window.removeEventListener('mouseup', handlePointerUp)
+    }
+  }, [dragging, transformState, imageSizes, imageSize, imageRotations])
 
-  const setSlideAlignment = (slideIndex, align) => {
-    setSlideAlignments(prev => ({ ...prev, [slideIndex]: align }))
+  const setSlideAlignment = (slideIndex, alignPct) => {
+    setSlideAlignments(prev => ({ ...prev, [slideIndex]: alignPct }))
   }
 
   const downloadCarousel = async () => {
@@ -196,6 +247,142 @@ export default function SocialGeneratorPage() {
       </svg>
     `.trim();
     return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
+
+  const renderSlideContent = (slide, i, isPreview = false) => {
+    return (
+      <div
+         key={i}
+         ref={el => { if (!isPreview) slideRefs.current[i] = el; }}
+         className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group shadow-xl overflow-hidden"
+         style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb' }}
+         onClick={() => { if (!isPreview) setSelectedImageIndex(null); }}
+       >
+         {watermarkImage && (
+           <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
+         )}
+         
+         <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full relative z-10">
+           <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+             {doctorLogoBase64 ? (
+               <img src={doctorLogoBase64} alt="Logo" className="w-full h-full object-contain" />
+             ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
+           </div>
+           <span
+             style={{ fontSize: (headerFontSize * (isPreview ? 1.5 : 1)) + 'px' }}
+             className={`font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}
+           >{doctor?.nombre_completo}</span>
+         </div>
+         
+         {!isPreview && (
+           <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
+         )}
+         
+         <div className="flex-1 flex flex-col px-2 text-center h-full relative z-10 pointer-events-none">
+           <div style={{ height: `${slideAlignments[i] ?? 50}%` }} className="transition-all duration-300 flex-shrink-0"></div>
+           <div className="flex-shrink-0 pointer-events-auto">
+             {editingIndex === i && !isPreview ? (
+               <div className="space-y-4 slide-actions">
+                 <input
+                   className="w-full p-2 text-sm font-black uppercase border rounded-lg dark:bg-gray-700 dark:text-white"
+                   value={slide.title}
+                   onChange={(e) => handleEditSlide(i, 'title', e.target.value)}
+                 />
+                 <textarea
+                   className="w-full p-2 text-xs border rounded-lg dark:bg-gray-700 dark:text-white"
+                   rows="4"
+                   value={slide.content}
+                   onChange={(e) => handleEditSlide(i, 'content', e.target.value)}
+                 />
+                 <button onClick={() => setEditingIndex(null)} className="w-full py-2 bg-green-500 text-white text-[10px] font-black uppercase rounded-lg">Guardar Cambios</button>
+               </div>
+             ) : (
+               <>
+                 <h4
+                   className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
+                   style={{ fontSize: ((fontSize + 4) * (isPreview ? 1.4 : 1)) + 'px' }}
+                 >{slide.title}</h4>
+                 <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
+                 <p
+                   className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
+                   style={{ fontSize: (fontSize * (isPreview ? 1.4 : 1)) + 'px' }}
+                 >{slide.content}</p>
+               </>
+             )}
+           </div>
+           <div style={{ height: `${100 - (slideAlignments[i] ?? 50)}%` }} className="transition-all duration-300 flex-shrink-0"></div>
+         </div>
+         
+         {slide.customImage && (
+           <div
+             className={`absolute z-20 transition-shadow ${(!isPreview && selectedImageIndex === i) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-xl' : ''}`}
+             style={{
+               left: (imagePositions[i] ? imagePositions[i].x : 50) + '%',
+               top: (imagePositions[i] ? imagePositions[i].y : 70) + '%',
+               transform: `translate(-50%, -50%) rotate(${imageRotations[i] || 0}deg)`,
+               cursor: (dragging && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
+               userSelect: 'none'
+             }}
+             onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i) }}
+           >
+             <div className="relative group/img">
+               <img
+                 id={`custom-img-${i}`}
+                 src={slide.customImage}
+                 className="rounded-xl shadow-md border-2 border-white/50 object-cover pointer-events-none"
+                 style={{ 
+                   width: (imageSizes[i] || imageSize) * (isPreview ? 1.5 : 1) + 'px', 
+                   height: (imageSizes[i] || imageSize) * (isPreview ? 1.5 : 1) + 'px' 
+                 }}
+                 alt="Custom"
+                 draggable={false}
+               />
+               
+               {!isPreview && selectedImageIndex === i && (
+                 <>
+                   <div 
+                     className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
+                     onMouseDown={(e) => handleTransformStart(e, i, 'rotate')}
+                   >↻</div>
+                   <div 
+                     className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-30"
+                     onMouseDown={(e) => handleTransformStart(e, i, 'resize')}
+                   ></div>
+                 </>
+               )}
+               
+               {!isPreview && (
+                 <button onClick={(e) => { e.stopPropagation(); removeCustomImage(i); }} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions z-40"><FiTrash2 size={12}/></button>
+               )}
+             </div>
+           </div>
+         )}
+         
+         {!isPreview && (
+           <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">
+             <div className="flex flex-col items-center gap-1 bg-white/80 dark:bg-gray-700/80 p-1.5 rounded-lg mr-1 backdrop-blur shadow-sm">
+               <input type="range" min="0" max="100" value={slideAlignments[i] ?? 50} 
+                 onChange={(e) => setSlideAlignment(i, Number(e.target.value))} 
+                 className="w-16 accent-indigo-600 cursor-pointer h-1 bg-gray-200 rounded-lg appearance-none"
+               />
+               <span className="text-[7px] font-black uppercase text-gray-500 leading-none mt-1">Alineación</span>
+             </div>
+             <div className="flex flex-col gap-1">
+               <button onClick={(e) => { e.stopPropagation(); setPreviewIndex(i); }} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white shadow-sm"><FiMaximize2 size={12}/></button>
+               <button onClick={(e) => { e.stopPropagation(); setEditingIndex(i === editingIndex ? null : i); }} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white shadow-sm"><FiEdit3 size={12}/></button>
+               <label className="p-1.5 bg-white/80 text-blue-500 rounded-lg hover:bg-white shadow-sm cursor-pointer" onClick={e => e.stopPropagation()}>
+                 <FiPlusCircle size={12}/>
+                 <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAddImage(i, e)} />
+               </label>
+               <button onClick={(e) => { e.stopPropagation(); copyToClipboard(slide.title + '\n' + slide.content, i); }} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white shadow-sm">
+                 {copiedField === i ? <FiCheck className="text-green-500" size={12} /> : <FiCopy size={12} />}
+               </button>
+             </div>
+           </div>
+         )}
+      </div>
+    );
   };
 
   if (loading) return <Spinner />
@@ -344,111 +531,7 @@ export default function SocialGeneratorPage() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {generatedContent.slides.map((slide, i) => (
-                          <div
-                             key={i}
-                             ref={el => slideRefs.current[i] = el}
-                             className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group border border-gray-100 dark:border-gray-600 shadow-xl overflow-hidden"
-                             style={{ backgroundColor: bgColor }}
-                             onMouseMove={handleDragMove}
-                             onMouseUp={handleDragEnd}
-                             onMouseLeave={handleDragEnd}
-                           >
-                             {watermarkImage && (
-                               <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
-                             )}
-                             <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full relative z-10">
-                               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
-                                 {doctorLogoBase64 ? (
-                                   <img src={doctorLogoBase64} alt="Logo" className="w-full h-full object-contain" />
-                                 ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
-                               </div>
-                               <span
-                                 style={{ fontSize: headerFontSize + 'px' }}
-                                 className={`font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}
-                               >{doctor?.nombre_completo}</span>
-                             </div>
-                             <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
-                             <div
-                               className="flex-1 flex flex-col px-2 text-center"
-                               style={{ justifyContent: slideAlignments[i] ?? 'center' }}
-                             >
-                               {editingIndex === i ? (
-                                 <div className="space-y-4 slide-actions">
-                                   <input
-                                     className="w-full p-2 text-sm font-black uppercase border rounded-lg dark:bg-gray-700 dark:text-white"
-                                     value={slide.title}
-                                     onChange={(e) => handleEditSlide(i, 'title', e.target.value)}
-                                   />
-                                   <textarea
-                                     className="w-full p-2 text-xs border rounded-lg dark:bg-gray-700 dark:text-white"
-                                     rows="4"
-                                     value={slide.content}
-                                     onChange={(e) => handleEditSlide(i, 'content', e.target.value)}
-                                   />
-                                   <button onClick={() => setEditingIndex(null)} className="w-full py-2 bg-green-500 text-white text-[10px] font-black uppercase rounded-lg">Guardar Cambios</button>
-                                 </div>
-                               ) : (
-                                 <>
-                                   <h4
-                                     className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
-                                     style={{ fontSize: (fontSize + 4) + 'px' }}
-                                   >{slide.title}</h4>
-                                   <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
-                                   <p
-                                     className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
-                                     style={{ fontSize: fontSize + 'px' }}
-                                   >{slide.content}</p>
-                                   {slide.customImage && (
-                                     <div
-                                       className="absolute z-20"
-                                       style={{
-                                         left: (imagePositions[i] ? imagePositions[i].x : 50) + '%',
-                                         top: (imagePositions[i] ? imagePositions[i].y : 70) + '%',
-                                         transform: 'translate(-50%, -50%)',
-                                         cursor: (dragging && dragging.slideIndex === i) ? 'grabbing' : 'grab',
-                                         userSelect: 'none'
-                                       }}
-                                       onMouseDown={(e) => handleDragStart(e, i)}
-                                     >
-                                       <div className="relative group/img">
-                                         <img
-                                           src={slide.customImage}
-                                           className="rounded-xl shadow-md border-2 border-white/50 object-cover"
-                                           style={{ width: imageSize + 'px', height: imageSize + 'px' }}
-                                           alt="Custom"
-                                           draggable={false}
-                                         />
-                                         <button onClick={() => removeCustomImage(i)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions"><FiTrash2 size={12}/></button>
-                                       </div>
-                                     </div>
-                                   )}
-                                 </>
-                               )}
-                             </div>
-                             <div className="absolute bottom-4 right-4 slide-actions z-20 flex gap-1">
-                               <div className="flex flex-col gap-1 mr-1">
-                                 <button onClick={() => setSlideAlignment(i, 'flex-start')} title="Arriba"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-start' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8593;</button>
-                                 <button onClick={() => setSlideAlignment(i, 'center')} title="Centro"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'center' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8597;</button>
-                                 <button onClick={() => setSlideAlignment(i, 'flex-end')} title="Abajo"
-                                   className={`p-1.5 rounded-lg text-[10px] font-black leading-none transition-all ${(slideAlignments[i] ?? 'center') === 'flex-end' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-gray-500 hover:bg-white'}`}>&#8595;</button>
-                               </div>
-                               <div className="flex flex-col gap-1">
-                                 <button onClick={() => setPreviewIndex(i)} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white"><FiMaximize2 size={12}/></button>
-                                 <button onClick={() => setEditingIndex(i === editingIndex ? null : i)} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white"><FiEdit3 size={12}/></button>
-                                 <label className="p-1.5 bg-white/80 text-blue-500 rounded-lg hover:bg-white cursor-pointer">
-                                   <FiPlusCircle size={12}/>
-                                   <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAddImage(i, e)} />
-                                 </label>
-                                 <button onClick={() => copyToClipboard(slide.title + '\n' + slide.content, i)} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white">
-                                   {copiedField === i ? <FiCheck className="text-green-500" size={12} /> : <FiCopy size={12} />}
-                                 </button>
-                               </div>
-                             </div>
-                           </div>
-                        ))}
+                        {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i))}
                       </div>
                     </div>
                   </div>
@@ -466,32 +549,26 @@ export default function SocialGeneratorPage() {
 
       {/* Preview Modal */}
       {previewIndex !== null && generatedContent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-          <button onClick={() => setPreviewIndex(null)} className="absolute top-6 right-6 text-white p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all"><FiX size={32} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
+          {previewIndex > 0 && (
+            <button onClick={() => setPreviewIndex(previewIndex - 1)} className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 text-white p-4 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[110] hover:scale-110">
+              <FiChevronLeft size={32} />
+            </button>
+          )}
           
-          <div className="relative w-full max-w-lg aspect-square rounded-[50px] p-12 flex flex-col" style={{ backgroundColor: bgColor }}>
-            <div className="flex items-center justify-start gap-4 mb-10 border-b border-gray-100/20 pb-6 w-full">
-              <div className="w-14 h-14 bg-white rounded-xl overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center">
-                 {doctorLogoBase64 ? (
-                   <img 
-                    src={doctorLogoBase64} 
-                    className="w-full h-full object-contain" 
-                   />
-                 ) : <div className="text-indigo-600 font-black">GS</div>}
-              </div>
-              <span className={`text-sm font-black uppercase ${bgColor === '#000000' ? 'text-white' : 'text-gray-900'}`}>{doctor?.nombre_completo}</span>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-center text-center">
-              <h4 className={`text-3xl font-black mb-4 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600'}`}>{generatedContent.slides[previewIndex].title}</h4>
-              <div className="h-2 w-20 bg-indigo-600/30 mb-4 rounded-full mx-auto"></div>
-              <p className={`text-xl font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700'}`}>{generatedContent.slides[previewIndex].content}</p>
-              
-              {generatedContent.slides[previewIndex].customImage && (
-                <img src={generatedContent.slides[previewIndex].customImage} className="mt-6 mx-auto rounded-2xl shadow-xl max-h-[150px] object-contain" alt="Preview" />
-              )}
-            </div>
+          <div className="w-full max-w-xl shadow-2xl transition-all duration-300 scale-[1.1] md:scale-[1.3] z-[105]">
+            {renderSlideContent(generatedContent.slides[previewIndex], previewIndex, true)}
           </div>
+          
+          {previewIndex < generatedContent.slides.length - 1 && (
+            <button onClick={() => setPreviewIndex(previewIndex + 1)} className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 text-white p-4 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[110] hover:scale-110">
+              <FiChevronRight size={32} />
+            </button>
+          )}
+
+          <button onClick={() => setPreviewIndex(null)} className="absolute top-6 right-6 text-white p-3 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[110] hover:bg-red-500">
+            <FiX size={32} />
+          </button>
         </div>
       )}
     </div>
