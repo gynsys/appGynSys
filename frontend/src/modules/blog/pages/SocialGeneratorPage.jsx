@@ -366,10 +366,9 @@ export default function SocialGeneratorPage() {
                                  ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
                                </div>
                                <span
-                                 style={{ fontSize: ${headerFontSize}px }}
-                                 className={ont-black uppercase tracking-tight + (bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white')}
+                                 style={{ fontSize: headerFontSize + 'px' }}
+                                 className={`font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}
                                >{doctor?.nombre_completo}</span>
-                             </div>
 
                             <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
                             
