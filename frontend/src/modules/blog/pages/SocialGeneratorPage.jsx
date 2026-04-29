@@ -38,6 +38,8 @@ export default function SocialGeneratorPage() {
   const [contentRotations, setContentRotations] = useState({})
   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
   const [transformState, setTransformState] = useState(null)
+  const [imageZIndexes, setImageZIndexes] = useState({})
+  const [contextMenu, setContextMenu] = useState(null)
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -217,6 +219,31 @@ export default function SocialGeneratorPage() {
     setSlideAlignments(prev => ({ ...prev, [slideIndex]: alignPct }))
   }
 
+  const handleContextMenu = (e, slideIndex) => {
+    e.preventDefault()
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      slideIndex
+    })
+  }
+
+  const rotateImage90 = (slideIndex) => {
+    const current = imageRotations[slideIndex] || 0
+    setImageRotations(prev => ({ ...prev, [slideIndex]: (current + 90) % 360 }))
+    setContextMenu(null)
+  }
+
+  const sendImageToBack = (slideIndex) => {
+    setImageZIndexes(prev => ({ ...prev, [slideIndex]: 5 }))
+    setContextMenu(null)
+  }
+
+  const bringImageToFront = (slideIndex) => {
+    setImageZIndexes(prev => ({ ...prev, [slideIndex]: 20 }))
+    setContextMenu(null)
+  }
+
   const downloadCarousel = async () => {
     const zip = new JSZip()
     const slides = document.querySelectorAll('.carousel-slide-item')
@@ -351,10 +378,12 @@ export default function SocialGeneratorPage() {
                left: (imagePositions[i] ? imagePositions[i].x : 50) + '%',
                top: (imagePositions[i] ? imagePositions[i].y : 70) + '%',
                transform: `translate(-50%, -50%) rotate(${imageRotations[i] || 0}deg)`,
-               cursor: (dragging && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
+               zIndex: imageZIndexes[i] || 20,
+               cursor: (dragging && dragging.type === 'image' && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
                userSelect: 'none'
              }}
-             onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i) }}
+             onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image') }}
+             onContextMenu={(e) => { if(!isPreview) handleContextMenu(e, i) }}
            >
              <div className="relative group/img">
                <img
@@ -391,13 +420,6 @@ export default function SocialGeneratorPage() {
          
          {!isPreview && (
            <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">
-             <div className="flex flex-col items-center gap-1 bg-white/80 dark:bg-gray-700/80 p-1.5 rounded-lg mr-1 backdrop-blur shadow-sm">
-               <input type="range" min="0" max="100" value={slideAlignments[i] ?? 50} 
-                 onChange={(e) => setSlideAlignment(i, Number(e.target.value))} 
-                 className="w-16 accent-indigo-600 cursor-pointer h-1 bg-gray-200 rounded-lg appearance-none"
-               />
-               <span className="text-[7px] font-black uppercase text-gray-500 leading-none mt-1">Alineación</span>
-             </div>
              <div className="flex flex-col gap-1">
                <button onClick={(e) => { e.stopPropagation(); setPreviewIndex(i); }} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white shadow-sm"><FiMaximize2 size={12}/></button>
                <button onClick={(e) => { e.stopPropagation(); setEditingIndex(i === editingIndex ? null : i); }} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white shadow-sm"><FiEdit3 size={12}/></button>
@@ -600,6 +622,33 @@ export default function SocialGeneratorPage() {
             <FiX size={32} />
           </button>
         </div>
+      )}
+      {/* Context Menu for Images */}
+      {contextMenu && (
+        <div 
+          className="fixed z-[200] bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 p-2 min-w-[160px] animate-fadeIn"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button onClick={() => rotateImage90(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
+            <FiRefreshCw size={14} /> Rotar 90°
+          </button>
+          <button onClick={() => sendImageToBack(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
+            <FiArrowDown size={14} /> Enviar al fondo
+          </button>
+          <button onClick={() => bringImageToFront(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
+            <FiArrowUp size={14} /> Traer al frente
+          </button>
+          <div className="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
+          <button onClick={() => { removeCustomImage(contextMenu.slideIndex); setContextMenu(null); }} className="w-full text-left px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-2">
+            <FiTrash2 size={14} /> Eliminar
+          </button>
+        </div>
+      )}
+      
+      {/* Global click to close context menu */}
+      {contextMenu && (
+        <div className="fixed inset-0 z-[190]" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }}></div>
       )}
     </div>
   )
