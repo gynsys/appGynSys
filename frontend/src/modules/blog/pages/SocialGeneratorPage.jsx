@@ -34,6 +34,9 @@ export default function SocialGeneratorPage() {
   const [imageSizes, setImageSizes] = useState({})
   const [imageRotations, setImageRotations] = useState({})
   const [selectedImageIndex, setSelectedImageIndex] = useState(null)
+  const [contentPositions, setContentPositions] = useState({})
+  const [contentRotations, setContentRotations] = useState({})
+  const [selectedContentIndex, setSelectedContentIndex] = useState(null)
   const [transformState, setTransformState] = useState(null)
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
@@ -123,14 +126,26 @@ export default function SocialGeneratorPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleDragStart = (e, slideIndex) => {
+  const handleDragStart = (e, slideIndex, type = 'image') => {
     e.preventDefault()
     e.stopPropagation()
-    setSelectedImageIndex(slideIndex)
+    if (type === 'image') {
+      setSelectedImageIndex(slideIndex)
+      setSelectedContentIndex(null)
+    } else {
+      setSelectedContentIndex(slideIndex)
+      setSelectedImageIndex(null)
+    }
+    
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
     if (!rect) return
-    const pos = imagePositions[slideIndex] || { x: 50, y: 70 }
+    
+    const pos = type === 'image' 
+      ? (imagePositions[slideIndex] || { x: 50, y: 70 })
+      : (contentPositions[slideIndex] || { x: 50, y: 50 })
+      
     setDragging({
+      type,
       slideIndex,
       offsetX: e.clientX - rect.left - (pos.x / 100) * rect.width,
       offsetY: e.clientY - rect.top - (pos.y / 100) * rect.height,
@@ -160,10 +175,15 @@ export default function SocialGeneratorPage() {
   useEffect(() => {
     const handlePointerMove = (e) => {
       if (dragging) {
-        const { slideIndex, offsetX, offsetY, rect } = dragging
-        const xPct = Math.min(90, Math.max(10, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
-        const yPct = Math.min(90, Math.max(10, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
-        setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+        const { type, slideIndex, offsetX, offsetY, rect } = dragging
+        const xPct = Math.min(95, Math.max(5, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
+        const yPct = Math.min(95, Math.max(5, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
+        
+        if (type === 'image') {
+          setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+        } else {
+          setContentPositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+        }
       } else if (transformState) {
         const { type, slideIndex, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
         if (type === 'resize') {
@@ -257,7 +277,7 @@ export default function SocialGeneratorPage() {
          ref={el => { if (!isPreview) slideRefs.current[i] = el; }}
          className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group shadow-xl overflow-hidden"
          style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb' }}
-         onClick={() => { if (!isPreview) setSelectedImageIndex(null); }}
+         onClick={() => { if (!isPreview) { setSelectedImageIndex(null); setSelectedContentIndex(null); } }}
        >
          {watermarkImage && (
            <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
@@ -279,9 +299,20 @@ export default function SocialGeneratorPage() {
            <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{i+1}</span>
          )}
          
-         <div className="flex-1 flex flex-col px-2 text-center h-full relative z-10 pointer-events-none">
-           <div style={{ height: `${slideAlignments[i] ?? 50}%` }} className="transition-all duration-300 flex-shrink-0"></div>
-           <div className="flex-shrink-0 pointer-events-auto">
+         {/* Main Content (Title + Body) - Now Draggable */}
+         <div 
+           className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${(!isPreview && selectedContentIndex === i) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
+           style={{
+             left: (contentPositions[i] ? contentPositions[i].x : 50) + '%',
+             top: (contentPositions[i] ? contentPositions[i].y : (slideAlignments[i] ?? 50)) + '%',
+             transform: `translate(-50%, -50%) rotate(${contentRotations[i] || 0}deg)`,
+             cursor: (dragging && dragging.type === 'content' && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
+             userSelect: 'none'
+           }}
+           onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'content') }}
+           onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedContentIndex(i); setSelectedImageIndex(null); } }}
+         >
+           <div className="text-center relative">
              {editingIndex === i && !isPreview ? (
                <div className="space-y-4 slide-actions">
                  <input
@@ -311,7 +342,6 @@ export default function SocialGeneratorPage() {
                </>
              )}
            </div>
-           <div style={{ height: `${100 - (slideAlignments[i] ?? 50)}%` }} className="transition-all duration-300 flex-shrink-0"></div>
          </div>
          
          {slide.customImage && (
