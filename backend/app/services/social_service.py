@@ -39,19 +39,27 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
           """
       else:
           prompt = f"""
-          Actúa como un diseñador de Instagram. 
-          Crea un carrusel de 5-10 diapositivas.
+          Actúa como un diseñador de Instagram experto en contenido médico y visualización de datos. 
+          Crea un carrusel de 5-10 diapositivas atractivo, profesional y fácil de leer.
           
           ARTÍCULO:
           Título: {post_title}
           Contenido: {post_content}
           
+          REGLAS DE FORMATO CRÍTICAS PARA "content":
+          1. LISTAS: Si incluyes una lista de puntos o pasos, CADA ITEM DEBE IR EN UNA LÍNEA NUEVA (usa saltos de línea \\n).
+          2. VIÑETAS: Usa viñetas modernas como '•' para listas de puntos.
+          3. LIMPIEZA: NUNCA amontones varios puntos en un solo párrafo. Cada item debe ser una línea independiente.
+          
+          Ejemplo de formato deseado para el campo "content":
+          "• Item uno\\n• Item dos\\n• Item tres"
+          
           Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
           {{
             "slides": [
-              {{ "title": "título", "content": "cuerpo" }}
+              {{ "title": "título breve e impactante", "content": "cuerpo con formato limpio y listas si aplica" }}
             ],
-            "image_prompts": ["idea 1"]
+            "image_prompts": ["sugerencia de imagen o query para Unsplash"]
           }}
           """
 

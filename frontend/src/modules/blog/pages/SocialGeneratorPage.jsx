@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   FiCpu, FiInstagram, FiImage, FiCopy, FiCheck, 
   FiLoader, FiMaximize2, FiX, FiChevronLeft, FiChevronRight,
@@ -305,7 +305,7 @@ export default function SocialGeneratorPage() {
                  >{slide.title}</h4>
                  <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
                  <p
-                   className={`font-bold leading-relaxed ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
+                   className={`font-bold leading-relaxed whitespace-pre-wrap ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
                    style={{ fontSize: (fontSize * (isPreview ? 1.4 : 1)) + 'px' }}
                  >{slide.content}</p>
                </>
