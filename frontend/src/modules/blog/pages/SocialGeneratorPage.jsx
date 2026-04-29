@@ -159,7 +159,7 @@ export default function SocialGeneratorPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 font-manrope">
-      <div className="max-w-6xl mx-auto px-4 pt-6">
+      <div className="max-w-[1480px] mx-auto px-4 pt-6">
         
         <header className="mb-8">
           <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
@@ -223,12 +223,12 @@ export default function SocialGeneratorPage() {
           {/* Main Area: Generated Content or Placeholder */}
           <div className="lg:col-span-8">
             {generating ? (
-              <div className="h-[300px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
+              <div className="h-[300px] w-full lg:w-[1095px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
                 <FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
                 <p className="font-bold text-gray-900 dark:text-white font-manrope">IA procesando contenido...</p>
               </div>
             ) : generatedContent ? (
-              <div className="space-y-6 animate-fadeIn">
+              <div className="w-full lg:w-[1095px] space-y-6 animate-fadeIn">
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                   <button onClick={() => setActiveTab('reel')} className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'reel' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Guion</button>
                   <button onClick={() => setActiveTab('carousel')} className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'carousel' ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Carrusel</button>
@@ -332,10 +332,10 @@ export default function SocialGeneratorPage() {
                 )}
               </div>
             ) : (
-              <div className="h-[300px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
+              <div className="h-[300px] w-full lg:w-[1095px] flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100">
                 <FiCpu className="w-10 h-10 text-indigo-600 mx-auto mb-4" />
-                <h3 className="font-bold text-gray-900 dark:text-white mb-2">Editor de Contenido IA</h3>
-                <p className="text-gray-500 text-sm">Selecciona un artículo para comenzar.</p>
+                <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-center">Editor de Contenido IA</h3>
+                <p className="text-gray-500 text-sm text-center">Selecciona un artículo para comenzar.</p>
               </div>
             )}
           </div>
