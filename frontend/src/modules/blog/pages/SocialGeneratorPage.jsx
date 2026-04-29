@@ -221,6 +221,8 @@ export default function SocialGeneratorPage() {
 
   const handleContextMenu = (e, slideIndex) => {
     e.preventDefault()
+    setSelectedImageIndex(slideIndex)
+    setSelectedContentIndex(null)
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
@@ -383,7 +385,8 @@ export default function SocialGeneratorPage() {
                userSelect: 'none'
              }}
              onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image') }}
-             onContextMenu={(e) => { if(!isPreview) handleContextMenu(e, i) }}
+             onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageIndex(i); setSelectedContentIndex(null); } }}
+             onContextMenu={(e) => { if(!isPreview) { e.stopPropagation(); handleContextMenu(e, i); } }}
            >
              <div className="relative group/img">
                <img
