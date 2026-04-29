@@ -48,12 +48,15 @@ def get_dashboard_stats(
         Appointment.status != 'cancelled'
     ).count()
 
-    # 5. Total Patients (Unique by email or logic) - Simple count for now or reuse logic in DashboardOverview
-    # Assuming the dashboard currently calculates this. We return basic stats requested.
-    
+    # 5. Blog Posts Count
+    article_count = db.query(Post).filter(
+        Post.author_id == current_user.id
+    ).count()
+
     return {
         "test_count": test_count,
         "cycle_users_count": cycle_users_count,
         "visitor_count": visitor_count,
-        "appointments_month_count": appointments_month
+        "appointments_month_count": appointments_month,
+        "article_count": article_count
     }

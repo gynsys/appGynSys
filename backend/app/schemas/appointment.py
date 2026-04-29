@@ -45,13 +45,24 @@ class AppointmentUpdate(BaseModel):
 
 
 class AppointmentInDB(AppointmentBase):
-    """Schema for appointment in database."""
+    """Schema for appointment in database (Full)."""
     id: int
     doctor_id: int
     status: str
     preconsulta_answers: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AppointmentList(AppointmentBase):
+    """Lightweight schema for list views (Dashboard/Calendar)."""
+    id: int
+    doctor_id: int
+    status: str
+    created_at: datetime
 
     class Config:
         from_attributes = True

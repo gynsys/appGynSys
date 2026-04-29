@@ -30,9 +30,9 @@ export const appointmentService = {
     return response.data
   },
 
-  async getAppointments() {
-    // Add cache-busting timestamp to prevent browser from returning stale 304 cache during polling
-    const response = await api.get(`/appointments/?t=${new Date().getTime()}`)
+  async getAppointments(full = false) {
+    // Add cache-busting timestamp and full flag
+    const response = await api.get(`/appointments/?full=${full}&t=${new Date().getTime()}`)
     return response.data
   },
 

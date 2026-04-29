@@ -307,27 +307,34 @@ async def create_appointment(
     return db_appointment
 
 
-@router.get("/", response_model=List[AppointmentInDB])
+@router.get("/", response_model=List[Union[AppointmentInDB, AppointmentList]])
 async def get_appointments(
     current_actor: Annotated[Union[Doctor, CycleUser], Depends(get_current_actor)],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    full: bool = False
 ):
     """
-    Get all appointments for the current actor.
-    If Doctor: all appointments for their account.
-    If CycleUser: appointments matching their email or CI.
+    Get appointments for the current actor.
+    If full=True: returns all fields including preconsulta_answers and performs dynamic summary injection.
+    If full=False (default): returns lightweight objects for lists/calendar.
     """
     if isinstance(current_actor, Doctor):
-        appointments = db.query(Appointment).filter(
+        query = db.query(Appointment).filter(
             Appointment.doctor_id == current_actor.id
-        ).all()
+        )
     else:
-        appointments = db.query(Appointment).filter(
+        query = db.query(Appointment).filter(
             (Appointment.patient_email == current_actor.email) | 
             (Appointment.patient_dni == current_actor.ci)
-        ).all()
+        )
+    
+    # Sort by date descending to keep recent ones first
+    appointments = query.order_by(Appointment.appointment_date.desc()).all()
 
-    # --- DYNAMIC SUMMARY INJECTION ---
+    if not full:
+        return appointments
+
+    # --- DYNAMIC SUMMARY INJECTION (Only if full=True) ---
     from app.services.summary_generator import GeneradorResumenes
     for app in appointments:
         if app.preconsulta_answers:
@@ -337,7 +344,6 @@ async def get_appointments(
                 else:
                     answers = app.preconsulta_answers or {}
                 
-                # Pasamos el objeto 'app' directamente para evitar re-consultar la DB en cada iteración
                 GeneradorResumenes.inyectar_dinamicamente(
                     db=db,
                     data=answers,

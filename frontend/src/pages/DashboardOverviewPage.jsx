@@ -69,18 +69,13 @@ export default function DashboardOverviewPage() {
     const fetchData = async () => {
       try {
         // Appointments are now preloaded in App.jsx via store
-        const [doctorData, posts, dashboardStats] = await Promise.all([
+        const [doctorData, dashboardStats] = await Promise.all([
           doctorService.getCurrentUser(),
-          blogService.getMyPosts(),
-          // appointmentService.getAppointments(), // REMOVED
           dashboardService.getStats()
         ])
         setDoctor(doctorData)
-        setArticleCount(posts.length)
-        // Recalculate pending from store data if needed, or rely on store derived state later
-        setPendingAppointmentsCount(appointmentsList.filter(a => ['scheduled', 'preconsulta_completed'].includes(a.status)).length)
-        // setAppointmentsList(appointments) // REMOVED
         setStats(dashboardStats)
+        setArticleCount(dashboardStats.article_count || 0)
       } catch (err) {
         console.error("Error fetching dashboard data", err)
       } finally {

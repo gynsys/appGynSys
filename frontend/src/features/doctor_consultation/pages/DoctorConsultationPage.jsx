@@ -151,7 +151,7 @@ export const DoctorConsultationPage = () => {
           // If current appointment has NO preconsulta_answers, fetch from PREVIOUS appointment
           if (!appointment.preconsulta_answers && appointment.patient_dni) {
 
-            const allAppointments = await appointmentService.getAppointments();
+            const allAppointments = await appointmentService.getAppointments(true);
             const previousWithAnswers = allAppointments
               .filter(a =>
                 a.patient_dni === appointment.patient_dni &&
