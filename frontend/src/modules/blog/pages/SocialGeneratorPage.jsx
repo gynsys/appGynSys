@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { 
   FiCpu, FiInstagram, FiImage, FiCopy, FiCheck, 
   FiLoader, FiMaximize2, FiX, FiChevronLeft, FiChevronRight,
-  FiEdit3, FiPlusCircle, FiTrash2, FiUpload, FiLayers
+  FiEdit3, FiPlusCircle, FiTrash2, FiUpload, FiLayers,
+  FiType, FiBox, FiSettings, FiMousePointer, FiMove
 } from 'react-icons/fi'
 import { blogService } from '../services/blogService'
 import Spinner from '../../../components/common/Spinner'
@@ -42,6 +43,9 @@ export default function SocialGeneratorPage() {
   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
   const [transformState, setTransformState] = useState(null)
   const [imageZIndexes, setImageZIndexes] = useState({})
+  const [extraElements, setExtraElements] = useState({}) // { slideIndex: [{id, type, content, x, y, size, rotation, color}] }
+  const [activeSidebarTab, setActiveSidebarTab] = useState('text')
+  const [selectedExtraId, setSelectedExtraId] = useState(null) // "slideIndex-elementId"
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -132,30 +136,81 @@ export default function SocialGeneratorPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleDragStart = (e, slideIndex, type = 'image', imgIndex = null) => {
+  const addExtraElement = (slideIndex, type, content = '') => {
+    const id = Math.random().toString(36).substr(2, 9)
+    const newElement = {
+      id,
+      type,
+      content: content || (type === 'text' ? 'Nuevo Texto' : 'arrow'),
+      x: 50,
+      y: 30,
+      size: type === 'text' ? 20 : 60,
+      rotation: 0,
+      color: type === 'text' ? contentColor : titleColor
+    }
+    
+    setExtraElements(prev => {
+      const slideElements = prev[slideIndex] || []
+      return { ...prev, [slideIndex]: [...slideElements, newElement] }
+    })
+    setSelectedExtraId(`${slideIndex}-${id}`)
+  }
+
+  const updateExtraElement = (slideIndex, elementId, updates) => {
+    setExtraElements(prev => {
+      const slideElements = prev[slideIndex] || []
+      const newElements = slideElements.map(el => el.id === elementId ? { ...el, ...updates } : el)
+      return { ...prev, [slideIndex]: newElements }
+    })
+  }
+
+  const removeExtraElement = (slideIndex, elementId) => {
+    setExtraElements(prev => {
+      const slideElements = prev[slideIndex] || []
+      const newElements = slideElements.filter(el => el.id !== elementId)
+      return { ...prev, [slideIndex]: newElements }
+    })
+    setSelectedExtraId(null)
+  }
+
+  const handleDragStart = (e, slideIndex, type = 'image', imgIndex = null, extraId = null) => {
     e.preventDefault()
     e.stopPropagation()
-    const id = type === 'image' ? `${slideIndex}-${imgIndex}` : slideIndex
+    
+    let id = slideIndex
+    if (type === 'image') id = `${slideIndex}-${imgIndex}`
+    if (type === 'extra') id = `${slideIndex}-${extraId}`
     
     if (type === 'image') {
       setSelectedImageId(id)
       setSelectedContentIndex(null)
-    } else {
+      setSelectedExtraId(null)
+    } else if (type === 'content') {
       setSelectedContentIndex(slideIndex)
       setSelectedImageId(null)
+      setSelectedExtraId(null)
+    } else {
+      setSelectedExtraId(id)
+      setSelectedImageId(null)
+      setSelectedContentIndex(null)
     }
     
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
     if (!rect) return
     
-    const pos = type === 'image' 
-      ? (imagePositions[id] || { x: 50, y: 70 })
-      : (contentPositions[slideIndex] || { x: 50, y: 50 })
+    let pos = { x: 50, y: 50 }
+    if (type === 'image') pos = imagePositions[id] || { x: 50, y: 70 }
+    else if (type === 'content') pos = contentPositions[slideIndex] || { x: 50, y: 50 }
+    else if (type === 'extra') {
+      const el = extraElements[slideIndex]?.find(e => e.id === extraId)
+      pos = el ? { x: el.x, y: el.y } : { x: 50, y: 50 }
+    }
       
     setDragging({
       type,
       slideIndex,
       imgIndex,
+      extraId,
       id,
       offsetX: e.clientX - rect.left - (pos.x / 100) * rect.width,
       offsetY: e.clientY - rect.top - (pos.y / 100) * rect.height,
@@ -163,26 +218,46 @@ export default function SocialGeneratorPage() {
     })
   }
 
-  const handleTransformStart = (e, slideIndex, type, imgIndex) => {
+  const handleTransformStart = (e, slideIndex, type, imgIndex = null, extraId = null) => {
     e.preventDefault()
     e.stopPropagation()
-    const id = `${slideIndex}-${imgIndex}`
+    
+    let id = slideIndex
+    if (imgIndex !== null) id = `${slideIndex}-${imgIndex}`
+    if (extraId !== null) id = `${slideIndex}-${extraId}`
+    
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
-    const pos = imagePositions[id] || { x: 50, y: 70 }
-    const initialSize = imageSizes[id] || imageSize
-    const initialRotation = imageRotations[id] || 0
+    
+    let pos = { x: 50, y: 50 }
+    let initialSize = 100
+    let initialRotation = 0
+    
+    if (imgIndex !== null) {
+      pos = imagePositions[id] || { x: 50, y: 70 }
+      initialSize = imageSizes[id] || imageSize
+      initialRotation = imageRotations[id] || 0
+    } else if (extraId !== null) {
+      const el = extraElements[slideIndex]?.find(e => e.id === extraId)
+      if (el) {
+        pos = { x: el.x, y: el.y }
+        initialSize = el.size
+        initialRotation = el.rotation
+      }
+    }
     if (!rect) return
     setTransformState({
       type,
       slideIndex,
       imgIndex,
+      extraId,
       id,
       startX: e.clientX,
       startY: e.clientY,
-      initialSize: imageSizes[slideIndex] || imageSize,
-      initialRotation: imageRotations[slideIndex] || 0,
-      centerX: rect.left + rect.width / 2,
-      centerY: rect.top + rect.height / 2
+      initialSize,
+      initialRotation,
+      rect,
+      centerX: rect.left + (pos.x / 100) * rect.width,
+      centerY: rect.top + (pos.y / 100) * rect.height
     })
   }
 
@@ -195,20 +270,24 @@ export default function SocialGeneratorPage() {
         
         if (type === 'image') {
           setImagePositions(prev => ({ ...prev, [id]: { x: xPct, y: yPct } }))
-        } else {
+        } else if (type === 'content') {
           setContentPositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+        } else if (type === 'extra') {
+          updateExtraElement(slideIndex, extraId, { x: xPct, y: yPct })
         }
       } else if (transformState) {
         const { type, slideIndex, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
-        if (type === 'resize') {
+        if (transformType === 'resize') {
           const deltaX = e.clientX - startX
-          const newSize = Math.max(50, initialSize + deltaX)
-          setImageSizes(prev => ({ ...prev, [id]: newSize }))
-        } else if (type === 'rotate') {
+          const newSize = Math.max(type === 'image' ? 50 : 10, initialSize + deltaX)
+          if (type === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }))
+          else if (type === 'extra') updateExtraElement(slideIndex, extraId, { size: newSize })
+        } else if (transformType === 'rotate') {
           const startAngle = Math.atan2(startY - centerY, startX - centerX)
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
-          setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
+          if (type === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
+          else if (type === 'extra') updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff })
         }
       }
     }
@@ -397,7 +476,7 @@ export default function SocialGeneratorPage() {
                   userSelect: 'none'
                 }}
                 onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image', imgIdx) }}
-                onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageId(imgId); setSelectedContentIndex(null); } }}
+                onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageId(imgId); setSelectedContentIndex(null); setSelectedExtraId(null); } }}
               >
                 <div className="relative group/img">
                   <img
@@ -434,6 +513,58 @@ export default function SocialGeneratorPage() {
                     <button onClick={(e) => { e.stopPropagation(); removeCustomImage(i, imgIdx); }} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions z-40"><FiTrash2 size={12}/></button>
                   )}
                 </div>
+              </div>
+            )
+          })}
+
+          {extraElements[i]?.map((el) => {
+            const elId = `${i}-${el.id}`
+            return (
+              <div
+                key={el.id}
+                className={`absolute z-[30] transition-shadow ${(!isPreview && selectedExtraId === elId) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent' : ''} ${el.type === 'text' ? 'p-2 rounded-lg' : ''}`}
+                style={{
+                  left: el.x + '%',
+                  top: el.y + '%',
+                  transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`,
+                  cursor: (dragging && dragging.id === elId) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
+                  userSelect: 'none'
+                }}
+                onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'extra', null, el.id) }}
+                onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedExtraId(elId); setSelectedImageId(null); setSelectedContentIndex(null); } }}
+              >
+                {el.type === 'text' ? (
+                  <div 
+                    contentEditable={!isPreview && selectedExtraId === elId}
+                    suppressContentEditableWarning
+                    className="font-bold whitespace-nowrap outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1"
+                    style={{ fontSize: (el.size * (isPreview ? 1.5 : 1)) + 'px', color: el.color }}
+                    onBlur={(e) => updateExtraElement(i, el.id, { content: e.target.innerText })}
+                  >
+                    {el.content}
+                  </div>
+                ) : (
+                  <div style={{ width: el.size + 'px', height: el.size + 'px', color: el.color }}>
+                    {el.content === 'arrow' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>}
+                    {el.content === 'circle' && <div className="w-full h-full rounded-full bg-current" />}
+                    {el.content === 'square' && <div className="w-full h-full bg-current" />}
+                    {el.content === 'star' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>}
+                  </div>
+                )}
+
+                {!isPreview && selectedExtraId === elId && (
+                  <>
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" onMouseDown={(e) => handleTransformStart(e, i, 'rotate', null, el.id)}>↻</div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full shadow-lg border border-white flex items-center justify-center cursor-se-resize z-40" onMouseDown={(e) => handleTransformStart(e, i, 'resize', null, el.id)}></div>
+                    <button onClick={(e) => { e.stopPropagation(); removeExtraElement(i, el.id); }} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg z-40"><FiX size={10}/></button>
+                    
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white p-1 rounded-lg shadow-xl border border-gray-100 z-50">
+                      {['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#ffffff', '#000000'].map(c => (
+                        <button key={c} onClick={() => updateExtraElement(i, el.id, { color: c })} className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )
           })}
@@ -649,9 +780,70 @@ export default function SocialGeneratorPage() {
                          </button>
                        </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i))}
-                      </div>
+                       <div className="flex gap-8 items-start">
+                        {/* Sidebar (Canva-like) */}
+                        <div className="w-64 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex overflow-hidden min-h-[500px] sticky top-24">
+                           <div className="w-16 bg-gray-50 dark:bg-gray-900 border-r border-gray-100 dark:border-gray-700 flex flex-col items-center py-6 gap-6">
+                              <button onClick={() => setActiveSidebarTab('text')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'text' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Texto"><FiType size={20}/></button>
+                              <button onClick={() => setActiveSidebarTab('shapes')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'shapes' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Elementos"><FiBox size={20}/></button>
+                              <button onClick={() => setActiveSidebarTab('tools')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Herramientas"><FiSettings size={20}/></button>
+                           </div>
+                           <div className="flex-1 p-5 overflow-y-auto">
+                              {activeSidebarTab === 'text' && (
+                                <div className="space-y-6 animate-fadeIn">
+                                   <div>
+                                      <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Fuentes y Textos</p>
+                                      <button 
+                                        onClick={() => addExtraElement(editingIndex || 0, 'text')} 
+                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                      >
+                                        <FiPlusCircle /> Agregar caja de texto
+                                      </button>
+                                   </div>
+                                   <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                                      <p className="text-[10px] font-black uppercase text-gray-400 mb-3">Estilos rápidos</p>
+                                      <div className="space-y-2">
+                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir un título')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-black text-sm">Añadir un título</button>
+                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir un subtítulo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-bold text-xs">Añadir un subtítulo</button>
+                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir texto de cuerpo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-[10px]">Añadir texto de cuerpo</button>
+                                      </div>
+                                   </div>
+                                </div>
+                              )}
+                              {activeSidebarTab === 'shapes' && (
+                                <div className="space-y-6 animate-fadeIn">
+                                   <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Elementos Gráficos</p>
+                                   <div className="grid grid-cols-2 gap-3">
+                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'circle')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Círculo">
+                                         <div className="w-8 h-8 rounded-full bg-current group-hover:scale-110 transition-transform"/>
+                                      </button>
+                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'square')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Rectángulo">
+                                         <div className="w-8 h-8 bg-current group-hover:scale-110 transition-transform"/>
+                                      </button>
+                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'arrow')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Flecha">
+                                         <svg className="w-10 h-10 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>
+                                      </button>
+                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'star')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Estrella">
+                                         <svg className="w-10 h-10 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                      </button>
+                                   </div>
+                                </div>
+                              )}
+                              {activeSidebarTab === 'tools' && (
+                                <div className="space-y-6 animate-fadeIn">
+                                   <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Herramientas</p>
+                                   <div className="space-y-2">
+                                      <p className="text-[11px] text-gray-500 italic">Selecciona un elemento en la diapositiva para ver opciones avanzadas.</p>
+                                   </div>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+                           {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i))}
+                        </div>
+                     </div>
                     </div>
                   </div>
                 )}
