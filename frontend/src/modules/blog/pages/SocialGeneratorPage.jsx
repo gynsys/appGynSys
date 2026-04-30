@@ -39,7 +39,6 @@ export default function SocialGeneratorPage() {
   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
   const [transformState, setTransformState] = useState(null)
   const [imageZIndexes, setImageZIndexes] = useState({})
-  const [contextMenu, setContextMenu] = useState(null)
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -386,7 +385,6 @@ export default function SocialGeneratorPage() {
              }}
              onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image') }}
              onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageIndex(i); setSelectedContentIndex(null); } }}
-             onContextMenu={(e) => { if(!isPreview) { e.stopPropagation(); handleContextMenu(e, i); } }}
            >
              <div className="relative group/img">
                <img
@@ -411,6 +409,13 @@ export default function SocialGeneratorPage() {
                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-30"
                      onMouseDown={(e) => handleTransformStart(e, i, 'resize')}
                    ></div>
+                   <button 
+                     className={`absolute -bottom-2 -left-2 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-30 transition-colors ${imageZIndexes[i] === 5 ? 'bg-amber-500 text-white' : 'bg-white text-indigo-600'}`}
+                     onClick={(e) => { e.stopPropagation(); imageZIndexes[i] === 5 ? bringImageToFront(i) : sendImageToBack(i); }}
+                     title={imageZIndexes[i] === 5 ? "Traer al frente" : "Enviar al fondo"}
+                   >
+                     <FiLayers size={12} />
+                   </button>
                  </>
                )}
                
@@ -625,33 +630,6 @@ export default function SocialGeneratorPage() {
             <FiX size={32} />
           </button>
         </div>
-      )}
-      {/* Context Menu for Images */}
-      {contextMenu && (
-        <div 
-          className="fixed z-[200] bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 p-2 min-w-[160px] animate-fadeIn"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button onClick={() => rotateImage90(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
-            <FiRefreshCw size={14} /> Rotar 90°
-          </button>
-          <button onClick={() => sendImageToBack(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
-            <FiArrowDown size={14} /> Enviar al fondo
-          </button>
-          <button onClick={() => bringImageToFront(contextMenu.slideIndex)} className="w-full text-left px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg flex items-center gap-2">
-            <FiArrowUp size={14} /> Traer al frente
-          </button>
-          <div className="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
-          <button onClick={() => { removeCustomImage(contextMenu.slideIndex); setContextMenu(null); }} className="w-full text-left px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-2">
-            <FiTrash2 size={14} /> Eliminar
-          </button>
-        </div>
-      )}
-      
-      {/* Global click to close context menu */}
-      {contextMenu && (
-        <div className="fixed inset-0 z-[190]" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }}></div>
       )}
     </div>
   )
