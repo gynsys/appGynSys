@@ -24,7 +24,9 @@ export default function SocialGeneratorPage() {
   const [previewIndex, setPreviewIndex] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
   const [fontSize, setFontSize] = useState(14)
-  const [headerFontSize, setHeaderFontSize] = useState(10)
+  const [headerFontSize, setHeaderFontSize] = useState(15)
+  const [titleColor, setTitleColor] = useState('#4f46e5')
+  const [contentColor, setContentColor] = useState('#374151')
   const [watermarkImage, setWatermarkImage] = useState(null)
   const [imagePositions, setImagePositions] = useState({})
   const [imageSize, setImageSize] = useState(100)
@@ -306,8 +308,11 @@ export default function SocialGeneratorPage() {
              ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
            </div>
            <span
-             style={{ fontSize: (headerFontSize * (isPreview ? 1.5 : 1)) + 'px' }}
-             className={`font-black uppercase tracking-tight ${bgColor === '#000000' ? 'text-white' : 'text-gray-900 dark:text-white'}`}
+             style={{ 
+               fontSize: (headerFontSize * (isPreview ? 1.5 : 1)) + 'px',
+               color: titleColor
+             }}
+             className="font-black uppercase tracking-tight"
            >{doctor?.nombre_completo}</span>
          </div>
          
@@ -347,13 +352,19 @@ export default function SocialGeneratorPage() {
              ) : (
                <>
                  <h4
-                   className={`font-black mb-3 uppercase leading-tight ${bgColor === '#000000' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}
-                   style={{ fontSize: ((fontSize + 4) * (isPreview ? 1.4 : 1)) + 'px' }}
+                   className="font-black mb-3 uppercase leading-tight"
+                   style={{ 
+                     fontSize: ((fontSize + 4) * (isPreview ? 1.4 : 1)) + 'px',
+                     color: titleColor
+                   }}
                  >{slide.title}</h4>
                  <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
                  <p
-                   className={`font-bold leading-relaxed whitespace-pre-wrap ${bgColor === '#000000' ? 'text-gray-200' : 'text-gray-700 dark:text-gray-300'}`}
-                   style={{ fontSize: (fontSize * (isPreview ? 1.4 : 1)) + 'px' }}
+                   className="font-bold leading-relaxed whitespace-pre-wrap"
+                   style={{ 
+                     fontSize: (fontSize * (isPreview ? 1.4 : 1)) + 'px',
+                     color: contentColor
+                   }}
                  >{slide.content}</p>
                </>
              )}
@@ -528,6 +539,32 @@ export default function SocialGeneratorPage() {
                              value={bgColor}
                              onChange={(e) => setBgColor(e.target.value)}
                              className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                           />
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                           <div className="text-right">
+                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Título</p>
+                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{titleColor}</span>
+                           </div>
+                           <input 
+                             type="color"
+                             value={titleColor}
+                             onChange={(e) => setTitleColor(e.target.value)}
+                             className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                           />
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                           <div className="text-right">
+                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Texto</p>
+                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{contentColor}</span>
+                           </div>
+                           <input 
+                             type="color"
+                             value={contentColor}
+                             onChange={(e) => setContentColor(e.target.value)}
+                             className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
                            />
                         </div>
 
