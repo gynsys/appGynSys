@@ -385,7 +385,7 @@ export default function SocialGeneratorPage() {
       <div
          key={i}
          ref={el => { if (!isPreview) slideRefs.current[i] = el; }}
-         className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group shadow-xl overflow-hidden"
+         className="carousel-slide-item aspect-square rounded-[40px] p-10 flex flex-col relative group shadow-xl overflow-hidden"
          style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb' }}
          onClick={() => { if (!isPreview) { setSelectedImageId(null); setSelectedContentIndex(null); } }}
        >
@@ -393,7 +393,7 @@ export default function SocialGeneratorPage() {
            <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
          )}
          
-         <div className="flex items-center justify-start gap-3 mb-6 border-b border-gray-100 dark:border-gray-700/50 pb-4 w-full relative z-10">
+         <div className="flex items-center justify-start gap-3 mb-10 border-b border-gray-100 dark:border-gray-700/50 pb-6 w-full relative z-30">
            <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
              {doctorLogoBase64 ? (
                <img src={doctorLogoBase64} alt="Logo" className="w-full h-full object-contain" />
@@ -417,7 +417,7 @@ export default function SocialGeneratorPage() {
            className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${(!isPreview && selectedContentIndex === i) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
            style={{
              left: (contentPositions[i] ? contentPositions[i].x : 50) + '%',
-             top: (contentPositions[i] ? contentPositions[i].y : (slideAlignments[i] ?? 50)) + '%',
+             top: (contentPositions[i] ? contentPositions[i].y : (slideAlignments[i] ?? 60)) + '%',
              transform: `translate(-50%, -50%) rotate(${contentRotations[i] || 0}deg)`,
              cursor: (dragging && dragging.type === 'content' && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
              userSelect: 'none'
