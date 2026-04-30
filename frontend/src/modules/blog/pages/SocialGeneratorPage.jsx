@@ -1025,11 +1025,11 @@ export default function SocialGeneratorPage() {
                               </button>
                               <div className="flex flex-col items-center">
                                  <span className="text-xs font-black uppercase text-gray-400 tracking-widest">Diapositiva</span>
-                                 <span className="text-xl font-black text-indigo-600">{currentSlidePage + 1} <span className="text-gray-300 mx-1">/</span> {generatedContent.slides.length}</span>
+                                 <span className="text-xl font-black text-indigo-600">{currentSlidePage + 1} <span className="text-gray-300 mx-1">/</span> {generatedContent?.slides?.length || 0}</span>
                               </div>
                               <button 
-                                onClick={() => setCurrentSlidePage(prev => Math.min(generatedContent.slides.length - 1, prev + 1))}
-                                disabled={currentSlidePage === generatedContent.slides.length - 1}
+                                onClick={() => setCurrentSlidePage(prev => Math.min((generatedContent?.slides?.length || 1) - 1, prev + 1))}
+                                disabled={currentSlidePage === (generatedContent?.slides?.length || 1) - 1}
                                 className="p-3 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 transition-all"
                               >
                                 <FiChevronRight size={24}/>
@@ -1038,12 +1038,12 @@ export default function SocialGeneratorPage() {
 
                            {/* Main Single Slide Canvas */}
                            <div className="w-full flex justify-center animate-fadeIn" key={currentSlidePage}>
-                              {renderSlideContent(generatedContent.slides[currentSlidePage], currentSlidePage)}
+                              {generatedContent?.slides?.[currentSlidePage] && renderSlideContent(generatedContent.slides[currentSlidePage], currentSlidePage)}
                            </div>
 
                            {/* Hidden Export Slides */}
                            <div className="absolute left-[-9999px] top-[-9999px] pointer-events-none opacity-0">
-                              {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i, false, true))}
+                              {generatedContent?.slides?.map?.((slide, i) => renderSlideContent(slide, i, false, true))}
                            </div>
                         </div>
                      </div>
