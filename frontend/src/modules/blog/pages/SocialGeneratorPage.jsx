@@ -27,6 +27,7 @@ export default function SocialGeneratorPage() {
   const [headerFontSize, setHeaderFontSize] = useState(15)
   const [titleColor, setTitleColor] = useState('#4f46e5')
   const [contentColor, setContentColor] = useState('#374151')
+  const [headerColor, setHeaderColor] = useState('#111827')
   const [watermarkImage, setWatermarkImage] = useState(null)
   const [imagePositions, setImagePositions] = useState({})
   const [imageSize, setImageSize] = useState(100)
@@ -310,7 +311,7 @@ export default function SocialGeneratorPage() {
            <span
              style={{ 
                fontSize: (headerFontSize * (isPreview ? 1.5 : 1)) + 'px',
-               color: titleColor
+               color: headerColor
              }}
              className="font-black uppercase tracking-tight"
            >{doctor?.nombre_completo}</span>
@@ -528,91 +529,112 @@ export default function SocialGeneratorPage() {
                 {activeTab === 'carousel' && (
                   <div className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 p-6">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-                        <div className="flex items-center gap-4">
-                           <div className="text-right">
-                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Fondo</p>
-                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{bgColor}</span>
+                       {/* Row 1: Colors */}
+                       <div className="flex flex-wrap items-center gap-8 mb-8 pb-8 border-b border-gray-100 dark:border-gray-700/50">
+                         <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Fondo</p>
+                              <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{bgColor}</span>
+                            </div>
+                            <input 
+                              type="color"
+                              value={bgColor}
+                              onChange={(e) => setBgColor(e.target.value)}
+                              className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                            />
+                         </div>
+
+                         <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Título</p>
+                              <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{titleColor}</span>
+                            </div>
+                            <input 
+                              type="color"
+                              value={titleColor}
+                              onChange={(e) => setTitleColor(e.target.value)}
+                              className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                            />
+                         </div>
+
+                         <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Texto</p>
+                              <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{contentColor}</span>
+                            </div>
+                            <input 
+                              type="color"
+                              value={contentColor}
+                              onChange={(e) => setContentColor(e.target.value)}
+                              className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                            />
+                         </div>
+
+                         <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Nombre</p>
+                              <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{headerColor}</span>
+                            </div>
+                            <input 
+                              type="color"
+                              value={headerColor}
+                              onChange={(e) => setHeaderColor(e.target.value)}
+                              className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                            />
+                         </div>
+                       </div>
+
+                       {/* Row 2: Font Sizes and Image Options */}
+                       <div className="flex flex-wrap items-center justify-between gap-8 mb-8">
+                         <div className="flex flex-wrap items-center gap-8">
+                           {/* Font size - content */}
+                           <div className="flex flex-col gap-1">
+                             <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Contenido</p>
+                             <div className="flex items-center gap-2">
+                               <input type="range" min={10} max={24} step={1} value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-24 accent-indigo-600" />
+                               <span className="text-[10px] font-mono text-gray-600 w-8">{fontSize}px</span>
+                             </div>
                            </div>
-                           <input 
-                             type="color"
-                             value={bgColor}
-                             onChange={(e) => setBgColor(e.target.value)}
-                             className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
-                           />
-                        </div>
 
-                        <div className="flex items-center gap-4">
-                           <div className="text-right">
-                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Título</p>
-                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{titleColor}</span>
+                           {/* Font size - doctor name */}
+                           <div className="flex flex-col gap-1">
+                             <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Nombre</p>
+                             <div className="flex items-center gap-2">
+                               <input type="range" min={8} max={24} step={1} value={headerFontSize} onChange={(e) => setHeaderFontSize(Number(e.target.value))} className="w-24 accent-purple-600" />
+                               <span className="text-[10px] font-mono text-gray-600 w-8">{headerFontSize}px</span>
+                             </div>
                            </div>
-                           <input 
-                             type="color"
-                             value={titleColor}
-                             onChange={(e) => setTitleColor(e.target.value)}
-                             className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
-                           />
-                        </div>
 
-                        <div className="flex items-center gap-4">
-                           <div className="text-right">
-                             <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Texto</p>
-                             <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{contentColor}</span>
+                           {/* Image size */}
+                           <div className="flex flex-col gap-1">
+                             <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Tam. Imagen</p>
+                             <div className="flex items-center gap-2">
+                               <input type="range" min={60} max={200} step={10} value={imageSize} onChange={(e) => setImageSize(Number(e.target.value))} className="w-24 accent-blue-600" />
+                               <span className="text-[10px] font-mono text-gray-600 w-12">{imageSize}px</span>
+                             </div>
                            </div>
-                           <input 
-                             type="color"
-                             value={contentColor}
-                             onChange={(e) => setContentColor(e.target.value)}
-                             className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
-                           />
-                        </div>
 
-                        {/* Font size - content */}
-                        <div className="flex flex-col gap-1">
-                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Contenido</p>
-                          <div className="flex items-center gap-2">
-                            <input type="range" min={10} max={24} step={1} value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-24 accent-indigo-600" />
-                            <span className="text-[10px] font-mono text-gray-600 w-8">{fontSize}px</span>
-                          </div>
-                        </div>
+                           {/* Watermark */}
+                           <div className="flex flex-col gap-1">
+                             <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Marca de Agua</p>
+                             <div className="flex items-center gap-2">
+                               <label className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer text-xs font-bold text-gray-700 transition-all">
+                                 <FiUpload size={12} /> {watermarkImage ? 'Cambiar' : 'Subir'}
+                                 <input type="file" className="hidden" accept="image/*" onChange={handleWatermark} />
+                               </label>
+                               {watermarkImage && (
+                                 <button onClick={() => setWatermarkImage(null)} className="p-1 bg-red-100 text-red-500 rounded-lg hover:bg-red-200">
+                                   <FiTrash2 size={12} />
+                                 </button>
+                               )}
+                             </div>
+                           </div>
+                         </div>
 
-                        {/* Font size - doctor name */}
-                        <div className="flex flex-col gap-1">
-                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Fuente Nombre</p>
-                          <div className="flex items-center gap-2">
-                            <input type="range" min={8} max={20} step={1} value={headerFontSize} onChange={(e) => setHeaderFontSize(Number(e.target.value))} className="w-24 accent-purple-600" />
-                            <span className="text-[10px] font-mono text-gray-600 w-8">{headerFontSize}px</span>
-                          </div>
-                        </div>
-
-                        {/* Image size */}
-                        <div className="flex flex-col gap-1">
-                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Tam. Imagen</p>
-                          <div className="flex items-center gap-2">
-                            <input type="range" min={60} max={200} step={10} value={imageSize} onChange={(e) => setImageSize(Number(e.target.value))} className="w-24 accent-blue-600" />
-                            <span className="text-[10px] font-mono text-gray-600 w-12">{imageSize}px</span>
-                          </div>
-                        </div>
-
-                        {/* Watermark */}
-                        <div className="flex flex-col gap-1">
-                          <p className="text-[10px] font-black uppercase text-gray-600 leading-none">Marca de Agua</p>
-                          <div className="flex items-center gap-2">
-                            <label className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer text-xs font-bold text-gray-700 transition-all">
-                              <FiUpload size={12} /> {watermarkImage ? 'Cambiar' : 'Subir'}
-                              <input type="file" className="hidden" accept="image/*" onChange={handleWatermark} />
-                            </label>
-                            {watermarkImage && (
-                              <button onClick={() => setWatermarkImage(null)} className="p-1 bg-red-100 text-red-500 rounded-lg hover:bg-red-200">
-                                <FiTrash2 size={12} />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <button onClick={downloadCarousel} className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-indigo-700">Descargar ZIP 📦</button>
-                      </div>
+                         <button onClick={downloadCarousel} className="px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2">
+                           Descargar ZIP 📦
+                         </button>
+                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i))}
