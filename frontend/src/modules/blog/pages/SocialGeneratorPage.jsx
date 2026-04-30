@@ -145,9 +145,11 @@ export default function SocialGeneratorPage() {
       content: content || (type === 'text' ? 'Nuevo Texto' : 'arrow'),
       x: 50,
       y: 30,
-      size: type === 'text' ? 20 : 60,
+      width: type === 'text' ? 100 : 60,
+      height: type === 'text' ? 40 : 60,
       rotation: 0,
-      color: type === 'text' ? contentColor : titleColor
+      color: type === 'text' ? contentColor : titleColor,
+      zIndex: 30
     }
     
     setExtraElements(prev => {
@@ -230,24 +232,27 @@ export default function SocialGeneratorPage() {
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
     
     let pos = { x: 50, y: 50 }
-    let initialSize = 100
+    let initialWidth = 100
+    let initialHeight = 100
     let initialRotation = 0
     
     if (imgIndex !== null) {
       pos = imagePositions[id] || { x: 50, y: 70 }
-      initialSize = imageSizes[id] || imageSize
+      initialWidth = imageSizes[id] || imageSize
+      initialHeight = imageSizes[id] || imageSize
       initialRotation = imageRotations[id] || 0
     } else if (extraId !== null) {
       const el = extraElements[slideIndex]?.find(e => e.id === extraId)
       if (el) {
         pos = { x: el.x, y: el.y }
-        initialSize = el.size
+        initialWidth = el.width || el.size
+        initialHeight = el.height || el.size
         initialRotation = el.rotation
       }
     }
     if (!rect) return
     setTransformState({
-      transformType: type, // 'resize' or 'rotate'
+      transformType: type, // 'resize', 'resize-w', 'resize-h', 'rotate'
       elementType: imgIndex !== null ? 'image' : 'extra',
       slideIndex,
       imgIndex,
@@ -255,7 +260,8 @@ export default function SocialGeneratorPage() {
       id,
       startX: e.clientX,
       startY: e.clientY,
-      initialSize,
+      initialWidth,
+      initialHeight,
       initialRotation,
       rect,
       centerX: rect.left + (pos.x / 100) * rect.width,
@@ -278,12 +284,18 @@ export default function SocialGeneratorPage() {
           updateExtraElement(slideIndex, extraId, { x: xPct, y: yPct })
         }
       } else if (transformState) {
-        const { transformType, elementType, slideIndex, id, extraId, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
+        const { transformType, elementType, slideIndex, id, extraId, startX, startY, initialWidth, initialHeight, initialRotation, centerX, centerY } = transformState
         if (transformType === 'resize') {
           const deltaX = e.clientX - startX
-          const newSize = Math.max(elementType === 'image' ? 50 : 10, initialSize + deltaX)
+          const newSize = Math.max(elementType === 'image' ? 50 : 10, initialWidth + deltaX)
           if (elementType === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }))
-          else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { size: newSize })
+          else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { width: newSize, height: newSize })
+        } else if (transformType === 'resize-w') {
+          const deltaX = e.clientX - startX
+          updateExtraElement(slideIndex, extraId, { width: Math.max(10, initialWidth + deltaX) })
+        } else if (transformType === 'resize-h') {
+          const deltaY = e.clientY - startY
+          updateExtraElement(slideIndex, extraId, { height: Math.max(10, initialHeight + deltaY) })
         } else if (transformType === 'rotate') {
           const startAngle = Math.atan2(startY - centerY, startX - centerX)
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
@@ -540,7 +552,7 @@ export default function SocialGeneratorPage() {
                     contentEditable={!isPreview && selectedExtraId === elId}
                     suppressContentEditableWarning
                     className="font-bold whitespace-nowrap outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1 transition-all"
-                    style={{ fontSize: (el.size * (isPreview ? 1.5 : 1)) + 'px', color: el.color }}
+                    style={{ fontSize: ((el.width/5) * (isPreview ? 1.5 : 1)) + 'px', color: el.color }}
                     onBlur={(e) => updateExtraElement(i, el.id, { content: e.target.innerText })}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => { if (!isPreview && selectedExtraId === elId) e.stopPropagation(); }}
@@ -548,11 +560,12 @@ export default function SocialGeneratorPage() {
                     {el.content}
                   </div>
                 ) : (
-                  <div style={{ width: el.size + 'px', height: el.size + 'px', color: el.color }}>
+                  <div style={{ width: el.width + 'px', height: el.height + 'px', color: el.color }}>
                     {el.content === 'arrow' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>}
                     {el.content === 'arrow-left' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.99 11H20v2H7.99v3L4 12l3.99-4z"/></svg>}
                     {el.content === 'arrow-up' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 7.99V20h-2V7.99H8L12 4l4 3.99z"/></svg>}
                     {el.content === 'arrow-down' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/></svg>}
+                    {el.content === 'line' && <div className="w-full h-full bg-current" style={{ minHeight: '1px' }} />}
                     {el.content === 'circle' && <div className="w-full h-full rounded-full bg-current" />}
                     {el.content === 'square' && <div className="w-full h-full bg-current" />}
                     {el.content === 'rounded-square' && <div className="w-full h-full bg-current rounded-[20%]" />}
@@ -560,19 +573,40 @@ export default function SocialGeneratorPage() {
                     {el.content === 'heart' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>}
                     {el.content === 'cloud' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 19c-3.037 0-5.5-2.463-5.5-5.5 0-1.47.576-2.805 1.517-3.801C11.523 9.243 9.407 8 7 8 3.134 8 0 11.134 0 15c0 3.866 3.134 7 7 7h10.5c3.037 0 5.5-2.463 5.5-5.5S20.537 11 17.5 11c-.347 0-.684.032-1.01.094.006-.031.01-.062.01-.094 0-2.485-2.015-4.5-4.5-4.5-1.228 0-2.341.493-3.155 1.292C8.36 7.307 8 8.11 8 9c0 1.228.493 2.341 1.292 3.155C8.493 12.97 8 14.083 8 15.307c0 1.24.49 2.364 1.284 3.189-.806.81-1.284 1.92-1.284 3.144C8 24.16 10.34 26.5 13.16 26.5c1.225 0 2.336-.43 3.204-1.146C17.218 26 18.533 26.5 20 26.5c3.037 0 5.5-2.463 5.5-5.5 0-.583-.092-1.144-.261-1.668.463.108.944.168 1.441.168 3.037 0 5.5-2.463 5.5-5.5S29.717 8.5 26.68 8.5c-.347 0-.684.032-1.01.094C25.676 5.867 23.56 4.623 21.043 4.623 18.257 4.623 16 6.88 16 9.667c0 .347.032.684.094 1.01C14.867 10.676 13.623 8.56 13.623 6.043 13.623 3.257 15.88 1 18.667 1c2.787 0 5.043 2.256 5.043 5.043 0 .347-.032.684-.094 1.01 1.221 0 2.336.43 3.204 1.146C27.676 7.5 28.99 7 30.457 7 33.494 7 35.957 9.463 35.957 12.5S33.494 18 30.457 18H20.457"/></svg>}
                     {el.content === 'bubble' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>}
+                    {el.content === 'bullet' && <div className="w-full h-full rounded-full bg-current" />}
+                    {el.content === 'bullet-check' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>}
                   </div>
                 )}
 
                 {!isPreview && selectedExtraId === elId && (
                   <>
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" onMouseDown={(e) => handleTransformStart(e, i, 'rotate', null, el.id)}>↻</div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full shadow-lg border border-white flex items-center justify-center cursor-se-resize z-40" onMouseDown={(e) => handleTransformStart(e, i, 'resize', null, el.id)}></div>
+                    
+                    {/* Width Resize handle */}
+                    <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-2 h-8 bg-indigo-600 rounded-full cursor-ew-resize z-40" onMouseDown={(e) => handleTransformStart(e, i, 'resize-w', null, el.id)}></div>
+                    
+                    {/* Height Resize handle */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-indigo-600 rounded-full cursor-ns-resize z-40" onMouseDown={(e) => handleTransformStart(e, i, 'resize-h', null, el.id)}></div>
+                    
+                    {/* Proportional Resize handle (bottom-right) */}
+                    <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-indigo-600 rounded-full shadow-lg border border-white flex items-center justify-center cursor-se-resize z-40" onMouseDown={(e) => handleTransformStart(e, i, 'resize', null, el.id)}></div>
+                    
                     <button onClick={(e) => { e.stopPropagation(); removeExtraElement(i, el.id); }} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg z-40"><FiX size={10}/></button>
                     
-                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white p-1 rounded-lg shadow-xl border border-gray-100 z-50">
-                      {['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#ffffff', '#000000'].map(c => (
-                        <button key={c} onClick={() => updateExtraElement(i, el.id, { color: c })} className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: c }} />
-                      ))}
+                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white p-1.5 rounded-xl shadow-xl border border-gray-100 z-50">
+                      <input 
+                        type="color" 
+                        value={el.color} 
+                        onChange={(e) => updateExtraElement(i, el.id, { color: e.target.value })} 
+                        className="w-6 h-6 border-0 p-0 bg-transparent cursor-pointer rounded overflow-hidden"
+                      />
+                      <button type="button" 
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${el.zIndex === 5 ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-500'}`}
+                        onClick={(e) => { e.stopPropagation(); updateExtraElement(i, el.id, { zIndex: el.zIndex === 5 ? 30 : 5 }); }}
+                        title={el.zIndex === 5 ? "Traer al frente" : "Enviar al fondo"}
+                      >
+                        <FiLayers size={12} />
+                      </button>
                     </div>
                   </>
                 )}
@@ -797,7 +831,6 @@ export default function SocialGeneratorPage() {
                            <div className="w-16 bg-gray-50 dark:bg-gray-900 border-r border-gray-100 dark:border-gray-700 flex flex-col items-center py-6 gap-6">
                               <button onClick={() => setActiveSidebarTab('text')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'text' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Texto"><FiType size={20}/></button>
                               <button onClick={() => setActiveSidebarTab('shapes')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'shapes' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Elementos"><FiBox size={20}/></button>
-                              <button onClick={() => setActiveSidebarTab('tools')} className={`p-3 rounded-xl transition-all ${activeSidebarTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-indigo-400'}`} title="Herramientas"><FiSettings size={20}/></button>
                            </div>
                            <div className="flex-1 p-5 overflow-y-auto">
                               {activeSidebarTab === 'text' && (
@@ -835,7 +868,10 @@ export default function SocialGeneratorPage() {
                                         { id: 'arrow-down', label: 'Flecha Aba', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/></svg> },
                                         { id: 'star', label: 'Estrella', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> },
                                         { id: 'heart', label: 'Corazón', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> },
-                                        { id: 'bubble', label: 'Burbuja', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> }
+                                        { id: 'bubble', label: 'Burbuja', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> },
+                                        { id: 'line', label: 'Línea', icon: <div className="w-10 h-1 bg-current rounded-full" /> },
+                                        { id: 'bullet', label: 'Viñeta', icon: <div className="w-4 h-4 rounded-full bg-current" /> },
+                                        { id: 'bullet-check', label: 'Viñeta Check', icon: <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> }
                                       ].map(shape => (
                                         <button 
                                           key={shape.id}
@@ -851,14 +887,7 @@ export default function SocialGeneratorPage() {
                                    </div>
                                 </div>
                               )}
-                              {activeSidebarTab === 'tools' && (
-                                <div className="space-y-6 animate-fadeIn">
-                                   <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Herramientas</p>
-                                   <div className="space-y-2">
-                                      <p className="text-[11px] text-gray-500 italic">Selecciona un elemento en la diapositiva para ver opciones avanzadas.</p>
-                                   </div>
-                                </div>
-                              )}
+                              {activeSidebarTab === 'tools' && null}
                            </div>
                         </div>
 
