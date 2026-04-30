@@ -50,7 +50,7 @@ def get_dashboard_stats(
 
     # 5. Blog Posts Count
     article_count = db.query(Post).filter(
-        Post.author_id == current_user.id
+        Post.doctor_id == current_user.id
     ).count()
 
     return {
