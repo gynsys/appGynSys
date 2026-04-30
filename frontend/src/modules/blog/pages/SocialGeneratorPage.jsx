@@ -218,31 +218,19 @@ export default function SocialGeneratorPage() {
     setSlideAlignments(prev => ({ ...prev, [slideIndex]: alignPct }))
   }
 
-  const handleContextMenu = (e, slideIndex) => {
-    e.preventDefault()
-    setSelectedImageIndex(slideIndex)
-    setSelectedContentIndex(null)
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      slideIndex
-    })
-  }
+
 
   const rotateImage90 = (slideIndex) => {
     const current = imageRotations[slideIndex] || 0
     setImageRotations(prev => ({ ...prev, [slideIndex]: (current + 90) % 360 }))
-    setContextMenu(null)
   }
 
   const sendImageToBack = (slideIndex) => {
     setImageZIndexes(prev => ({ ...prev, [slideIndex]: 5 }))
-    setContextMenu(null)
   }
 
   const bringImageToFront = (slideIndex) => {
     setImageZIndexes(prev => ({ ...prev, [slideIndex]: 20 }))
-    setContextMenu(null)
   }
 
   const downloadCarousel = async () => {
@@ -409,8 +397,7 @@ export default function SocialGeneratorPage() {
                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-30"
                      onMouseDown={(e) => handleTransformStart(e, i, 'resize')}
                    ></div>
-                   <button 
-                     className={`absolute -bottom-2 -left-2 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-30 transition-colors ${imageZIndexes[i] === 5 ? 'bg-amber-500 text-white' : 'bg-white text-indigo-600'}`}
+                   <button type="button" className={`absolute -bottom-2 -left-2 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-30 transition-colors ${imageZIndexes[i] === 5 ? 'bg-amber-500 text-white' : 'bg-white text-indigo-600'}`}
                      onClick={(e) => { e.stopPropagation(); imageZIndexes[i] === 5 ? bringImageToFront(i) : sendImageToBack(i); }}
                      title={imageZIndexes[i] === 5 ? "Traer al frente" : "Enviar al fondo"}
                    >
