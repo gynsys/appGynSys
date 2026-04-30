@@ -24,12 +24,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-@app.middleware("http")
-async def add_cors_header(request, call_next):
-    response = await call_next(request)
-    if request.url.path.startswith("/uploads"):
-        response.headers["Access-Control-Allow-Origin"] = "*"
-    return response
+
 
 @app.middleware("http")
 async def log_user_agent(request, call_next):
@@ -44,14 +39,16 @@ if isinstance(origins, str):
     origins = [o.strip() for o in origins.split(",") if o.strip()]
 
 # Clean and normalize origins (no trailing slashes, ensure strings)
-origins = [str(o).strip().rstrip("/") for o in origins]
-
 # Add production domains explicitly for safety
-if "https://gynsys.net" not in origins:
-    origins.append("https://gynsys.net")
-if "https://www.gynsys.net" not in origins:
-    origins.append("https://www.gynsys.net")
+origins.extend([
+    "https://gynsys.net",
+    "https://www.gynsys.net",
+    "https://api.gynsys.net",
+    "https://app.gynsys.net"
+])
 
+# Remove duplicates and clean
+origins = list(set([str(o).strip().rstrip("/") for o in origins if o]))
 print(f"CORS origins configured: {origins}", flush=True)
 
 app.add_middleware(
