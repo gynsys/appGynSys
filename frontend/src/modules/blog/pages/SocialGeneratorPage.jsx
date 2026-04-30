@@ -385,8 +385,8 @@ export default function SocialGeneratorPage() {
       <div
          key={i}
          ref={el => { if (!isPreview) slideRefs.current[i] = el; }}
-         className="carousel-slide-item aspect-square rounded-[40px] p-10 flex flex-col relative group shadow-xl overflow-hidden"
-         style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb' }}
+         className="carousel-slide-item rounded-[40px] p-10 flex flex-col relative group shadow-xl overflow-hidden"
+         style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb', width: '410px', height: '410px' }}
          onClick={() => { if (!isPreview) { setSelectedImageId(null); setSelectedContentIndex(null); } }}
        >
          {watermarkImage && (
@@ -864,7 +864,7 @@ export default function SocialGeneratorPage() {
 
                         <div className="flex-1 flex flex-col items-center gap-8">
                            {/* Paginator */}
-                           <div className="flex items-center gap-6 bg-white dark:bg-gray-800 px-8 py-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                           <div className="flex items-center gap-6 bg-white dark:bg-gray-800 px-8 py-0 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
                               <button 
                                 onClick={() => setCurrentSlidePage(prev => Math.max(0, prev - 1))}
                                 disabled={currentSlidePage === 0}
@@ -888,19 +888,6 @@ export default function SocialGeneratorPage() {
                            {/* Main Single Slide Canvas */}
                            <div className="w-full flex justify-center animate-fadeIn" key={currentSlidePage}>
                               {renderSlideContent(generatedContent.slides[currentSlidePage], currentSlidePage)}
-                           </div>
-
-                           {/* Thumbnails list (optional for quick jump) */}
-                           <div className="flex gap-3 overflow-x-auto pb-4 max-w-full">
-                              {generatedContent.slides.map((_, idx) => (
-                                <button 
-                                  key={idx}
-                                  onClick={() => setCurrentSlidePage(idx)}
-                                  className={`w-12 h-12 flex-shrink-0 rounded-xl border-2 transition-all font-black text-xs ${currentSlidePage === idx ? 'border-indigo-600 bg-indigo-50 text-indigo-600 shadow-md' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
-                                >
-                                  {idx + 1}
-                                </button>
-                              ))}
                            </div>
                         </div>
                      </div>
