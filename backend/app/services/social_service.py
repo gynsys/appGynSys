@@ -80,7 +80,13 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
       if json_match:
           json_str = json_match.group(1)
           try:
-              return json.loads(json_str)
+              data = json.loads(json_str)
+              # Asegurar que 'slides' sea una lista
+              if isinstance(data, dict) and 'slides' in data:
+                  if isinstance(data['slides'], dict):
+                      logger.warning("IA devolvió slides como objeto, convirtiendo a lista")
+                      data['slides'] = list(data['slides'].values())
+              return data
           except json.JSONDecodeError:
               # Limpieza agresiva de JSON mal formado
               try:
