@@ -65,10 +65,11 @@ def generate_social_ai(
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Error en generación social: {e}", exc_info=True)
+        error_msg = str(e)
+        logger.error(f"Error en generación social: {error_msg}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error en la generación social: {str(e)}"
+            detail=f"Error en la generación social: {error_msg}"
         )
 
 @router.get("/menu/mega/{doctor_slug}", response_model=List[schemas.MegaMenuItem])

@@ -80,5 +80,10 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         }
         
     except Exception as e:
+        error_str = str(e)
+        if "429" in error_str or "quota" in error_str.lower():
+            logger.warning(f"Cuota de IA excedida (Blog): {error_str}")
+            raise ValueError("Has alcanzado el límite de uso gratuito de la IA por hoy. Por favor, intenta de nuevo mañana.")
+            
         logger.error(f"Error al generar contenido con Gemini: {str(e)}", exc_info=True)
         raise ValueError(f"Error en el servicio de IA: {str(e)}")

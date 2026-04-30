@@ -102,6 +102,53 @@ export default function SocialGeneratorPage() {
     }
   }
 
+  const handleTestDesign = () => {
+    setActiveTab('carousel')
+    const testData = {
+      type: 'carousel',
+      slides: [
+        { title: "DISEÑO DE PRUEBA 1", content: "• Este es un boceto para pruebas\n• Puedes editar este texto libremente\n• Prueba los degradados y capas" },
+        { title: "DISEÑO DE PRUEBA 2", content: "• Añade iconos médicos desde el panel\n• Envía elementos al fondo\n• Cambia los colores de fondo" }
+      ],
+      image_prompts: ["Ginecología moderna", "Tecnología médica"]
+    }
+    
+    // Add some default extra elements to test features
+    const sampleExtra = [
+      {
+        id: 'test-blob-' + Date.now(),
+        type: 'icon',
+        content: 'blob1',
+        x: 20,
+        y: 20,
+        width: 200,
+        height: 200,
+        rotation: 0,
+        color: '#e0e7ff',
+        color2: '#c7d2fe',
+        useGradient: true,
+        gradientDir: '135deg',
+        zIndex: 10
+      },
+      {
+        id: 'test-stetho-' + Date.now(),
+        type: 'icon',
+        content: 'stetho',
+        x: 80,
+        y: 80,
+        width: 60,
+        height: 60,
+        rotation: -15,
+        color: '#4f46e5',
+        zIndex: 40
+      }
+    ]
+    
+    setGeneratedContent(testData)
+    setExtraElements(sampleExtra)
+    showToast('Lienzo de prueba cargado', 'success')
+  }
+
   const handleEditSlide = (index, field, value) => {
     const newSlides = [...generatedContent.slides]
     newSlides[index][field] = value
@@ -905,6 +952,15 @@ export default function SocialGeneratorPage() {
                                         <FiPlusCircle /> Agregar caja de texto
                                       </button>
                                    </div>
+                                   <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                              <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-sm">Generación Pro</h3>
+                              <button 
+                                onClick={handleTestDesign}
+                                className="text-[10px] font-black uppercase bg-amber-100 text-amber-700 px-3 py-1 rounded-full hover:bg-amber-200 transition-colors border border-amber-200 shadow-sm"
+                              >
+                                🧪 Modo Boceto (Sin IA)
+                              </button>
+                           </div>
                                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                                       <p className="text-[10px] font-black uppercase text-gray-400 mb-3">Estilos rápidos</p>
                                       <div className="space-y-2">

@@ -66,6 +66,13 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
       logger.info(f"Generando {generation_type} con {model_name}...")
       response = model.generate_content(prompt)
       
+      if not response or not hasattr(response, 'text'):
+          # Verificar si fue bloqueado por seguridad
+          if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
+              logger.warning(f"Contenido bloqueado por seguridad: {response.prompt_feedback}")
+              raise ValueError("El contenido fue bloqueado por los filtros de seguridad de la IA. Por favor intenta con un tema menos sensible.")
+          raise ValueError("La IA no devolvió una respuesta válida.")
+
       text = response.text.strip()
       
       # Intentar extraer JSON de bloques de código o texto libre
@@ -76,14 +83,23 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
               return json.loads(json_str)
           except json.JSONDecodeError:
               # Limpieza agresiva de JSON mal formado
-              json_str = re.sub(r'//.*', '', json_str) # Quitar comentarios
-              json_str = json_str.replace('\n', ' ').replace('\r', '')
-              json_str = re.sub(r',\s*\}', '}', json_str) # Comas finales en objetos
-              json_str = re.sub(r',\s*\]', ']', json_str) # Comas finales en arreglos
-              return json.loads(json_str)
+              try:
+                  json_str = re.sub(r'//.*', '', json_str) # Quitar comentarios
+                  json_str = json_str.replace('\n', ' ').replace('\r', '')
+                  json_str = re.sub(r',\s*\}', '}', json_str) # Comas finales en objetos
+                  json_str = re.sub(r',\s*\]', ']', json_str) # Comas finales en arreglos
+                  return json.loads(json_str)
+              except Exception as parse_err:
+                  logger.error(f"Fallo total al parsear JSON: {text[:200]}")
+                  raise ValueError(f"Error al procesar el formato de la IA: {str(parse_err)}")
       
-      raise ValueError("No se pudo extraer JSON de la respuesta")
+      raise ValueError(f"No se pudo extraer una estructura válida de la respuesta: {text[:100]}...")
 
     except Exception as e:
+      error_str = str(e)
+      if "429" in error_str or "quota" in error_str.lower():
+          logger.warning(f"Cuota de IA excedida: {error_str}")
+          raise ValueError("Has alcanzado el límite de uso gratuito de la IA por hoy (20 peticiones). Por favor, intenta de nuevo mañana o contacta a soporte para ampliar tu plan.")
+      
       logger.error(f"Error crítico en generación social: {e}", exc_info=True)
       raise e
