@@ -402,10 +402,10 @@ export default function SocialGeneratorPage() {
       <div
          key={i + (isExport ? '-export' : '')}
          ref={el => { if (!isPreview && !isExport) slideRefs.current[i] = el; }}
-         className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} rounded-[40px] p-10 flex flex-col relative group shadow-xl overflow-hidden`}
+         className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} rounded-none p-10 flex flex-col relative group shadow-xl overflow-hidden`}
          style={{ 
            backgroundColor: bgColor, 
-           border: (isPreview || isExport) ? 'none' : '1px solid #e5e7eb', 
+           border: '1px solid #d1d5db', 
            width: '410px', 
            height: '410px',
            position: isExport ? 'relative' : undefined 
