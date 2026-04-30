@@ -464,10 +464,10 @@ export default function SocialGeneratorPage() {
          )}
          
          <div className="flex items-center justify-start gap-3 mb-10 border-b border-gray-100 dark:border-gray-700/50 pb-6 w-full relative z-30">
-           <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+           <div className="w-12 h-12 flex items-center justify-center overflow-hidden flex-shrink-0">
              {doctorLogoBase64 ? (
                <img src={doctorLogoBase64} alt="Logo" className="w-full h-full object-contain" />
-             ) : <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-black">GS</div>}
+             ) : <div className="w-full h-full bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-black">GS</div>}
            </div>
            <span
              style={{ 
