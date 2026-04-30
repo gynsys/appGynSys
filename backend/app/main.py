@@ -52,7 +52,7 @@ if "https://gynsys.net" not in origins:
 if "https://www.gynsys.net" not in origins:
     origins.append("https://www.gynsys.net")
 
-logger.info(f"CORS origins configured: {origins}")
+print(f"CORS origins configured: {origins}", flush=True)
 
 app.add_middleware(
     CORSMiddleware,
