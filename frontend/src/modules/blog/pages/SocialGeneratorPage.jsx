@@ -145,7 +145,7 @@ export default function SocialGeneratorPage() {
     ]
     
     setGeneratedContent(testData)
-    setExtraElements(sampleExtra)
+    setExtraElements({ 0: sampleExtra })
     showToast('Lienzo de prueba cargado', 'success')
   }
 
@@ -676,7 +676,7 @@ export default function SocialGeneratorPage() {
                     
                     <button onClick={(e) => { e.stopPropagation(); removeExtraElement(i, el.id); }} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg z-40"><FiX size={10}/></button>
                     
-                    <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-2 bg-white p-2.5 rounded-2xl shadow-2xl border border-gray-100 z-50 min-w-[140px]">
+                    <div className="absolute bottom-full mb-12 left-1/2 -translate-x-1/2 flex flex-col gap-2 bg-white p-2.5 rounded-2xl shadow-2xl border border-gray-100 z-50 min-w-[140px]">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-1">
                           <input 
