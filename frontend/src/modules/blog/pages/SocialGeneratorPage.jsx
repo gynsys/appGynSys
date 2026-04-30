@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { 
   FiCpu, FiInstagram, FiImage, FiCopy, FiCheck, 
   FiLoader, FiMaximize2, FiX, FiChevronLeft, FiChevronRight,
-  FiEdit3, FiPlusCircle, FiTrash2, FiUpload
+  FiEdit3, FiPlusCircle, FiTrash2, FiUpload, FiLayers
 } from 'react-icons/fi'
 import { blogService } from '../services/blogService'
 import Spinner from '../../../components/common/Spinner'
