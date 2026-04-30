@@ -36,7 +36,7 @@ export default function SocialGeneratorPage() {
   const slideRefs = useRef({})
   const [imageSizes, setImageSizes] = useState({})
   const [imageRotations, setImageRotations] = useState({})
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null)
+  const [selectedImageId, setSelectedImageId] = useState(null) // "slideIndex-imgIndex"
   const [contentPositions, setContentPositions] = useState({})
   const [contentRotations, setContentRotations] = useState({})
   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
@@ -109,17 +109,19 @@ export default function SocialGeneratorPage() {
       const reader = new FileReader()
       reader.onloadend = () => {
         const newSlides = [...generatedContent.slides]
-        newSlides[index].customImage = reader.result
+        if (!newSlides[index].customImages) newSlides[index].customImages = []
+        newSlides[index].customImages.push(reader.result)
         setGeneratedContent({ ...generatedContent, slides: newSlides })
       }
       reader.readAsDataURL(file)
     }
   }
 
-  const removeCustomImage = (index) => {
+  const removeCustomImage = (slideIndex, imgIndex) => {
     const newSlides = [...generatedContent.slides]
-    delete newSlides[index].customImage
+    newSlides[slideIndex].customImages.splice(imgIndex, 1)
     setGeneratedContent({ ...generatedContent, slides: newSlides })
+    setSelectedImageId(null)
   }
 
   const handleWatermark = (e) => {
@@ -130,43 +132,51 @@ export default function SocialGeneratorPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleDragStart = (e, slideIndex, type = 'image') => {
+  const handleDragStart = (e, slideIndex, type = 'image', imgIndex = null) => {
     e.preventDefault()
     e.stopPropagation()
+    const id = type === 'image' ? `${slideIndex}-${imgIndex}` : slideIndex
+    
     if (type === 'image') {
-      setSelectedImageIndex(slideIndex)
+      setSelectedImageId(id)
       setSelectedContentIndex(null)
     } else {
       setSelectedContentIndex(slideIndex)
-      setSelectedImageIndex(null)
+      setSelectedImageId(null)
     }
     
     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
     if (!rect) return
     
     const pos = type === 'image' 
-      ? (imagePositions[slideIndex] || { x: 50, y: 70 })
+      ? (imagePositions[id] || { x: 50, y: 70 })
       : (contentPositions[slideIndex] || { x: 50, y: 50 })
       
     setDragging({
       type,
       slideIndex,
+      imgIndex,
+      id,
       offsetX: e.clientX - rect.left - (pos.x / 100) * rect.width,
       offsetY: e.clientY - rect.top - (pos.y / 100) * rect.height,
       rect
     })
   }
 
-  const handleTransformStart = (e, slideIndex, type) => {
+  const handleTransformStart = (e, slideIndex, type, imgIndex) => {
     e.preventDefault()
     e.stopPropagation()
-    setSelectedImageIndex(slideIndex)
-    const imgElement = document.getElementById(`custom-img-${slideIndex}`)
-    const rect = imgElement?.getBoundingClientRect()
+    const id = `${slideIndex}-${imgIndex}`
+    const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
+    const pos = imagePositions[id] || { x: 50, y: 70 }
+    const initialSize = imageSizes[id] || imageSize
+    const initialRotation = imageRotations[id] || 0
     if (!rect) return
     setTransformState({
       type,
       slideIndex,
+      imgIndex,
+      id,
       startX: e.clientX,
       startY: e.clientY,
       initialSize: imageSizes[slideIndex] || imageSize,
@@ -184,7 +194,7 @@ export default function SocialGeneratorPage() {
         const yPct = Math.min(95, Math.max(5, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
         
         if (type === 'image') {
-          setImagePositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+          setImagePositions(prev => ({ ...prev, [id]: { x: xPct, y: yPct } }))
         } else {
           setContentPositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
         }
@@ -193,12 +203,12 @@ export default function SocialGeneratorPage() {
         if (type === 'resize') {
           const deltaX = e.clientX - startX
           const newSize = Math.max(50, initialSize + deltaX)
-          setImageSizes(prev => ({ ...prev, [slideIndex]: newSize }))
+          setImageSizes(prev => ({ ...prev, [id]: newSize }))
         } else if (type === 'rotate') {
           const startAngle = Math.atan2(startY - centerY, startX - centerX)
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
-          setImageRotations(prev => ({ ...prev, [slideIndex]: initialRotation + angleDiff }))
+          setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
         }
       }
     }
@@ -223,17 +233,17 @@ export default function SocialGeneratorPage() {
 
 
 
-  const rotateImage90 = (slideIndex) => {
-    const current = imageRotations[slideIndex] || 0
-    setImageRotations(prev => ({ ...prev, [slideIndex]: (current + 90) % 360 }))
+  const rotateImage90 = (id) => {
+    const current = imageRotations[id] || 0
+    setImageRotations(prev => ({ ...prev, [id]: (current + 90) % 360 }))
   }
 
-  const sendImageToBack = (slideIndex) => {
-    setImageZIndexes(prev => ({ ...prev, [slideIndex]: 5 }))
+  const sendImageToBack = (id) => {
+    setImageZIndexes(prev => ({ ...prev, [id]: 5 }))
   }
 
-  const bringImageToFront = (slideIndex) => {
-    setImageZIndexes(prev => ({ ...prev, [slideIndex]: 20 }))
+  const bringImageToFront = (id) => {
+    setImageZIndexes(prev => ({ ...prev, [id]: 20 }))
   }
 
   const downloadCarousel = async () => {
@@ -296,7 +306,7 @@ export default function SocialGeneratorPage() {
          ref={el => { if (!isPreview) slideRefs.current[i] = el; }}
          className="carousel-slide-item aspect-square rounded-[40px] p-8 flex flex-col relative group shadow-xl overflow-hidden"
          style={{ backgroundColor: bgColor, border: isPreview ? 'none' : '1px solid #e5e7eb' }}
-         onClick={() => { if (!isPreview) { setSelectedImageIndex(null); setSelectedContentIndex(null); } }}
+         onClick={() => { if (!isPreview) { setSelectedImageId(null); setSelectedContentIndex(null); } }}
        >
          {watermarkImage && (
            <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
@@ -372,58 +382,61 @@ export default function SocialGeneratorPage() {
            </div>
          </div>
          
-         {slide.customImage && (
-           <div
-             className={`absolute z-20 transition-shadow ${(!isPreview && selectedImageIndex === i) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-xl' : ''}`}
-             style={{
-               left: (imagePositions[i] ? imagePositions[i].x : 50) + '%',
-               top: (imagePositions[i] ? imagePositions[i].y : 70) + '%',
-               transform: `translate(-50%, -50%) rotate(${imageRotations[i] || 0}deg)`,
-               zIndex: imageZIndexes[i] || 20,
-               cursor: (dragging && dragging.type === 'image' && dragging.slideIndex === i) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
-               userSelect: 'none'
-             }}
-             onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image') }}
-             onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageIndex(i); setSelectedContentIndex(null); } }}
-           >
-             <div className="relative group/img">
-               <img
-                 id={`custom-img-${i}`}
-                 src={slide.customImage}
-                 className="rounded-xl shadow-md border-2 border-white/50 object-cover pointer-events-none"
-                 style={{ 
-                   width: (imageSizes[i] || imageSize) * (isPreview ? 1.5 : 1) + 'px', 
-                   height: (imageSizes[i] || imageSize) * (isPreview ? 1.5 : 1) + 'px' 
-                 }}
-                 alt="Custom"
-                 draggable={false}
-               />
-               
-               {!isPreview && selectedImageIndex === i && (
-                 <>
-                   <div 
-                     className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
-                     onMouseDown={(e) => handleTransformStart(e, i, 'rotate')}
-                   >↻</div>
-                   <div 
-                     className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-30"
-                     onMouseDown={(e) => handleTransformStart(e, i, 'resize')}
-                   ></div>
-                   <button type="button" className={`absolute -bottom-2 -left-2 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-30 transition-colors ${imageZIndexes[i] === 5 ? 'bg-amber-500 text-white' : 'bg-white text-indigo-600'}`}
-                     onClick={(e) => { e.stopPropagation(); imageZIndexes[i] === 5 ? bringImageToFront(i) : sendImageToBack(i); }}
-                     title={imageZIndexes[i] === 5 ? "Traer al frente" : "Enviar al fondo"}
-                   >
-                     <FiLayers size={12} />
-                   </button>
-                 </>
-               )}
-               
-               {!isPreview && (
-                 <button onClick={(e) => { e.stopPropagation(); removeCustomImage(i); }} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions z-40"><FiTrash2 size={12}/></button>
-               )}
-             </div>
-           </div>
-         )}
+         {slide.customImages?.map((img, imgIdx) => {
+            const imgId = `${i}-${imgIdx}`
+            return (
+              <div
+                key={imgId}
+                className={`absolute z-20 transition-shadow ${(!isPreview && selectedImageId === imgId) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-xl' : ''}`}
+                style={{
+                  left: (imagePositions[imgId] ? imagePositions[imgId].x : 50) + '%',
+                  top: (imagePositions[imgId] ? imagePositions[imgId].y : 70) + '%',
+                  transform: `translate(-50%, -50%) rotate(${imageRotations[imgId] || 0}deg)`,
+                  zIndex: imageZIndexes[imgId] || 20,
+                  cursor: (dragging && dragging.id === imgId) ? 'grabbing' : (isPreview ? 'default' : 'grab'),
+                  userSelect: 'none'
+                }}
+                onMouseDown={(e) => { if(!isPreview) handleDragStart(e, i, 'image', imgIdx) }}
+                onClick={(e) => { if(!isPreview) { e.stopPropagation(); setSelectedImageId(imgId); setSelectedContentIndex(null); } }}
+              >
+                <div className="relative group/img">
+                  <img
+                    src={img}
+                    className="rounded-xl shadow-md border-2 border-white/50 object-cover pointer-events-none"
+                    style={{ 
+                      width: (imageSizes[imgId] || imageSize) * (isPreview ? 1.5 : 1) + 'px', 
+                      height: (imageSizes[imgId] || imageSize) * (isPreview ? 1.5 : 1) + 'px' 
+                    }}
+                    alt="Custom"
+                    draggable={false}
+                  />
+                  
+                  {!isPreview && selectedImageId === imgId && (
+                    <>
+                      <div 
+                        className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
+                        onMouseDown={(e) => handleTransformStart(e, i, 'rotate', imgIdx)}
+                      >↻</div>
+                      <div 
+                        className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-30"
+                        onMouseDown={(e) => handleTransformStart(e, i, 'resize', imgIdx)}
+                      ></div>
+                      <button type="button" className={`absolute -bottom-2 -left-2 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-30 transition-colors ${imageZIndexes[imgId] === 5 ? 'bg-amber-500 text-white' : 'bg-white text-indigo-600'}`}
+                        onClick={(e) => { e.stopPropagation(); imageZIndexes[imgId] === 5 ? bringImageToFront(imgId) : sendImageToBack(imgId); }}
+                        title={imageZIndexes[imgId] === 5 ? "Traer al frente" : "Enviar al fondo"}
+                      >
+                        <FiLayers size={12} />
+                      </button>
+                    </>
+                  )}
+                  
+                  {!isPreview && (
+                    <button onClick={(e) => { e.stopPropagation(); removeCustomImage(i, imgIdx); }} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity slide-actions z-40"><FiTrash2 size={12}/></button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
          
          {!isPreview && (
            <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">
