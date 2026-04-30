@@ -46,6 +46,7 @@ export default function SocialGeneratorPage() {
   const [extraElements, setExtraElements] = useState({}) // { slideIndex: [{id, type, content, x, y, size, rotation, color}] }
   const [activeSidebarTab, setActiveSidebarTab] = useState('text')
   const [selectedExtraId, setSelectedExtraId] = useState(null) // "slideIndex-elementId"
+  const [currentSlidePage, setCurrentSlidePage] = useState(0)
 
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
   
@@ -246,7 +247,8 @@ export default function SocialGeneratorPage() {
     }
     if (!rect) return
     setTransformState({
-      type,
+      transformType: type, // 'resize' or 'rotate'
+      elementType: imgIndex !== null ? 'image' : 'extra',
       slideIndex,
       imgIndex,
       extraId,
@@ -264,7 +266,7 @@ export default function SocialGeneratorPage() {
   useEffect(() => {
     const handlePointerMove = (e) => {
       if (dragging) {
-        const { type, slideIndex, offsetX, offsetY, rect } = dragging
+        const { type, slideIndex, id, extraId, offsetX, offsetY, rect } = dragging
         const xPct = Math.min(95, Math.max(5, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
         const yPct = Math.min(95, Math.max(5, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
         
@@ -276,18 +278,18 @@ export default function SocialGeneratorPage() {
           updateExtraElement(slideIndex, extraId, { x: xPct, y: yPct })
         }
       } else if (transformState) {
-        const { type, slideIndex, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
+        const { transformType, elementType, slideIndex, id, extraId, startX, startY, initialSize, initialRotation, centerX, centerY } = transformState
         if (transformType === 'resize') {
           const deltaX = e.clientX - startX
-          const newSize = Math.max(type === 'image' ? 50 : 10, initialSize + deltaX)
-          if (type === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }))
-          else if (type === 'extra') updateExtraElement(slideIndex, extraId, { size: newSize })
+          const newSize = Math.max(elementType === 'image' ? 50 : 10, initialSize + deltaX)
+          if (elementType === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }))
+          else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { size: newSize })
         } else if (transformType === 'rotate') {
           const startAngle = Math.atan2(startY - centerY, startX - centerX)
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
-          if (type === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
-          else if (type === 'extra') updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff })
+          if (elementType === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
+          else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff })
         }
       }
     }
@@ -537,18 +539,27 @@ export default function SocialGeneratorPage() {
                   <div 
                     contentEditable={!isPreview && selectedExtraId === elId}
                     suppressContentEditableWarning
-                    className="font-bold whitespace-nowrap outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1"
+                    className="font-bold whitespace-nowrap outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1 transition-all"
                     style={{ fontSize: (el.size * (isPreview ? 1.5 : 1)) + 'px', color: el.color }}
                     onBlur={(e) => updateExtraElement(i, el.id, { content: e.target.innerText })}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => { if (!isPreview && selectedExtraId === elId) e.stopPropagation(); }}
                   >
                     {el.content}
                   </div>
                 ) : (
                   <div style={{ width: el.size + 'px', height: el.size + 'px', color: el.color }}>
                     {el.content === 'arrow' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>}
+                    {el.content === 'arrow-left' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.99 11H20v2H7.99v3L4 12l3.99-4z"/></svg>}
+                    {el.content === 'arrow-up' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 7.99V20h-2V7.99H8L12 4l4 3.99z"/></svg>}
+                    {el.content === 'arrow-down' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/></svg>}
                     {el.content === 'circle' && <div className="w-full h-full rounded-full bg-current" />}
                     {el.content === 'square' && <div className="w-full h-full bg-current" />}
+                    {el.content === 'rounded-square' && <div className="w-full h-full bg-current rounded-[20%]" />}
                     {el.content === 'star' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>}
+                    {el.content === 'heart' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>}
+                    {el.content === 'cloud' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 19c-3.037 0-5.5-2.463-5.5-5.5 0-1.47.576-2.805 1.517-3.801C11.523 9.243 9.407 8 7 8 3.134 8 0 11.134 0 15c0 3.866 3.134 7 7 7h10.5c3.037 0 5.5-2.463 5.5-5.5S20.537 11 17.5 11c-.347 0-.684.032-1.01.094.006-.031.01-.062.01-.094 0-2.485-2.015-4.5-4.5-4.5-1.228 0-2.341.493-3.155 1.292C8.36 7.307 8 8.11 8 9c0 1.228.493 2.341 1.292 3.155C8.493 12.97 8 14.083 8 15.307c0 1.24.49 2.364 1.284 3.189-.806.81-1.284 1.92-1.284 3.144C8 24.16 10.34 26.5 13.16 26.5c1.225 0 2.336-.43 3.204-1.146C17.218 26 18.533 26.5 20 26.5c3.037 0 5.5-2.463 5.5-5.5 0-.583-.092-1.144-.261-1.668.463.108.944.168 1.441.168 3.037 0 5.5-2.463 5.5-5.5S29.717 8.5 26.68 8.5c-.347 0-.684.032-1.01.094C25.676 5.867 23.56 4.623 21.043 4.623 18.257 4.623 16 6.88 16 9.667c0 .347.032.684.094 1.01C14.867 10.676 13.623 8.56 13.623 6.043 13.623 3.257 15.88 1 18.667 1c2.787 0 5.043 2.256 5.043 5.043 0 .347-.032.684-.094 1.01 1.221 0 2.336.43 3.204 1.146C27.676 7.5 28.99 7 30.457 7 33.494 7 35.957 9.463 35.957 12.5S33.494 18 30.457 18H20.457"/></svg>}
+                    {el.content === 'bubble' && <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>}
                   </div>
                 )}
 
@@ -794,7 +805,7 @@ export default function SocialGeneratorPage() {
                                    <div>
                                       <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Fuentes y Textos</p>
                                       <button 
-                                        onClick={() => addExtraElement(editingIndex || 0, 'text')} 
+                                        onClick={() => addExtraElement(currentSlidePage, 'text')} 
                                         className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                                       >
                                         <FiPlusCircle /> Agregar caja de texto
@@ -803,9 +814,9 @@ export default function SocialGeneratorPage() {
                                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                                       <p className="text-[10px] font-black uppercase text-gray-400 mb-3">Estilos rápidos</p>
                                       <div className="space-y-2">
-                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir un título')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-black text-sm">Añadir un título</button>
-                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir un subtítulo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-bold text-xs">Añadir un subtítulo</button>
-                                         <button onClick={() => addExtraElement(editingIndex || 0, 'text', 'Añadir texto de cuerpo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-[10px]">Añadir texto de cuerpo</button>
+                                         <button onClick={() => addExtraElement(currentSlidePage, 'text', 'Añadir un título')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-black text-sm">Añadir un título</button>
+                                         <button onClick={() => addExtraElement(currentSlidePage, 'text', 'Añadir un subtítulo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-bold text-xs">Añadir un subtítulo</button>
+                                         <button onClick={() => addExtraElement(currentSlidePage, 'text', 'Añadir texto de cuerpo')} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-[10px]">Añadir texto de cuerpo</button>
                                       </div>
                                    </div>
                                 </div>
@@ -814,18 +825,29 @@ export default function SocialGeneratorPage() {
                                 <div className="space-y-6 animate-fadeIn">
                                    <p className="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Elementos Gráficos</p>
                                    <div className="grid grid-cols-2 gap-3">
-                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'circle')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Círculo">
-                                         <div className="w-8 h-8 rounded-full bg-current group-hover:scale-110 transition-transform"/>
-                                      </button>
-                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'square')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Rectángulo">
-                                         <div className="w-8 h-8 bg-current group-hover:scale-110 transition-transform"/>
-                                      </button>
-                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'arrow')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Flecha">
-                                         <svg className="w-10 h-10 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>
-                                      </button>
-                                      <button onClick={() => addExtraElement(editingIndex || 0, 'shape', 'star')} className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group" title="Estrella">
-                                         <svg className="w-10 h-10 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                      </button>
+                                      {[
+                                        { id: 'circle', label: 'Círculo', icon: <div className="w-8 h-8 rounded-full bg-current"/> },
+                                        { id: 'square', label: 'Rectángulo', icon: <div className="w-8 h-8 bg-current"/> },
+                                        { id: 'rounded-square', label: 'R. Redon.', icon: <div className="w-8 h-8 bg-current rounded-[20%]"/> },
+                                        { id: 'arrow', label: 'Flecha Der', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg> },
+                                        { id: 'arrow-left', label: 'Flecha Izq', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M7.99 11H20v2H7.99v3L4 12l3.99-4z"/></svg> },
+                                        { id: 'arrow-up', label: 'Flecha Arr', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7.99V20h-2V7.99H8L12 4l4 3.99z"/></svg> },
+                                        { id: 'arrow-down', label: 'Flecha Aba', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/></svg> },
+                                        { id: 'star', label: 'Estrella', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> },
+                                        { id: 'heart', label: 'Corazón', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> },
+                                        { id: 'bubble', label: 'Burbuja', icon: <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> }
+                                      ].map(shape => (
+                                        <button 
+                                          key={shape.id}
+                                          onClick={() => addExtraElement(currentSlidePage, 'shape', shape.id)} 
+                                          className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group p-2" 
+                                          title={shape.label}
+                                        >
+                                           <div className="group-hover:scale-110 transition-transform">
+                                              {shape.icon}
+                                           </div>
+                                        </button>
+                                      ))}
                                    </div>
                                 </div>
                               )}
@@ -840,8 +862,46 @@ export default function SocialGeneratorPage() {
                            </div>
                         </div>
 
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-                           {generatedContent.slides.map((slide, i) => renderSlideContent(slide, i))}
+                        <div className="flex-1 flex flex-col items-center gap-8">
+                           {/* Paginator */}
+                           <div className="flex items-center gap-6 bg-white dark:bg-gray-800 px-8 py-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                              <button 
+                                onClick={() => setCurrentSlidePage(prev => Math.max(0, prev - 1))}
+                                disabled={currentSlidePage === 0}
+                                className="p-3 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 transition-all"
+                              >
+                                <FiChevronLeft size={24}/>
+                              </button>
+                              <div className="flex flex-col items-center">
+                                 <span className="text-xs font-black uppercase text-gray-400 tracking-widest">Diapositiva</span>
+                                 <span className="text-xl font-black text-indigo-600">{currentSlidePage + 1} <span className="text-gray-300 mx-1">/</span> {generatedContent.slides.length}</span>
+                              </div>
+                              <button 
+                                onClick={() => setCurrentSlidePage(prev => Math.min(generatedContent.slides.length - 1, prev + 1))}
+                                disabled={currentSlidePage === generatedContent.slides.length - 1}
+                                className="p-3 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 transition-all"
+                              >
+                                <FiChevronRight size={24}/>
+                              </button>
+                           </div>
+
+                           {/* Main Single Slide Canvas */}
+                           <div className="w-full flex justify-center animate-fadeIn" key={currentSlidePage}>
+                              {renderSlideContent(generatedContent.slides[currentSlidePage], currentSlidePage)}
+                           </div>
+
+                           {/* Thumbnails list (optional for quick jump) */}
+                           <div className="flex gap-3 overflow-x-auto pb-4 max-w-full">
+                              {generatedContent.slides.map((_, idx) => (
+                                <button 
+                                  key={idx}
+                                  onClick={() => setCurrentSlidePage(idx)}
+                                  className={`w-12 h-12 flex-shrink-0 rounded-xl border-2 transition-all font-black text-xs ${currentSlidePage === idx ? 'border-indigo-600 bg-indigo-50 text-indigo-600 shadow-md' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                >
+                                  {idx + 1}
+                                </button>
+                              ))}
+                           </div>
                         </div>
                      </div>
                     </div>
