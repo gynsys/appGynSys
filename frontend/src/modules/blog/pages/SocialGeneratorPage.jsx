@@ -471,7 +471,7 @@ export default function SocialGeneratorPage() {
            </div>
            <span
              style={{ 
-               fontSize: (headerFontSize * (isPreview ? 1.5 : 1)) + 'px',
+               fontSize: headerFontSize + 'px',
                color: headerColor
              }}
              className="font-black uppercase tracking-tight"
@@ -516,7 +516,7 @@ export default function SocialGeneratorPage() {
                  <h4
                    className="font-black mb-3 uppercase leading-tight"
                    style={{ 
-                     fontSize: ((fontSize + 4) * ((isPreview || isExport) ? 1.4 : 1)) + 'px',
+                     fontSize: (fontSize + 4) + 'px',
                      color: titleColor
                    }}
                  >{slide.title}</h4>
@@ -524,7 +524,7 @@ export default function SocialGeneratorPage() {
                  <p
                    className="font-bold leading-relaxed whitespace-pre-wrap"
                    style={{ 
-                     fontSize: (fontSize * ((isPreview || isExport) ? 1.4 : 1)) + 'px',
+                     fontSize: fontSize + 'px',
                      color: contentColor
                    }}
                  >{slide.content}</p>
@@ -555,8 +555,8 @@ export default function SocialGeneratorPage() {
                     src={img}
                     className="rounded-xl shadow-md border-2 border-white/50 object-cover pointer-events-none"
                     style={{ 
-                      width: (imageSizes[imgId] || imageSize) * ((isPreview || isExport) ? 1.5 : 1) + 'px', 
-                      height: (imageSizes[imgId] || imageSize) * ((isPreview || isExport) ? 1.5 : 1) + 'px' 
+                      width: (imageSizes[imgId] || imageSize) + 'px', 
+                      height: (imageSizes[imgId] || imageSize) + 'px' 
                     }}
                     alt="Custom"
                     draggable={false}
@@ -612,7 +612,7 @@ export default function SocialGeneratorPage() {
                     suppressContentEditableWarning
                     className="font-bold whitespace-nowrap outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1 transition-all"
                     style={{ 
-                      fontSize: ((el.width/5) * ((isPreview || isExport) ? 1.5 : 1)) + 'px', 
+                      fontSize: (el.width/5) + 'px', 
                       color: el.color,
                       background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : 'transparent',
                       WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
