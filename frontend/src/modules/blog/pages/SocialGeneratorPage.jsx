@@ -804,6 +804,12 @@ export default function SocialGeneratorPage() {
                 >
                   <FiImage className="text-xl" /> Estructura Carrusel
                 </button>
+                <button 
+                  onClick={handleTestDesign}
+                  className="col-span-1 sm:col-span-2 flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 p-4 rounded-2xl font-black transition-all shadow-lg text-white"
+                >
+                  🧪 Iniciar Modo Boceto (Sin IA)
+                </button>
               </div>
             </div>
           </div>
@@ -953,13 +959,7 @@ export default function SocialGeneratorPage() {
                                       </button>
                                    </div>
                                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                              <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-sm">Generación Pro</h3>
-                              <button 
-                                onClick={handleTestDesign}
-                                className="text-[10px] font-black uppercase bg-amber-100 text-amber-700 px-3 py-1 rounded-full hover:bg-amber-200 transition-colors border border-amber-200 shadow-sm"
-                              >
-                                🧪 Modo Boceto (Sin IA)
-                              </button>
+                              <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-wider text-sm">Diseño de Capas</h3>
                            </div>
                                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                                       <p className="text-[10px] font-black uppercase text-gray-400 mb-3">Estilos rápidos</p>
