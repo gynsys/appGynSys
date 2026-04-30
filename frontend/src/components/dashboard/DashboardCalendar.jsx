@@ -23,7 +23,9 @@ export default function DashboardCalendar({ appointments = [], title = "Calendar
     const isCurrentMonth = (date) => date.getMonth() === currentMonth.getMonth()
 
     // Filter appointments based on type
-    const filteredAppointments = appointments.filter(app => {
+    const appointmentsArray = Array.isArray(appointments) ? appointments : [];
+    const filteredAppointments = appointmentsArray.filter(app => {
+        if (!app) return false;
         if (type === 'online') return app.location === 'Online (Videollamada)' || app.appointment_type === 'Consulta Online';
         if (type === 'presencial') return app.location !== 'Online (Videollamada)' && app.appointment_type !== 'Consulta Online';
         return true;
