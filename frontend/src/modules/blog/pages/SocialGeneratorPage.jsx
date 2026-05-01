@@ -1038,7 +1038,7 @@ export default function SocialGeneratorPage() {
                            </div>
 
                            {/* Canva-style Top Toolbar for Element Editing */}
-                           {selectedExtraId && !isPreview && !isExport && (
+                           {selectedExtraId && previewIndex === null && (
                              <div 
                                className="w-full flex items-center justify-center gap-6 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-lg border border-indigo-100 dark:border-gray-700 animate-fadeIn"
                                onClick={(e) => e.stopPropagation()}
