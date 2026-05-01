@@ -1037,12 +1037,12 @@ export default function SocialGeneratorPage() {
                               </button>
                            </div>
 
-                           {/* Canva-style Top Toolbar for Element Editing */}
-                           {selectedExtraId && previewIndex === null && (
-                             <div 
-                               className="w-full flex items-center justify-center gap-6 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-lg border border-indigo-100 dark:border-gray-700 animate-fadeIn"
-                               onClick={(e) => e.stopPropagation()}
-                             >
+                            {/* Canva-style Top Toolbar for Element Editing */}
+                            {selectedExtraId && previewIndex === null && (
+                              <div 
+                                className="w-fit mx-auto flex items-center justify-center gap-6 bg-white dark:bg-gray-800 p-3 rounded-2xl animate-fadeIn"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                {(() => {
                                  const [slideIdx, elId] = selectedExtraId.split('-');
                                  const sIdx = parseInt(slideIdx);
