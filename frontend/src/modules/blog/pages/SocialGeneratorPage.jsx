@@ -22,6 +22,9 @@ export default function SocialGeneratorPage() {
   const [activeTab, setActiveTab] = useState('reel')
   const [copiedField, setCopiedField] = useState(null)
   const [bgColor, setBgColor] = useState('#ffffff')
+  const [bgColor2, setBgColor2] = useState('#f8fafc')
+  const [bgColor3, setBgColor3] = useState('#f1f5f9')
+  const [useBgGradient, setUseBgGradient] = useState(false)
   const [previewIndex, setPreviewIndex] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
   const [fontSize, setFontSize] = useState(14)
@@ -200,6 +203,7 @@ export default function SocialGeneratorPage() {
       rotation: 0,
       color: type === 'text' ? contentColor : titleColor,
       color2: '#4f46e5',
+      color3: '#9333ea',
       useGradient: false,
       gradientDir: 'to bottom right',
       zIndex: 30
@@ -454,7 +458,7 @@ export default function SocialGeneratorPage() {
          ref={el => { if (!isPreview && !isExport) slideRefs.current[i] = el; }}
          className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} rounded-none p-10 flex flex-col relative group shadow-xl overflow-hidden`}
          style={{ 
-           backgroundColor: bgColor, 
+           background: useBgGradient ? `linear-gradient(to bottom right, ${bgColor}, ${bgColor2}, ${bgColor3})` : bgColor, 
            border: '1px solid #d1d5db', 
            width: '410px', 
            height: '410px',
@@ -618,7 +622,7 @@ export default function SocialGeneratorPage() {
                     style={{ 
                       fontSize: (el.width/5) + 'px', 
                       color: el.color,
-                      background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : 'transparent',
+                      background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : 'transparent',
                       WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
                       WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial'
                     }}
@@ -638,65 +642,65 @@ export default function SocialGeneratorPage() {
                     className="flex items-center justify-center overflow-visible"
                   >
                     {el.content === 'arrow' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/>
                     </svg>}
                     {el.content === 'arrow-left' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M7.99 11H20v2H7.99v3L4 12l3.99-4z"/>
                     </svg>}
                     {el.content === 'arrow-up' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M13 7.99V20h-2V7.99H8L12 4l4 3.99z"/>
                     </svg>}
                     {el.content === 'arrow-down' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/>
                     </svg>}
-                    {el.content === 'line' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color, minHeight: '1px' }} />}
-                    {el.content === 'circle' && <div className="w-full h-full rounded-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
-                    {el.content === 'square' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
-                    {el.content === 'rounded-square' && <div className="w-full h-full rounded-[20%]" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
+                    {el.content === 'line' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : el.color, minHeight: '1px' }} />}
+                    {el.content === 'circle' && <div className="w-full h-full rounded-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : el.color }} />}
+                    {el.content === 'square' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : el.color }} />}
+                    {el.content === 'rounded-square' && <div className="w-full h-full rounded-[20%]" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : el.color }} />}
                     {el.content === 'star' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>}
                     {el.content === 'heart' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>}
                     {el.content === 'cloud' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M17.5 19c-3.037 0-5.5-2.463-5.5-5.5 0-1.47.576-2.805 1.517-3.801C11.523 9.243 9.407 8 7 8 3.134 8 0 11.134 0 15c0 3.866 3.134 7 7 7h10.5c3.037 0 5.5-2.463 5.5-5.5S20.537 11 17.5 11c-.347 0-.684.032-1.01.094.006-.031.01-.062.01-.094 0-2.485-2.015-4.5-4.5-4.5-1.228 0-2.341.493-3.155 1.292C8.36 7.307 8 8.11 8 9c0 1.228.493 2.341 1.292 3.155C8.493 12.97 8 14.083 8 15.307c0 1.24.49 2.364 1.284 3.189-.806.81-1.284 1.92-1.284 3.144C8 24.16 10.34 26.5 13.16 26.5c1.225 0 2.336-.43 3.204-1.146C17.218 26 18.533 26.5 20 26.5c3.037 0 5.5-2.463 5.5-5.5 0-.583-.092-1.144-.261-1.668.463.108.944.168 1.441.168 3.037 0 5.5-2.463 5.5-5.5S29.717 8.5 26.68 8.5c-.347 0-.684.032-1.01.094C25.676 5.867 23.56 4.623 21.043 4.623 18.257 4.623 16 6.88 16 9.667c0 .347.032.684.094 1.01C14.867 10.676 13.623 8.56 13.623 6.043 13.623 3.257 15.88 1 18.667 1c2.787 0 5.043 2.256 5.043 5.043 0 .347-.032.684-.094 1.01C1.221 0 2.336.43 3.204 1.146C27.676 7.5 28.99 7 30.457 7 33.494 7 35.957 9.463 35.957 12.5S33.494 18 30.457 18H20.457"/></svg>}
                     {el.content === 'bubble' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                     </svg>}
                     {el.content === 'bullet' && <div className="w-full h-full rounded-full bg-current" />}
                     {el.content === 'bullet-check' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                     </svg>}
                     
                     {/* New Specialized Icons */}
                     {el.content === 'stetho' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M12 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 10c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm8-10h-2c0-4.4-3.6-8-8-8s-8 3.6-8 8H2c0 5.5 4.5 10 10 10s10-4.5 10-10z"/>
                     </svg>}
                     {el.content === 'dna' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M18.8 15.6c-.6-.6-1.5-.6-2.1 0l-1.1 1.1-1.1-1.1c-.6-.6-1.5-.6-2.1 0s-.6 1.5 0 2.1l1.1 1.1-1.1 1.1c-.6.6-.6 1.5 0 2.1.3.3.7.4 1.1.4s.8-.1 1.1-.4l1.1-1.1 1.1 1.1c.3.3.7.4 1.1.4s.8-.1 1.1-.4c.6-.6.6-1.5 0-2.1l-1.1-1.1 1.1-1.1c.5-.6.5-1.5-.1-2.1zM5.2 8.4c.6.6 1.5.6 2.1 0l1.1-1.1 1.1 1.1c.6.6 1.5.6 2.1 0s.6-1.5 0-2.1l-1.1-1.1 1.1-1.1c.6-.6.6-1.5 0-2.1-.3-.3-.7-.4-1.1-.4s-.8.1-1.1.4l-1.1 1.1-1.1-1.1c-.3-.3-.7-.4-1.1-.4s-.8.1-1.1.4c-.6.6-.6 1.5 0 2.1l1.1 1.1-1.1 1.1c-.6.6-.6 1.5 0 2.1z"/>
                     </svg>}
                     {el.content === 'utero' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8 0-1.5.4-2.8 1.1-4 .6 1.1 1.6 2 2.9 2.6-.1.5-.2 1.1-.2 1.6 0 2.2 1.8 4 4 4s4-1.8 4-4c0-.5-.1-1.1-.2-1.6 1.3-.6 2.3-1.5 2.9-2.6.7 1.2 1.1 2.5 1.1 4 0 4.4-3.6 8-8 8z"/>
                     </svg>}
                     {el.content === 'blob1' && <svg viewBox="0 0 200 200" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M44.7,-76.4C58.1,-69.2,69.2,-58.1,76.4,-44.7C83.7,-31.3,87.1,-15.7,85.2,-0.9C83.3,13.8,76.1,27.7,67.6,40.1C59.1,52.5,49.3,63.5,37.3,71.1C25.3,78.7,11.1,82.9,-3.4,88.7C-17.9,94.5,-32.7,101.9,-45.3,97.7C-57.9,93.5,-68.3,77.7,-76.1,62.3C-83.9,46.9,-89.1,31.9,-90.1,16.8C-91.1,1.7,-87.9,-13.5,-82,-27.1C-76.1,-40.7,-67.5,-52.7,-56.3,-62C-45.1,-71.3,-31.3,-77.9,-17.1,-80.9C-2.9,-83.9,11.7,-83.3,44.7,-76.4Z" transform="translate(100 100)" />
                     </svg>}
                     {el.content === 'sparkle' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
-                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
+                      {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs>}
                       <path d="M12 2l2.4 7.2L22 11.6l-7.6 2.4L12 22l-2.4-7.6L2 11.6l7.6-2.4L12 2z"/>
                     </svg>}
                   </div>
@@ -839,12 +843,40 @@ export default function SocialGeneratorPage() {
                               <p className="text-[10px] font-black uppercase text-gray-600 mb-1 leading-none">Color Fondo</p>
                               <span className="text-[10px] font-mono text-gray-600 uppercase leading-none">{bgColor}</span>
                             </div>
-                            <input 
-                              type="color"
-                              value={bgColor}
-                              onChange={(e) => setBgColor(e.target.value)}
-                              className="h-[40px] w-[80px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
-                            />
+                             <div className="flex items-center gap-2">
+                               <input 
+                                 type="color"
+                                 value={bgColor}
+                                 onChange={(e) => setBgColor(e.target.value)}
+                                 className="h-[40px] w-[50px] p-1 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm"
+                                 title="Color 1"
+                               />
+                               {useBgGradient && (
+                                 <>
+                                   <input 
+                                     type="color"
+                                     value={bgColor2}
+                                     onChange={(e) => setBgColor2(e.target.value)}
+                                     className="h-[40px] w-[50px] p-1 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm animate-fadeIn"
+                                     title="Color 2"
+                                   />
+                                   <input 
+                                     type="color"
+                                     value={bgColor3}
+                                     onChange={(e) => setBgColor3(e.target.value)}
+                                     className="h-[40px] w-[50px] p-1 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm animate-fadeIn"
+                                     title="Color 3"
+                                   />
+                                 </>
+                               )}
+                               <button 
+                                 onClick={() => setUseBgGradient(!useBgGradient)}
+                                 className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${useBgGradient ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                               >
+                                 Degradado
+                               </button>
+                             </div>
+
                          </div>
 
                          <div className="flex items-center gap-4">
@@ -1061,13 +1093,22 @@ export default function SocialGeneratorPage() {
                                             title="Color 1"
                                           />
                                           {el.useGradient && (
-                                            <input 
-                                              type="color" 
-                                              value={el.color2} 
-                                              onChange={(e) => updateExtraElement(sIdx, el.id, { color2: e.target.value })} 
-                                              className="w-8 h-8 border-2 border-gray-100 dark:border-gray-600 p-0 bg-transparent cursor-pointer rounded-lg overflow-hidden shadow-sm hover:scale-110 transition-transform"
-                                              title="Color 2"
-                                            />
+                                            <>
+                                              <input 
+                                                type="color" 
+                                                value={el.color2} 
+                                                onChange={(e) => updateExtraElement(sIdx, el.id, { color2: e.target.value })} 
+                                                className="w-8 h-8 border-2 border-gray-100 dark:border-gray-600 p-0 bg-transparent cursor-pointer rounded-lg overflow-hidden shadow-sm hover:scale-110 transition-transform animate-fadeIn"
+                                                title="Color 2"
+                                              />
+                                              <input 
+                                                type="color" 
+                                                value={el.color3} 
+                                                onChange={(e) => updateExtraElement(sIdx, el.id, { color3: e.target.value })} 
+                                                className="w-8 h-8 border-2 border-gray-100 dark:border-gray-600 p-0 bg-transparent cursor-pointer rounded-lg overflow-hidden shadow-sm hover:scale-110 transition-transform animate-fadeIn"
+                                                title="Color 3"
+                                              />
+                                            </>
                                           )}
                                        </div>
                                      </div>
