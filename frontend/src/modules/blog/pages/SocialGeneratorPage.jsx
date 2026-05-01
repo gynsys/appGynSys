@@ -758,7 +758,7 @@ export default function SocialGeneratorPage() {
                           <span className="text-[10px] font-bold text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-tighter">Degradado</span>
                         </label>
                       </div>
-                    </div>)
+                    </div>)}
                   </>
                 )}
               </div>
