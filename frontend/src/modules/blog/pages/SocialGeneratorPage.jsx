@@ -716,7 +716,7 @@ export default function SocialGeneratorPage() {
                     {/* Proportional Resize handle (bottom-right) */}
                     <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" onMouseDown={(e) => handleTransformStart(e, i, 'resize', null, el.id)}></div>
                     
-                    </div>
+
                   </>
                 )}
               </div>
