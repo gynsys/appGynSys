@@ -460,7 +460,7 @@ export default function SocialGeneratorPage() {
            height: '410px',
            position: isExport ? 'relative' : undefined 
          }}
-         onClick={() => { if (!isPreview && !isExport) { setSelectedImageId(null); setSelectedContentIndex(null); } }}
+         onClick={() => { if (!isPreview && !isExport) { setSelectedImageId(null); setSelectedContentIndex(null); setSelectedExtraId(null); } }}
        >
          {watermarkImage && (
            <img src={watermarkImage} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
@@ -633,10 +633,7 @@ export default function SocialGeneratorPage() {
                     style={{ 
                       width: el.width + 'px', 
                       height: el.height + 'px', 
-                      color: el.color,
-                      background: (el.useGradient && ['circle', 'square', 'rounded-square', 'line', 'bullet'].includes(el.content)) 
-                        ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` 
-                        : 'transparent'
+                      color: el.color
                     }}
                     className="flex items-center justify-center overflow-visible"
                   >
@@ -656,10 +653,10 @@ export default function SocialGeneratorPage() {
                       {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
                       <path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/>
                     </svg>}
-                    {el.content === 'line' && <div className="w-full h-full bg-current" style={{ minHeight: '1px' }} />}
-                    {el.content === 'circle' && <div className="w-full h-full rounded-full bg-current" />}
-                    {el.content === 'square' && <div className="w-full h-full bg-current" />}
-                    {el.content === 'rounded-square' && <div className="w-full h-full bg-current rounded-[20%]" />}
+                    {el.content === 'line' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color, minHeight: '1px' }} />}
+                    {el.content === 'circle' && <div className="w-full h-full rounded-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
+                    {el.content === 'square' && <div className="w-full h-full" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
+                    {el.content === 'rounded-square' && <div className="w-full h-full rounded-[20%]" style={{ background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2})` : el.color }} />}
                     {el.content === 'star' && <svg viewBox="0 0 24 24" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} className="w-full h-full overflow-visible">
                       {el.useGradient && <defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="100%" style={{stopColor: el.color2}} /></linearGradient></defs>}
                       <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
