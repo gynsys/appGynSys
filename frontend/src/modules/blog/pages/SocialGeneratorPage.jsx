@@ -716,49 +716,7 @@ export default function SocialGeneratorPage() {
                     {/* Proportional Resize handle (bottom-right) */}
                     <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" onMouseDown={(e) => handleTransformStart(e, i, 'resize', null, el.id)}></div>
                     
-                    <button onClick={(e) => { e.stopPropagation(); removeExtraElement(i, el.id); }} className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg z-40"><FiX size={12}/></button>
-                    
-                    {(!dragging && !transformState) && (
-                      <div className="absolute bottom-full mb-12 left-1/2 -translate-x-1/2 flex flex-col gap-2 bg-white p-2.5 rounded-2xl shadow-2xl border border-gray-100 z-50 min-w-[140px] animate-fadeIn">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-1">
-                          <input 
-                            type="color" 
-                            value={el.color} 
-                            onChange={(e) => updateExtraElement(i, el.id, { color: e.target.value })} 
-                            className="w-6 h-6 border-0 p-0 bg-transparent cursor-pointer rounded overflow-hidden"
-                            title="Color 1"
-                          />
-                          {el.useGradient && (
-                            <input 
-                              type="color" 
-                              value={el.color2} 
-                              onChange={(e) => updateExtraElement(i, el.id, { color2: e.target.value })} 
-                              className="w-6 h-6 border-0 p-0 bg-transparent cursor-pointer rounded overflow-hidden"
-                              title="Color 2"
-                            />
-                          )}
-                        </div>
-                        <button type="button" 
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${el.zIndex === 1 ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                          onClick={(e) => { e.stopPropagation(); updateExtraElement(i, el.id, { zIndex: el.zIndex === 1 ? 40 : 1 }); }}
-                          title={el.zIndex === 1 ? "Traer al frente" : "Enviar al fondo (capa 1)"}
-                        >
-                          <FiLayers size={14} />
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                          <input 
-                            type="checkbox" 
-                            checked={el.useGradient} 
-                            onChange={(e) => updateExtraElement(i, el.id, { useGradient: e.target.checked })}
-                            className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          />
-                          <span className="text-[10px] font-bold text-gray-500 group-hover:text-indigo-600 transition-colors uppercase tracking-tighter">Degradado</span>
-                        </label>
-                      </div>
-                    </div>)}
+                    </div>
                   </>
                 )}
               </div>
@@ -1078,6 +1036,83 @@ export default function SocialGeneratorPage() {
                                 <FiChevronRight size={24}/>
                               </button>
                            </div>
+
+                           {/* Canva-style Top Toolbar for Element Editing */}
+                           {selectedExtraId && !isPreview && !isExport && (
+                             <div 
+                               className="w-full flex items-center justify-center gap-6 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-lg border border-indigo-100 dark:border-gray-700 animate-fadeIn"
+                               onClick={(e) => e.stopPropagation()}
+                             >
+                               {(() => {
+                                 const [slideIdx, elId] = selectedExtraId.split('-');
+                                 const sIdx = parseInt(slideIdx);
+                                 const el = extraElements[sIdx]?.find(e => e.id === elId);
+                                 if (!el) return null;
+
+                                 return (
+                                   <>
+                                     <div className="flex items-center gap-3 pr-6 border-r border-gray-100 dark:border-gray-700">
+                                       <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Edición</span>
+                                       <div className="flex items-center gap-2">
+                                          <input 
+                                            type="color" 
+                                            value={el.color} 
+                                            onChange={(e) => updateExtraElement(sIdx, el.id, { color: e.target.value })} 
+                                            className="w-8 h-8 border-2 border-gray-100 dark:border-gray-600 p-0 bg-transparent cursor-pointer rounded-lg overflow-hidden shadow-sm hover:scale-110 transition-transform"
+                                            title="Color 1"
+                                          />
+                                          {el.useGradient && (
+                                            <input 
+                                              type="color" 
+                                              value={el.color2} 
+                                              onChange={(e) => updateExtraElement(sIdx, el.id, { color2: e.target.value })} 
+                                              className="w-8 h-8 border-2 border-gray-100 dark:border-gray-600 p-0 bg-transparent cursor-pointer rounded-lg overflow-hidden shadow-sm hover:scale-110 transition-transform"
+                                              title="Color 2"
+                                            />
+                                          )}
+                                       </div>
+                                     </div>
+
+                                     <div className="flex items-center gap-4 px-6 border-r border-gray-100 dark:border-gray-700">
+                                       <label className="flex items-center gap-3 cursor-pointer group select-none" onClick={(e) => e.stopPropagation()}>
+                                         <div className="relative flex items-center">
+                                           <input 
+                                             type="checkbox" 
+                                             checked={el.useGradient} 
+                                             onChange={(e) => {
+                                               e.stopPropagation();
+                                               updateExtraElement(sIdx, el.id, { useGradient: e.target.checked });
+                                             }}
+                                             className="sr-only peer"
+                                           />
+                                           <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                                         </div>
+                                         <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-indigo-600 transition-colors">Degradado</span>
+                                       </label>
+                                     </div>
+
+                                     <div className="flex items-center gap-2 px-6 border-r border-gray-100 dark:border-gray-700">
+                                        <button type="button" 
+                                          className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center transition-all ${el.zIndex === 1 ? 'bg-amber-100 text-amber-600' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                                          onClick={(e) => { e.stopPropagation(); updateExtraElement(sIdx, el.id, { zIndex: el.zIndex === 1 ? 40 : 1 }); }}
+                                        >
+                                          <FiLayers size={16} />
+                                          <span className="text-[8px] font-black uppercase mt-0.5">{el.zIndex === 1 ? 'Fondo' : 'Frente'}</span>
+                                        </button>
+                                     </div>
+
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); removeExtraElement(sIdx, el.id); }} 
+                                       className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                                       title="Eliminar elemento"
+                                     >
+                                       <FiTrash2 size={16} />
+                                     </button>
+                                   </>
+                                 )
+                               })()}
+                             </div>
+                           )}
 
                            {/* Main Single Slide Canvas */}
                            <div className="w-full flex justify-center animate-fadeIn" key={currentSlidePage}>
