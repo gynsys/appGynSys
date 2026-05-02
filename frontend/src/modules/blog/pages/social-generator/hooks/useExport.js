@@ -1,7 +1,7 @@
 
 import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
-import { useToastStore } from '../../../store/toastStore';
+import { useToastStore } from '../../../../../store/toastStore';
 
 export const useExport = (selectedPost, bgColor) => {
   const { showToast } = useToastStore();

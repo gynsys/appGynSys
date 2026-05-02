@@ -59,9 +59,7 @@ export const SlideCanvas = ({
       
       <div className="flex items-center justify-start gap-3 mb-10 border-b border-gray-100 dark:border-gray-700/50 pb-6 w-full relative z-30">
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden flex-shrink-0">
-          {doctorLogo ? (
-            <img src={doctorLogo} alt="Logo" className="w-full h-full object-contain" />
-          ) : <div className="w-full h-full bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-black">GS</div>}
+          {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-full h-full object-contain" />}
         </div>
         <span
           style={{ fontSize: headerFontSize + 'px', color: headerColor }}

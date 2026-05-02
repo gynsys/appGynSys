@@ -44,7 +44,7 @@ export default function SocialGenerator() {
     if (doctor?.logo_url) {
       loadDoctorLogo(getImageUrl(doctor.logo_url));
     } else {
-      setDoctorLogoBase64(getFallbackLogo());
+      setDoctorLogoBase64(null);
     }
   }, [doctor]);
 
@@ -56,16 +56,10 @@ export default function SocialGenerator() {
       reader.onloadend = () => setDoctorLogoBase64(reader.result);
       reader.readAsDataURL(blob);
     } catch (error) {
-      setDoctorLogoBase64(getFallbackLogo());
+      setDoctorLogoBase64(null);
     }
   };
 
-  const getFallbackLogo = () => {
-    const name = doctor?.nombre_completo || 'GynSys';
-    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    const svg = `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#4F46E5"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="40">${initials}</text></svg>`.trim();
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-  };
 
   const loadPosts = async () => {
     try {
