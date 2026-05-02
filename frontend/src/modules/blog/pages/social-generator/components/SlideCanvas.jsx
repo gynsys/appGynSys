@@ -18,7 +18,8 @@ export const SlideCanvas = ({
   slideRef,
   onEdit,
   onPreview,
-  onCopy
+  onCopy,
+  onAddImage
 }) => {
   const {
     bgColor, bgColor2, bgColor3, useBgGradient,
@@ -169,8 +170,8 @@ export const SlideCanvas = ({
                 }}
               >{el.content}</div>
             ) : (
-              <div style={{ width: el.width + 'px', height: el.height + 'px', color: el.color }}>
-                {IconComp && <IconComp className="w-full h-full overflow-visible" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
+              <div style={{ width: el.width + 'px', height: el.height + 'px', color: el.color }} className="pointer-events-none">
+                {IconComp && <IconComp className="w-full h-full overflow-visible pointer-events-none" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
                 {el.useGradient && <svg width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
               </div>
             )}
@@ -194,9 +195,13 @@ export const SlideCanvas = ({
       {isSelected && (
         <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">
           <div className="flex flex-col gap-1">
-            <button onClick={(e) => { e.stopPropagation(); onPreview(index); }} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white shadow-sm"><FiMaximize2 size={12}/></button>
-            <button onClick={(e) => { e.stopPropagation(); onEdit(index); }} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white shadow-sm"><FiEdit3 size={12}/></button>
-            <button onClick={(e) => { e.stopPropagation(); onCopy(index); }} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white shadow-sm"><FiCopy size={12} /></button>
+            <button onClick={(e) => { e.stopPropagation(); onPreview(index); }} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white shadow-sm" title="Vista Previa"><FiMaximize2 size={12}/></button>
+            <button onClick={(e) => { e.stopPropagation(); onEdit(index); }} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white shadow-sm" title="Editar"><FiEdit3 size={12}/></button>
+            <label className="p-1.5 bg-white/80 text-indigo-400 rounded-lg hover:bg-white shadow-sm cursor-pointer" title="Añadir Imagen">
+              <FiPlusCircle size={12} />
+              <input type="file" className="hidden" accept="image/*" onChange={onAddImage} />
+            </label>
+            <button onClick={(e) => { e.stopPropagation(); onCopy(index); }} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white shadow-sm" title="Copiar"><FiCopy size={12} /></button>
           </div>
         </div>
       )}

@@ -195,6 +195,7 @@ export default function SocialGenerator() {
                           onEdit={setEditingIndex}
                           onPreview={setPreviewIndex}
                           onCopy={copyToClipboard}
+                          onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
                         />
                       </div>
                     </div>
@@ -237,6 +238,7 @@ export default function SocialGenerator() {
           <SlideCanvas 
             slide={slide} index={i} isPreview={isPrev} doctor={doctor} doctorLogo={doctorLogoBase64} 
             design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage}
+            handlers={transformer.handlers}
           />
         )}
       />
@@ -247,6 +249,7 @@ export default function SocialGenerator() {
           <SlideCanvas 
             key={`export-${i}`} slide={slide} index={i} isExport={true} doctor={doctor} doctorLogo={doctorLogoBase64} 
             design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage}
+            handlers={transformer.handlers}
           />
         ))}
       </div>
