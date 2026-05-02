@@ -42,23 +42,12 @@ export default function SocialGenerator() {
   useEffect(() => {
     loadPosts();
     if (doctor?.logo_url) {
-      loadDoctorLogo(getImageUrl(doctor.logo_url));
+      setDoctorLogoBase64(getImageUrl(doctor.logo_url));
     } else {
       setDoctorLogoBase64(null);
     }
   }, [doctor]);
 
-  const loadDoctorLogo = async (url) => {
-    try {
-      const response = await fetch(url, { mode: 'cors' });
-      const blob = await response.blob();
-      const reader = new FileReader();
-      reader.onloadend = () => setDoctorLogoBase64(reader.result);
-      reader.readAsDataURL(blob);
-    } catch (error) {
-      setDoctorLogoBase64(null);
-    }
-  };
 
 
   const loadPosts = async () => {

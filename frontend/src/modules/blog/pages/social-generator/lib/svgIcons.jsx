@@ -67,12 +67,27 @@ export const SVGIcons = {
       <path d="M12 2l2.4 7.2L22 11.6l-7.6 2.4L12 22l-2.4-7.6L2 11.6l7.6-2.4L12 2z"/>
     </svg>
   ),
+  circle: (props) => (
+    <div className="w-full h-full rounded-full bg-current" {...props} />
+  ),
+  square: (props) => (
+    <div className="w-full h-full bg-current" {...props} />
+  ),
+  roundedSquare: (props) => (
+    <div className="w-full h-full bg-current rounded-[20%]" {...props} />
+  ),
+  line: (props) => (
+    <div className="w-full h-1 bg-current rounded-full absolute top-1/2 -translate-y-1/2" {...props} />
+  ),
+  bullet: (props) => (
+    <div className="w-full h-full rounded-full bg-current" {...props} />
+  ),
 };
 
 export const SHAPES_CONFIG = [
-  { id: 'circle', label: 'Círculo', icon: <div className="w-8 h-8 rounded-full bg-current"/> },
-  { id: 'square', label: 'Rectángulo', icon: <div className="w-8 h-8 bg-current"/> },
-  { id: 'roundedSquare', label: 'R. Redon.', icon: <div className="w-8 h-8 bg-current rounded-[20%]"/> },
+  { id: 'circle', label: 'Círculo', icon: <SVGIcons.circle className="w-8 h-8" /> },
+  { id: 'square', label: 'Rectángulo', icon: <SVGIcons.square className="w-8 h-8" /> },
+  { id: 'roundedSquare', label: 'R. Redon.', icon: <SVGIcons.roundedSquare className="w-8 h-8" /> },
   { id: 'arrow', label: 'Flecha Der', icon: <SVGIcons.arrow className="w-10 h-10" /> },
   { id: 'arrowLeft', label: 'Flecha Izq', icon: <SVGIcons.arrowLeft className="w-10 h-10" /> },
   { id: 'arrowUp', label: 'Flecha Arr', icon: <SVGIcons.arrowUp className="w-10 h-10" /> },
@@ -80,8 +95,8 @@ export const SHAPES_CONFIG = [
   { id: 'star', label: 'Estrella', icon: <SVGIcons.star className="w-10 h-10" /> },
   { id: 'heart', label: 'Corazón', icon: <SVGIcons.heart className="w-10 h-10" /> },
   { id: 'bubble', label: 'Burbuja', icon: <SVGIcons.bubble className="w-10 h-10" /> },
-  { id: 'line', label: 'Línea', icon: <div className="w-10 h-1 bg-current rounded-full" /> },
-  { id: 'bullet', label: 'Viñeta', icon: <div className="w-4 h-4 rounded-full bg-current" /> },
+  { id: 'line', label: 'Línea', icon: <SVGIcons.line className="w-10 h-1 relative" /> },
+  { id: 'bullet', label: 'Viñeta', icon: <SVGIcons.bullet className="w-4 h-4" /> },
   { id: 'bulletCheck', label: 'Viñeta Check', icon: <SVGIcons.bulletCheck className="w-8 h-8" /> },
   { id: 'stetho', label: 'Estetoscopio', icon: <SVGIcons.stetho className="w-8 h-8" /> },
   { id: 'dna', label: 'ADN', icon: <SVGIcons.dna className="w-8 h-8" /> },

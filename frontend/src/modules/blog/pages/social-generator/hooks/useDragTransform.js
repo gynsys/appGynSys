@@ -11,9 +11,11 @@ export const useDragTransform = (updateExtraElement) => {
   const [contentPositions, setContentPositions] = useState({});
   const [contentRotations, setContentRotations] = useState({});
 
-  const handleDragStart = (e, slideIndex, type, id, rect, initialPos) => {
+  const handleDragStart = (e, slideIndex, type, id, domElement, initialPos) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    const rect = domElement.getBoundingClientRect();
     
     setDragging({
       type,
@@ -25,9 +27,11 @@ export const useDragTransform = (updateExtraElement) => {
     });
   };
 
-  const handleTransformStart = (e, slideIndex, transformType, elementType, id, rect, initialTransform) => {
+  const handleTransformStart = (e, slideIndex, transformType, elementType, id, domElement, initialTransform) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    const rect = domElement.getBoundingClientRect();
     
     setTransformState({
       transformType,
@@ -49,8 +53,8 @@ export const useDragTransform = (updateExtraElement) => {
     const handlePointerMove = (e) => {
       if (dragging) {
         const { type, slideIndex, id, rect, offsetX, offsetY } = dragging;
-        const xPct = Math.min(95, Math.max(5, ((e.clientX - rect.left - offsetX) / rect.width) * 100));
-        const yPct = Math.min(95, Math.max(5, ((e.clientY - rect.top - offsetY) / rect.height) * 100));
+        const xPct = Math.min(100, Math.max(0, ((e.clientX - rect.left - offsetX) / rect.width) * 100));
+        const yPct = Math.min(100, Math.max(0, ((e.clientY - rect.top - offsetY) / rect.height) * 100));
         
         if (type === 'image') {
           setImagePositions(prev => ({ ...prev, [id]: { x: xPct, y: yPct } }));
@@ -78,6 +82,7 @@ export const useDragTransform = (updateExtraElement) => {
           const startAngle = Math.atan2(startY - centerY, startX - centerX);
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
+          
           if (elementType === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }));
           else if (elementType === 'content') setContentRotations(prev => ({ ...prev, [slideIndex]: initialRotation + angleDiff }));
           else updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff });
