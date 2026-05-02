@@ -7,17 +7,17 @@ export const SVGIcons = {
       <path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/>
     </svg>
   ),
-  'arrow-left': (props) => (
+  arrowLeft: (props) => (
     <svg viewBox="0 0 24 24" {...props}>
       <path d="M7.99 11H20v2H7.99v3L4 12l3.99-4z"/>
     </svg>
   ),
-  'arrow-up': (props) => (
+  arrowUp: (props) => (
     <svg viewBox="0 0 24 24" {...props}>
       <path d="M13 7.99V20h-2V7.99H8L12 4l4 3.99z"/>
     </svg>
   ),
-  'arrow-down': (props) => (
+  arrowDown: (props) => (
     <svg viewBox="0 0 24 24" {...props}>
       <path d="M11 16.01V4h2v12.01h3L12 20l-4-3.99z"/>
     </svg>
@@ -37,7 +37,7 @@ export const SVGIcons = {
       <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
     </svg>
   ),
-  'bullet-check': (props) => (
+  bulletCheck: (props) => (
     <svg viewBox="0 0 24 24" {...props}>
       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
     </svg>
@@ -72,20 +72,20 @@ export const SVGIcons = {
 export const SHAPES_CONFIG = [
   { id: 'circle', label: 'Círculo', icon: <div className="w-8 h-8 rounded-full bg-current"/> },
   { id: 'square', label: 'Rectángulo', icon: <div className="w-8 h-8 bg-current"/> },
-  { id: 'rounded-square', label: 'R. Redon.', icon: <div className="w-8 h-8 bg-current rounded-[20%]"/> },
+  { id: 'roundedSquare', label: 'R. Redon.', icon: <div className="w-8 h-8 bg-current rounded-[20%]"/> },
   { id: 'arrow', label: 'Flecha Der', icon: <SVGIcons.arrow className="w-10 h-10" /> },
-  { id: 'arrow-left', label: 'Flecha Izq', icon: <SVGIcons.arrow-left className="w-10 h-10" /> },
-  { id: 'arrow-up', label: 'Flecha Arr', icon: <SVGIcons.arrow-up className="w-10 h-10" /> },
-  { id: 'arrow-down', label: 'Flecha Aba', icon: <SVGIcons.arrow-down className="w-10 h-10" /> },
+  { id: 'arrowLeft', label: 'Flecha Izq', icon: <SVGIcons.arrowLeft className="w-10 h-10" /> },
+  { id: 'arrowUp', label: 'Flecha Arr', icon: <SVGIcons.arrowUp className="w-10 h-10" /> },
+  { id: 'arrowDown', label: 'Flecha Aba', icon: <SVGIcons.arrowDown className="w-10 h-10" /> },
   { id: 'star', label: 'Estrella', icon: <SVGIcons.star className="w-10 h-10" /> },
   { id: 'heart', label: 'Corazón', icon: <SVGIcons.heart className="w-10 h-10" /> },
   { id: 'bubble', label: 'Burbuja', icon: <SVGIcons.bubble className="w-10 h-10" /> },
   { id: 'line', label: 'Línea', icon: <div className="w-10 h-1 bg-current rounded-full" /> },
   { id: 'bullet', label: 'Viñeta', icon: <div className="w-4 h-4 rounded-full bg-current" /> },
-  { id: 'bullet-check', label: 'Viñeta Check', icon: <SVGIcons['bullet-check'] className="w-8 h-8" /> },
+  { id: 'bulletCheck', label: 'Viñeta Check', icon: <SVGIcons.bulletCheck className="w-8 h-8" /> },
   { id: 'stetho', label: 'Estetoscopio', icon: <SVGIcons.stetho className="w-8 h-8" /> },
   { id: 'dna', label: 'ADN', icon: <SVGIcons.dna className="w-8 h-8" /> },
   { id: 'utero', label: 'Útero', icon: <SVGIcons.utero className="w-8 h-8" /> },
-  { id: 'blob1', label: 'Mancha Orgánica', icon: <div className="w-8 h-8 bg-current rounded-full opacity-50" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }} /> },
+  { id: 'blob1', label: 'Mancha Orgánica', icon: <SVGIcons.blob1 className="w-8 h-8 bg-current rounded-full opacity-50" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }} /> },
   { id: 'sparkle', label: 'Destello', icon: <SVGIcons.sparkle className="w-8 h-8" /> }
 ];
