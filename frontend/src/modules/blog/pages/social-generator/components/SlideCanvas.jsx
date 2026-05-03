@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiLayers } from 'react-icons/fi';
+import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiLayers, FiRefreshCw } from 'react-icons/fi';
 import { SVGIcons } from '../lib/svgIcons';
 
 export const SlideCanvas = ({
@@ -30,7 +30,8 @@ export const SlideCanvas = ({
 
   const { 
     fontSize, titleFontSize, titleColor, contentColor, headerColor, headerFontSize,
-    brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
+    brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth,
+    imageBorderRadius
   } = design;
 
   const {
@@ -42,23 +43,23 @@ export const SlideCanvas = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isExport ? '' : 'rounded-[40px]'}`}
+      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isExport ? '' : 'rounded-[40px]'} ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-4 ring-offset-gray-50' : ''}`}
       style={{ 
         background: design.useBgGradient 
           ? `linear-gradient(to bottom right, ${design.bgColor}, ${design.bgColor2}, ${design.bgColor3})` 
           : design.bgColor,
+        userSelect: isSelected ? 'none' : 'auto'
       }}
       onClick={() => isSelected && selectElement(null, null)}
     >
       {/* Branding Section */}
       <div 
-        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2' : ''}`}
+        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
         style={{
           left: canvas.brandingPos.x + '%',
           top: canvas.brandingPos.y + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
-          userSelect: 'none'
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'branding', 'global-brand', containerRef.current, canvas.brandingPos)}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('branding', 'global-brand'); }}
@@ -73,14 +74,13 @@ export const SlideCanvas = ({
 
       {/* Divider Section */}
       <div 
-        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
+        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2 bg-white/5' : ''}`}
         style={{
           left: canvas.dividerPos.x + '%',
           top: canvas.dividerPos.y + '%',
           width: canvas.dividerWidth + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
-          userSelect: 'none'
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, canvas.dividerPos)}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('divider', 'global-divider'); }}
@@ -96,13 +96,12 @@ export const SlideCanvas = ({
 
       {/* Content Section */}
       <div 
-        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border-[1.5px] border-dashed border-indigo-500 rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
+        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border-[1.5px] border-dashed border-indigo-500 rounded-2xl p-4 bg-white/10 backdrop-blur-sm' : ''}`}
         style={{
           left: (contentPositions[index]?.x ?? 50) + '%',
           top: (contentPositions[index]?.y ?? 60) + '%',
           transform: `translate(-50%, -50%) rotate(${contentRotations[index] || 0}deg)`,
           cursor: isSelected ? 'grab' : 'default',
-          userSelect: 'none'
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'content', index, containerRef.current, contentPositions[index] || { x: 50, y: 60 })}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('content', index); }}
@@ -124,7 +123,7 @@ export const SlideCanvas = ({
         return (
           <div
             key={imgId}
-            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl' : ''}`}
+            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 shadow-xl' : ''}`}
             style={{
               left: pos.x + '%',
               top: pos.y + '%',
@@ -132,18 +131,20 @@ export const SlideCanvas = ({
               height: size + 'px',
               transform: `translate(-50%, -50%) rotate(${rot}deg)`,
               cursor: isSelected ? 'grab' : 'default',
+              borderRadius: imageBorderRadius,
+              overflow: 'hidden'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, containerRef.current, pos)}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('image', imgId); }}
           >
-            <img src={img} alt="Custom" className="w-full h-full object-cover rounded-xl" />
+            <img src={img} alt="Custom" className="w-full h-full object-cover" style={{ borderRadius: imageBorderRadius }} />
             
             {isSelected && selectedImageId === imgId && (
               <>
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}>↻</div>
-                <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}></div>
+                <div className="absolute -top-3 -left-3 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-indigo-500 flex items-center justify-center cursor-alias text-indigo-600 z-50 hover:scale-110 transition-transform" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiRefreshCw size={14}/></div>
+                <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-50 hover:scale-110 transition-transform" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiMaximize2 size={14} className="text-white" /></div>
               </>
             )}
           </div>
@@ -159,21 +160,26 @@ export const SlideCanvas = ({
         return (
           <div
             key={elId}
-            className={`absolute z-30 transition-shadow ${isElSelected ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
+            className={`absolute z-30 transition-all ${isElSelected ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 bg-white/5' : ''}`}
             style={{
               left: el.x + '%',
               top: el.y + '%',
               transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
               cursor: isSelected ? 'grab' : 'default',
+              width: el.width + 'px',
+              height: el.height + 'px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y })}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('extra', elId); }}
           >
             {el.type === 'text' ? (
               <div 
-                className="font-bold whitespace-nowrap outline-none"
+                className="font-bold whitespace-nowrap outline-none px-2"
                 style={{ 
-                  fontSize: (el.width/5) + 'px', 
+                  fontSize: (el.height * 0.8) + 'px', 
                   color: el.color,
                   background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : 'transparent',
                   WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
@@ -182,32 +188,34 @@ export const SlideCanvas = ({
                 }}
               >{el.content}</div>
             ) : (
-              <div style={{ width: el.width + 'px', height: el.height + 'px', color: el.color }} className="pointer-events-none">
-                {IconComp && <IconComp className="w-full h-full overflow-visible pointer-events-none" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
+              <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center p-1">
+                {IconComp && <IconComp className="w-full h-full overflow-visible" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
                 {el.useGradient && <svg width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
               </div>
             )}
 
             {isElSelected && (
               <>
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
-                <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
-                <div className="absolute bottom-1/2 -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
-                <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+                {/* Transform Handles */}
+                <div className="absolute -top-4 -left-4 w-7 h-7 bg-white rounded-full shadow-lg border-2 border-indigo-500 flex items-center justify-center cursor-alias text-indigo-600 z-50 hover:scale-110 transition-transform" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}><FiRefreshCw size={12}/></div>
                 
+                <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white cursor-ne-resize z-50 shadow-md"
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+
+                <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/2 w-5 h-5 bg-indigo-600 rounded-full border-2 border-white cursor-se-resize z-50 shadow-lg hover:scale-125 transition-transform flex items-center justify-center" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}><FiMaximize2 size={10} className="text-white" /></div>
+
+                {/* Layer Control */}
                 <button 
-                  className="absolute -bottom-2 -left-2 w-6 h-6 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-40 hover:scale-125 transition-transform"
-                  title="Enviar al fondo"
+                  className="absolute -bottom-4 -left-4 w-7 h-7 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
+                  title="Cambiar Capa (Fondo/Frente)"
                   onClick={(e) => {
                     e.stopPropagation();
                     canvas.updateExtraElement(index, el.id, { zIndex: el.zIndex === 5 ? 30 : 5 });
                   }}
                 >
-                  <FiLayers size={10} />
+                  <FiLayers size={12} />
                 </button>
               </>
             )}
@@ -223,17 +231,15 @@ export const SlideCanvas = ({
       )}
 
       {isSelected && (
-        <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">
-          <div className="flex flex-col gap-1">
-            <button onClick={(e) => { e.stopPropagation(); onPreview(index); }} className="p-1.5 bg-white/80 text-indigo-600 rounded-lg hover:bg-white shadow-sm" title="Vista Previa"><FiMaximize2 size={12}/></button>
-            <button onClick={(e) => { e.stopPropagation(); onEdit(index); }} className="p-1.5 bg-white/80 text-amber-500 rounded-lg hover:bg-white shadow-sm" title="Editar"><FiEdit3 size={12}/></button>
-            <label className="p-1.5 bg-white/80 text-indigo-400 rounded-lg hover:bg-white shadow-sm cursor-pointer" title="Añadir Imagen">
-              <FiPlusCircle size={12} />
-              <input type="file" className="hidden" accept="image/*" onChange={onAddImage} />
-            </label>
-            <button onClick={(e) => { e.stopPropagation(); onCopy(index); }} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white shadow-sm" title="Copiar"><FiCopy size={12} /></button>
-            <button onClick={(e) => { e.stopPropagation(); onRemove(index); }} className="p-1.5 bg-white/80 text-red-400 hover:bg-red-500 hover:text-white rounded-lg shadow-sm transition-all" title="Eliminar"><FiTrash2 size={12} /></button>
-          </div>
+        <div className="absolute bottom-4 right-4 slide-actions z-[60] flex flex-col gap-1 pointer-events-auto">
+          <button onClick={(e) => { e.stopPropagation(); onPreview(index); }} className="p-2 bg-white text-indigo-600 rounded-xl hover:bg-indigo-50 shadow-xl border border-gray-100 transition-all transform hover:scale-110" title="Vista Previa"><FiMaximize2 size={14}/></button>
+          <button onClick={(e) => { e.stopPropagation(); onEdit(index); }} className="p-2 bg-white text-amber-500 rounded-xl hover:bg-amber-50 shadow-xl border border-gray-100 transition-all transform hover:scale-110" title="Editar Contenido"><FiEdit3 size={14}/></button>
+          <label className="p-2 bg-white text-indigo-400 rounded-xl hover:bg-indigo-50 shadow-xl border border-gray-100 cursor-pointer transition-all transform hover:scale-110" title="Insertar Imagen">
+            <FiPlusCircle size={14} />
+            <input type="file" className="hidden" accept="image/*" onChange={onAddImage} />
+          </label>
+          <button onClick={(e) => { e.stopPropagation(); onCopy(index); }} className="p-2 bg-white text-gray-400 rounded-xl hover:bg-gray-50 shadow-xl border border-gray-100 transition-all transform hover:scale-110" title="Duplicar Diapositiva"><FiCopy size={14} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onRemove(index); }} className="p-2 bg-white text-red-400 hover:bg-red-500 hover:text-white rounded-xl shadow-xl border border-gray-100 transition-all transform hover:scale-110" title="Eliminar"><FiTrash2 size={14} /></button>
         </div>
       )}
     </div>

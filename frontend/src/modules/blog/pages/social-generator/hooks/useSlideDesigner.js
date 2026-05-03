@@ -16,6 +16,7 @@ export const useSlideDesigner = () => {
   const [titleColor, setTitleColor] = useState(DEFAULT_DESIGN.titleColor);
   const [contentColor, setContentColor] = useState(DEFAULT_DESIGN.contentColor);
   const [headerColor, setHeaderColor] = useState(DEFAULT_DESIGN.headerColor);
+  const [imageBorderRadius, setImageBorderRadius] = useState('24px');
 
   // Global Template Settings (Branding & Divider)
   const [brandingPos, setBrandingPos] = useState({ x: 50, y: 12 });
@@ -53,7 +54,8 @@ export const useSlideDesigner = () => {
       design: {
         bgColor, bgColor2, bgColor3, useBgGradient,
         fontSize, titleFontSize, headerFontSize,
-        titleColor, contentColor, headerColor
+        titleColor, contentColor, headerColor,
+        imageBorderRadius
       },
       global: {
         brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
@@ -85,6 +87,7 @@ export const useSlideDesigner = () => {
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
+    setImageBorderRadius(design.imageBorderRadius || '24px');
     setBrandingPos(global.brandingPos);
     setDividerPos(global.dividerPos);
     setDividerColor(global.dividerColor);
@@ -106,7 +109,8 @@ export const useSlideDesigner = () => {
       design: {
         bgColor, bgColor2, bgColor3, useBgGradient,
         fontSize, titleFontSize, headerFontSize,
-        titleColor, contentColor, headerColor
+        titleColor, contentColor, headerColor,
+        imageBorderRadius
       },
       global: {
         brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
@@ -137,6 +141,7 @@ export const useSlideDesigner = () => {
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
+    setImageBorderRadius(design.imageBorderRadius || '24px');
     setBrandingPos(global.brandingPos);
     setDividerPos(global.dividerPos);
     setDividerColor(global.dividerColor);
@@ -149,14 +154,15 @@ export const useSlideDesigner = () => {
 
   const addExtraElement = (slideIndex, type, content = '') => {
     const id = Math.random().toString(36).substr(2, 9);
+    const isIcon = type === 'icon';
     const newElement = {
       id,
       type,
       content: content || (type === 'text' ? 'Nuevo Texto' : 'arrow'),
       x: 50,
-      y: 30,
-      width: type === 'text' ? 100 : 60,
-      height: type === 'text' ? 40 : 60,
+      y: 50,
+      width: type === 'text' ? 150 : 80,
+      height: type === 'text' ? 40 : 80,
       rotation: 0,
       color: type === 'text' ? contentColor : titleColor,
       color2: '#4f46e5',
@@ -255,7 +261,8 @@ export const useSlideDesigner = () => {
       dividerPos, setDividerPos,
       dividerColor, setDividerColor,
       dividerHeight, setDividerHeight,
-      dividerWidth, setDividerWidth
+      dividerWidth, setDividerWidth,
+      imageBorderRadius, setImageBorderRadius
     },
     canvas: {
       extraElements, setExtraElements,
