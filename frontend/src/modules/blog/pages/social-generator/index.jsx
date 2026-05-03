@@ -52,7 +52,10 @@ export default function SocialGenerator() {
   }, []);
 
   const designer = useSlideDesigner();
-  const transformer = useDragTransform(designer.canvas.updateExtraElement, scale);
+  const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
+    setBrandingPos: designer.design.setBrandingPos,
+    setDividerPos: designer.design.setDividerPos
+  });
   const exporter = useExport(selectedPost, designer.design.bgColor);
 
   useEffect(() => {
@@ -199,6 +202,7 @@ export default function SocialGenerator() {
                       onWatermark={handleWatermark}
                       watermark={watermarkImage}
                       onApplyTemplate={() => designer.canvas.applyTemplateToAll(generatedContent.slides.length)}
+                      totalSlides={generatedContent.slides.length}
                     />
                     
                     <div className="flex flex-col xl:flex-row gap-8 items-start justify-center">
@@ -225,7 +229,12 @@ export default function SocialGenerator() {
                               canvas={{
                                 ...designer.canvas,
                                 selectedBranding: designer.canvas.selectedBranding,
-                                selectedDivider: designer.canvas.selectedDivider
+                                selectedDivider: designer.canvas.selectedDivider,
+                                brandingPos: designer.design.brandingPos,
+                                dividerPos: designer.design.dividerPos,
+                                dividerColor: designer.design.dividerColor,
+                                dividerHeight: designer.design.dividerHeight,
+                                dividerWidth: designer.design.dividerWidth
                               }}
                               transform={transformer.state}
                               handlers={transformer.handlers}

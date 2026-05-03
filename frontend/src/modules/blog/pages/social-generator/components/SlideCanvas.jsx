@@ -67,13 +67,13 @@ export const SlideCanvas = ({
       <div 
         className={`absolute z-30 transition-shadow ${isSelected && transform.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2' : ''}`}
         style={{
-          left: transform.brandingPos.x + '%',
-          top: transform.brandingPos.y + '%',
+          left: canvas.brandingPos.x + '%',
+          top: canvas.brandingPos.y + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
           userSelect: 'none'
         }}
-        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'branding', 'global-brand', containerRef.current, transform.brandingPos)}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'branding', 'global-brand', containerRef.current, canvas.brandingPos)}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('branding', 'global-brand'); }}
       >
         <div className="flex items-center gap-3">
@@ -90,20 +90,20 @@ export const SlideCanvas = ({
       <div 
         className={`absolute z-30 transition-shadow ${isSelected && transform.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
         style={{
-          left: transform.dividerPos.x + '%',
-          top: transform.dividerPos.y + '%',
-          width: transform.dividerWidth + '%',
+          left: canvas.dividerPos.x + '%',
+          top: canvas.dividerPos.y + '%',
+          width: canvas.dividerWidth + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
           userSelect: 'none'
         }}
-        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, transform.dividerPos)}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, canvas.dividerPos)}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('divider', 'global-divider'); }}
       >
         <div 
           style={{ 
-            height: transform.dividerHeight + 'px', 
-            backgroundColor: transform.dividerColor,
+            height: canvas.dividerHeight + 'px', 
+            backgroundColor: canvas.dividerColor,
             width: '100%'
           }} 
         />

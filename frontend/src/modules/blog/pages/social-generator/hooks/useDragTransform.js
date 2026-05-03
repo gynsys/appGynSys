@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 
-export const useDragTransform = (updateExtraElement, scale = 1) => {
+export const useDragTransform = (updateExtraElement, scale = 1, designSetters = {}) => {
   const [dragging, setDragging] = useState(null);
   const [transformState, setTransformState] = useState(null);
   
@@ -13,12 +12,7 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
   const [contentPositions, setContentPositions] = useState({});
   const [contentRotations, setContentRotations] = useState({});
 
-  // Global Template State
-  const [brandingPos, setBrandingPos] = useState({ x: 50, y: 12 });
-  const [dividerPos, setDividerPos] = useState({ x: 50, y: 22 });
-  const [dividerColor, setDividerColor] = useState('#e5e7eb');
-  const [dividerHeight, setDividerHeight] = useState(2);
-  const [dividerWidth, setDividerWidth] = useState(80);
+  const { setBrandingPos, setDividerPos } = designSetters;
 
   const handleDragStart = (e, slideIndex, type, id, domElement, initialPos) => {
     e.preventDefault();
@@ -82,9 +76,9 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
           setContentPositions(prev => ({ ...prev, [slideIndex]: { x: newX, y: newY } }));
         } else if (type === 'extra') {
           updateExtraElement(slideIndex, id.split('-')[1], { x: newX, y: newY });
-        } else if (type === 'branding') {
+        } else if (type === 'branding' && setBrandingPos) {
           setBrandingPos({ x: newX, y: newY });
-        } else if (type === 'divider') {
+        } else if (type === 'divider' && setDividerPos) {
           setDividerPos({ x: newX, y: newY });
         }
       } else if (transformState) {
@@ -131,7 +125,7 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
       window.removeEventListener('mousemove', handlePointerMove);
       window.removeEventListener('mouseup', handlePointerUp);
     };
-  }, [dragging, transformState, updateExtraElement, scale]);
+  }, [dragging, transformState, updateExtraElement, scale, setBrandingPos, setDividerPos]);
 
   return {
     handlers: { handleDragStart, handleTransformStart },
@@ -141,12 +135,7 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
       imageRotations, setImageRotations,
       imageZIndexes, setImageZIndexes,
       contentPositions, setContentPositions,
-      contentRotations, setContentRotations,
-      brandingPos, setBrandingPos,
-      dividerPos, setDividerPos,
-      dividerColor, setDividerColor,
-      dividerHeight, setDividerHeight,
-      dividerWidth, setDividerWidth
+      contentRotations, setContentRotations
     }
   };
 };
