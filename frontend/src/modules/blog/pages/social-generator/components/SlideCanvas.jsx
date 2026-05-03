@@ -79,7 +79,7 @@ export const SlideCanvas = ({
       
       {/* Content Layer */}
       <div 
-        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
+        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border border-dashed border-indigo-500 rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
         style={{
           left: (contentPositions[index]?.x ?? 50) + '%',
           top: (contentPositions[index]?.y ?? 60) + '%',
@@ -107,7 +107,7 @@ export const SlideCanvas = ({
         return (
           <div
             key={imgId}
-            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent rounded-xl' : ''}`}
+            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'border border-dashed border-indigo-500 rounded-xl' : ''}`}
             style={{
               left: pos.x + '%',
               top: pos.y + '%',
@@ -157,7 +157,7 @@ export const SlideCanvas = ({
         return (
           <div
             key={el.id}
-            className={`absolute z-[30] transition-shadow ${isElSelected ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent' : ''}`}
+            className={`absolute z-[30] transition-shadow ${isElSelected ? 'border border-dashed border-indigo-500' : ''}`}
             style={{
               left: el.x + '%',
               top: el.y + '%',
