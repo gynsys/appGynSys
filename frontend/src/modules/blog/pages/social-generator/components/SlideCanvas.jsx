@@ -79,7 +79,7 @@ export const SlideCanvas = ({
       
       {/* Content Layer */}
       <div 
-        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border border-dashed border-indigo-500 rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
+        className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border-[1.5px] border-dashed border-indigo-500 rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
         style={{
           left: (contentPositions[index]?.x ?? 50) + '%',
           top: (contentPositions[index]?.y ?? 60) + '%',
@@ -107,7 +107,7 @@ export const SlideCanvas = ({
         return (
           <div
             key={imgId}
-            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'border border-dashed border-indigo-500 rounded-xl' : ''}`}
+            className={`absolute z-20 transition-shadow ${isSelected && selectedImageId === imgId ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl' : ''}`}
             style={{
               left: pos.x + '%',
               top: pos.y + '%',
@@ -138,7 +138,7 @@ export const SlideCanvas = ({
                   >
                     <FiLayers size={10} />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform"
+                  <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform"
                     onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
                   ></div>
                 </>
@@ -157,7 +157,7 @@ export const SlideCanvas = ({
         return (
           <div
             key={el.id}
-            className={`absolute z-[30] transition-shadow ${isElSelected ? 'border border-dashed border-indigo-500' : ''}`}
+            className={`absolute z-[30] transition-shadow ${isElSelected ? 'border-[1.5px] border-dashed border-indigo-500' : ''}`}
             style={{
               left: el.x + '%',
               top: el.y + '%',
@@ -206,11 +206,11 @@ export const SlideCanvas = ({
                   </div>
                 )}
 
-                <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-2 h-8 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
+                <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
-                <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
+                <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 
                 <button 
