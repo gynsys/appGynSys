@@ -63,15 +63,53 @@ export const SlideCanvas = ({
         <img src={watermark} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
       )}
       
-      <div className="flex items-center justify-start gap-3 mb-10 border-b border-gray-100 dark:border-gray-700/50 pb-6 w-full relative z-30">
-        <div className="w-12 h-12 flex items-center justify-center overflow-hidden flex-shrink-0">
-          {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-full h-full object-contain" />}
+      {/* Global Template Elements */}
+      <div 
+        className={`absolute z-30 transition-shadow ${isSelected && transform.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2' : ''}`}
+        style={{
+          left: transform.brandingPos.x + '%',
+          top: transform.brandingPos.y + '%',
+          transform: 'translate(-50%, -50%)',
+          cursor: isSelected ? 'grab' : 'default',
+          userSelect: 'none'
+        }}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'branding', 'global-brand', containerRef.current, transform.brandingPos)}
+        onClick={(e) => { e.stopPropagation(); isSelected && selectElement('branding', 'global-brand'); }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
+            {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-full h-full object-contain" />}
+          </div>
+          <span
+            style={{ fontSize: headerFontSize + 'px', color: headerColor }}
+            className="font-black uppercase tracking-tight whitespace-nowrap"
+          >{doctor?.nombre_completo}</span>
         </div>
-        <span
-          style={{ fontSize: headerFontSize + 'px', color: headerColor }}
-          className="font-black uppercase tracking-tight"
-        >{doctor?.nombre_completo}</span>
       </div>
+
+      <div 
+        className={`absolute z-30 transition-shadow ${isSelected && transform.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
+        style={{
+          left: transform.dividerPos.x + '%',
+          top: transform.dividerPos.y + '%',
+          width: transform.dividerWidth + '%',
+          transform: 'translate(-50%, -50%)',
+          cursor: isSelected ? 'grab' : 'default',
+          userSelect: 'none'
+        }}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, transform.dividerPos)}
+        onClick={(e) => { e.stopPropagation(); isSelected && selectElement('divider', 'global-divider'); }}
+      >
+        <div 
+          style={{ 
+            height: transform.dividerHeight + 'px', 
+            backgroundColor: transform.dividerColor,
+            width: '100%'
+          }} 
+        />
+      </div>
+
+      <div className="h-16" /> {/* Spacer for the header area */}
       
       {!isPreview && !isExport && (
         <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{index + 1}</span>
@@ -122,7 +160,7 @@ export const SlideCanvas = ({
             <div className="relative group/img">
               <img
                 src={img}
-                className="rounded-xl shadow-md border-2 border-white/50 object-cover pointer-events-none"
+                className="rounded-xl shadow-md object-cover pointer-events-none"
                 style={{ width: size + 'px', height: size + 'px' }}
                 alt=""
               />

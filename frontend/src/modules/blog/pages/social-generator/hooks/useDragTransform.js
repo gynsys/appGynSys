@@ -13,6 +13,13 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
   const [contentPositions, setContentPositions] = useState({});
   const [contentRotations, setContentRotations] = useState({});
 
+  // Global Template State
+  const [brandingPos, setBrandingPos] = useState({ x: 50, y: 12 });
+  const [dividerPos, setDividerPos] = useState({ x: 50, y: 22 });
+  const [dividerColor, setDividerColor] = useState('#e5e7eb');
+  const [dividerHeight, setDividerHeight] = useState(2);
+  const [dividerWidth, setDividerWidth] = useState(80);
+
   const handleDragStart = (e, slideIndex, type, id, domElement, initialPos) => {
     e.preventDefault();
     e.stopPropagation();
@@ -75,6 +82,10 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
           setContentPositions(prev => ({ ...prev, [slideIndex]: { x: newX, y: newY } }));
         } else if (type === 'extra') {
           updateExtraElement(slideIndex, id.split('-')[1], { x: newX, y: newY });
+        } else if (type === 'branding') {
+          setBrandingPos({ x: newX, y: newY });
+        } else if (type === 'divider') {
+          setDividerPos({ x: newX, y: newY });
         }
       } else if (transformState) {
         const { transformType, elementType, slideIndex, id, startX, startY, initialWidth, initialHeight, initialRotation, initialX, initialY, centerX, centerY, rect } = transformState;
@@ -130,7 +141,12 @@ export const useDragTransform = (updateExtraElement, scale = 1) => {
       imageRotations, setImageRotations,
       imageZIndexes, setImageZIndexes,
       contentPositions, setContentPositions,
-      contentRotations, setContentRotations
+      contentRotations, setContentRotations,
+      brandingPos, setBrandingPos,
+      dividerPos, setDividerPos,
+      dividerColor, setDividerColor,
+      dividerHeight, setDividerHeight,
+      dividerWidth, setDividerWidth
     }
   };
 };

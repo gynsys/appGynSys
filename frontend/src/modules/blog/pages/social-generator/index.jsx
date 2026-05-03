@@ -194,9 +194,11 @@ export default function SocialGenerator() {
                     <TopToolbar 
                       design={designer.design} 
                       canvas={designer.canvas} 
+                      transform={transformer.state}
                       onDownload={exporter.downloadCarousel}
                       onWatermark={handleWatermark}
                       watermark={watermarkImage}
+                      onApplyTemplate={() => designer.canvas.applyTemplateToAll(generatedContent.slides.length)}
                     />
                     
                     <div className="flex flex-col xl:flex-row gap-8 items-start justify-center">
@@ -220,7 +222,11 @@ export default function SocialGenerator() {
                               doctor={doctor}
                               doctorLogo={doctorLogoBase64}
                               design={designer.design}
-                              canvas={designer.canvas}
+                              canvas={{
+                                ...designer.canvas,
+                                selectedBranding: designer.canvas.selectedBranding,
+                                selectedDivider: designer.canvas.selectedDivider
+                              }}
                               transform={transformer.state}
                               handlers={transformer.handlers}
                               watermark={watermarkImage}
@@ -274,7 +280,13 @@ export default function SocialGenerator() {
         renderSlide={(slide, i, isPrev) => (
           <SlideCanvas 
             slide={slide} index={i} isPreview={isPrev} doctor={doctor} doctorLogo={doctorLogoBase64} 
-            design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage}
+            design={designer.design} 
+            canvas={{
+              ...designer.canvas,
+              selectedBranding: designer.canvas.selectedBranding,
+              selectedDivider: designer.canvas.selectedDivider
+            }} 
+            transform={transformer.state} watermark={watermarkImage}
             handlers={transformer.handlers}
           />
         )}
@@ -285,7 +297,13 @@ export default function SocialGenerator() {
         {generatedContent?.slides?.map((slide, i) => (
           <SlideCanvas 
             key={`export-${i}`} slide={slide} index={i} isExport={true} doctor={doctor} doctorLogo={doctorLogoBase64} 
-            design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage}
+            design={designer.design} 
+            canvas={{
+              ...designer.canvas,
+              selectedBranding: designer.canvas.selectedBranding,
+              selectedDivider: designer.canvas.selectedDivider
+            }} 
+            transform={transformer.state} watermark={watermarkImage}
             handlers={transformer.handlers}
           />
         ))}

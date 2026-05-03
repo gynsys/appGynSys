@@ -20,6 +20,8 @@ export const useSlideDesigner = () => {
   const [selectedExtraId, setSelectedExtraId] = useState(null);
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [selectedContentIndex, setSelectedContentIndex] = useState(null);
+  const [selectedBranding, setSelectedBranding] = useState(false);
+  const [selectedDivider, setSelectedDivider] = useState(false);
 
   const addExtraElement = (slideIndex, type, content = '') => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -77,11 +79,36 @@ export const useSlideDesigner = () => {
       setSelectedExtraId(id);
       setSelectedImageId(null);
       setSelectedContentIndex(null);
+      setSelectedBranding(false);
+      setSelectedDivider(false);
+    } else if (type === 'branding') {
+      setSelectedBranding(true);
+      setSelectedDivider(false);
+      setSelectedExtraId(null);
+      setSelectedImageId(null);
+      setSelectedContentIndex(null);
+    } else if (type === 'divider') {
+      setSelectedDivider(true);
+      setSelectedBranding(false);
+      setSelectedExtraId(null);
+      setSelectedImageId(null);
+      setSelectedContentIndex(null);
     } else {
       setSelectedImageId(null);
       setSelectedContentIndex(null);
       setSelectedExtraId(null);
+      setSelectedBranding(false);
+      setSelectedDivider(false);
     }
+  };
+
+  const applyTemplateToAll = (totalSlides) => {
+    const currentElements = extraElements[currentSlidePage] || [];
+    const newExtraElements = {};
+    for (let i = 0; i < totalSlides; i++) {
+      newExtraElements[i] = currentElements.map(el => ({ ...el, id: Math.random().toString(36).substr(2, 9) }));
+    }
+    setExtraElements(newExtraElements);
   };
 
   return {
@@ -102,10 +129,13 @@ export const useSlideDesigner = () => {
       selectedExtraId, setSelectedExtraId,
       selectedImageId, setSelectedImageId,
       selectedContentIndex, setSelectedContentIndex,
+      selectedBranding,
+      selectedDivider,
       addExtraElement,
       updateExtraElement,
       removeExtraElement,
-      selectElement
+      selectElement,
+      applyTemplateToAll
     }
   };
 };

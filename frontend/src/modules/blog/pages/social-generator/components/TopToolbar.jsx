@@ -2,7 +2,7 @@
 import React from 'react';
 import { FiUpload, FiTrash2, FiLayers } from 'react-icons/fi';
 
-export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark }) => {
+export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark, onApplyTemplate, transform }) => {
   const {
     bgColor, setBgColor, bgColor2, setBgColor2, bgColor3, setBgColor3,
     useBgGradient, setUseBgGradient, fontSize, setFontSize,
@@ -11,7 +11,7 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
     imageSize, setImageSize
   } = design;
 
-  const { selectedExtraId, extraElements, updateExtraElement, removeExtraElement } = canvas;
+  const { selectedExtraId, extraElements, updateExtraElement, removeExtraElement, selectedBranding, selectedDivider } = canvas;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 p-6 space-y-8">
@@ -49,7 +49,10 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
           <input type="color" value={headerColor} onChange={(e) => setHeaderColor(e.target.value)} className="h-[40px] w-[60px] p-1.5 bg-white border border-gray-200 cursor-pointer rounded-xl shadow-sm" />
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
+          <button onClick={onApplyTemplate} className="px-6 py-4 bg-amber-500 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2 transform hover:scale-105 active:scale-95">
+            Guardar Plantilla 💾
+          </button>
           <button onClick={onDownload} className="px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black shadow-lg hover:bg-indigo-700 transition-all flex items-center gap-2 transform hover:scale-105 active:scale-95">
             Descargar ZIP 📦
           </button>
@@ -98,9 +101,9 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
       </div>
 
       {/* Contextual Element Toolbar */}
-      {selectedExtraId && (
+      {(selectedExtraId || selectedBranding || selectedDivider) && (
         <div className="w-full flex items-center gap-6 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl animate-slideUp">
-          {(() => {
+          {selectedExtraId && (() => {
             const [slideIdx, elId] = selectedExtraId.split('-');
             const sIdx = parseInt(slideIdx);
             const el = extraElements[sIdx]?.find(e => e.id === elId);
@@ -138,8 +141,8 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
                     />
                   </div>
                 )}
-                <button onClick={() => updateExtraElement(sIdx, el.id, { zIndex: el.zIndex === 1 ? 40 : 1 })} className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${el.zIndex === 1 ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:bg-gray-100'}`}>
-                  <FiLayers size={14} /> <span className="text-[8px] font-black uppercase">Capa {el.zIndex === 1 ? 'Inf' : 'Sup'}</span>
+                <button onClick={() => updateExtraElement(sIdx, el.id, { zIndex: el.zIndex === 5 ? 30 : 5 })} className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${el.zIndex === 5 ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:bg-gray-100'}`}>
+                  <FiLayers size={14} /> <span className="text-[8px] font-black uppercase">Capa {el.zIndex === 5 ? 'Inf' : 'Sup'}</span>
                 </button>
                 <button onClick={() => removeExtraElement(sIdx, el.id)} className="ml-auto w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
                   <FiTrash2 size={16} />
@@ -147,6 +150,36 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
               </>
             );
           })()}
+
+          {selectedDivider && (
+            <div className="flex-1 flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase text-gray-400">Color Línea</span>
+                <input type="color" value={transform.dividerColor} onChange={(e) => transform.setDividerColor(e.target.value)} className="w-10 h-10 rounded-xl cursor-pointer" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-black uppercase text-gray-400">Grosor</p>
+                <input type="range" min={1} max={10} step={1} value={transform.dividerHeight} onChange={(e) => transform.setDividerHeight(Number(e.target.value))} className="w-32" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-black uppercase text-gray-400">Ancho %</p>
+                <input type="range" min={10} max={100} step={5} value={transform.dividerWidth} onChange={(e) => transform.setDividerWidth(Number(e.target.value))} className="w-32" />
+              </div>
+              <div className="ml-auto text-[10px] font-black uppercase text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100">
+                Línea de Cabecera Seleccionada
+              </div>
+            </div>
+          )}
+
+          {selectedBranding && (
+            <div className="flex-1 flex items-center gap-8">
+              <div className="text-[10px] font-black uppercase text-gray-400">Configuración de Marca</div>
+              <p className="text-xs text-gray-500 font-bold">Puedes arrastrar el logo y nombre a cualquier lugar de la diapositiva.</p>
+              <div className="ml-auto text-[10px] font-black uppercase text-indigo-500 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
+                Marca Médica Seleccionada
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
