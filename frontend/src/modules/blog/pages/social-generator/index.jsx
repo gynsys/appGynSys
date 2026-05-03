@@ -76,7 +76,20 @@ export default function SocialGenerator() {
   useEffect(() => {
     loadPosts();
     if (doctor?.logo_url) {
-      setDoctorLogoBase64(getImageUrl(doctor.logo_url));
+      const fetchLogoAsBase64 = async () => {
+        try {
+          const url = getImageUrl(doctor.logo_url);
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.onloadend = () => setDoctorLogoBase64(reader.result);
+          reader.readAsDataURL(blob);
+        } catch (e) {
+          console.error("No se pudo precargar el logo en base64", e);
+          setDoctorLogoBase64(getImageUrl(doctor.logo_url)); // Fallback a URL estandar
+        }
+      };
+      fetchLogoAsBase64();
     } else {
       setDoctorLogoBase64(null);
     }
