@@ -201,6 +201,13 @@ export const TopToolbar = ({
               <span className="text-[9px] font-mono text-gray-400">{fontSize}px</span>
             </div>
           </div>
+          <div className="flex flex-col gap-1">
+            <p className="text-[9px] font-black uppercase text-gray-400">T. Marca</p>
+            <div className="flex items-center gap-2">
+              <input type="range" min={8} max={24} step={1} value={headerFontSize} onChange={(e) => setHeaderFontSize(Number(e.target.value))} className="w-20" />
+              <span className="text-[9px] font-mono text-gray-400">{headerFontSize}px</span>
+            </div>
+          </div>
         </div>
 
         {/* Image Border Radius Selector */}
