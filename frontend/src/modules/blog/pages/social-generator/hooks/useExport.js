@@ -20,11 +20,11 @@ export const useExport = (selectedPost, bgColor) => {
         const canvas = await html2canvas(slides[i], {
           useCORS: true,
           scale: 3,
-          backgroundColor: bgColor,
+          backgroundColor: bgColor || '#ffffff',
           logging: false
         });
-        const imgData = canvas.toDataURL('image/png').split(',')[1];
-        zip.file(`Slide_${i + 1}.png`, imgData, { base64: true });
+        const imgData = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];
+        zip.file(`Slide_${i + 1}.jpg`, imgData, { base64: true });
       }
 
       actionButtons.forEach(btn => btn.style.display = 'flex');
