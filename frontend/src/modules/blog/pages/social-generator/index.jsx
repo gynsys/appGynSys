@@ -443,9 +443,9 @@ export default function SocialGenerator() {
                         </div>
                         
                         {/* Hidden Export Container */}
-                        <div className="absolute top-[-9999px] left-[-9999px] flex gap-4 pointer-events-none opacity-0">
+                        <div className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none -z-50">
                           {generatedContent.slides.map((s, idx) => (
-                            <div key={`export-${idx}`} className="export-slide-item">
+                            <div key={`export-${idx}`} className="export-slide-item" style={{ width: 410, height: 410, position: 'relative' }}>
                               <SlideCanvas 
                                 slide={s}
                                 index={idx}
