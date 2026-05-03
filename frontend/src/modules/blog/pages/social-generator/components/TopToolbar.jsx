@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType, FiBold, FiItalic, FiCornerUpLeft } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
-import Modal from '../../../components/common/Modal';
+import Modal from '../../../../../components/common/Modal';
 
 export const TopToolbar = ({ 
   design, 
