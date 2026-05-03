@@ -57,6 +57,8 @@ def generate_with_groq(prompt: str):
     try:
         logger.info("Intentando generación con Groq (Llama 3.1 70B)...")
         response = requests.post(url, headers=headers, json=payload, timeout=30)
+        if response.status_code != 200:
+            logger.error(f"Groq API Error: {response.text}")
         response.raise_for_status()
         data = response.json()
         content = data['choices'][0]['message']['content']
