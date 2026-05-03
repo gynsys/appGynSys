@@ -98,7 +98,12 @@ export const useSlideDesigner = () => {
     setDividerWidth(global.dividerWidth);
     const newExtraElements = {};
     for (let i = 0; i < totalSlides; i++) {
-      newExtraElements[i] = elements.map(el => ({ ...el, id: Math.random().toString(36).substr(2, 9) }));
+      newExtraElements[i] = elements.map(el => ({ 
+        ...el, 
+        id: Math.random().toString(36).substr(2, 9),
+        bold: el.bold !== undefined ? el.bold : true,
+        italic: el.italic !== undefined ? el.italic : false
+      }));
     }
     setExtraElements(newExtraElements);
   };
@@ -172,7 +177,9 @@ export const useSlideDesigner = () => {
       color3: '#9333ea',
       useGradient: false,
       gradientDir: 'to bottom right',
-      zIndex: 30
+      zIndex: 30,
+      bold: true,
+      italic: false
     };
     setExtraElements(prev => {
       const slideElements = prev[slideIndex] || [];

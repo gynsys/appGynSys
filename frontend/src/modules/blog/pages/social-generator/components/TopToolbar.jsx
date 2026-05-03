@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType, FiBold, FiItalic } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const TopToolbar = ({ 
@@ -254,6 +254,22 @@ export const TopToolbar = ({
                     <input type="checkbox" checked={el.useGradient} onChange={(e) => updateExtraElement(sIdx, el.id, { useGradient: e.target.checked })} className="w-4 h-4 rounded border-gray-300 text-indigo-600" />
                     <span className="text-[10px] font-black uppercase text-gray-500">Gradiente</span>
                   </label>
+                </div>
+                <div className="flex items-center gap-2 px-6 border-r border-indigo-100">
+                  <button 
+                    onClick={() => updateExtraElement(sIdx, el.id, { bold: !el.bold })} 
+                    className={`p-2 rounded-lg transition-all ${el.bold ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}
+                    title="Negrita"
+                  >
+                    <FiBold size={14} />
+                  </button>
+                  <button 
+                    onClick={() => updateExtraElement(sIdx, el.id, { italic: !el.italic })} 
+                    className={`p-2 rounded-lg transition-all ${el.italic ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 hover:bg-gray-50'}`}
+                    title="Cursiva"
+                  >
+                    <FiItalic size={14} />
+                  </button>
                 </div>
                 {el.type === 'text' && (
                   <div className="flex-1 flex items-center gap-4 px-6 border-r border-indigo-100">

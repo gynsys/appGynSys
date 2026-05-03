@@ -199,7 +199,8 @@ export const SlideCanvas = ({
                   background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : 'transparent',
                   WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
                   WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial',
-                  fontWeight: el.bold ? '900' : 'bold'
+                  fontWeight: el.bold ? '900' : '500',
+                  fontStyle: el.italic ? 'italic' : 'normal'
                 }}
               >{el.content}</div>
             ) : (
