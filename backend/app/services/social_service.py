@@ -44,7 +44,7 @@ def generate_with_groq(prompt: str):
     }
     
     payload = {
-        "model": "llama-3.1-70b-versatile",
+        "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "system", "content": "Eres un experto en diseño de carruseles médicos e Instagram. Debes responder SIEMPRE en formato JSON."},
             {"role": "user", "content": prompt}
