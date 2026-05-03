@@ -3,109 +3,154 @@ from app.core.config import settings
 import json
 import re
 import logging
+import requests
 
 # Configurar logger estándar
 logger = logging.getLogger(__name__)
 
+def clean_content_for_ai(content: str) -> str:
+    """
+    Limpia el contenido de etiquetas HTML y remueve datos Base64 pesados 
+    para evitar confundir a la IA o exceder límites de tokens.
+    """
+    if not content:
+        return ""
+        
+    # 1. Remover etiquetas <img> completas (incluyendo base64)
+    content = re.sub(r'<img[^>]*>', ' [imagen] ', content)
+    
+    # 2. Remover cualquier rastro de data:image/base64 por si acaso
+    content = re.sub(r'data:image/[^;]*;base64,[^"\'\s]*', '', content)
+    
+    # 3. Remover otras etiquetas HTML pero mantener el texto
+    content = re.sub(r'<[^>]+>', ' ', content)
+    
+    # 4. Limpiar espacios extra
+    content = re.sub(r'\s+', ' ', content).strip()
+    
+    return content[:15000] # Limitar a 15k caracteres para seguridad
+
+def generate_with_groq(prompt: str):
+    """
+    Intenta generar el contenido usando Groq como respaldo.
+    """
+    if not settings.GROQ_API_KEY:
+        raise ValueError("Groq API Key no configurada.")
+        
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "llama-3.1-70b-versatile",
+        "messages": [
+            {"role": "system", "content": "Eres un experto en diseño de carruseles médicos e Instagram."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "response_format": {"type": "json_object"}
+    }
+    
+    try:
+        logger.info("Intentando generación con Groq (Llama 3.1 70B)...")
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        content = data['choices'][0]['message']['content']
+        return json.loads(content)
+    except Exception as e:
+        logger.error(f"Error en Groq: {str(e)}")
+        raise e
+
 def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel'):
     """
-    Genera contenido para redes sociales (Reel o Carrusel) usando Gemini.
+    Genera contenido para redes sociales (Reel o Carrusel) usando Gemini con respaldo en Groq.
     """
+    # Limpiar el contenido antes de procesar
+    clean_text = clean_content_for_ai(post_content)
+    
+    if generation_type == 'reel':
+        prompt = f"""
+        Actúa como un experto en marketing digital. 
+        Analiza el artículo y crea un guion de Reel.
+        
+        ARTÍCULO:
+        Título: {post_title}
+        Contenido: {clean_text}
+        
+        Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
+        {{
+          "hook": "frase inicial",
+          "scenes": [
+            {{ "time": "00:00", "text": "descripción", "audio": "voz" }}
+          ],
+          "cta": "llamada a la acción",
+          "image_prompts": ["idea 1"]
+        }}
+        """
+    else:
+        prompt = f"""
+        Actúa como un diseñador de Instagram experto en contenido médico y visualización de datos. 
+        Crea un carrusel de 5-10 diapositivas atractivo, profesional y fácil de leer.
+        
+        ARTÍCULO:
+        Título: {post_title}
+        Contenido: {clean_text}
+        
+        REGLAS DE FORMATO CRÍTICAS PARA "content":
+        1. LISTAS: Si incluyes una lista de puntos o pasos, CADA ITEM DEBE IR EN UNA LÍNEA NUEVA (usa saltos de línea \\n).
+        2. VIÑETAS: Usa viñetas modernas como '•' para listas de puntos.
+        3. LIMPIEZA: NUNCA amontones varios puntos en un solo párrafo. Cada item debe ser una línea independiente.
+        
+        Ejemplo de formato deseado para el campo "content":
+        "• Item uno\\n• Item dos\\n• Item tres"
+        
+        Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
+        {{
+          "slides": [
+            {{ "title": "título breve e impactante", "content": "cuerpo con formato limpio y listas si aplica" }}
+          ],
+          "image_prompts": ["sugerencia de imagen o query para Unsplash"]
+        }}
+        """
+
+    # INTENTO 1: GEMINI
     try:
-      genai.configure(api_key=settings.GEMINI_API_KEY)
-      
-      # Usamos gemini-flash-latest que es el que funciona en este entorno
-      model_name = 'gemini-flash-latest' 
-      model = genai.GenerativeModel(model_name)
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model_name = 'gemini-flash-latest' 
+        model = genai.GenerativeModel(model_name)
+        
+        logger.info(f"Generando {generation_type} con {model_name}...")
+        response = model.generate_content(prompt)
+        
+        if not response or not hasattr(response, 'text'):
+            raise ValueError("Respuesta de Gemini inválida o bloqueada.")
 
-      if generation_type == 'reel':
-          prompt = f"""
-          Actúa como un experto en marketing digital. 
-          Analiza el artículo y crea un guion de Reel.
-          
-          ARTÍCULO:
-          Título: {post_title}
-          Contenido: {post_content}
-          
-          Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
-          {{
-            "hook": "frase inicial",
-            "scenes": [
-              {{ "time": "00:00", "text": "descripción", "audio": "voz" }}
-            ],
-            "cta": "llamada a la acción",
-            "image_prompts": ["idea 1"]
-          }}
-          """
-      else:
-          prompt = f"""
-          Actúa como un diseñador de Instagram experto en contenido médico y visualización de datos. 
-          Crea un carrusel de 5-10 diapositivas atractivo, profesional y fácil de leer.
-          
-          ARTÍCULO:
-          Título: {post_title}
-          Contenido: {post_content}
-          
-          REGLAS DE FORMATO CRÍTICAS PARA "content":
-          1. LISTAS: Si incluyes una lista de puntos o pasos, CADA ITEM DEBE IR EN UNA LÍNEA NUEVA (usa saltos de línea \\n).
-          2. VIÑETAS: Usa viñetas modernas como '•' para listas de puntos.
-          3. LIMPIEZA: NUNCA amontones varios puntos en un solo párrafo. Cada item debe ser una línea independiente.
-          
-          Ejemplo de formato deseado para el campo "content":
-          "• Item uno\\n• Item dos\\n• Item tres"
-          
-          Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
-          {{
-            "slides": [
-              {{ "title": "título breve e impactante", "content": "cuerpo con formato limpio y listas si aplica" }}
-            ],
-            "image_prompts": ["sugerencia de imagen o query para Unsplash"]
-          }}
-          """
+        text = response.text.strip()
+        json_match = re.search(r'(\{.*\})', text, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group(1))
+            # Normalizar slides si es necesario
+            if isinstance(data, dict) and 'slides' in data and isinstance(data['slides'], dict):
+                data['slides'] = list(data['slides'].values())
+            return data
+            
+        raise ValueError("No se pudo extraer JSON de Gemini.")
 
-      logger.info(f"Generando {generation_type} con {model_name}...")
-      response = model.generate_content(prompt)
-      
-      if not response or not hasattr(response, 'text'):
-          # Verificar si fue bloqueado por seguridad
-          if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
-              logger.warning(f"Contenido bloqueado por seguridad: {response.prompt_feedback}")
-              raise ValueError("El contenido fue bloqueado por los filtros de seguridad de la IA. Por favor intenta con un tema menos sensible.")
-          raise ValueError("La IA no devolvió una respuesta válida.")
-
-      text = response.text.strip()
-      
-      # Intentar extraer JSON de bloques de código o texto libre
-      json_match = re.search(r'(\{.*\})', text, re.DOTALL)
-      if json_match:
-          json_str = json_match.group(1)
-          try:
-              data = json.loads(json_str)
-              # Asegurar que 'slides' sea una lista
-              if isinstance(data, dict) and 'slides' in data:
-                  if isinstance(data['slides'], dict):
-                      logger.warning("IA devolvió slides como objeto, convirtiendo a lista")
-                      data['slides'] = list(data['slides'].values())
-              return data
-          except json.JSONDecodeError:
-              # Limpieza agresiva de JSON mal formado
-              try:
-                  json_str = re.sub(r'//.*', '', json_str) # Quitar comentarios
-                  json_str = json_str.replace('\n', ' ').replace('\r', '')
-                  json_str = re.sub(r',\s*\}', '}', json_str) # Comas finales en objetos
-                  json_str = re.sub(r',\s*\]', ']', json_str) # Comas finales en arreglos
-                  return json.loads(json_str)
-              except Exception as parse_err:
-                  logger.error(f"Fallo total al parsear JSON: {text[:200]}")
-                  raise ValueError(f"Error al procesar el formato de la IA: {str(parse_err)}")
-      
-      raise ValueError(f"No se pudo extraer una estructura válida de la respuesta: {text[:100]}...")
-
-    except Exception as e:
-      error_str = str(e)
-      if "429" in error_str or "quota" in error_str.lower():
-          logger.warning(f"Cuota de IA excedida: {error_str}")
-          raise ValueError("Has alcanzado el límite de uso gratuito de la IA por hoy (20 peticiones). Por favor, intenta de nuevo mañana o contacta a soporte para ampliar tu plan.")
-      
-      logger.error(f"Error crítico en generación social: {e}", exc_info=True)
-      raise e
+    except Exception as gemini_err:
+        logger.warning(f"Gemini falló o alcanzó cuota: {str(gemini_err)}. Intentando Groq...")
+        
+        # INTENTO 2: GROQ (FALLBACK)
+        try:
+            return generate_with_groq(prompt)
+        except Exception as groq_err:
+            logger.error(f"Fallo total en ambos proveedores de IA: {str(groq_err)}")
+            # Devolver el error original de Gemini si Groq también falla, 
+            # o un mensaje informativo
+            error_msg = str(gemini_err)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                raise ValueError("Has alcanzado los límites de uso de Gemini y Groq. Por favor intenta más tarde.")
+            raise gemini_err

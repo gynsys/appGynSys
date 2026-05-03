@@ -161,6 +161,9 @@ class Settings(BaseSettings):
     # Google Gemini AI
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
 
+    # Groq AI (Fallback)
+    GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY")
+
     # Notificaciones — Modo Debug
     # Cuando True: bypasea la guardia de "1 notificación por tipo por día"
     # Permite re-enviar la misma notificación múltiples veces para pruebas.
