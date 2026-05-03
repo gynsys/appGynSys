@@ -141,10 +141,9 @@ export default function SocialGenerator() {
           <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
             <FiCpu className="text-indigo-600" /> Editor GynSys
           </h1>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 space-y-6">
+        <div className="space-y-8">
+          {/* Top Section: Article Selector and IA Creator */}
+          <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Artículo Base</h2>
               <select
@@ -153,7 +152,7 @@ export default function SocialGenerator() {
                   setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
                   setGeneratedContent(null);
                 }}
-                className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white p-3 border font-manrope"
+                className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
               >
                 <option value="" disabled>Elegir artículo...</option>
                 {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
@@ -161,29 +160,35 @@ export default function SocialGenerator() {
             </div>
             
             {selectedPost && (
-              <div className="mt-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn">
-                <h3 className="text-xl font-black mb-1">IA Creator</h3>
-                <div className="grid grid-cols-1 gap-4 mt-6">
-                  <button onClick={() => handleGenerate('reel')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"><FiInstagram /> Reel Script</button>
-                  <button onClick={() => handleGenerate('carousel')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"><FiImage /> Carousel</button>
-                  <button onClick={handleTestDesign} className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 p-4 rounded-2xl font-black transition-all text-white">🧪 Draft Mode</button>
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <h3 className="text-2xl font-black mb-1">IA Creator</h3>
+                    <p className="text-indigo-100 text-sm">Transforma tu artículo en contenido social</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 max-w-2xl">
+                    <button onClick={() => handleGenerate('reel')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 p-4 rounded-2xl font-black transition-all border border-white/10 backdrop-blur-sm"><FiInstagram /> Reel Script</button>
+                    <button onClick={() => handleGenerate('carousel')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 p-4 rounded-2xl font-black transition-all border border-white/10 backdrop-blur-sm"><FiImage /> Carousel</button>
+                    <button onClick={handleTestDesign} className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 p-4 rounded-2xl font-black transition-all text-white shadow-lg">🧪 Draft Mode</button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="lg:col-span-8">
+          {/* Bottom Section: Editor Content */}
+          <div className="w-full">
             {generating ? (
               <div className="h-[400px] w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100"><FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" /><p className="font-bold">IA procesando...</p></div>
             ) : generatedContent ? (
-              <div className="space-y-6 animate-fadeIn">
-                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
-                  <button onClick={() => setActiveTab('reel')} className={`px-6 py-2 rounded-lg text-xs font-bold ${activeTab === 'reel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Guion</button>
-                  <button onClick={() => setActiveTab('carousel')} className={`px-6 py-2 rounded-lg text-xs font-bold ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Carrusel</button>
+              <div className="space-y-8 animate-fadeIn">
+                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit mx-auto">
+                  <button onClick={() => setActiveTab('reel')} className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'reel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Script de Guion</button>
+                  <button onClick={() => setActiveTab('carousel')} className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Editor de Carrusel</button>
                 </div>
 
                 {activeTab === 'carousel' && (
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     <TopToolbar 
                       design={designer.design} 
                       canvas={designer.canvas} 
@@ -192,10 +197,10 @@ export default function SocialGenerator() {
                       watermark={watermarkImage}
                     />
                     
-                    <div className="flex gap-8 items-start">
+                    <div className="flex flex-col xl:flex-row gap-8 items-start justify-center">
                       <DesignSidebar currentSlide={designer.canvas.currentSlidePage} onAddElement={designer.canvas.addExtraElement} />
                       
-                      <div className="flex-1 flex flex-col items-center gap-8" ref={editorWrapperRef}>
+                      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-[1178px]" ref={editorWrapperRef}>
                         <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
                         
                         <div 
@@ -230,25 +235,28 @@ export default function SocialGenerator() {
                 )}
                 
                 {activeTab === 'reel' && (
-                   <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
-                      <h3 className="text-xl font-black mb-6">Guion de Reel</h3>
-                      <div className="space-y-6">
+                   <div className="bg-white dark:bg-gray-800 rounded-3xl p-10 shadow-sm border border-gray-100 max-w-4xl mx-auto">
+                      <h3 className="text-2xl font-black mb-8 text-center">Guion de Reel Generado</h3>
+                      <div className="space-y-8">
                          {generatedContent.hook && (
-                           <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100">
-                              <p className="text-[10px] font-black uppercase text-indigo-400 mb-2">Hook (Gancho)</p>
-                              <p className="font-bold">{generatedContent.hook}</p>
+                           <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl border border-indigo-100">
+                              <p className="text-xs font-black uppercase text-indigo-400 mb-3 tracking-widest">Hook (Gancho)</p>
+                              <p className="text-lg font-bold leading-relaxed">{generatedContent.hook}</p>
                            </div>
                          )}
-                         <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100">
-                            <p className="text-[10px] font-black uppercase text-gray-400 mb-2">Contenido Principal</p>
-                            <p className="whitespace-pre-wrap">{generatedContent.content}</p>
+                         <div className="p-6 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-100">
+                            <p className="text-xs font-black uppercase text-gray-400 mb-3 tracking-widest">Contenido Principal</p>
+                            <p className="whitespace-pre-wrap text-lg leading-relaxed">{generatedContent.content}</p>
                          </div>
                       </div>
                    </div>
                 )}
               </div>
             ) : (
-              <div className="h-[400px] w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border-2 border-dashed border-gray-100"><FiCpu className="w-10 h-10 text-indigo-200 mb-4" /><h3 className="font-bold text-gray-400">Editor GynSys</h3></div>
+              <div className="h-[400px] w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl shadow-sm border-2 border-dashed border-gray-100 animate-pulse">
+                <FiCpu className="w-12 h-12 text-indigo-200 mb-4" />
+                <h3 className="font-black text-gray-400 uppercase tracking-tighter">Esperando selección de artículo</h3>
+              </div>
             )}
           </div>
         </div>

@@ -126,6 +126,18 @@ export const TopToolbar = ({ design, canvas, onDownload, onWatermark, watermark 
                     <span className="text-[10px] font-black uppercase text-gray-500">Gradiente</span>
                   </label>
                 </div>
+                {el.type === 'text' && (
+                  <div className="flex-1 flex items-center gap-4 px-6 border-r border-gray-200 dark:border-gray-700">
+                    <span className="text-[10px] font-black uppercase text-gray-400 shrink-0">Editar Texto</span>
+                    <input 
+                      type="text" 
+                      value={el.content} 
+                      onChange={(e) => updateExtraElement(sIdx, el.id, { content: e.target.value })}
+                      className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="Escribe algo..."
+                    />
+                  </div>
+                )}
                 <button onClick={() => updateExtraElement(sIdx, el.id, { zIndex: el.zIndex === 1 ? 40 : 1 })} className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${el.zIndex === 1 ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:bg-gray-100'}`}>
                   <FiLayers size={14} /> <span className="text-[8px] font-black uppercase">Capa {el.zIndex === 1 ? 'Inf' : 'Sup'}</span>
                 </button>

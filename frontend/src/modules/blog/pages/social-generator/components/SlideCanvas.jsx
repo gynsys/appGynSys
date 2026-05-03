@@ -131,6 +131,12 @@ export const SlideCanvas = ({
                   <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
                     onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
                   >↻</div>
+                  <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-amber-500 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-40 hover:scale-125 transition-transform text-white"
+                    title="Enviar al fondo"
+                    onClick={(e) => { e.stopPropagation(); transform.setImageZIndexes(prev => ({ ...prev, [imgId]: prev[imgId] === 5 ? 20 : 5 })); }}
+                  >
+                    <FiLayers size={10} />
+                  </div>
                   <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform"
                     onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
                   ></div>
