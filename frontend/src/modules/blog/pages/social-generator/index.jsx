@@ -308,6 +308,50 @@ export default function SocialGenerator() {
           />
         ))}
       </div>
+      {/* Edit Slide Modal */}
+      {editingIndex !== null && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Editar Diapositiva {editingIndex + 1}</h3>
+              <button onClick={() => setEditingIndex(null)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-600 shadow-sm transition-all">
+                <FiPlusCircle className="rotate-45" size={24} />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Título de la Diapositiva</label>
+                <input 
+                  type="text"
+                  className="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-black uppercase tracking-tight outline-none"
+                  value={generatedContent.slides[editingIndex].title}
+                  onChange={(e) => {
+                    const newSlides = [...generatedContent.slides];
+                    newSlides[editingIndex].title = e.target.value;
+                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Contenido Principal</label>
+                <textarea 
+                  className="w-full h-48 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-bold leading-relaxed outline-none"
+                  value={generatedContent.slides[editingIndex].content}
+                  onChange={(e) => {
+                    const newSlides = [...generatedContent.slides];
+                    newSlides[editingIndex].content = e.target.value;
+                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                  }}
+                />
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-gray-100 text-gray-600 rounded-2xl font-black hover:bg-gray-200 transition-all uppercase tracking-widest text-xs">Cerrar</button>
+                <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs">Listo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
