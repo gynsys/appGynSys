@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DEFAULT_DESIGN } from '../lib/constants';
 
-const STORAGE_KEY = 'gynsys_carousel_templates';
+const TEMPLATE_STORAGE_KEY = 'gynsys_carousel_templates';
+const PROJECT_STORAGE_KEY = 'gynsys_carousel_projects';
 
 export const useSlideDesigner = () => {
   // Colors & General Design
@@ -33,7 +34,13 @@ export const useSlideDesigner = () => {
 
   // Custom Templates Management
   const [customTemplates, setCustomTemplates] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Projects Management
+  const [projects, setProjects] = useState(() => {
+    const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -55,19 +62,17 @@ export const useSlideDesigner = () => {
 
     const updated = [...customTemplates, newTemplate];
     setCustomTemplates(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updated));
   };
 
   const deleteTemplate = (id) => {
     const updated = customTemplates.filter(t => t.id !== id);
     setCustomTemplates(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updated));
   };
 
   const applyCustomTemplate = (template, totalSlides) => {
     if (!template) return;
-    
-    // Apply Design
     const { design, global, elements } = template;
     setBgColor(design.bgColor);
     setBgColor2(design.bgColor2);
@@ -78,20 +83,65 @@ export const useSlideDesigner = () => {
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
-
-    // Apply Global
     setBrandingPos(global.brandingPos);
     setDividerPos(global.dividerPos);
     setDividerColor(global.dividerColor);
     setDividerHeight(global.dividerHeight);
     setDividerWidth(global.dividerWidth);
-
-    // Replicate Elements to all slides
     const newExtraElements = {};
     for (let i = 0; i < totalSlides; i++) {
       newExtraElements[i] = elements.map(el => ({ ...el, id: Math.random().toString(36).substr(2, 9) }));
     }
     setExtraElements(newExtraElements);
+  };
+
+  const saveProject = (name, generatedContent) => {
+    if (!name || !generatedContent) return;
+    const newProject = {
+      id: Date.now(),
+      name,
+      content: generatedContent,
+      design: {
+        bgColor, bgColor2, bgColor3, useBgGradient,
+        fontSize, headerFontSize,
+        titleColor, contentColor, headerColor
+      },
+      global: {
+        brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
+      },
+      elements: extraElements
+    };
+    const updated = [...projects, newProject];
+    setProjects(updated);
+    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(updated));
+  };
+
+  const deleteProject = (id) => {
+    const updated = projects.filter(p => p.id !== id);
+    setProjects(updated);
+    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(updated));
+  };
+
+  const loadProject = (project) => {
+    if (!project) return null;
+    const { design, global, elements, content } = project;
+    setBgColor(design.bgColor);
+    setBgColor2(design.bgColor2);
+    setBgColor3(design.bgColor3);
+    setUseBgGradient(design.useBgGradient);
+    setFontSize(design.fontSize);
+    setHeaderFontSize(design.headerFontSize);
+    setTitleColor(design.titleColor);
+    setContentColor(design.contentColor);
+    setHeaderColor(design.headerColor);
+    setBrandingPos(global.brandingPos);
+    setDividerPos(global.dividerPos);
+    setDividerColor(global.dividerColor);
+    setDividerHeight(global.dividerHeight);
+    setDividerWidth(global.dividerWidth);
+    setExtraElements(elements);
+    setCurrentSlidePage(0);
+    return content;
   };
 
   const addExtraElement = (slideIndex, type, content = '') => {
@@ -112,7 +162,6 @@ export const useSlideDesigner = () => {
       gradientDir: 'to bottom right',
       zIndex: 30
     };
-    
     setExtraElements(prev => {
       const slideElements = prev[slideIndex] || [];
       return { ...prev, [slideIndex]: [...slideElements, newElement] };
@@ -177,6 +226,15 @@ export const useSlideDesigner = () => {
     }
   };
 
+  const applyTemplateToAll = (totalSlides) => {
+    const currentElements = extraElements[currentSlidePage] || [];
+    const newExtraElements = {};
+    for (let i = 0; i < totalSlides; i++) {
+      newExtraElements[i] = currentElements.map(el => ({ ...el, id: Math.random().toString(36).substr(2, 9) }));
+    }
+    setExtraElements(newExtraElements);
+  };
+
   return {
     design: {
       bgColor, setBgColor,
@@ -211,10 +269,15 @@ export const useSlideDesigner = () => {
       updateExtraElement,
       removeExtraElement,
       selectElement,
+      applyTemplateToAll,
       customTemplates,
       saveCustomTemplate,
       applyCustomTemplate,
-      deleteTemplate
+      deleteTemplate,
+      projects,
+      saveProject,
+      loadProject,
+      deleteProject
     }
   };
 };

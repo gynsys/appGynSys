@@ -19,6 +19,7 @@ export const SlideCanvas = ({
   onEdit,
   onPreview,
   onCopy,
+  onRemove,
   onAddImage,
   onEditText
 }) => {
@@ -277,6 +278,7 @@ export const SlideCanvas = ({
               <input type="file" className="hidden" accept="image/*" onChange={onAddImage} />
             </label>
             <button onClick={(e) => { e.stopPropagation(); onCopy(index); }} className="p-1.5 bg-white/80 text-gray-400 rounded-lg hover:bg-white shadow-sm" title="Copiar"><FiCopy size={12} /></button>
+            <button onClick={(e) => { e.stopPropagation(); onRemove(index); }} className="p-1.5 bg-white/80 text-red-400 hover:bg-red-500 hover:text-white rounded-lg shadow-sm transition-all" title="Eliminar"><FiTrash2 size={12} /></button>
           </div>
         </div>
       )}

@@ -135,6 +135,30 @@ export default function SocialGenerator() {
     showToast('Copiado al portapapeles', 'success');
   };
 
+  const handleLoadProject = (project) => {
+    const content = designer.canvas.loadProject(project);
+    if (content) {
+      setGeneratedContent(content);
+      setActiveTab('carousel');
+      showToast('Proyecto cargado', 'success');
+    }
+  };
+
+  const handleRemoveSlide = (index) => {
+    if (generatedContent.slides.length <= 1) {
+      showToast('No puedes eliminar la única diapositiva', 'warning');
+      return;
+    }
+    const newSlides = generatedContent.slides.filter((_, i) => i !== index);
+    setGeneratedContent({ ...generatedContent, slides: newSlides });
+    
+    // Adjust current page if needed
+    if (designer.canvas.currentSlidePage >= newSlides.length) {
+      designer.canvas.setCurrentSlidePage(newSlides.length - 1);
+    }
+    showToast('Diapositiva eliminada', 'success');
+  };
+
   if (loading) return <Spinner />;
 
   return (
@@ -203,6 +227,8 @@ export default function SocialGenerator() {
                       watermark={watermarkImage}
                       onApplyTemplate={() => designer.canvas.applyTemplateToAll(generatedContent.slides.length)}
                       totalSlides={generatedContent.slides.length}
+                      onLoadProject={handleLoadProject}
+                      generatedContent={generatedContent}
                     />
                     
                     <div className="flex flex-col xl:flex-row gap-8 items-start justify-center">
@@ -232,7 +258,13 @@ export default function SocialGenerator() {
                               watermark={watermarkImage}
                               onEdit={setEditingIndex}
                               onPreview={setPreviewIndex}
-                              onCopy={copyToClipboard}
+                              onCopy={(i) => {
+                                const newSlides = [...generatedContent.slides];
+                                newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                showToast('Diapositiva duplicada', 'success');
+                              }}
+                              onRemove={handleRemoveSlide}
                               onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
                             />
                           </div>
