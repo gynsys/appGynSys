@@ -30,6 +30,7 @@ export default function SocialGenerator() {
   const [activeTab, setActiveTab] = useState('reel');
   const [previewIndex, setPreviewIndex] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [editingText, setEditingText] = useState(null);
   const [watermarkImage, setWatermarkImage] = useState(null);
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null);
   
@@ -228,6 +229,7 @@ export default function SocialGenerator() {
                               onPreview={setPreviewIndex}
                               onCopy={copyToClipboard}
                               onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                              onEditText={setEditingText}
                             />
                           </div>
                         </div>
@@ -290,6 +292,39 @@ export default function SocialGenerator() {
           />
         ))}
       </div>
+      {/* Text Editing Modal */}
+      {editingText && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <h3 className="text-lg font-black text-gray-900 dark:text-white">Editar Texto</h3>
+              <button onClick={() => setEditingText(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <FiPlusCircle className="rotate-45" size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <textarea 
+                autoFocus
+                className="w-full h-40 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-0 transition-all font-manrope text-lg leading-relaxed outline-none"
+                value={editingText.content}
+                onChange={(e) => setEditingText(prev => ({ ...prev, content: e.target.value }))}
+              />
+              <div className="flex gap-4 mt-6">
+                <button onClick={() => setEditingText(null)} className="flex-1 py-3 px-6 bg-gray-100 text-gray-600 rounded-2xl font-black hover:bg-gray-200 transition-all">Cancelar</button>
+                <button 
+                  onClick={() => {
+                    designer.canvas.updateExtraElement(editingText.slideIndex, editingText.elId, { content: editingText.content });
+                    setEditingText(null);
+                  }}
+                  className="flex-1 py-3 px-6 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

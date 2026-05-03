@@ -19,7 +19,8 @@ export const SlideCanvas = ({
   onEdit,
   onPreview,
   onCopy,
-  onAddImage
+  onAddImage,
+  onEditText
 }) => {
   const containerRef = React.useRef(null);
   const {
@@ -192,16 +193,28 @@ export const SlideCanvas = ({
                   onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
                 
                 {el.type === 'text' && (
-                  <button 
-                    className="absolute -top-6 -right-6 w-6 h-6 bg-amber-500 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:scale-125 transition-transform"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const newText = prompt('Editar texto:', el.content);
-                      if (newText !== null) canvas.updateExtraElement(index, el.id, { content: newText });
-                    }}
-                  >
-                    <FiEdit3 size={10} />
-                  </button>
+                  <div className="absolute -top-8 -right-2 flex gap-1 z-40">
+                    <button 
+                      className={`w-7 h-7 rounded-full shadow-lg flex items-center justify-center transition-all ${el.bold ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                      title="Negrita"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        canvas.updateExtraElement(index, el.id, { bold: !el.bold });
+                      }}
+                    >
+                      <span className="font-black text-xs">B</span>
+                    </button>
+                    <button 
+                      className="w-7 h-7 bg-amber-500 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-125 transition-transform"
+                      title="Editar texto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditText({ slideIndex: index, elId: el.id, content: el.content });
+                      }}
+                    >
+                      <FiEdit3 size={12} />
+                    </button>
+                  </div>
                 )}
 
                 <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-2 h-8 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
