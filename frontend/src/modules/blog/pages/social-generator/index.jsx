@@ -141,6 +141,8 @@ export default function SocialGenerator() {
           <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
             <FiCpu className="text-indigo-600" /> Editor GynSys
           </h1>
+        </header>
+
         <div className="space-y-8">
           {/* Top Section: Article Selector and IA Creator */}
           <div className="space-y-6">
