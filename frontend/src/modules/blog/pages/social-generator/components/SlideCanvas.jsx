@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useRef } from 'react';
 import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiLayers } from 'react-icons/fi';
 import { SVGIcons } from '../lib/svgIcons';
 
@@ -13,60 +12,47 @@ export const SlideCanvas = ({
   design,
   canvas,
   transform,
-  handlers = {},
+  handlers,
   watermark,
-  slideRef,
   onEdit,
   onPreview,
   onCopy,
   onRemove,
-  onAddImage,
-  onEditText
+  onAddImage
 }) => {
-  const containerRef = React.useRef(null);
-  const {
-    bgColor, bgColor2, bgColor3, useBgGradient,
-    fontSize, headerFontSize, titleColor, contentColor, headerColor
+  const containerRef = useRef(null);
+  const isSelected = !isPreview && !isExport && canvas.currentSlidePage === index;
+  
+  const { 
+    imagePositions, imageSizes, imageRotations, 
+    contentPositions, contentRotations 
+  } = transform;
+
+  const { 
+    fontSize, titleFontSize, titleColor, contentColor, headerColor, headerFontSize,
+    brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
   } = design;
 
   const {
-    selectedExtraId, selectedImageId, selectedContentIndex,
-    extraElements, selectElement
+    extraElements, selectElement, selectedExtraId, selectedImageId, selectedContentIndex
   } = canvas;
-
-  const {
-    imagePositions, imageSizes, imageRotations, imageZIndexes,
-    contentPositions, contentRotations
-  } = transform;
 
   const { handleDragStart, handleTransformStart } = handlers;
 
-  const slideId = index + (isExport ? '-export' : '');
-  const isSelected = !isPreview && !isExport;
-
   return (
-    <div
-      ref={(el) => {
-        containerRef.current = el;
-        if (typeof slideRef === 'function') slideRef(el);
-      }}
-      className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} rounded-none p-10 flex flex-col relative group shadow-xl overflow-hidden`}
+    <div 
+      ref={containerRef}
+      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isExport ? '' : 'rounded-[40px]'}`}
       style={{ 
-        background: useBgGradient ? `linear-gradient(to bottom right, ${bgColor}, ${bgColor2}, ${bgColor3})` : bgColor, 
-        border: '1px solid #d1d5db', 
-        width: '410px', 
-        height: '410px',
-        position: isExport ? 'relative' : undefined 
+        background: design.useBgGradient 
+          ? `linear-gradient(to bottom right, ${design.bgColor}, ${design.bgColor2}, ${design.bgColor3})` 
+          : design.bgColor,
       }}
-      onClick={() => isSelected && selectElement(null)}
+      onClick={() => isSelected && selectElement(null, null)}
     >
-      {watermark && (
-        <img src={watermark} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" style={{ opacity: 0.08 }} />
-      )}
-      
-      {/* Global Template Elements */}
+      {/* Branding Section */}
       <div 
-        className={`absolute z-30 transition-shadow ${isSelected && transform.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2' : ''}`}
+        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2' : ''}`}
         style={{
           left: canvas.brandingPos.x + '%',
           top: canvas.brandingPos.y + '%',
@@ -78,18 +64,16 @@ export const SlideCanvas = ({
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('branding', 'global-brand'); }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
-            {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-full h-full object-contain" />}
-          </div>
-          <span
-            style={{ fontSize: headerFontSize + 'px', color: headerColor }}
-            className="font-black uppercase tracking-tight whitespace-nowrap"
-          >{doctor?.nombre_completo}</span>
+          {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-8 h-8 object-contain" />}
+          <span className="font-black tracking-tighter uppercase" style={{ color: headerColor, fontSize: headerFontSize + 'px' }}>
+            {doctor?.name || 'Dra. Mariel Herrera'}
+          </span>
         </div>
       </div>
 
+      {/* Divider Section */}
       <div 
-        className={`absolute z-30 transition-shadow ${isSelected && transform.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
+        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
         style={{
           left: canvas.dividerPos.x + '%',
           top: canvas.dividerPos.y + '%',
@@ -110,13 +94,7 @@ export const SlideCanvas = ({
         />
       </div>
 
-      <div className="h-16" /> {/* Spacer for the header area */}
-      
-      {!isPreview && !isExport && (
-        <span className="absolute top-20 right-8 text-7xl font-black text-black/5 dark:text-white/5 pointer-events-none">{index + 1}</span>
-      )}
-      
-      {/* Content Layer */}
+      {/* Content Section */}
       <div 
         className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border-[1.5px] border-dashed border-indigo-500 rounded-2xl p-4 bg-white/5 backdrop-blur-sm' : ''}`}
         style={{
@@ -130,7 +108,7 @@ export const SlideCanvas = ({
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('content', index); }}
       >
         <div className="text-center relative">
-          <h4 className="font-black mb-3 uppercase leading-tight" style={{ fontSize: (fontSize + 4) + 'px', color: titleColor }}>{slide.title}</h4>
+          <h4 className="font-black mb-3 uppercase leading-tight" style={{ fontSize: titleFontSize + 'px', color: titleColor }}>{slide.title}</h4>
           <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
           <p className="font-bold leading-relaxed whitespace-pre-wrap" style={{ fontSize: fontSize + 'px', color: contentColor }}>{slide.content}</p>
         </div>
@@ -150,60 +128,43 @@ export const SlideCanvas = ({
             style={{
               left: pos.x + '%',
               top: pos.y + '%',
+              width: size + 'px',
+              height: size + 'px',
               transform: `translate(-50%, -50%) rotate(${rot}deg)`,
-              zIndex: imageZIndexes[imgId] || 20,
               cursor: isSelected ? 'grab' : 'default',
-              userSelect: 'none'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, containerRef.current, pos)}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('image', imgId); }}
           >
-            <div className="relative group/img">
-              <img
-                src={img}
-                className="rounded-xl shadow-md object-cover pointer-events-none"
-                style={{ width: size + 'px', height: size + 'px' }}
-                alt=""
-              />
-              
-              {isSelected && selectedImageId === imgId && (
-                <>
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
-                    onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
-                  >↻</div>
-                  <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-amber-500 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-pointer z-40 hover:scale-125 transition-transform text-white"
-                    title="Enviar al fondo"
-                    onClick={(e) => { e.stopPropagation(); transform.setImageZIndexes(prev => ({ ...prev, [imgId]: prev[imgId] === 5 ? 20 : 5 })); }}
-                  >
-                    <FiLayers size={10} />
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform"
-                    onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
-                  ></div>
-                </>
-              )}
-            </div>
+            <img src={img} alt="Custom" className="w-full h-full object-cover rounded-xl" />
+            
+            {isSelected && selectedImageId === imgId && (
+              <>
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}>↻</div>
+                <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}></div>
+              </>
+            )}
           </div>
         );
       })}
 
       {/* Extra Elements Layer */}
-      {extraElements[index]?.map((el) => {
+      {(extraElements[index] || []).map((el) => {
         const elId = `${index}-${el.id}`;
         const isElSelected = isSelected && selectedExtraId === elId;
-        const IconComp = el.type === 'shape' ? SVGIcons[el.content] : null;
+        const IconComp = el.type === 'icon' ? SVGIcons[el.content] : null;
 
         return (
           <div
-            key={el.id}
-            className={`absolute z-[30] transition-shadow ${isElSelected ? 'border-[1.5px] border-dashed border-indigo-500' : ''}`}
+            key={elId}
+            className={`absolute z-30 transition-shadow ${isElSelected ? 'border-[1.5px] border-dashed border-indigo-500 p-2' : ''}`}
             style={{
               left: el.x + '%',
               top: el.y + '%',
-              transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`,
-              zIndex: el.zIndex || 30,
+              transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
               cursor: isSelected ? 'grab' : 'default',
-              userSelect: 'none'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y })}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('extra', elId); }}
@@ -216,7 +177,8 @@ export const SlideCanvas = ({
                   color: el.color,
                   background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : 'transparent',
                   WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
-                  WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial'
+                  WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial',
+                  fontWeight: el.bold ? '900' : 'bold'
                 }}
               >{el.content}</div>
             ) : (
@@ -230,24 +192,9 @@ export const SlideCanvas = ({
               <>
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
-                {el.type === 'text' && (
-                  <div className="absolute -top-8 -right-2 flex gap-1 z-40">
-                    <button 
-                      className={`w-7 h-7 rounded-full shadow-lg flex items-center justify-center transition-all ${el.bold ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                      title="Negrita"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        canvas.updateExtraElement(index, el.id, { bold: !el.bold });
-                      }}
-                    >
-                      <span className="font-black text-xs">B</span>
-                    </button>
-                  </div>
-                )}
-
                 <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
+                <div className="absolute bottom-1/2 -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
@@ -267,6 +214,13 @@ export const SlideCanvas = ({
           </div>
         );
       })}
+
+      {/* Watermark Section */}
+      {watermark && (
+        <div className="absolute bottom-4 left-4 z-40 opacity-30 pointer-events-none">
+          <img src={watermark} alt="WM" className="w-12 h-12 object-contain" />
+        </div>
+      )}
 
       {isSelected && (
         <div className="absolute bottom-4 right-4 slide-actions z-30 flex gap-1 pointer-events-auto">

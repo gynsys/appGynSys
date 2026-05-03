@@ -11,6 +11,7 @@ export const useSlideDesigner = () => {
   const [bgColor3, setBgColor3] = useState(DEFAULT_DESIGN.bgColor3);
   const [useBgGradient, setUseBgGradient] = useState(DEFAULT_DESIGN.useBgGradient);
   const [fontSize, setFontSize] = useState(DEFAULT_DESIGN.fontSize);
+  const [titleFontSize, setTitleFontSize] = useState(24);
   const [headerFontSize, setHeaderFontSize] = useState(DEFAULT_DESIGN.headerFontSize);
   const [titleColor, setTitleColor] = useState(DEFAULT_DESIGN.titleColor);
   const [contentColor, setContentColor] = useState(DEFAULT_DESIGN.contentColor);
@@ -51,7 +52,7 @@ export const useSlideDesigner = () => {
       name,
       design: {
         bgColor, bgColor2, bgColor3, useBgGradient,
-        fontSize, headerFontSize,
+        fontSize, titleFontSize, headerFontSize,
         titleColor, contentColor, headerColor
       },
       global: {
@@ -79,6 +80,7 @@ export const useSlideDesigner = () => {
     setBgColor3(design.bgColor3);
     setUseBgGradient(design.useBgGradient);
     setFontSize(design.fontSize);
+    setTitleFontSize(design.titleFontSize || 24);
     setHeaderFontSize(design.headerFontSize);
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
@@ -103,7 +105,7 @@ export const useSlideDesigner = () => {
       content: generatedContent,
       design: {
         bgColor, bgColor2, bgColor3, useBgGradient,
-        fontSize, headerFontSize,
+        fontSize, titleFontSize, headerFontSize,
         titleColor, contentColor, headerColor
       },
       global: {
@@ -130,6 +132,7 @@ export const useSlideDesigner = () => {
     setBgColor3(design.bgColor3);
     setUseBgGradient(design.useBgGradient);
     setFontSize(design.fontSize);
+    setTitleFontSize(design.titleFontSize || 24);
     setHeaderFontSize(design.headerFontSize);
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
@@ -214,6 +217,7 @@ export const useSlideDesigner = () => {
     } else if (type === 'divider') {
       setSelectedDivider(true);
       setSelectedBranding(false);
+      setSelectedDivider(false);
       setSelectedExtraId(null);
       setSelectedImageId(null);
       setSelectedContentIndex(null);
@@ -242,6 +246,7 @@ export const useSlideDesigner = () => {
       bgColor3, setBgColor3,
       useBgGradient, setUseBgGradient,
       fontSize, setFontSize,
+      titleFontSize, setTitleFontSize,
       headerFontSize, setHeaderFontSize,
       titleColor, setTitleColor,
       contentColor, setContentColor,
