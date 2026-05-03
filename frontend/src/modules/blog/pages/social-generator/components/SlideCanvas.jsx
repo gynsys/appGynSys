@@ -235,9 +235,6 @@ export const SlideCanvas = ({
               </>
             )}
           </div>
-              </>
-            )}
-          </div>
         );
       })}
 
