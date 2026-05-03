@@ -212,8 +212,8 @@ export const SlideCanvas = ({
                 }}
               >{el.content}</div>
             ) : (
-              <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center p-1">
-                {IconComp && <IconComp className="w-full h-full overflow-visible" fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
+              <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center">
+                {IconComp && <IconComp className="w-full h-full" preserveAspectRatio="none" style={{ display: 'block' }} fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
                 {el.useGradient && <svg width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
               </div>
             )}
