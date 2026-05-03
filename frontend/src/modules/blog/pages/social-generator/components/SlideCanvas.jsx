@@ -190,12 +190,37 @@ export const SlideCanvas = ({
               <>
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
+                
+                {el.type === 'text' && (
+                  <button 
+                    className="absolute -top-6 -right-6 w-6 h-6 bg-amber-500 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:scale-125 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newText = prompt('Editar texto:', el.content);
+                      if (newText !== null) canvas.updateExtraElement(index, el.id, { content: newText });
+                    }}
+                  >
+                    <FiEdit3 size={10} />
+                  </button>
+                )}
+
                 <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-2 h-8 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+                
+                <button 
+                  className="absolute -bottom-2 -left-2 w-6 h-6 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-40 hover:scale-125 transition-transform"
+                  title="Enviar al fondo"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    canvas.updateExtraElement(index, el.id, { zIndex: el.zIndex === 5 ? 30 : 5 });
+                  }}
+                >
+                  <FiLayers size={10} />
+                </button>
               </>
             )}
           </div>
