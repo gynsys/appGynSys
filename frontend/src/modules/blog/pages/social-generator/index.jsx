@@ -441,6 +441,26 @@ export default function SocialGenerator() {
                             />
                           </div>
                         </div>
+                        
+                        {/* Hidden Export Container */}
+                        <div className="absolute top-[-9999px] left-[-9999px] flex gap-4 pointer-events-none opacity-0">
+                          {generatedContent.slides.map((s, idx) => (
+                            <div key={`export-${idx}`} className="export-slide-item">
+                              <SlideCanvas 
+                                slide={s}
+                                index={idx}
+                                isExport={true}
+                                doctor={doctor}
+                                doctorLogo={doctorLogoBase64}
+                                design={designer.design}
+                                canvas={{...designer.canvas, selectedExtraId: null, selectedImageId: null}}
+                                transform={transformer.state}
+                                handlers={transformer.handlers}
+                                watermark={watermarkImage}
+                              />
+                            </div>
+                          ))}
+                        </div>
                     </div>
                   </div>
                 )}
