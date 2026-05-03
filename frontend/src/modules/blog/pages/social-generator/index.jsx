@@ -340,11 +340,45 @@ export default function SocialGenerator() {
                           >
                             <FiLayers size={14} /> Capa: {
                               (designer.canvas.selectedExtraId ? 
-                                designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]].find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
+                                designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
                                 transformer.state.imagePositions[designer.canvas.selectedImageId]?.zIndex === 10
                               ) ? 'Al Frente' : 'Al Fondo'
                             }
                           </button>
+
+                          {/* Size controls — only for extra elements */}
+                          {designer.canvas.selectedExtraId && (() => {
+                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                            const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                            if (!el) return null;
+                            return (
+                              <>
+                                <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[9px] font-black uppercase text-gray-400">W</label>
+                                  <input
+                                    type="number" min="10" max="410"
+                                    value={Math.round(el.width)}
+                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value) })}
+                                    className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                  />
+                                  <label className="text-[9px] font-black uppercase text-gray-400">H</label>
+                                  <input
+                                    type="number" min="10" max="410"
+                                    value={Math.round(el.height)}
+                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) })}
+                                    className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: 410, x: 50 })}
+                                  className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black hover:bg-indigo-700 transition-all whitespace-nowrap"
+                                >
+                                  ↔ Ancho Total
+                                </button>
+                              </>
+                            );
+                          })()}
 
                           <button 
                             onClick={() => {
