@@ -185,11 +185,11 @@ export const SlideCanvas = ({
             className={`absolute transition-all ${isElSelected ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 bg-white/5' : ''}`}
             style={{
               zIndex: el.zIndex || 30,
-              left: el.x + '%',
+              left: el.fullWidth ? '0' : (el.x + '%'),
               top: el.y + '%',
-              transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
+              transform: el.fullWidth ? `translateY(-50%) rotate(${el.rotation}deg)` : `translate(-50%, -50%) rotate(${el.rotation}deg)`,
               cursor: isSelected ? 'grab' : 'default',
-              width: el.width + 'px',
+              width: el.fullWidth ? '100%' : (el.width + 'px'),
               height: el.height + 'px',
               display: 'flex',
               alignItems: 'center',

@@ -114,7 +114,7 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
           if (type === 'image') setImageSizes(prev => ({ ...prev, [id]: newWidth }));
           else if (type === 'extra') {
             const [sIdx, elId] = id.split('-');
-            const updates = {};
+            const updates = { fullWidth: false };
             if (action === 'resize' || action === 'resize-w') updates.width = newWidth;
             if (action === 'resize' || action === 'resize-h') updates.height = newHeight;
             onUpdateElement(parseInt(sIdx), elId, updates);

@@ -359,7 +359,7 @@ export default function SocialGenerator() {
                                   <input
                                     type="number" min="10" max="410"
                                     value={Math.round(el.width)}
-                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value) })}
+                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value), fullWidth: false })}
                                     className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
                                   />
                                   <label className="text-[9px] font-black uppercase text-gray-400">H</label>
@@ -371,8 +371,8 @@ export default function SocialGenerator() {
                                   />
                                 </div>
                                 <button
-                                  onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: 410, x: 50 })}
-                                  className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black hover:bg-indigo-700 transition-all whitespace-nowrap"
+                                  onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { fullWidth: true, x: 50 })}
+                                  className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${el.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                                 >
                                   ↔ Ancho Total
                                 </button>
