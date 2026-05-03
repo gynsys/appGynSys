@@ -159,33 +159,14 @@ export const SlideCanvas = ({
             {isSelected && selectedImageId === imgId && (
               <>
                 {/* Rotate */}
-                <div className="absolute -top-3 -left-3 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-indigo-500 flex items-center justify-center cursor-alias text-indigo-600 z-50 hover:scale-110 transition-transform" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiRefreshCw size={14}/></div>
+                <div className="absolute -top-3 -left-3 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-indigo-500 flex items-center justify-center cursor-alias text-indigo-600 z-50 hover:scale-110 transition-transform" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiRefreshCw size={12}/></div>
                 
-                {/* Resize */}
-                <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-50 hover:scale-110 transition-transform" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiMaximize2 size={14} className="text-white" /></div>
-
-                {/* Delete */}
-                <button 
-                  className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
-                  onClick={(e) => { e.stopPropagation(); onRemoveImage && onRemoveImage(imgIdx); }}
-                >
-                  <FiTrash2 size={12} />
-                </button>
-
-                {/* Layer Control */}
-                <button 
-                  className="absolute -bottom-3 -left-3 w-8 h-8 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
-                  title="Cambiar Capa (Fondo/Frente)"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const currentZ = pos.zIndex || 30;
-                    handlers.updateImage(imgId, { zIndex: currentZ === 10 ? 30 : 10 });
-                  }}
-                >
-                  <FiLayers size={12} />
-                </button>
+                {/* Resize Handle (Invisible Icon) */}
+                <div className="absolute -bottom-3 -right-3 w-8 h-8 flex items-center justify-center cursor-se-resize z-50 group" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}>
+                  <div className="w-4 h-4 bg-indigo-600 rounded-full border-2 border-white shadow-lg transition-transform group-hover:scale-125"></div>
+                </div>
               </>
             )}
           </div>
@@ -246,20 +227,14 @@ export const SlideCanvas = ({
                 <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white cursor-ne-resize z-50 shadow-md"
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
 
-                <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/2 w-5 h-5 bg-indigo-600 rounded-full border-2 border-white cursor-se-resize z-50 shadow-lg hover:scale-125 transition-transform flex items-center justify-center" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}><FiMaximize2 size={10} className="text-white" /></div>
-
-                {/* Layer Control */}
-                <button 
-                  className="absolute -bottom-4 -left-4 w-7 h-7 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
-                  title="Cambiar Capa (Fondo/Frente)"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    canvas.updateExtraElement(index, el.id, { zIndex: el.zIndex === 5 ? 30 : 5 });
-                  }}
-                >
-                  <FiLayers size={12} />
-                </button>
+                {/* Resize Handle (Invisible Icon) */}
+                <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/2 w-8 h-8 flex items-center justify-center cursor-se-resize z-50 group" 
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>
+                  <div className="w-4 h-4 bg-indigo-600 rounded-full border-2 border-white shadow-lg transition-transform group-hover:scale-125"></div>
+                </div>
+              </>
+            )}
+          </div>
               </>
             )}
           </div>

@@ -318,6 +318,62 @@ export default function SocialGenerator() {
                     <div className="flex flex-col items-center gap-8 w-full" ref={editorWrapperRef}>
                       <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
                         
+                      {/* Contextual Action Bar */}
+                      {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
+                        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-900 animate-slideDown z-50">
+                          <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mr-2">Control de Elemento</p>
+                          <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                          
+                          <button 
+                            onClick={() => {
+                              if (designer.canvas.selectedExtraId) {
+                                const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
+                                designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 10 ? 30 : 10 });
+                              } else if (designer.canvas.selectedImageId) {
+                                const id = designer.canvas.selectedImageId;
+                                const currentZ = transformer.state.imagePositions[id]?.zIndex || 20;
+                                transformer.handlers.updateImage(id, { zIndex: currentZ === 10 ? 20 : 10 });
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
+                          >
+                            <FiLayers size={14} /> Capa: {
+                              (designer.canvas.selectedExtraId ? 
+                                designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]].find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
+                                transformer.state.imagePositions[designer.canvas.selectedImageId]?.zIndex === 10
+                              ) ? 'Al Frente' : 'Al Fondo'
+                            }
+                          </button>
+
+                          <button 
+                            onClick={() => {
+                              if (designer.canvas.selectedExtraId) {
+                                const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                              } else if (designer.canvas.selectedImageId) {
+                                const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                designer.canvas.setSelectedImageId(null);
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
+                          >
+                            <FiTrash2 size={14} /> Eliminar
+                          </button>
+
+                          <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
+                          <button 
+                            onClick={() => {
+                              designer.canvas.setSelectedExtraId(null);
+                              designer.canvas.setSelectedImageId(null);
+                            }}
+                            className="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase"
+                          >
+                            Deseleccionar
+                          </button>
+                        </div>
+                      )}
                         <div 
                           className="flex items-center justify-center transition-all duration-300 overflow-visible"
                           style={{ 

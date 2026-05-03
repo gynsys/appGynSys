@@ -137,7 +137,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
     state,
     handlers: {
       handleDragStart,
-      handleTransformStart
+      handleTransformStart,
+      updateImage: (id, updates) => setImagePositions(prev => ({ ...prev, [id]: { ...(prev[id] || { x: 50, y: 70 }), ...updates } }))
     }
   };
 };
