@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType, FiBold, FiItalic } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
+import Modal from '../../../components/common/Modal';
 
 export const TopToolbar = ({ 
   design, 
@@ -34,15 +35,28 @@ export const TopToolbar = ({
 
   const [showTemplates, setShowTemplates] = useState(false);
   const [showElements, setShowElements] = useState(false);
+  const [saveModal, setSaveModal] = useState({ open: false, type: 'project', title: '' });
+  const [saveName, setSaveName] = useState('');
 
   const handleSaveTemplate = () => {
-    const name = prompt('Nombre de la plantilla (solo diseño):');
-    if (name) saveCustomTemplate(name);
+    setSaveName('');
+    setSaveModal({ open: true, type: 'template', title: 'Guardar como Plantilla' });
   };
 
   const handleSaveProject = () => {
-    const name = prompt('Nombre del proyecto (contenido + diseño):');
-    if (name) saveProject(name, generatedContent);
+    setSaveName('');
+    setSaveModal({ open: true, type: 'project', title: 'Guardar Proyecto' });
+  };
+
+  const confirmSave = () => {
+    if (!saveName.trim()) return;
+    
+    if (saveModal.type === 'template') {
+      saveCustomTemplate(saveName);
+    } else {
+      saveProject(saveName, generatedContent);
+    }
+    setSaveModal({ ...saveModal, open: false });
   };
 
   return (
@@ -335,6 +349,49 @@ export const TopToolbar = ({
           )}
         </div>
       )}
+      {/* Modal para Guardar */}
+      <Modal 
+        isOpen={saveModal.open} 
+        onClose={() => setSaveModal({ ...saveModal, open: false })}
+        title={saveModal.title}
+        size="sm"
+      >
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider">Nombre del {saveModal.type === 'template' ? 'diseño' : 'proyecto'}</label>
+            <input 
+              type="text"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              placeholder="Ej: Lanzamiento Marzo 2024"
+              autoFocus
+              className="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all text-gray-700 font-bold"
+              onKeyDown={(e) => e.key === 'Enter' && confirmSave()}
+            />
+            <p className="text-[10px] text-gray-400 font-medium">
+              {saveModal.type === 'template' 
+                ? 'Se guardará solo el estilo visual (colores, fuentes, logos).' 
+                : 'Se guardará el contenido de las diapositivas y el diseño completo.'}
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setSaveModal({ ...saveModal, open: false })}
+              className="flex-1 px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl text-xs font-black hover:bg-gray-200 transition-all"
+            >
+              CANCELAR
+            </button>
+            <button 
+              onClick={confirmSave}
+              disabled={!saveName.trim()}
+              className="flex-[2] px-6 py-4 bg-indigo-600 text-white rounded-2xl text-xs font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              CONFIRMAR Y GUARDAR
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
