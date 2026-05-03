@@ -25,6 +25,8 @@ export default function SocialGenerator() {
   const [generating, setGenerating] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [generatedContent, setGeneratedContent] = useState(null);
+  const [scale, setScale] = useState(1);
+  const editorWrapperRef = React.useRef(null);
   const [activeTab, setActiveTab] = useState('reel');
   const [previewIndex, setPreviewIndex] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -35,8 +37,22 @@ export default function SocialGenerator() {
   const { showToast } = useToastStore();
   const { user: doctor } = useAuthStore();
 
+  useEffect(() => {
+    if (!editorWrapperRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const width = entry.contentRect.width;
+        // Padding/margins roughly 48px
+        const s = Math.min(1, (width - 48) / 410);
+        setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
+      }
+    });
+    ro.observe(editorWrapperRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   const designer = useSlideDesigner();
-  const transformer = useDragTransform(designer.canvas.updateExtraElement);
+  const transformer = useDragTransform(designer.canvas.updateExtraElement, scale);
   const exporter = useExport(selectedPost, designer.design.bgColor);
 
   useEffect(() => {
@@ -179,24 +195,35 @@ export default function SocialGenerator() {
                     <div className="flex gap-8 items-start">
                       <DesignSidebar currentSlide={designer.canvas.currentSlidePage} onAddElement={designer.canvas.addExtraElement} />
                       
-                      <div className="flex-1 flex flex-col items-center gap-8">
+                      <div className="flex-1 flex flex-col items-center gap-8" ref={editorWrapperRef}>
                         <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
-                        <SlideCanvas 
-                          slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                          index={designer.canvas.currentSlidePage}
-                          doctor={doctor}
-                          doctorLogo={doctorLogoBase64}
-                          design={designer.design}
-                          canvas={designer.canvas}
-                          transform={transformer.state}
-                          handlers={transformer.handlers}
-                          watermark={watermarkImage}
-                          slideRef={el => slideRefs.current[designer.canvas.currentSlidePage] = el}
-                          onEdit={setEditingIndex}
-                          onPreview={setPreviewIndex}
-                          onCopy={copyToClipboard}
-                          onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                        />
+                        
+                        <div 
+                          className="flex items-center justify-center transition-all duration-300 overflow-visible"
+                          style={{ 
+                            width: 410 * scale, 
+                            height: 410 * scale,
+                            perspective: '1000px'
+                          }}
+                        >
+                          <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                            <SlideCanvas 
+                              slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                              index={designer.canvas.currentSlidePage}
+                              doctor={doctor}
+                              doctorLogo={doctorLogoBase64}
+                              design={designer.design}
+                              canvas={designer.canvas}
+                              transform={transformer.state}
+                              handlers={transformer.handlers}
+                              watermark={watermarkImage}
+                              onEdit={setEditingIndex}
+                              onPreview={setPreviewIndex}
+                              onCopy={copyToClipboard}
+                              onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from 'react';
 
-export const useDragTransform = (updateExtraElement) => {
+export const useDragTransform = (updateExtraElement, scale = 1) => {
   const [dragging, setDragging] = useState(null);
   const [transformState, setTransformState] = useState(null);
+  
+  // Internal state for non-extra elements (images and main content)
   const [imagePositions, setImagePositions] = useState({});
   const [imageSizes, setImageSizes] = useState({});
   const [imageRotations, setImageRotations] = useState({});
@@ -15,15 +17,15 @@ export const useDragTransform = (updateExtraElement) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const rect = domElement.getBoundingClientRect();
-    
     setDragging({
       type,
       slideIndex,
       id,
-      offsetX: e.clientX - rect.left - (initialPos.x / 100) * rect.width,
-      offsetY: e.clientY - rect.top - (initialPos.y / 100) * rect.height,
-      rect
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: initialPos.x,
+      initialY: initialPos.y,
+      rect: domElement.getBoundingClientRect()
     });
   };
 
@@ -43,6 +45,8 @@ export const useDragTransform = (updateExtraElement) => {
       initialWidth: initialTransform.width,
       initialHeight: initialTransform.height,
       initialRotation: initialTransform.rotation,
+      initialX: initialTransform.x,
+      initialY: initialTransform.y,
       rect,
       centerX: rect.left + (initialTransform.x / 100) * rect.width,
       centerY: rect.top + (initialTransform.y / 100) * rect.height
@@ -52,40 +56,53 @@ export const useDragTransform = (updateExtraElement) => {
   useEffect(() => {
     const handlePointerMove = (e) => {
       if (dragging) {
-        const { type, slideIndex, id, rect, offsetX, offsetY } = dragging;
-        const xPct = Math.min(100, Math.max(0, ((e.clientX - rect.left - offsetX) / rect.width) * 100));
-        const yPct = Math.min(100, Math.max(0, ((e.clientY - rect.top - offsetY) / rect.height) * 100));
+        const { type, slideIndex, id, startX, startY, initialX, initialY, rect } = dragging;
+        
+        // Calculate delta in pixels adjusted by scale
+        const dxPixels = (e.clientX - startX) / scale;
+        const dyPixels = (e.clientY - startY) / scale;
+        
+        // Convert pixel delta to percentage delta (canvas is 410px wide/high)
+        const dxPct = (dxPixels / 410) * 100;
+        const dyPct = (dyPixels / 410) * 100;
+        
+        const newX = Math.min(100, Math.max(0, initialX + dxPct));
+        const newY = Math.min(100, Math.max(0, initialY + dyPct));
         
         if (type === 'image') {
-          setImagePositions(prev => ({ ...prev, [id]: { x: xPct, y: yPct } }));
+          setImagePositions(prev => ({ ...prev, [id]: { x: newX, y: newY } }));
         } else if (type === 'content') {
-          setContentPositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }));
+          setContentPositions(prev => ({ ...prev, [slideIndex]: { x: newX, y: newY } }));
         } else if (type === 'extra') {
-          updateExtraElement(slideIndex, id.split('-')[1], { x: xPct, y: yPct });
+          updateExtraElement(slideIndex, id.split('-')[1], { x: newX, y: newY });
         }
       } else if (transformState) {
-        const { transformType, elementType, slideIndex, id, startX, startY, initialWidth, initialHeight, initialRotation, centerX, centerY } = transformState;
+        const { transformType, elementType, slideIndex, id, startX, startY, initialWidth, initialHeight, initialRotation, initialX, initialY, centerX, centerY, rect } = transformState;
         const extraId = id.includes('-') ? id.split('-')[1] : id;
 
+        // Delta in pixels adjusted by scale
+        const dx = (e.clientX - startX) / scale;
+        const dy = (e.clientY - startY) / scale;
+
         if (transformType === 'resize') {
-          const deltaX = e.clientX - startX;
-          const newSize = Math.max(elementType === 'image' ? 50 : 10, initialWidth + deltaX);
+          // Uniform resize (width = height)
+          const newSize = Math.max(elementType === 'image' ? 50 : 10, initialWidth + dx);
           if (elementType === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }));
           else updateExtraElement(slideIndex, extraId, { width: newSize, height: newSize });
         } else if (transformType === 'resize-w') {
-          const deltaX = e.clientX - startX;
-          updateExtraElement(slideIndex, extraId, { width: Math.max(10, initialWidth + deltaX) });
+          updateExtraElement(slideIndex, extraId, { width: Math.max(10, initialWidth + dx) });
         } else if (transformType === 'resize-h') {
-          const deltaY = e.clientY - startY;
-          updateExtraElement(slideIndex, extraId, { height: Math.max(10, initialHeight + deltaY) });
+          updateExtraElement(slideIndex, extraId, { height: Math.max(10, initialHeight + dy) });
         } else if (transformType === 'rotate') {
           const startAngle = Math.atan2(startY - centerY, startX - centerX);
           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
           
-          if (elementType === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }));
-          else if (elementType === 'content') setContentRotations(prev => ({ ...prev, [slideIndex]: initialRotation + angleDiff }));
-          else updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff });
+          const newRot = initialRotation + angleDiff;
+          
+          if (elementType === 'image') setImageRotations(prev => ({ ...prev, [id]: newRot }));
+          else if (elementType === 'content') setContentRotations(prev => ({ ...prev, [slideIndex]: newRot }));
+          else updateExtraElement(slideIndex, extraId, { rotation: newRot });
         }
       }
     };
@@ -103,7 +120,7 @@ export const useDragTransform = (updateExtraElement) => {
       window.removeEventListener('mousemove', handlePointerMove);
       window.removeEventListener('mouseup', handlePointerUp);
     };
-  }, [dragging, transformState, updateExtraElement]);
+  }, [dragging, transformState, updateExtraElement, scale]);
 
   return {
     handlers: { handleDragStart, handleTransformStart },
