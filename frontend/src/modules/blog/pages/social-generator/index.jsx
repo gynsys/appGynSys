@@ -226,16 +226,7 @@ export default function SocialGenerator() {
                               doctor={doctor}
                               doctorLogo={doctorLogoBase64}
                               design={designer.design}
-                              canvas={{
-                                ...designer.canvas,
-                                selectedBranding: designer.canvas.selectedBranding,
-                                selectedDivider: designer.canvas.selectedDivider,
-                                brandingPos: designer.design.brandingPos,
-                                dividerPos: designer.design.dividerPos,
-                                dividerColor: designer.design.dividerColor,
-                                dividerHeight: designer.design.dividerHeight,
-                                dividerWidth: designer.design.dividerWidth
-                              }}
+                              canvas={designer.canvas}
                               transform={transformer.state}
                               handlers={transformer.handlers}
                               watermark={watermarkImage}
@@ -290,11 +281,7 @@ export default function SocialGenerator() {
           <SlideCanvas 
             slide={slide} index={i} isPreview={isPrev} doctor={doctor} doctorLogo={doctorLogoBase64} 
             design={designer.design} 
-            canvas={{
-              ...designer.canvas,
-              selectedBranding: designer.canvas.selectedBranding,
-              selectedDivider: designer.canvas.selectedDivider
-            }} 
+            canvas={designer.canvas} 
             transform={transformer.state} watermark={watermarkImage}
             handlers={transformer.handlers}
           />
@@ -307,11 +294,7 @@ export default function SocialGenerator() {
           <SlideCanvas 
             key={`export-${i}`} slide={slide} index={i} isExport={true} doctor={doctor} doctorLogo={doctorLogoBase64} 
             design={designer.design} 
-            canvas={{
-              ...designer.canvas,
-              selectedBranding: designer.canvas.selectedBranding,
-              selectedDivider: designer.canvas.selectedDivider
-            }} 
+            canvas={designer.canvas} 
             transform={transformer.state} watermark={watermarkImage}
             handlers={transformer.handlers}
           />
