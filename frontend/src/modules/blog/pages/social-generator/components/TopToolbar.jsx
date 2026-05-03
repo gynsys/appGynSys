@@ -56,60 +56,15 @@ export const TopToolbar = ({
       {/* Row 1: Data & Background */}
       <div className="flex flex-wrap items-center gap-6 pr-48">
         
-        {/* Projects Dropdown */}
-        <div className="relative">
-          <button 
-            onClick={() => { setShowProjects(!showProjects); setShowTemplates(false); }}
-            className="flex items-center gap-3 px-5 py-3 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 rounded-2xl border border-indigo-100 dark:border-indigo-700 transition-all group"
-          >
-            <div className="text-left">
-              <p className="text-[9px] font-black uppercase text-indigo-400 leading-none mb-1">Proyecto</p>
-              <p className="text-sm font-black text-indigo-600">Mis Carruseles</p>
-            </div>
-            <FiChevronDown className={`transition-transform duration-300 ${showProjects ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showProjects && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-[32px] shadow-2xl border border-gray-100 dark:border-gray-700 z-[100] overflow-hidden animate-fadeIn">
-              <div className="p-4 border-b border-gray-50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase text-gray-400">Seleccionar Proyecto</span>
-                <button onClick={handleSaveProject} className="text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                  <FiSave size={12} /> Guardar
-                </button>
-              </div>
-              <div className="max-h-64 overflow-y-auto">
-                {projects.length === 0 ? (
-                  <div className="p-8 text-center text-gray-400 italic text-sm">No tienes proyectos guardados</div>
-                ) : (
-                  projects.map(p => (
-                    <div key={p.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 flex items-center justify-between group">
-                      <button 
-                        onClick={() => { onLoadProject(p); setShowProjects(false); }}
-                        className="text-left flex-1"
-                      >
-                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate w-48">{p.name}</p>
-                        <p className="text-[10px] text-gray-400 uppercase">{new Date(p.id).toLocaleDateString()}</p>
-                      </button>
-                      <button onClick={() => deleteProject(p.id)} className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 transition-all">
-                        <FiTrash2 size={14} />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Templates Dropdown */}
         <div className="relative">
           <button 
-            onClick={() => { setShowTemplates(!showTemplates); setShowProjects(false); }}
-            className="flex items-center gap-3 px-5 py-3 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 rounded-2xl border border-gray-100 dark:border-gray-700 transition-all group"
+            onClick={() => { setShowTemplates(!showTemplates); }}
+            className="flex items-center gap-3 px-5 py-3 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 rounded-2xl border border-indigo-100 dark:border-indigo-700 transition-all group"
           >
             <div className="text-left">
-              <p className="text-[9px] font-black uppercase text-gray-400 leading-none mb-1">Plantilla</p>
-              <p className="text-sm font-black text-gray-600">Diseños</p>
+              <p className="text-[9px] font-black uppercase text-indigo-400 leading-none mb-1">Plantilla</p>
+              <p className="text-sm font-black text-indigo-600">Diseños Guardados</p>
             </div>
             <FiChevronDown className={`transition-transform duration-300 ${showTemplates ? 'rotate-180' : ''}`} />
           </button>
@@ -144,6 +99,18 @@ export const TopToolbar = ({
             </div>
           )}
         </div>
+
+        {/* Save Project Quick Action */}
+        <button 
+          onClick={handleSaveProject}
+          className="flex items-center gap-3 px-5 py-3 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 rounded-2xl border border-gray-100 dark:border-gray-700 transition-all group"
+        >
+          <div className="text-left">
+            <p className="text-[9px] font-black uppercase text-gray-400 leading-none mb-1">Acción</p>
+            <p className="text-sm font-black text-gray-600">Guardar Proyecto</p>
+          </div>
+          <FiSave className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+        </button>
 
         {/* BG Colors */}
         <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-900/50 px-4 py-2 rounded-2xl border border-gray-100 dark:border-gray-700">

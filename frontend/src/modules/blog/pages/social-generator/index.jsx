@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -32,6 +32,7 @@ export default function SocialGenerator() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [watermarkImage, setWatermarkImage] = useState(null);
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null);
+  const [showProjects, setShowProjects] = useState(false);
   
   const slideRefs = useRef({});
   const { showToast } = useToastStore();
@@ -173,19 +174,74 @@ export default function SocialGenerator() {
         <div className="space-y-8">
           {/* Top Section: Article Selector and IA Creator */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-              <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Artículo Base</h2>
-              <select
-                value={selectedPost?.id || ''}
-                onChange={(e) => {
-                  setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
-                  setGeneratedContent(null);
-                }}
-                className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-              >
-                <option value="" disabled>Elegir artículo...</option>
-                {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
-              </select>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Crear Nuevo desde Artículo</h2>
+                <select
+                  value={selectedPost?.id || ''}
+                  onChange={(e) => {
+                    setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
+                    setGeneratedContent(null);
+                  }}
+                  className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                >
+                  <option value="" disabled>Elegir artículo...</option>
+                  {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
+                </select>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h2 className="text-xs font-black uppercase tracking-widest text-indigo-400 mb-4">2. Continuar Proyecto Guardado</h2>
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowProjects(!showProjects)}
+                    className="flex items-center justify-between w-full px-5 py-3 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 rounded-xl border border-indigo-100 dark:border-indigo-700 transition-all group text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FiFolder className="text-indigo-600" />
+                      <span className="text-sm font-black text-indigo-600">Mis Carruseles Guardados</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-indigo-200 text-indigo-700 px-2 py-0.5 rounded-full font-black">{designer.canvas.projects.length}</span>
+                      <FiChevronDown className={`transition-transform duration-300 text-indigo-600 ${showProjects ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+
+                  {showProjects && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden animate-fadeIn">
+                      <div className="max-h-64 overflow-y-auto">
+                        {designer.canvas.projects.length === 0 ? (
+                          <div className="p-8 text-center text-gray-400 italic text-sm">No tienes carruseles guardados todavía.</div>
+                        ) : (
+                          designer.canvas.projects.map(p => (
+                            <div key={p.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 flex items-center justify-between group">
+                              <button 
+                                onClick={() => {
+                                  handleLoadProject(p);
+                                  setShowProjects(false);
+                                }}
+                                className="text-left flex-1"
+                              >
+                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate pr-4">{p.name}</p>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  designer.canvas.deleteProject(p.id);
+                                }} 
+                                className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 transition-all hover:bg-red-50 rounded-lg"
+                              >
+                                <FiTrash2 size={14} />
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
             {selectedPost && (
