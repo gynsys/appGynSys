@@ -62,6 +62,8 @@ def generate_social_ai(
             result['type'] = gen_type
             
         return schemas.SocialContentResponse(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
