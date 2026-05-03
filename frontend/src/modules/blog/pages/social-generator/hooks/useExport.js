@@ -3,31 +3,60 @@ import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 import { useToastStore } from '../../../../../store/toastStore';
 
-export const useExport = (selectedPost, bgColor) => {
+export const useExport = (selectedPost, designer, generatedContent) => {
   const { showToast } = useToastStore();
 
   const downloadCarousel = async () => {
+    if (!generatedContent?.slides || generatedContent.slides.length === 0) return;
     const zip = new JSZip();
-    const slides = document.querySelectorAll('.export-slide-item');
-    if (slides.length === 0) return;
 
     try {
       showToast('Empaquetando carrusel...', 'loading');
+      
+      // Ocultar botones de accion temporalmente
       const actionButtons = document.querySelectorAll('.slide-actions');
       actionButtons.forEach(btn => btn.style.display = 'none');
 
-      for (let i = 0; i < slides.length; i++) {
-        const canvas = await html2canvas(slides[i], {
+      // Guardar el estado actual del editor para restaurarlo despues
+      const originalPage = designer.canvas.currentSlidePage;
+      const originalExtraId = designer.canvas.selectedExtraId;
+      const originalImageId = designer.canvas.selectedImageId;
+      const originalContentIndex = designer.canvas.selectedContentIndex;
+
+      // Limpiar selecciones para que no salgan los bordes/controles en la captura
+      designer.canvas.setSelectedExtraId(null);
+      designer.canvas.setSelectedImageId(null);
+      designer.canvas.setSelectedContentIndex(null);
+
+      // Iterar por cada diapositiva usando el canvas principal
+      for (let i = 0; i < generatedContent.slides.length; i++) {
+        // Cambiar la pagina activa
+        designer.canvas.setCurrentSlidePage(i);
+        
+        // Esperar a que React renderice la nueva diapositiva y las imagenes se carguen
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const slideNode = document.getElementById('main-slide-canvas');
+        if (!slideNode) continue;
+
+        const canvas = await html2canvas(slideNode, {
           useCORS: true,
           scale: 3,
-          backgroundColor: bgColor || '#ffffff',
+          backgroundColor: designer.design.bgColor || '#ffffff',
           logging: false
         });
+        
         const imgData = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];
         zip.file(`Slide_${i + 1}.jpg`, imgData, { base64: true });
       }
 
+      // Restaurar todo a como estaba
       actionButtons.forEach(btn => btn.style.display = 'flex');
+      designer.canvas.setCurrentSlidePage(originalPage);
+      designer.canvas.setSelectedExtraId(originalExtraId);
+      designer.canvas.setSelectedImageId(originalImageId);
+      designer.canvas.setSelectedContentIndex(originalContentIndex);
+
       const content = await zip.generateAsync({ type: 'blob' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(content);

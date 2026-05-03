@@ -71,7 +71,7 @@ export default function SocialGenerator() {
     setDoctorNamePos: designer.design.setDoctorNamePos,
     setDividerPos: designer.design.setDividerPos
   });
-  const exporter = useExport(selectedPost, designer.design.bgColor);
+  const exporter = useExport(selectedPost, designer, generatedContent);
 
   useEffect(() => {
     loadPosts();
@@ -416,50 +416,30 @@ export default function SocialGenerator() {
                             perspective: '1000px'
                           }}
                         >
-                          <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                          <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                             <SlideCanvas 
-                              slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                              index={designer.canvas.currentSlidePage}
-                              doctor={doctor}
-                              doctorLogo={doctorLogoBase64}
-                              design={designer.design}
-                              canvas={designer.canvas}
-                              transform={transformer.state}
-                              handlers={transformer.handlers}
-                              watermark={watermarkImage}
-                              onEdit={setEditingIndex}
-                              onPreview={setPreviewIndex}
-                              onCopy={(i) => {
-                                const newSlides = [...generatedContent.slides];
-                                newSlides.splice(i + 1, 0, { ...newSlides[i] });
-                                setGeneratedContent({ ...generatedContent, slides: newSlides });
-                                showToast('Diapositiva duplicada', 'success');
-                              }}
-                              onRemove={handleRemoveSlide}
-                              onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                              onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
+                               slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                               index={designer.canvas.currentSlidePage}
+                               doctor={doctor}
+                               doctorLogo={doctorLogoBase64}
+                               design={designer.design}
+                               canvas={designer.canvas}
+                               transform={transformer.state}
+                               handlers={transformer.handlers}
+                               watermark={watermarkImage}
+                               onEdit={setEditingIndex}
+                               onPreview={setPreviewIndex}
+                               onCopy={(i) => {
+                                 const newSlides = [...generatedContent.slides];
+                                 newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                 setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                 showToast('Diapositiva duplicada', 'success');
+                               }}
+                               onRemove={handleRemoveSlide}
+                               onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                               onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
                             />
                           </div>
-                        </div>
-                        
-                        {/* Hidden Export Container */}
-                        <div className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none -z-50">
-                          {generatedContent.slides.map((s, idx) => (
-                            <div key={`export-${idx}`} className="export-slide-item" style={{ width: 410, height: 410, position: 'relative' }}>
-                              <SlideCanvas 
-                                slide={s}
-                                index={idx}
-                                isExport={true}
-                                doctor={doctor}
-                                doctorLogo={doctorLogoBase64}
-                                design={designer.design}
-                                canvas={{...designer.canvas, selectedExtraId: null, selectedImageId: null}}
-                                transform={transformer.state}
-                                handlers={transformer.handlers}
-                                watermark={watermarkImage}
-                              />
-                            </div>
-                          ))}
                         </div>
                     </div>
                   </div>
