@@ -152,7 +152,7 @@ export const SlideCanvas = ({
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, containerRef.current, pos)}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('image', imgId); }}
           >
-            <img src={img} alt="Custom" className="w-full h-full object-cover" style={{ borderRadius: imageBorderRadius }} />
+            <img src={img} alt="Custom" className="w-full h-full object-contain" style={{ borderRadius: imageBorderRadius }} />
             
             {isSelected && selectedImageId === imgId && (
               <>
