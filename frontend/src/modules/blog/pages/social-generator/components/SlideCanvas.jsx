@@ -21,6 +21,7 @@ export const SlideCanvas = ({
   onCopy,
   onAddImage
 }) => {
+  const containerRef = React.useRef(null);
   const {
     bgColor, bgColor2, bgColor3, useBgGradient,
     fontSize, headerFontSize, titleColor, contentColor, headerColor
@@ -43,7 +44,10 @@ export const SlideCanvas = ({
 
   return (
     <div
-      ref={slideRef}
+      ref={(el) => {
+        containerRef.current = el;
+        if (typeof slideRef === 'function') slideRef(el);
+      }}
       className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} rounded-none p-10 flex flex-col relative group shadow-xl overflow-hidden`}
       style={{ 
         background: useBgGradient ? `linear-gradient(to bottom right, ${bgColor}, ${bgColor2}, ${bgColor3})` : bgColor, 
@@ -82,7 +86,7 @@ export const SlideCanvas = ({
           cursor: isSelected ? 'grab' : 'default',
           userSelect: 'none'
         }}
-        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'content', index, slideRef.current, contentPositions[index] || { x: 50, y: 60 })}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'content', index, containerRef.current, contentPositions[index] || { x: 50, y: 60 })}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('content', index); }}
       >
         <div className="text-center relative">
@@ -111,7 +115,7 @@ export const SlideCanvas = ({
               cursor: isSelected ? 'grab' : 'default',
               userSelect: 'none'
             }}
-            onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, slideRef.current, pos)}
+            onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, containerRef.current, pos)}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('image', imgId); }}
           >
             <div className="relative group/img">
@@ -125,10 +129,10 @@ export const SlideCanvas = ({
               {isSelected && selectedImageId === imgId && (
                 <>
                   <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center cursor-alias text-[12px] text-gray-500 hover:text-indigo-600 z-30"
-                    onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, slideRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
+                    onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
                   >↻</div>
                   <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform"
-                    onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, slideRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
+                    onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}
                   ></div>
                 </>
               )}
@@ -155,7 +159,7 @@ export const SlideCanvas = ({
               cursor: isSelected ? 'grab' : 'default',
               userSelect: 'none'
             }}
-            onMouseDown={(e) => isSelected && handleDragStart(e, index, 'extra', elId, slideRef.current, { x: el.x, y: el.y })}
+            onMouseDown={(e) => isSelected && handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y })}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('extra', elId); }}
           >
             {el.type === 'text' ? (
@@ -179,13 +183,13 @@ export const SlideCanvas = ({
             {isElSelected && (
               <>
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, slideRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
+                  onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
                 <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-2 h-8 bg-indigo-600 rounded-full cursor-ew-resize z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, slideRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-w', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-indigo-600 rounded-full cursor-ns-resize z-40" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, slideRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize-h', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
                 <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-40 hover:scale-125 transition-transform" 
-                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, slideRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
+                  onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}></div>
               </>
             )}
           </div>
