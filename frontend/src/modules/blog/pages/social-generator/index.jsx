@@ -322,7 +322,6 @@ export default function SocialGenerator() {
                             />
                           </div>
                         </div>
-                      </div>
                     </div>
                   </div>
                 )}
