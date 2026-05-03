@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const TopToolbar = ({ 
@@ -55,7 +55,7 @@ export const TopToolbar = ({
         </button>
       </div>
 
-      {/* Row 1: Templates & Background */}
+      {/* Row 1: Templates & Insert Controls */}
       <div className="flex flex-wrap items-center gap-6 pr-64">
         
         {/* Templates Dropdown */}
@@ -118,13 +118,6 @@ export const TopToolbar = ({
           {showElements && (
             <div className="absolute top-full left-0 mt-2 w-[400px] bg-white dark:bg-gray-800 rounded-[32px] shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden animate-fadeIn p-4">
               <div className="grid grid-cols-3 gap-3">
-                <button 
-                  onClick={() => { addExtraElement(currentSlidePage, 'text'); setShowElements(false); }}
-                  className="flex flex-col items-center gap-2 p-4 hover:bg-indigo-50 rounded-2xl transition-all border border-dashed border-indigo-100"
-                >
-                  <span className="text-xl font-black text-indigo-600">T</span>
-                  <span className="text-[10px] font-black uppercase text-indigo-400">Texto</span>
-                </button>
                 {SHAPES_CONFIG.map(shape => (
                   <button 
                     key={shape.id}
@@ -139,6 +132,18 @@ export const TopToolbar = ({
             </div>
           )}
         </div>
+
+        {/* Text Quick Action */}
+        <button 
+          onClick={() => addExtraElement(currentSlidePage, 'text')}
+          className="flex items-center gap-3 px-5 py-3 bg-purple-50 dark:bg-purple-900/50 hover:bg-purple-100 rounded-2xl border border-purple-100 dark:border-purple-700 transition-all group"
+        >
+          <div className="text-left">
+            <p className="text-[9px] font-black uppercase text-purple-400 leading-none mb-1">Insertar</p>
+            <p className="text-sm font-black text-purple-600">Caja de Texto</p>
+          </div>
+          <FiType className="text-purple-500" />
+        </button>
 
         {/* Save Project Action */}
         <button onClick={handleSaveProject} className="flex items-center gap-3 px-5 py-3 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 rounded-2xl border border-gray-100 dark:border-gray-700 transition-all group">

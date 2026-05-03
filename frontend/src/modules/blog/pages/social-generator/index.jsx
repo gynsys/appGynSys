@@ -287,11 +287,8 @@ export default function SocialGenerator() {
                       generatedContent={generatedContent}
                     />
                     
-                    <div className="flex flex-col xl:flex-row gap-8 items-start justify-center">
-                      <DesignSidebar currentSlide={designer.canvas.currentSlidePage} onAddElement={designer.canvas.addExtraElement} />
-                      
-                      <div className="flex-1 flex flex-col items-center gap-8 w-full max-w-[1178px]" ref={editorWrapperRef}>
-                        <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                    <div className="flex flex-col items-center gap-8 w-full" ref={editorWrapperRef}>
+                      <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
                         
                         <div 
                           className="flex items-center justify-center transition-all duration-300 overflow-visible"

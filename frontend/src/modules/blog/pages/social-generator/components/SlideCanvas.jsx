@@ -43,7 +43,7 @@ export const SlideCanvas = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isExport ? '' : 'rounded-[40px]'} ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-4 ring-offset-gray-50' : ''}`}
+      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-4 ring-offset-gray-50' : ''}`}
       style={{ 
         background: design.useBgGradient 
           ? `linear-gradient(to bottom right, ${design.bgColor}, ${design.bgColor2}, ${design.bgColor3})` 
