@@ -121,7 +121,12 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     try:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         model_name = 'gemini-flash-latest' 
-        model = genai.GenerativeModel(model_name)
+        model = genai.GenerativeModel(
+            model_name,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json"
+            )
+        )
         
         logger.info(f"Generando {generation_type} con {model_name}...")
         response = model.generate_content(prompt)
