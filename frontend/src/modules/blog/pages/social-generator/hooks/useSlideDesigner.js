@@ -16,10 +16,11 @@ export const useSlideDesigner = () => {
   const [titleColor, setTitleColor] = useState(DEFAULT_DESIGN.titleColor);
   const [contentColor, setContentColor] = useState(DEFAULT_DESIGN.contentColor);
   const [headerColor, setHeaderColor] = useState(DEFAULT_DESIGN.headerColor);
-  const [imageBorderRadius, setImageBorderRadius] = useState('24px');
+  const [imageBorderRadius, setImageBorderRadius] = useState('0px');
 
-  // Global Template Settings (Branding & Divider)
-  const [brandingPos, setBrandingPos] = useState({ x: 50, y: 12 });
+  // Global Template Settings (Logo, Name, Divider)
+  const [logoPos, setLogoPos] = useState({ x: 25, y: 12 });
+  const [doctorNamePos, setDoctorNamePos] = useState({ x: 60, y: 12 });
   const [dividerPos, setDividerPos] = useState({ x: 50, y: 22 });
   const [dividerColor, setDividerColor] = useState('#e5e7eb');
   const [dividerHeight, setDividerHeight] = useState(2);
@@ -31,7 +32,8 @@ export const useSlideDesigner = () => {
   const [selectedExtraId, setSelectedExtraId] = useState(null);
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [selectedContentIndex, setSelectedContentIndex] = useState(null);
-  const [selectedBranding, setSelectedBranding] = useState(false);
+  const [selectedLogo, setSelectedLogo] = useState(false);
+  const [selectedDoctorName, setSelectedDoctorName] = useState(false);
   const [selectedDivider, setSelectedDivider] = useState(false);
 
   // Custom Templates Management
@@ -58,7 +60,7 @@ export const useSlideDesigner = () => {
         imageBorderRadius
       },
       global: {
-        brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
+        logoPos, doctorNamePos, dividerPos, dividerColor, dividerHeight, dividerWidth
       },
       elements: extraElements[currentSlidePage] || []
     };
@@ -87,8 +89,9 @@ export const useSlideDesigner = () => {
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
-    setImageBorderRadius(design.imageBorderRadius || '24px');
-    setBrandingPos(global.brandingPos);
+    setImageBorderRadius(design.imageBorderRadius || '0px');
+    setLogoPos(global.logoPos || { x: 25, y: 12 });
+    setDoctorNamePos(global.doctorNamePos || { x: 60, y: 12 });
     setDividerPos(global.dividerPos);
     setDividerColor(global.dividerColor);
     setDividerHeight(global.dividerHeight);
@@ -113,7 +116,7 @@ export const useSlideDesigner = () => {
         imageBorderRadius
       },
       global: {
-        brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth
+        logoPos, doctorNamePos, dividerPos, dividerColor, dividerHeight, dividerWidth
       },
       elements: extraElements
     };
@@ -141,8 +144,9 @@ export const useSlideDesigner = () => {
     setTitleColor(design.titleColor);
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
-    setImageBorderRadius(design.imageBorderRadius || '24px');
-    setBrandingPos(global.brandingPos);
+    setImageBorderRadius(design.imageBorderRadius || '0px');
+    setLogoPos(global.logoPos || { x: 25, y: 12 });
+    setDoctorNamePos(global.doctorNamePos || { x: 60, y: 12 });
     setDividerPos(global.dividerPos);
     setDividerColor(global.dividerColor);
     setDividerHeight(global.dividerHeight);
@@ -154,7 +158,6 @@ export const useSlideDesigner = () => {
 
   const addExtraElement = (slideIndex, type, content = '') => {
     const id = Math.random().toString(36).substr(2, 9);
-    const isIcon = type === 'icon';
     const newElement = {
       id,
       type,
@@ -196,44 +199,12 @@ export const useSlideDesigner = () => {
   };
 
   const selectElement = (type, id) => {
-    if (type === 'image') {
-      setSelectedImageId(id);
-      setSelectedContentIndex(null);
-      setSelectedExtraId(null);
-      setSelectedBranding(false);
-      setSelectedDivider(false);
-    } else if (type === 'content') {
-      setSelectedContentIndex(id);
-      setSelectedImageId(null);
-      setSelectedExtraId(null);
-      setSelectedBranding(false);
-      setSelectedDivider(false);
-    } else if (type === 'extra') {
-      setSelectedExtraId(id);
-      setSelectedImageId(null);
-      setSelectedContentIndex(null);
-      setSelectedBranding(false);
-      setSelectedDivider(false);
-    } else if (type === 'branding') {
-      setSelectedBranding(true);
-      setSelectedDivider(false);
-      setSelectedExtraId(null);
-      setSelectedImageId(null);
-      setSelectedContentIndex(null);
-    } else if (type === 'divider') {
-      setSelectedDivider(true);
-      setSelectedBranding(false);
-      setSelectedDivider(false);
-      setSelectedExtraId(null);
-      setSelectedImageId(null);
-      setSelectedContentIndex(null);
-    } else {
-      setSelectedImageId(null);
-      setSelectedContentIndex(null);
-      setSelectedExtraId(null);
-      setSelectedBranding(false);
-      setSelectedDivider(false);
-    }
+    setSelectedLogo(type === 'logo');
+    setSelectedDoctorName(type === 'doctorName');
+    setSelectedDivider(type === 'divider');
+    setSelectedImageId(type === 'image' ? id : null);
+    setSelectedContentIndex(type === 'content' ? id : null);
+    setSelectedExtraId(type === 'extra' ? id : null);
   };
 
   const applyTemplateToAll = (totalSlides) => {
@@ -257,7 +228,8 @@ export const useSlideDesigner = () => {
       titleColor, setTitleColor,
       contentColor, setContentColor,
       headerColor, setHeaderColor,
-      brandingPos, setBrandingPos,
+      logoPos, setLogoPos,
+      doctorNamePos, setDoctorNamePos,
       dividerPos, setDividerPos,
       dividerColor, setDividerColor,
       dividerHeight, setDividerHeight,
@@ -270,9 +242,11 @@ export const useSlideDesigner = () => {
       selectedExtraId, setSelectedExtraId,
       selectedImageId, setSelectedImageId,
       selectedContentIndex, setSelectedContentIndex,
-      selectedBranding,
+      selectedLogo,
+      selectedDoctorName,
       selectedDivider,
-      brandingPos,
+      logoPos,
+      doctorNamePos,
       dividerPos,
       dividerColor,
       dividerHeight,

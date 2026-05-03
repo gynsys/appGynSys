@@ -26,7 +26,7 @@ export const TopToolbar = ({
 
   const { 
     selectedExtraId, extraElements, updateExtraElement, removeExtraElement, 
-    selectedBranding, selectedDivider, 
+    selectedLogo, selectedDoctorName, selectedDivider, 
     customTemplates, saveCustomTemplate, applyCustomTemplate, deleteTemplate,
     projects, saveProject, deleteProject,
     addExtraElement, currentSlidePage
@@ -220,7 +220,7 @@ export const TopToolbar = ({
       </div>
 
       {/* Contextual Element Toolbar */}
-      {(selectedExtraId || selectedBranding || selectedDivider) && (
+      {(selectedExtraId || selectedLogo || selectedDoctorName || selectedDivider) && (
         <div className="w-full flex items-center gap-6 bg-indigo-50/50 dark:bg-indigo-900/20 p-4 rounded-2xl animate-slideUp border border-indigo-100/50">
           {selectedExtraId && (() => {
             const [slideIdx, elId] = selectedExtraId.split('-');
@@ -271,6 +271,26 @@ export const TopToolbar = ({
             );
           })()}
 
+          {selectedLogo && (
+            <div className="flex-1 flex items-center gap-8">
+              <div className="text-[10px] font-black uppercase text-indigo-400">Configuración de Logo</div>
+              <p className="text-xs text-indigo-500/70 font-bold">Puedes arrastrar el logo a cualquier lugar de la diapositiva.</p>
+              <div className="ml-auto text-[10px] font-black uppercase text-indigo-500 bg-white px-4 py-2 rounded-xl border border-indigo-100">
+                Logo Seleccionado
+              </div>
+            </div>
+          )}
+
+          {selectedDoctorName && (
+            <div className="flex-1 flex items-center gap-8">
+              <div className="text-[10px] font-black uppercase text-indigo-400">Configuración de Nombre</div>
+              <p className="text-xs text-indigo-500/70 font-bold">Puedes arrastrar el nombre a cualquier lugar de la diapositiva.</p>
+              <div className="ml-auto text-[10px] font-black uppercase text-indigo-500 bg-white px-4 py-2 rounded-xl border border-indigo-100">
+                Nombre del Médico Seleccionado
+              </div>
+            </div>
+          )}
+
           {selectedDivider && (
             <div className="flex-1 flex items-center gap-8">
               <div className="flex items-center gap-3">
@@ -287,16 +307,6 @@ export const TopToolbar = ({
               </div>
               <div className="ml-auto text-[10px] font-black uppercase text-indigo-500 bg-white px-4 py-2 rounded-xl border border-indigo-100">
                 Línea de Cabecera Seleccionada
-              </div>
-            </div>
-          )}
-
-          {selectedBranding && (
-            <div className="flex-1 flex items-center gap-8">
-              <div className="text-[10px] font-black uppercase text-indigo-400">Configuración de Marca</div>
-              <p className="text-xs text-indigo-500/70 font-bold">Puedes arrastrar el logo y nombre a cualquier lugar.</p>
-              <div className="ml-auto text-[10px] font-black uppercase text-indigo-500 bg-white px-4 py-2 rounded-xl border border-indigo-100">
-                Marca Médica Seleccionada
               </div>
             </div>
           )}

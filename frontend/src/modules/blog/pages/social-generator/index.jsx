@@ -54,7 +54,8 @@ export default function SocialGenerator() {
 
   const designer = useSlideDesigner();
   const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
-    setBrandingPos: designer.design.setBrandingPos,
+    setLogoPos: designer.design.setLogoPos,
+    setDoctorNamePos: designer.design.setDoctorNamePos,
     setDividerPos: designer.design.setDividerPos
   });
   const exporter = useExport(selectedPost, designer.design.bgColor);

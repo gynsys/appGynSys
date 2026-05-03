@@ -49,8 +49,10 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
           setImagePositions(prev => ({ ...prev, [id]: { x: newX, y: newY } }));
         } else if (type === 'content') {
           setContentPositions(prev => ({ ...prev, [index]: { x: newX, y: newY } }));
-        } else if (type === 'branding') {
-          globalSetters.setBrandingPos({ x: newX, y: newY });
+        } else if (type === 'logo') {
+          globalSetters.setLogoPos({ x: newX, y: newY });
+        } else if (type === 'doctorName') {
+          globalSetters.setDoctorNamePos({ x: newX, y: newY });
         } else if (type === 'divider') {
           globalSetters.setDividerPos({ x: newX, y: newY });
         } else if (type === 'extra') {

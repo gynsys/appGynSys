@@ -30,12 +30,13 @@ export const SlideCanvas = ({
 
   const { 
     fontSize, titleFontSize, titleColor, contentColor, headerColor, headerFontSize,
-    brandingPos, dividerPos, dividerColor, dividerHeight, dividerWidth,
+    logoPos, doctorNamePos, dividerPos, dividerColor, dividerHeight, dividerWidth,
     imageBorderRadius
   } = design;
 
   const {
-    extraElements, selectElement, selectedExtraId, selectedImageId, selectedContentIndex
+    extraElements, selectElement, selectedExtraId, selectedImageId, selectedContentIndex,
+    selectedLogo, selectedDoctorName
   } = canvas;
 
   const { handleDragStart, handleTransformStart } = handlers;
@@ -52,43 +53,57 @@ export const SlideCanvas = ({
       }}
       onClick={() => isSelected && selectElement(null, null)}
     >
-      {/* Branding Section */}
+      {/* Logo Section */}
+      {doctorLogo && (
+        <div 
+          className={`absolute z-30 transition-shadow ${isSelected && selectedLogo ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
+          style={{
+            left: logoPos.x + '%',
+            top: logoPos.y + '%',
+            transform: 'translate(-50%, -50%)',
+            cursor: isSelected ? 'grab' : 'default',
+          }}
+          onMouseDown={(e) => isSelected && handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos)}
+          onClick={(e) => { e.stopPropagation(); isSelected && selectElement('logo', 'global-logo'); }}
+        >
+          <img src={doctorLogo} alt="Logo" className="w-10 h-10 object-contain" />
+        </div>
+      )}
+
+      {/* Doctor Name Section */}
       <div 
-        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedBranding ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
+        className={`absolute z-30 transition-shadow ${isSelected && selectedDoctorName ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
         style={{
-          left: canvas.brandingPos.x + '%',
-          top: canvas.brandingPos.y + '%',
+          left: doctorNamePos.x + '%',
+          top: doctorNamePos.y + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
         }}
-        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'branding', 'global-brand', containerRef.current, canvas.brandingPos)}
-        onClick={(e) => { e.stopPropagation(); isSelected && selectElement('branding', 'global-brand'); }}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'doctorName', 'global-name', containerRef.current, doctorNamePos)}
+        onClick={(e) => { e.stopPropagation(); isSelected && selectElement('doctorName', 'global-name'); }}
       >
-        <div className="flex items-center gap-3">
-          {doctorLogo && <img src={doctorLogo} alt="Logo" className="w-8 h-8 object-contain" />}
-          <span className="font-black tracking-tighter uppercase" style={{ color: headerColor, fontSize: headerFontSize + 'px' }}>
-            {doctor?.name || 'Dra. Mariel Herrera'}
-          </span>
-        </div>
+        <span className="font-black tracking-tighter uppercase whitespace-nowrap" style={{ color: headerColor, fontSize: headerFontSize + 'px' }}>
+          {doctor?.name || 'Dra. Mariel Herrera'}
+        </span>
       </div>
 
       {/* Divider Section */}
       <div 
         className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2 bg-white/5' : ''}`}
         style={{
-          left: canvas.dividerPos.x + '%',
-          top: canvas.dividerPos.y + '%',
-          width: canvas.dividerWidth + '%',
+          left: dividerPos.x + '%',
+          top: dividerPos.y + '%',
+          width: dividerWidth + '%',
           transform: 'translate(-50%, -50%)',
           cursor: isSelected ? 'grab' : 'default',
         }}
-        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, canvas.dividerPos)}
+        onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, dividerPos)}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('divider', 'global-divider'); }}
       >
         <div 
           style={{ 
-            height: canvas.dividerHeight + 'px', 
-            backgroundColor: canvas.dividerColor,
+            height: dividerHeight + 'px', 
+            backgroundColor: dividerColor,
             width: '100%'
           }} 
         />
