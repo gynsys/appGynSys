@@ -67,7 +67,7 @@ export const SlideCanvas = ({
           onMouseDown={(e) => isSelected && handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos)}
           onClick={(e) => { e.stopPropagation(); isSelected && selectElement('logo', 'global-logo'); }}
         >
-          <img src={doctorLogo} alt="Logo" className="w-10 h-10 object-contain" />
+          <img src={doctorLogo} alt="Logo" crossOrigin="anonymous" className="w-10 h-10 object-contain" />
         </div>
       )}
 
@@ -213,8 +213,8 @@ export const SlideCanvas = ({
               >{el.content}</div>
             ) : (
               <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center">
-                {IconComp && <IconComp width="100%" height="100%" className="w-full h-full" preserveAspectRatio="none" style={{ display: 'block' }} fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
-                {el.useGradient && <svg width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
+                {IconComp && <IconComp xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" className="w-full h-full" preserveAspectRatio="none" style={{ display: 'block' }} fill={el.useGradient ? `url(#grad-${elId}-${isExport ? 'exp' : 'reg'})` : 'currentColor'} />}
+                {el.useGradient && <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
               </div>
             )}
 
