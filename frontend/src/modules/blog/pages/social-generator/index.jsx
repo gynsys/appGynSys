@@ -33,6 +33,19 @@ export default function SocialGenerator() {
   const [watermarkImage, setWatermarkImage] = useState(null);
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null);
   const [showProjects, setShowProjects] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  const pushToHistory = (content) => {
+    setHistory(prev => [...prev.slice(-19), JSON.parse(JSON.stringify(content))]);
+  };
+
+  const undo = () => {
+    if (history.length === 0) return;
+    const lastState = history[history.length - 1];
+    setGeneratedContent(lastState);
+    setHistory(prev => prev.slice(0, -1));
+    showToast('Acción deshecha', 'success');
+  };
   
   const slideRefs = useRef({});
   const { showToast } = useToastStore();
@@ -115,12 +128,23 @@ export default function SocialGenerator() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
+        pushToHistory(generatedContent);
         const newSlides = [...generatedContent.slides];
         if (!newSlides[index].customImages) newSlides[index].customImages = [];
         newSlides[index].customImages.push(reader.result);
         setGeneratedContent({ ...generatedContent, slides: newSlides });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = (slideIndex, imgIndex) => {
+    pushToHistory(generatedContent);
+    const newSlides = [...generatedContent.slides];
+    if (newSlides[slideIndex]?.customImages) {
+      newSlides[slideIndex].customImages = newSlides[slideIndex].customImages.filter((_, i) => i !== imgIndex);
+      setGeneratedContent({ ...generatedContent, slides: newSlides });
+      showToast('Imagen eliminada', 'success');
     }
   };
 
@@ -151,6 +175,7 @@ export default function SocialGenerator() {
       showToast('No puedes eliminar la única diapositiva', 'warning');
       return;
     }
+    pushToHistory(generatedContent);
     const newSlides = generatedContent.slides.filter((_, i) => i !== index);
     setGeneratedContent({ ...generatedContent, slides: newSlides });
     
@@ -286,6 +311,8 @@ export default function SocialGenerator() {
                       totalSlides={generatedContent.slides.length}
                       onLoadProject={handleLoadProject}
                       generatedContent={generatedContent}
+                      onUndo={undo}
+                      canUndo={history.length > 0}
                     />
                     
                     <div className="flex flex-col items-center gap-8 w-full" ref={editorWrapperRef}>
@@ -320,6 +347,7 @@ export default function SocialGenerator() {
                               }}
                               onRemove={handleRemoveSlide}
                               onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                              onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
                             />
                           </div>
                         </div>

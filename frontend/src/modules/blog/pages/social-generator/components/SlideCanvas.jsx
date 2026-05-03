@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
-import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiLayers, FiRefreshCw } from 'react-icons/fi';
+import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiRefreshCw, FiLayers } from 'react-icons/fi';
 import { SVGIcons } from '../lib/svgIcons';
 
 export const SlideCanvas = ({
   slide,
   index,
   isPreview,
-  isExport,
+  isExport = false,
   doctor,
   doctorLogo,
   design,
@@ -18,7 +18,8 @@ export const SlideCanvas = ({
   onPreview,
   onCopy,
   onRemove,
-  onAddImage
+  onAddImage,
+  onRemoveImage
 }) => {
   const containerRef = useRef(null);
   const isSelected = !isPreview && !isExport && canvas.currentSlidePage === index;
@@ -156,10 +157,34 @@ export const SlideCanvas = ({
             
             {isSelected && selectedImageId === imgId && (
               <>
+                {/* Rotate */}
                 <div className="absolute -top-3 -left-3 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-indigo-500 flex items-center justify-center cursor-alias text-indigo-600 z-50 hover:scale-110 transition-transform" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiRefreshCw size={14}/></div>
+                
+                {/* Resize */}
                 <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-indigo-600 rounded-full shadow-lg border-2 border-white flex items-center justify-center cursor-se-resize z-50 hover:scale-110 transition-transform" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'resize', 'image', imgId, containerRef.current, { x: pos.x, y: pos.y, width: size, height: size, rotation: rot })}><FiMaximize2 size={14} className="text-white" /></div>
+
+                {/* Delete */}
+                <button 
+                  className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
+                  onClick={(e) => { e.stopPropagation(); onRemoveImage && onRemoveImage(imgIdx); }}
+                >
+                  <FiTrash2 size={12} />
+                </button>
+
+                {/* Layer Control */}
+                <button 
+                  className="absolute -bottom-3 -left-3 w-8 h-8 bg-amber-500 text-white rounded-full shadow-lg border-2 border-white flex items-center justify-center z-50 hover:scale-110 transition-transform"
+                  title="Cambiar Capa (Fondo/Frente)"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const currentZ = pos.zIndex || 30;
+                    handlers.updateImage(imgId, { zIndex: currentZ === 10 ? 30 : 10 });
+                  }}
+                >
+                  <FiLayers size={12} />
+                </button>
               </>
             )}
           </div>

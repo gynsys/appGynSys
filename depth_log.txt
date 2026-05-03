@@ -1,0 +1,779 @@
+1: B=0, P=0 | import { useState, useEffect, useRef } from 'react'
+2: B=1, P=0 | import { 
+3: B=1, P=0 |   FiCpu, FiInstagram, FiImage, FiCopy, FiCheck, 
+4: B=1, P=0 |   FiLoader, FiMaximize2, FiX, FiChevronLeft, FiChevronRight,
+5: B=1, P=0 |   FiEdit3, FiPlusCircle, FiTrash2, FiUpload, FiLayers,
+6: B=1, P=0 |   FiType, FiBox, FiSettings, FiMousePointer, FiMove, FiSave, FiLayout
+7: B=0, P=0 | } from 'react-icons/fi'
+8: B=0, P=0 | import * as Lucide from 'lucide-react'
+9: B=0, P=0 | import Moveable from 'react-moveable'
+10: B=0, P=0 | import { blogService } from '../services/blogService'
+11: B=0, P=0 | import Spinner from '../../../components/common/Spinner'
+12: B=0, P=0 | import { useToastStore } from '../../../store/toastStore'
+13: B=0, P=0 | import { getImageUrl } from '../../../lib/imageUtils'
+14: B=0, P=0 | import html2canvas from 'html2canvas'
+15: B=0, P=0 | import JSZip from 'jszip'
+16: B=0, P=0 | import { useAuthStore } from '../../../store/authStore'
+17: B=0, P=0 | 
+18: B=1, P=0 | const ICON_CATALOG = {
+19: B=1, P=0 |   basics: [
+20: B=1, P=0 |     { id: 'Circle', icon: Lucide.Circle, label: 'Círculo' },
+21: B=1, P=0 |     { id: 'Square', icon: Lucide.Square, label: 'Cuadrado' },
+22: B=1, P=0 |     { id: 'Triangle', icon: Lucide.Triangle, label: 'Triángulo' },
+23: B=1, P=0 |     { id: 'Star', icon: Lucide.Star, label: 'Estrella' },
+24: B=1, P=0 |     { id: 'Heart', icon: Lucide.Heart, label: 'Corazón' },
+25: B=1, P=0 |   ],
+26: B=1, P=0 |   arrows: [
+27: B=1, P=0 |     { id: 'ArrowRight', icon: Lucide.ArrowRight, label: 'Flecha D' },
+28: B=1, P=0 |     { id: 'ArrowLeft', icon: Lucide.ArrowLeft, label: 'Flecha I' },
+29: B=1, P=0 |     { id: 'ArrowUp', icon: Lucide.ArrowUp, label: 'Flecha A' },
+30: B=1, P=0 |     { id: 'ArrowDown', icon: Lucide.ArrowDown, label: 'Flecha B' },
+31: B=1, P=0 |     { id: 'ChevronRight', icon: Lucide.ChevronRight, label: 'Chevron D' },
+32: B=1, P=0 |   ],
+33: B=1, P=0 |   presentation: [
+34: B=1, P=0 |     { id: 'Quote', icon: Lucide.Quote, label: 'Comillas' },
+35: B=1, P=0 |     { id: 'MessageCircle', icon: Lucide.MessageCircle, label: 'Burbuja' },
+36: B=1, P=0 |     { id: 'CheckCircle2', icon: Lucide.CheckCircle2, label: 'Check' },
+37: B=1, P=0 |     { id: 'Zap', icon: Lucide.Zap, label: 'Rayo' },
+38: B=1, P=0 |     { id: 'Cloud', icon: Lucide.Cloud, label: 'Nube' },
+39: B=1, P=0 |     { id: 'Lightbulb', icon: Lucide.Lightbulb, label: 'Idea' },
+40: B=1, P=0 |   ],
+41: B=1, P=0 |   medical: [
+42: B=1, P=0 |     { id: 'Stethoscope', icon: Lucide.Stethoscope, label: 'Esteto' },
+43: B=1, P=0 |     { id: 'Dna', icon: Lucide.Dna, label: 'ADN' },
+44: B=1, P=0 |     { id: 'Activity', icon: Lucide.Activity, label: 'Pulso' },
+45: B=1, P=0 |     { id: 'ShieldPlus', icon: Lucide.ShieldPlus, label: 'Salud' },
+46: B=1, P=0 |   ]
+47: B=0, P=0 | };
+48: B=0, P=0 | 
+49: B=1, P=0 | export default function SocialGeneratorPage() {
+50: B=1, P=0 |   const [posts, setPosts] = useState([])
+51: B=1, P=0 |   const [loading, setLoading] = useState(true)
+52: B=1, P=0 |   const [generating, setGenerating] = useState(false)
+53: B=1, P=0 |   const [selectedPost, setSelectedPost] = useState(null)
+54: B=1, P=0 |   const [generatedContent, setGeneratedContent] = useState(null)
+55: B=1, P=0 |   const [activeTab, setActiveTab] = useState('reel')
+56: B=1, P=0 |   const [copiedField, setCopiedField] = useState(null)
+57: B=1, P=0 |   const [bgColor, setBgColor] = useState('#ffffff')
+58: B=1, P=0 |   const [bgColor2, setBgColor2] = useState('#f8fafc')
+59: B=1, P=0 |   const [bgColor3, setBgColor3] = useState('#f1f5f9')
+60: B=1, P=0 |   const [useBgGradient, setUseBgGradient] = useState(false)
+61: B=1, P=0 |   const [previewIndex, setPreviewIndex] = useState(null)
+62: B=1, P=0 |   const [editingIndex, setEditingIndex] = useState(null)
+63: B=1, P=0 |   const [fontSize, setFontSize] = useState(14)
+64: B=1, P=0 |   const [headerFontSize, setHeaderFontSize] = useState(15)
+65: B=1, P=0 |   const [titleColor, setTitleColor] = useState('#4f46e5')
+66: B=1, P=0 |   const [contentColor, setContentColor] = useState('#374151')
+67: B=1, P=0 |   const [headerColor, setHeaderColor] = useState('#111827')
+68: B=1, P=0 |   const [watermarkImage, setWatermarkImage] = useState(null)
+69: B=1, P=0 |   const [imagePositions, setImagePositions] = useState({})
+70: B=1, P=0 |   const [imageSize, setImageSize] = useState(100)
+71: B=1, P=0 |   const [dragging, setDragging] = useState(null)
+72: B=1, P=0 |   const [slideAlignments, setSlideAlignments] = useState({})
+73: B=1, P=0 |   const slideRefs = useRef({})
+74: B=1, P=0 |   const [imageSizes, setImageSizes] = useState({})
+75: B=1, P=0 |   const [imageRotations, setImageRotations] = useState({})
+76: B=1, P=0 |   const [selectedImageId, setSelectedImageId] = useState(null) // "slideIndex-imgIndex"
+77: B=1, P=0 |   const [contentPositions, setContentPositions] = useState({})
+78: B=1, P=0 |   const [contentRotations, setContentRotations] = useState({})
+79: B=1, P=0 |   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
+80: B=1, P=0 |   const [transformState, setTransformState] = useState(null)
+81: B=1, P=0 |   const [imageZIndexes, setImageZIndexes] = useState({})
+82: B=1, P=0 |   const [extraElements, setExtraElements] = useState({}) // { slideIndex: [{id, type, content, x, y, size, rotation, color}] }
+83: B=1, P=0 |   const [selectedExtraId, setSelectedExtraId] = useState(null) // "slideIndex-elementId"
+84: B=1, P=0 |   const [currentSlidePage, setCurrentSlidePage] = useState(0)
+85: B=1, P=0 |   const [selectedMoveableTarget, setSelectedMoveableTarget] = useState(null)
+86: B=1, P=0 |   const [moveableConfig, setMoveableConfig] = useState({ draggable: true, resizable: true, rotatable: true, keepRatio: false })
+87: B=1, P=0 | 
+88: B=1, P=0 |   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null)
+89: B=1, P=0 |   
+90: B=1, P=0 |   const { showToast } = useToastStore()
+91: B=1, P=0 |   const { user: doctor } = useAuthStore()
+92: B=1, P=0 | 
+93: B=2, P=1 |   useEffect(() => {
+94: B=2, P=1 |     loadPosts()
+95: B=3, P=1 |     if (doctor?.logo_url) {
+96: B=3, P=1 |       loadDoctorLogo(getImageUrl(doctor.logo_url))
+97: B=3, P=1 |     } else {
+98: B=3, P=1 |       setDoctorLogoBase64(getFallbackLogo())
+99: B=2, P=1 |     }
+100: B=1, P=0 |   }, [doctor])
+101: B=1, P=0 | 
+102: B=2, P=0 |   const loadDoctorLogo = async (url) => {
+103: B=3, P=0 |     try {
+104: B=3, P=0 |       const response = await fetch(url, { mode: 'cors' });
+105: B=3, P=0 |       const blob = await response.blob();
+106: B=3, P=0 |       const reader = new FileReader();
+107: B=3, P=0 |       reader.onloadend = () => setDoctorLogoBase64(reader.result);
+108: B=3, P=0 |       reader.readAsDataURL(blob);
+109: B=3, P=0 |     } catch (error) {
+110: B=3, P=0 |       console.error("Error loading doctor logo, using fallback:", error);
+111: B=3, P=0 |       setDoctorLogoBase64(getFallbackLogo());
+112: B=2, P=0 |     }
+113: B=1, P=0 |   }
+114: B=1, P=0 | 
+115: B=2, P=0 |   const loadPosts = async () => {
+116: B=3, P=0 |     try {
+117: B=3, P=0 |       setLoading(true)
+118: B=3, P=0 |       const data = await blogService.getMyPosts()
+119: B=3, P=0 |       setPosts(Array.isArray(data) ? data : [])
+120: B=3, P=0 |     } catch (error) {
+121: B=3, P=0 |       showToast('Error al cargar artículos', 'error')
+122: B=3, P=0 |     } finally {
+123: B=3, P=0 |       setLoading(false)
+124: B=2, P=0 |     }
+125: B=1, P=0 |   }
+126: B=1, P=0 | 
+127: B=2, P=1 |   useEffect(() => {
+128: B=3, P=1 |     if (selectedExtraId) {
+129: B=3, P=1 |       const el = document.getElementById(selectedExtraId)
+130: B=3, P=1 |       if (el) setSelectedMoveableTarget(el)
+131: B=3, P=1 |     } else {
+132: B=3, P=1 |       setSelectedMoveableTarget(null)
+133: B=2, P=1 |     }
+134: B=1, P=0 |   }, [selectedExtraId])
+135: B=1, P=0 | 
+136: B=2, P=0 |   const handleGenerate = async (type) => {
+137: B=2, P=0 |     if (!selectedPost) return
+138: B=3, P=0 |     try {
+139: B=3, P=0 |       setGenerating(true)
+140: B=3, P=0 |       setActiveTab(type)
+141: B=3, P=0 |       const response = await blogService.generateSocialContent(selectedPost.id, type)
+142: B=3, P=0 |       setGeneratedContent(response)
+143: B=3, P=0 |       setGenerating(false)
+144: B=3, P=0 |       showToast('¡Estrategia generada!', 'success')
+145: B=3, P=0 |     } catch (error) {
+146: B=3, P=0 |       showToast('Error en la IA', 'error')
+147: B=3, P=0 |       setGenerating(false)
+148: B=2, P=0 |     }
+149: B=1, P=0 |   }
+150: B=1, P=0 | 
+151: B=2, P=0 |   const handleTestDesign = () => {
+152: B=2, P=0 |     setActiveTab('carousel')
+153: B=3, P=0 |     const testData = {
+154: B=3, P=0 |       type: 'carousel',
+155: B=3, P=0 |       slides: [
+156: B=3, P=0 |         { title: "DISEÑO DE PRUEBA 1", content: "• Este es un boceto para pruebas\n• Puedes editar este texto libremente\n• Prueba los degradados y capas" },
+157: B=3, P=0 |         { title: "DISEÑO DE PRUEBA 2", content: "• Añade iconos médicos desde el panel\n• Envía elementos al fondo\n• Cambia los colores de fondo" }
+158: B=3, P=0 |       ],
+159: B=3, P=0 |       image_prompts: ["Ginecología moderna", "Tecnología médica"]
+160: B=2, P=0 |     }
+161: B=2, P=0 |     
+162: B=2, P=0 |     // Add some default extra elements to test features
+163: B=2, P=0 |     const sampleExtra = [
+164: B=3, P=0 |       {
+165: B=3, P=0 |         id: 'test-blob-' + Date.now(),
+166: B=3, P=0 |         type: 'icon',
+167: B=3, P=0 |         content: 'blob1',
+168: B=3, P=0 |         x: 20,
+169: B=3, P=0 |         y: 20,
+170: B=3, P=0 |         width: 200,
+171: B=3, P=0 |         height: 200,
+172: B=3, P=0 |         rotation: 0,
+173: B=3, P=0 |         color: '#e0e7ff',
+174: B=3, P=0 |         color2: '#c7d2fe',
+175: B=3, P=0 |         useGradient: true,
+176: B=3, P=0 |         gradientDir: '135deg',
+177: B=3, P=0 |         zIndex: 10
+178: B=2, P=0 |       },
+179: B=3, P=0 |       {
+180: B=3, P=0 |         id: 'test-stetho-' + Date.now(),
+181: B=3, P=0 |         type: 'icon',
+182: B=3, P=0 |         content: 'stetho',
+183: B=3, P=0 |         x: 80,
+184: B=3, P=0 |         y: 80,
+185: B=3, P=0 |         width: 60,
+186: B=3, P=0 |         height: 60,
+187: B=3, P=0 |         rotation: -15,
+188: B=3, P=0 |         color: '#4f46e5',
+189: B=3, P=0 |         color2: '#9333ea',
+190: B=3, P=0 |         useGradient: true,
+191: B=3, P=0 |         gradientDir: 'to bottom right',
+192: B=3, P=0 |         zIndex: 40
+193: B=2, P=0 |       }
+194: B=2, P=0 |     ]
+195: B=2, P=0 |     
+196: B=2, P=0 |     setGeneratedContent(testData)
+197: B=2, P=0 |     setExtraElements({ 0: sampleExtra })
+198: B=2, P=0 |     showToast('Lienzo de prueba cargado', 'success')
+199: B=1, P=0 |   }
+200: B=1, P=0 | 
+201: B=2, P=0 |   const handleEditSlide = (index, field, value) => {
+202: B=2, P=0 |     const newSlides = [...generatedContent.slides]
+203: B=2, P=0 |     newSlides[index][field] = value
+204: B=2, P=0 |     setGeneratedContent({ ...generatedContent, slides: newSlides })
+205: B=1, P=0 |   }
+206: B=1, P=0 | 
+207: B=2, P=0 |   const handleAddImage = (index, e) => {
+208: B=2, P=0 |     const file = e.target.files[0]
+209: B=3, P=0 |     if (file) {
+210: B=3, P=0 |       const reader = new FileReader()
+211: B=4, P=0 |       reader.onloadend = () => {
+212: B=4, P=0 |         const newSlides = [...generatedContent.slides]
+213: B=4, P=0 |         if (!newSlides[index].customImages) newSlides[index].customImages = []
+214: B=4, P=0 |         newSlides[index].customImages.push(reader.result)
+215: B=4, P=0 |         setGeneratedContent({ ...generatedContent, slides: newSlides })
+216: B=3, P=0 |       }
+217: B=3, P=0 |       reader.readAsDataURL(file)
+218: B=2, P=0 |     }
+219: B=1, P=0 |   }
+220: B=1, P=0 | 
+221: B=2, P=0 |   const removeCustomImage = (slideIndex, imgIndex) => {
+222: B=2, P=0 |     const newSlides = [...generatedContent.slides]
+223: B=2, P=0 |     newSlides[slideIndex].customImages.splice(imgIndex, 1)
+224: B=2, P=0 |     setGeneratedContent({ ...generatedContent, slides: newSlides })
+225: B=2, P=0 |     setSelectedImageId(null)
+226: B=1, P=0 |   }
+227: B=1, P=0 | 
+228: B=2, P=0 |   const handleWatermark = (e) => {
+229: B=2, P=0 |     const file = e.target.files[0]
+230: B=2, P=0 |     if (!file) return
+231: B=2, P=0 |     const reader = new FileReader()
+232: B=2, P=0 |     reader.onloadend = () => setWatermarkImage(reader.result)
+233: B=2, P=0 |     reader.readAsDataURL(file)
+234: B=1, P=0 |   }
+235: B=1, P=0 | 
+236: B=2, P=0 |   const addExtraElement = (slideIndex, type, content = '') => {
+237: B=2, P=0 |     const id = Math.random().toString(36).substr(2, 9)
+238: B=3, P=0 |     const newElement = {
+239: B=3, P=0 |       id,
+240: B=3, P=0 |       type,
+241: B=3, P=0 |       content: content || (type === 'text' ? 'Nuevo Texto' : 'Square'),
+242: B=3, P=0 |       x: 50,
+243: B=3, P=0 |       y: 50,
+244: B=3, P=0 |       width: type === 'text' ? 60 : 40,
+245: B=3, P=0 |       height: type === 'text' ? 20 : 40,
+246: B=3, P=0 |       rotation: 0,
+247: B=3, P=0 |       color: type === 'text' ? contentColor : titleColor,
+248: B=3, P=0 |       color2: '#4f46e5',
+249: B=3, P=0 |       color3: '#9333ea',
+250: B=3, P=0 |       useGradient: false,
+251: B=3, P=0 |       gradientDir: 'to bottom right',
+252: B=3, P=0 |       zIndex: 40
+253: B=2, P=0 |     }
+254: B=2, P=0 |     
+255: B=3, P=1 |     setExtraElements(prev => {
+256: B=3, P=1 |       const slideElements = prev[slideIndex] || []
+257: B=3, P=1 |       return { ...prev, [slideIndex]: [...slideElements, newElement] }
+258: B=2, P=0 |     })
+259: B=2, P=0 |     // For Moveable selection
+260: B=2, P=0 |     setTimeout(() => {
+261: B=2, P=0 |       setSelectedExtraId(`extra-${slideIndex}-${id}`)
+262: B=1, P=-1 |     }, 50)
+263: B=0, P=-1 |   }
+264: B=0, P=-1 | 
+265: B=0, P=-1 | 
+266: B=1, P=-1 |   const updateExtraElement = (slideIndex, elementId, updates) => {
+267: B=2, P=0 |     setExtraElements(prev => {
+268: B=2, P=0 |       const slideElements = prev[slideIndex] || []
+269: B=2, P=0 |       const newElements = slideElements.map(el => el.id === elementId ? { ...el, ...updates } : el)
+270: B=2, P=0 |       return { ...prev, [slideIndex]: newElements }
+271: B=1, P=-1 |     })
+272: B=0, P=-1 |   }
+273: B=0, P=-1 | 
+274: B=1, P=-1 |   const removeExtraElement = (slideIndex, elementId) => {
+275: B=2, P=0 |     setExtraElements(prev => {
+276: B=2, P=0 |       const slideElements = prev[slideIndex] || []
+277: B=2, P=0 |       const newElements = slideElements.filter(el => el.id !== elementId)
+278: B=2, P=0 |       return { ...prev, [slideIndex]: newElements }
+279: B=1, P=-1 |     })
+280: B=1, P=-1 |     setSelectedExtraId(null)
+281: B=0, P=-1 |   }
+282: B=0, P=-1 | 
+283: B=1, P=-1 |   const updateSlideContent = (index, updates) => {
+284: B=2, P=0 |     setGeneratedContent(prev => {
+285: B=2, P=0 |       if (!prev) return prev;
+286: B=2, P=0 |       const newSlides = [...prev.slides];
+287: B=2, P=0 |       newSlides[index] = { ...newSlides[index], ...updates };
+288: B=2, P=0 |       return { ...prev, slides: newSlides };
+289: B=1, P=-1 |     });
+290: B=0, P=-1 |   }
+291: B=0, P=-1 | 
+292: B=1, P=-1 |   const handleDragStart = (e, slideIndex, type = 'image', imgIndex = null, extraId = null) => {
+293: B=1, P=-1 |     e.preventDefault()
+294: B=1, P=-1 |     e.stopPropagation()
+295: B=1, P=-1 |     
+296: B=1, P=-1 |     let id = slideIndex
+297: B=1, P=-1 |     if (type === 'image') id = `${slideIndex}-${imgIndex}`
+298: B=1, P=-1 |     if (type === 'extra') id = `${slideIndex}-${extraId}`
+299: B=1, P=-1 |     
+300: B=2, P=-1 |     if (type === 'image') {
+301: B=2, P=-1 |       setSelectedImageId(id)
+302: B=2, P=-1 |       setSelectedContentIndex(null)
+303: B=2, P=-1 |       setSelectedExtraId(null)
+304: B=2, P=-1 |     } else if (type === 'content') {
+305: B=2, P=-1 |       setSelectedContentIndex(slideIndex)
+306: B=2, P=-1 |       setSelectedImageId(null)
+307: B=2, P=-1 |       setSelectedExtraId(null)
+308: B=2, P=-1 |     } else {
+309: B=2, P=-1 |       setSelectedExtraId(id)
+310: B=2, P=-1 |       setSelectedImageId(null)
+311: B=2, P=-1 |       setSelectedContentIndex(null)
+312: B=1, P=-1 |     }
+313: B=1, P=-1 |     
+314: B=1, P=-1 |     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
+315: B=1, P=-1 |     if (!rect) return
+316: B=1, P=-1 |     
+317: B=1, P=-1 |     let pos = { x: 50, y: 50 }
+318: B=1, P=-1 |     if (type === 'image') pos = imagePositions[id] || { x: 50, y: 70 }
+319: B=1, P=-1 |     else if (type === 'content') pos = contentPositions[slideIndex] || { x: 50, y: 50 }
+320: B=2, P=-1 |     else if (type === 'extra') {
+321: B=2, P=-1 |       const el = extraElements[slideIndex]?.find(e => e.id === extraId)
+322: B=2, P=-1 |       pos = el ? { x: el.x, y: el.y } : { x: 50, y: 50 }
+323: B=1, P=-1 |     }
+324: B=1, P=-1 |       
+325: B=2, P=0 |     setDragging({
+326: B=2, P=0 |       type,
+327: B=2, P=0 |       slideIndex,
+328: B=2, P=0 |       imgIndex,
+329: B=2, P=0 |       extraId,
+330: B=2, P=0 |       id,
+331: B=2, P=0 |       offsetX: e.clientX - rect.left - (pos.x / 100) * rect.width,
+332: B=2, P=0 |       offsetY: e.clientY - rect.top - (pos.y / 100) * rect.height,
+333: B=2, P=0 |       rect
+334: B=1, P=-1 |     })
+335: B=0, P=-1 |   }
+336: B=0, P=-1 | 
+337: B=1, P=-1 |   const handleTransformStart = (e, slideIndex, type, imgIndex = null, extraId = null) => {
+338: B=1, P=-1 |     e.preventDefault()
+339: B=1, P=-1 |     e.stopPropagation()
+340: B=1, P=-1 |     
+341: B=1, P=-1 |     let id = slideIndex
+342: B=1, P=-1 |     if (imgIndex !== null) id = `${slideIndex}-${imgIndex}`
+343: B=1, P=-1 |     if (extraId !== null) id = `${slideIndex}-${extraId}`
+344: B=1, P=-1 |     
+345: B=1, P=-1 |     const rect = slideRefs.current[slideIndex]?.getBoundingClientRect()
+346: B=1, P=-1 |     
+347: B=1, P=-1 |     let pos = { x: 50, y: 50 }
+348: B=1, P=-1 |     let initialWidth = 100
+349: B=1, P=-1 |     let initialHeight = 100
+350: B=1, P=-1 |     let initialRotation = 0
+351: B=1, P=-1 |     
+352: B=2, P=-1 |     if (imgIndex !== null) {
+353: B=2, P=-1 |       pos = imagePositions[id] || { x: 50, y: 70 }
+354: B=2, P=-1 |       initialWidth = imageSizes[id] || imageSize
+355: B=2, P=-1 |       initialHeight = imageSizes[id] || imageSize
+356: B=2, P=-1 |       initialRotation = imageRotations[id] || 0
+357: B=2, P=-1 |     } else if (extraId !== null) {
+358: B=2, P=-1 |       const el = extraElements[slideIndex]?.find(e => e.id === extraId)
+359: B=3, P=-1 |       if (el) {
+360: B=3, P=-1 |         pos = { x: el.x, y: el.y }
+361: B=3, P=-1 |         initialWidth = el.width || el.size
+362: B=3, P=-1 |         initialHeight = el.height || el.size
+363: B=3, P=-1 |         initialRotation = el.rotation
+364: B=2, P=-1 |       }
+365: B=1, P=-1 |     }
+366: B=1, P=-1 |     if (!rect) return
+367: B=2, P=0 |     setTransformState({
+368: B=2, P=0 |       transformType: type, // 'resize', 'resize-w', 'resize-h', 'rotate'
+369: B=2, P=0 |       elementType: imgIndex !== null ? 'image' : 'extra',
+370: B=2, P=0 |       slideIndex,
+371: B=2, P=0 |       imgIndex,
+372: B=2, P=0 |       extraId,
+373: B=2, P=0 |       id,
+374: B=2, P=0 |       startX: e.clientX,
+375: B=2, P=0 |       startY: e.clientY,
+376: B=2, P=0 |       initialWidth,
+377: B=2, P=0 |       initialHeight,
+378: B=2, P=0 |       initialRotation,
+379: B=2, P=0 |       rect,
+380: B=2, P=0 |       centerX: rect.left + (pos.x / 100) * rect.width,
+381: B=2, P=0 |       centerY: rect.top + (pos.y / 100) * rect.height
+382: B=1, P=-1 |     })
+383: B=0, P=-1 |   }
+384: B=0, P=-1 | 
+385: B=1, P=0 |   useEffect(() => {
+386: B=2, P=0 |     const handlePointerMove = (e) => {
+387: B=3, P=0 |       if (dragging) {
+388: B=3, P=0 |         const { type, slideIndex, id, extraId, offsetX, offsetY, rect } = dragging
+389: B=3, P=0 |         const xPct = Math.min(95, Math.max(5, ((e.clientX - rect.left - offsetX) / rect.width) * 100))
+390: B=3, P=0 |         const yPct = Math.min(95, Math.max(5, ((e.clientY - rect.top - offsetY) / rect.height) * 100))
+391: B=3, P=0 |         
+392: B=4, P=0 |         if (type === 'image') {
+393: B=4, P=0 |           setImagePositions(prev => ({ ...prev, [id]: { x: xPct, y: yPct } }))
+394: B=4, P=0 |         } else if (type === 'content') {
+395: B=4, P=0 |           setContentPositions(prev => ({ ...prev, [slideIndex]: { x: xPct, y: yPct } }))
+396: B=4, P=0 |         } else if (type === 'extra') {
+397: B=4, P=0 |           updateExtraElement(slideIndex, extraId, { x: xPct, y: yPct })
+398: B=3, P=0 |         }
+399: B=3, P=0 |       } else if (transformState) {
+400: B=3, P=0 |         const { transformType, elementType, slideIndex, id, extraId, startX, startY, initialWidth, initialHeight, initialRotation, centerX, centerY } = transformState
+401: B=4, P=0 |         if (transformType === 'resize') {
+402: B=4, P=0 |           const deltaX = e.clientX - startX
+403: B=4, P=0 |           const newSize = Math.max(elementType === 'image' ? 50 : 10, initialWidth + deltaX)
+404: B=4, P=0 |           if (elementType === 'image') setImageSizes(prev => ({ ...prev, [id]: newSize }))
+405: B=4, P=0 |           else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { width: newSize, height: newSize })
+406: B=4, P=0 |         } else if (transformType === 'resize-w') {
+407: B=4, P=0 |           const deltaX = e.clientX - startX
+408: B=4, P=0 |           updateExtraElement(slideIndex, extraId, { width: Math.max(10, initialWidth + deltaX) })
+409: B=4, P=0 |         } else if (transformType === 'resize-h') {
+410: B=4, P=0 |           const deltaY = e.clientY - startY
+411: B=4, P=0 |           updateExtraElement(slideIndex, extraId, { height: Math.max(10, initialHeight + deltaY) })
+412: B=4, P=0 |         } else if (transformType === 'rotate') {
+413: B=4, P=0 |           const startAngle = Math.atan2(startY - centerY, startX - centerX)
+414: B=4, P=0 |           const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
+415: B=4, P=0 |           const angleDiff = (currentAngle - startAngle) * (180 / Math.PI)
+416: B=4, P=0 |           if (elementType === 'image') setImageRotations(prev => ({ ...prev, [id]: initialRotation + angleDiff }))
+417: B=4, P=0 |           else if (elementType === 'extra') updateExtraElement(slideIndex, extraId, { rotation: initialRotation + angleDiff })
+418: B=3, P=0 |         }
+419: B=2, P=0 |       }
+420: B=1, P=0 |     }
+421: B=2, P=0 |     const handlePointerUp = () => {
+422: B=2, P=0 |       setDragging(null)
+423: B=2, P=0 |       setTransformState(null)
+424: B=1, P=0 |     }
+425: B=1, P=0 |     
+426: B=2, P=0 |     if (dragging || transformState) {
+427: B=2, P=0 |       window.addEventListener('mousemove', handlePointerMove)
+428: B=2, P=0 |       window.addEventListener('mouseup', handlePointerUp)
+429: B=1, P=0 |     }
+430: B=2, P=0 |     return () => {
+431: B=2, P=0 |       window.removeEventListener('mousemove', handlePointerMove)
+432: B=2, P=0 |       window.removeEventListener('mouseup', handlePointerUp)
+433: B=1, P=0 |     }
+434: B=0, P=-1 |   }, [dragging, transformState, imageSizes, imageSize, imageRotations])
+435: B=0, P=-1 | 
+436: B=1, P=-1 |   const setSlideAlignment = (slideIndex, alignPct) => {
+437: B=1, P=-1 |     setSlideAlignments(prev => ({ ...prev, [slideIndex]: alignPct }))
+438: B=0, P=-1 |   }
+439: B=0, P=-1 | 
+440: B=0, P=-1 | 
+441: B=0, P=-1 | 
+442: B=1, P=-1 |   const rotateImage90 = (id) => {
+443: B=1, P=-1 |     const current = imageRotations[id] || 0
+444: B=1, P=-1 |     setImageRotations(prev => ({ ...prev, [id]: (current + 90) % 360 }))
+445: B=0, P=-1 |   }
+446: B=0, P=-1 | 
+447: B=1, P=-1 |   const sendImageToBack = (id) => {
+448: B=1, P=-1 |     setImageZIndexes(prev => ({ ...prev, [id]: 5 }))
+449: B=0, P=-1 |   }
+450: B=0, P=-1 | 
+451: B=1, P=-1 |   const bringImageToFront = (id) => {
+452: B=1, P=-1 |     setImageZIndexes(prev => ({ ...prev, [id]: 20 }))
+453: B=0, P=-1 |   }
+454: B=0, P=-1 | 
+455: B=1, P=-1 |   const downloadCarousel = async () => {
+456: B=1, P=-1 |     const zip = new JSZip()
+457: B=1, P=-1 |     // Query the hidden export slides
+458: B=1, P=-1 |     const slides = document.querySelectorAll('.export-slide-item')
+459: B=1, P=-1 |     if (slides.length === 0) return
+460: B=1, P=-1 | 
+461: B=2, P=-1 |     try {
+462: B=2, P=-1 |       showToast('Empaquetando carrusel...', 'loading')
+463: B=2, P=-1 |       const actionButtons = document.querySelectorAll('.slide-actions')
+464: B=2, P=-1 |       actionButtons.forEach(btn => btn.style.display = 'none')
+465: B=2, P=-1 | 
+466: B=3, P=-1 |       for (let i = 0; i < slides.length; i++) {
+467: B=4, P=0 |         const canvas = await html2canvas(slides[i], {
+468: B=4, P=0 |           useCORS: true,
+469: B=4, P=0 |           scale: 3,
+470: B=4, P=0 |           backgroundColor: bgColor,
+471: B=4, P=0 |           logging: false
+472: B=3, P=-1 |         })
+473: B=3, P=-1 |         const imgData = canvas.toDataURL('image/png').split(',')[1]
+474: B=3, P=-1 |         zip.file(`Slide_${i + 1}.png`, imgData, { base64: true })
+475: B=2, P=-1 |       }
+476: B=2, P=-1 | 
+477: B=2, P=-1 |       actionButtons.forEach(btn => btn.style.display = 'flex')
+478: B=2, P=-1 |       const content = await zip.generateAsync({ type: 'blob' })
+479: B=2, P=-1 |       const link = document.createElement('a')
+480: B=2, P=-1 |       link.href = URL.createObjectURL(content)
+481: B=2, P=-1 |       link.download = `carrusel-${selectedPost.slug_url}.zip`
+482: B=2, P=-1 |       link.click()
+483: B=2, P=-1 |       showToast('¡ZIP descargado!', 'success')
+484: B=2, P=-1 |     } catch (error) {
+485: B=2, P=-1 |       showToast('Error al descargar', 'error')
+486: B=1, P=-1 |     }
+487: B=0, P=-1 |   }
+488: B=0, P=-1 | 
+489: B=1, P=-1 |   const copyToClipboard = (text, fieldId) => {
+490: B=1, P=-1 |     navigator.clipboard.writeText(text)
+491: B=1, P=-1 |     setCopiedField(fieldId)
+492: B=1, P=-1 |     setTimeout(() => setCopiedField(null), 2000)
+493: B=0, P=-1 |   }
+494: B=0, P=-1 | 
+495: B=0, P=-1 |   // Generador de Iniciales SVG (Inmune a CORS)
+496: B=0, P=-1 |   const getFallbackLogo = () => {
+497: B=0, P=-1 |     const name = doctor?.nombre_completo || 'GynSys';
+498: B=0, P=-1 |     const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+499: B=0, P=-1 |     const svg = `
+500: B=0, P=-1 |       <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+501: B=0, P=-1 |         <rect width="100" height="100" rx="20" fill="#4F46E5"/>
+502: B=0, P=-1 |         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="40">${initials}</text>
+503: B=0, P=-1 |       </svg>
+504: B=0, P=-1 |     `.trim();
+505: B=0, P=-1 |     return `data:image/svg+xml;base64,${btoa(svg)}`;
+506: B=-1, P=-1 |   };
+507: B=-1, P=-1 | 
+508: B=-1, P=-1 | 
+509: B=0, P=-1 |   const renderSlideContent = (slide, i, isPreview = false, isExport = false) => {
+510: B=0, P=-1 |     const isHidden = isExport;
+511: B=0, P=-1 |     const elements = extraElements[i] || [];
+512: B=0, P=-1 |     
+513: B=0, P=-1 |     // Unified SVG Canvas
+514: B=0, P=-1 |     return (
+515: B=0, P=-1 |       <div
+516: B=0, P=-1 |          key={i + (isExport ? '-export' : '')}
+517: B=0, P=-1 |          ref={el => { if (!isPreview && !isExport) slideRefs.current[i] = el; }}
+518: B=0, P=-1 |          className={`${isExport ? 'export-slide-item' : 'carousel-slide-item'} relative shadow-xl overflow-hidden`}
+519: B=2, P=-1 |          style={{ 
+520: B=2, P=-1 |            width: isExport ? '1080px' : '100%', 
+521: B=2, P=-1 |            aspectRatio: '1/1',
+522: B=2, P=-1 |            maxWidth: isExport ? 'none' : '600px',
+523: B=2, P=-1 |            margin: '0 auto'
+524: B=0, P=-1 |          }}
+525: B=0, P=-1 |          onClick={() => { if (!isPreview && !isExport) { setSelectedExtraId(null); } }}
+526: B=0, P=-1 |        >
+527: B=0, P=-1 |          <svg 
+528: B=0, P=-1 |            viewBox="0 0 1000 1000" 
+529: B=0, P=-1 |            className="w-full h-full pointer-events-auto"
+530: B=0, P=-1 |            xmlns="http://www.w3.org/2000/svg"
+531: B=0, P=-1 |            style={{ background: bgColor }}
+532: B=0, P=-1 |          >
+533: B=0, P=-1 |            {/* Background Gradient */}
+534: B=1, P=0 |            {useBgGradient && (
+535: B=1, P=0 |              <defs>
+536: B=1, P=0 |                <linearGradient id={`grad-${i}`} x1="0%" y1="0%" x2="100%" y2="100%">
+537: B=1, P=0 |                  <stop offset="0%" stopColor={bgColor} />
+538: B=1, P=0 |                  <stop offset="50%" stopColor={bgColor2} />
+539: B=1, P=0 |                  <stop offset="100%" stopColor={bgColor3} />
+540: B=1, P=0 |                </linearGradient>
+541: B=1, P=0 |              </defs>
+542: B=0, P=-1 |            )}
+543: B=0, P=-1 |            <rect width="1000" height="1000" fill={useBgGradient ? `url(#grad-${i})` : bgColor} />
+544: B=0, P=-1 |            
+545: B=0, P=-1 |            {/* Watermark */}
+546: B=1, P=0 |            {watermarkImage && (
+547: B=1, P=0 |              <image href={watermarkImage} x="0" y="0" width="1000" height="1000" opacity="0.08" preserveAspectRatio="xMidYMid slice" />
+548: B=0, P=-1 |            )}
+549: B=0, P=-1 | 
+550: B=0, P=-1 |            {/* Branding Header */}
+551: B=0, P=-1 |            <g transform="translate(50, 50)">
+552: B=0, P=-1 |              <circle cx="30" cy="30" r="30" fill="#4f46e5" opacity="0.1" />
+553: B=1, P=0 |              {doctorLogoBase64 ? (
+554: B=1, P=0 |                <image href={doctorLogoBase64} x="0" y="0" width="60" height="60" preserveAspectRatio="xMidYMid meet" />
+555: B=1, P=0 |              ) : (
+556: B=1, P=0 |                <rect width="60" height="60" rx="12" fill="#4f46e5" />
+557: B=0, P=-1 |              )}
+558: B=0, P=-1 |              <text 
+559: B=0, P=-1 |                x="80" y="40" 
+560: B=0, P=-1 |                fill={headerColor} 
+561: B=0, P=-1 |                style={{ fontSize: (headerFontSize * 2) + 'px', fontWeight: 900, textTransform: 'uppercase' }}
+562: B=0, P=-1 |              >
+563: B=0, P=-1 |                {doctor?.nombre_completo}
+564: B=0, P=-1 |              </text>
+565: B=0, P=-1 |            </g>
+566: B=0, P=-1 | 
+567: B=0, P=-1 |            {/* Main Content Group */}
+568: B=0, P=-1 |            <g 
+569: B=0, P=-1 |              id={`slide-content-${i}`}
+570: B=0, P=-1 |              transform={`translate(${contentPositions[i]?.x * 10 || 500}, ${contentPositions[i]?.y * 10 || 500}) rotate(${contentRotations[i] || 0})`}
+571: B=0, P=-1 |              data-initial-x={contentPositions[i]?.x * 10 || 500}
+572: B=0, P=-1 |              data-initial-y={contentPositions[i]?.y * 10 || 500}
+573: B=0, P=-1 |              style={{ cursor: isPreview ? 'default' : 'pointer' }}
+574: B=0, P=-1 |              onClick={(e) => { e.stopPropagation(); setSelectedExtraId(`slide-content-${i}`); }}
+575: B=0, P=-1 |            >
+576: B=0, P=-1 |              <foreignObject x="-400" y="-300" width="800" height="600" style={{ overflow: 'visible', pointerEvents: 'auto' }}>
+577: B=2, P=-1 |                 <div style={{ 
+578: B=2, P=-1 |                   textAlign: 'center', 
+579: B=2, P=-1 |                   display: 'flex', 
+580: B=2, P=-1 |                   flexDirection: 'column', 
+581: B=2, P=-1 |                   alignItems: 'center', 
+582: B=2, P=-1 |                   justifyContent: 'center',
+583: B=2, P=-1 |                   height: '100%',
+584: B=2, P=-1 |                   pointerEvents: 'auto'
+585: B=0, P=-1 |                 }}>
+586: B=2, P=-1 |                   <h2 style={{ 
+587: B=2, P=-1 |                     fontSize: ((fontSize + 10) * 2.5) + 'px', 
+588: B=2, P=-1 |                     color: titleColor, 
+589: B=2, P=-1 |                     fontWeight: 900, 
+590: B=2, P=-1 |                     textTransform: 'uppercase',
+591: B=2, P=-1 |                     marginBottom: '20px',
+592: B=2, P=-1 |                     lineHeight: 1.1
+593: B=0, P=-1 |                   }}>{slide.title}</h2>
+594: B=0, P=-1 |                   <div style={{ width: '80px', height: '6px', background: '#4f46e5', opacity: 0.3, borderRadius: '10px', marginBottom: '20px' }} />
+595: B=2, P=-1 |                   <p style={{ 
+596: B=2, P=-1 |                     fontSize: (fontSize * 2.5) + 'px', 
+597: B=2, P=-1 |                     color: contentColor, 
+598: B=2, P=-1 |                     fontWeight: 700,
+599: B=2, P=-1 |                     lineHeight: 1.5,
+600: B=2, P=-1 |                     whiteSpace: 'pre-wrap'
+601: B=0, P=-1 |                   }}>{slide.content}</p>
+602: B=0, P=-1 |                 </div>
+603: B=0, P=-1 |              </foreignObject>
+604: B=0, P=-1 |            </g>
+605: B=0, P=-1 | 
+606: B=0, P=-1 |            {/* Custom Images */}
+607: B=2, P=0 |            {slide.customImages?.map((img, imgIdx) => {
+608: B=2, P=0 |              const imgId = `slide-img-${i}-${imgIdx}`
+609: B=2, P=0 |              const pos = imagePositions[`${i}-${imgIdx}`] || { x: 50, y: 70 }
+610: B=2, P=0 |              const size = imageSizes[`${i}-${imgIdx}`] || imageSize
+611: B=2, P=1 |              return (
+612: B=2, P=1 |                <g 
+613: B=2, P=1 |                  key={imgId} 
+614: B=2, P=1 |                  id={imgId}
+615: B=2, P=1 |                  transform={`translate(${pos.x * 10}, ${pos.y * 10}) rotate(${imageRotations[`${i}-${imgIdx}`] || 0})`}
+616: B=2, P=1 |                   data-initial-x={pos.x * 10}
+617: B=2, P=1 |                   data-initial-y={pos.y * 10}
+618: B=2, P=1 |                  style={{ cursor: 'pointer' }}
+619: B=2, P=1 |                  onClick={(e) => { e.stopPropagation(); setSelectedExtraId(imgId); }}
+620: B=2, P=1 |                >
+621: B=2, P=1 |                  <image 
+622: B=2, P=1 |                    href={img} 
+623: B=2, P=1 |                    x={-size * 5} y={-size * 5} 
+624: B=2, P=1 |                    width={size * 10} height={size * 10} 
+625: B=2, P=1 |                    preserveAspectRatio="xMidYMid slice"
+626: B=2, P=1 |                    style={{ clipPath: 'inset(0% round 20px)', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }}
+627: B=2, P=1 |                  />
+628: B=2, P=1 |                </g>
+629: B=2, P=0 |              )
+630: B=0, P=-1 |            })}
+631: B=0, P=-1 | 
+632: B=0, P=-1 |            {/* Extra Elements (Icons, Shapes, Text) */}
+633: B=2, P=0 |            {elements.map((el) => {
+634: B=2, P=0 |              const elId = `extra-${i}-${el.id}`
+635: B=2, P=1 |              return (
+636: B=2, P=1 |                <g 
+637: B=2, P=1 |                  key={el.id} 
+638: B=2, P=1 |                  id={elId}
+639: B=2, P=1 |                  transform={`translate(${el.x * 10}, ${el.y * 10}) rotate(${el.rotation || 0})`}
+640: B=2, P=1 |                   data-initial-x={el.x * 10}
+641: B=2, P=1 |                   data-initial-y={el.y * 10}
+642: B=2, P=1 |                  style={{ cursor: 'pointer' }}
+643: B=2, P=1 |                  onClick={(e) => { e.stopPropagation(); setSelectedExtraId(elId); }}
+644: B=2, P=1 |                >
+645: B=3, P=2 |                  {el.type === 'text' ? (
+646: B=3, P=2 |                    <foreignObject x={-el.width * 5} y={-el.height * 5} width={el.width * 10} height={el.height * 10} style={{ overflow: 'visible' }}>
+647: B=5, P=2 |                       <div style={{ 
+648: B=5, P=2 |                         color: el.color, 
+649: B=5, P=2 |                         fontSize: (el.width / 2) + 'px', 
+650: B=5, P=2 |                         fontWeight: 900,
+651: B=5, P=2 |                         textAlign: 'center',
+652: B=5, P=2 |                         background: el.useGradient ? `linear-gradient(${el.gradientDir}, ${el.color}, ${el.color2}, ${el.color3})` : 'transparent',
+653: B=5, P=2 |                         WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
+654: B=5, P=2 |                         WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial',
+655: B=5, P=2 |                         pointerEvents: 'auto'
+656: B=3, P=2 |                       }}>
+657: B=3, P=2 |                         {el.content}
+658: B=3, P=2 |                       </div>
+659: B=3, P=2 |                    </foreignObject>
+660: B=3, P=2 |                  ) : (
+661: B=3, P=2 |                    <g transform={`scale(${el.width / 5}) translate(-24, -24)`}>
+662: B=5, P=3 |                       {(() => {
+663: B=5, P=3 |                         const iconKey = Object.keys(Lucide).find(k => k.toLowerCase() === el.content.toLowerCase()) || 'Square'
+664: B=5, P=3 |                         const IconComp = Lucide[iconKey] || Lucide.Square
+665: B=5, P=4 |                         return (
+666: B=5, P=4 |                           <IconComp 
+667: B=5, P=4 |                             size={48} 
+668: B=5, P=4 |                             color={el.color} 
+669: B=5, P=4 |                             strokeWidth={3}
+670: B=5, P=4 |                             fill={el.useGradient ? `url(#grad-${el.id})` : 'none'}
+671: B=5, P=4 |                           />
+672: B=5, P=3 |                         )
+673: B=3, P=2 |                       })()}
+674: B=4, P=3 |                       {el.useGradient && (
+675: B=4, P=3 |                         <defs>
+676: B=4, P=3 |                           <linearGradient id={`grad-${el.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+677: B=4, P=3 |                             <stop offset="0%" stopColor={el.color} />
+678: B=4, P=3 |                             <stop offset="50%" stopColor={el.color2} />
+679: B=4, P=3 |                             <stop offset="100%" stopColor={el.color3} />
+680: B=4, P=3 |                           </linearGradient>
+681: B=4, P=3 |                         </defs>
+682: B=3, P=2 |                       )}
+683: B=3, P=2 |                    </g>
+684: B=2, P=1 |                  )}
+685: B=2, P=1 |                </g>
+686: B=2, P=0 |              )
+687: B=0, P=-1 |            })}
+688: B=0, P=-1 | 
+689: B=0, P=-1 |            {/* Slide Number */}
+690: B=1, P=0 |            {!isPreview && !isExport && (
+691: B=1, P=0 |              <text 
+692: B=1, P=0 |                x="900" y="200" 
+693: B=1, P=0 |                style={{ fontSize: '150px', fontWeight: 900, opacity: 0.05 }}
+694: B=1, P=0 |                textAnchor="middle"
+695: B=1, P=0 |              >
+696: B=1, P=0 |                {i + 1}
+697: B=1, P=0 |              </text>
+698: B=0, P=-1 |            )}
+699: B=0, P=-1 |          </svg>
+700: B=0, P=-1 | 
+701: B=0, P=-1 |          {/* Selection Indicators (Optional since we use Moveable, but keep UI buttons for actions) */}
+702: B=1, P=0 |          {!isPreview && !isExport && (
+703: B=1, P=0 |             <div className="absolute bottom-4 right-4 z-50 flex gap-2">
+704: B=1, P=0 |                <button onClick={(e) => { e.stopPropagation(); setPreviewIndex(i); }} className="p-2 bg-white/90 text-indigo-600 rounded-xl shadow-lg hover:bg-white"><FiMaximize2/></button>
+705: B=1, P=0 |                <button onClick={(e) => { e.stopPropagation(); handleSaveTemplate(i); }} className="p-2 bg-white/90 text-green-600 rounded-xl shadow-lg hover:bg-green-50"><FiSave/></button>
+706: B=1, P=0 |                <button onClick={(e) => { e.stopPropagation(); setEditingIndex(i === editingIndex ? null : i); }} className="p-2 bg-white/90 text-amber-500 rounded-xl shadow-lg hover:bg-amber-50"><FiEdit3/></button>
+707: B=1, P=0 |             </div>
+708: B=0, P=-1 |          )}
+709: B=0, P=-1 |       </div>
+710: B=0, P=-2 |     );
+711: B=-1, P=-2 |   };
+712: B=-1, P=-2 | 
+713: B=-1, P=-2 |   if (loading) return <Spinner />
+714: B=-1, P=-2 | 
+715: B=-1, P=-1 |   return (
+716: B=-1, P=-1 |     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 font-manrope">
+717: B=-1, P=-1 |       <div className="max-w-[1480px] mx-auto px-4 pt-6">
+718: B=-1, P=-1 |         
+719: B=-1, P=-1 |         <header className="mb-8">
+720: B=-1, P=-1 |           <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+721: B=-1, P=-1 |             <FiCpu className="text-indigo-600" />
+722: B=-1, P=-1 |             Crear Contenido IA
+723: B=-1, P=-1 |           </h1>
+724: B=-1, P=-1 |         </header>
+725: B=-1, P=-1 | 
+726: B=-1, P=-1 | 
+727: B=-1, P=-1 | 
+728: B=-1, P=-1 |         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+729: B=-1, P=-1 |           
+730: B=-1, P=-1 |           {/* Element 1: Sidebar Selection */}
+731: B=-1, P=-1 |           <div className="lg:col-span-4 space-y-6">
+732: B=-1, P=-1 |             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 relative">
+733: B=-1, P=-1 |               <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Selecciona un artículo</h2>
+734: B=-1, P=-1 |               <select
+735: B=-1, P=-1 |                 value={selectedPost?.id || ''}
+736: B=1, P=-1 |                 onChange={(e) => {
+737: B=1, P=-1 |                   const post = posts.find(p => p.id === parseInt(e.target.value))
+738: B=1, P=-1 |                   setSelectedPost(post);
+739: B=1, P=-1 |                   setGeneratedContent(null);
+740: B=-1, P=-1 |                 }}
+741: B=-1, P=-1 |                 className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base font-medium p-3 border truncate font-manrope"
+742: B=-1, P=-1 |               >
+743: B=-1, P=-1 |                 <option value="" disabled>Elegir artículo...</option>
+744: B=0, P=1 |                 {posts.map(post => (
+745: B=0, P=1 |                   <option key={post.id} value={post.id}>
+746: B=0, P=1 |                     {post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title}
+747: B=0, P=1 |                   </option>
+748: B=-1, P=-1 |                 ))}
+749: B=-1, P=-1 |               </select>
+750: B=-1, P=-1 |             </div>
+751: B=-1, P=-1 |           </div>
+752: B=-1, P=-1 |         </div>
+753: B=-1, P=-1 | 
+754: B=0, P=0 |         {selectedPost && (
+755: B=0, P=0 |           <div className="mt-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn relative w-full lg:w-[1095px]">
+756: B=0, P=0 |             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+757: B=0, P=0 |               <div className="flex-1">
+758: B=0, P=0 |                 <h3 className="text-xl font-black mb-1">¿Qué quieres crear hoy?</h3>
+759: B=0, P=0 |                 <p className="text-indigo-100 text-sm">Transforma tu artículo en contenido viral para redes sociales.</p>
+760: B=0, P=0 |               </div>
+761: B=0, P=0 |               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto min-w-[400px]">
+762: B=0, P=0 |                 <button 
+763: B=0, P=0 |                   onClick={() => handleGenerate('reel')} 
+764: B=0, P=0 |                   disabled={generating} 
+765: B=0, P=0 |                   className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"
+766: B=0, P=0 |                 >
+767: B=0, P=0 |                   <FiInstagram className="text-xl" /> Guion para Reel
+768: B=0, P=0 |                 </button>
+769: B=0, P=0 |                 <button 
+770: B=0, P=0 |                   onClick={() => handleGenerate('carousel')} 
+771: B=0, P=0 |                   disabled={generating} 
+772: B=0, P=0 |                   className="flex items-center justify-center gap-3 bg-white/20 hover:bg-white/30 p-4 rounded-2xl font-black transition-all border border-white/10"
+773: B=0, P=0 |                 >
+774: B=0, P=0 |                   <FiImage className="text-xl" /> Estructura Carrusel
+775: B=0, P=0 |                 </button>
+776: B=0, P=0 |                 <button 
+777: B=0, P=0 |                   onClick={handleTestDesign}
+778: B=0, P=0 |                   className="col-span-1 sm:col-span-2 flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 p-4 rounded-2xl font-black transition-all shadow-lg text-white"
+779: B=0, P=0 |                 >

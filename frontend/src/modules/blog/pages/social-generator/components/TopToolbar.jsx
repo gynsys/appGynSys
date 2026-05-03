@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType, FiBold, FiItalic } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiLayers, FiSave, FiChevronDown, FiFolder, FiDownload, FiPlusSquare, FiSquare, FiCircle, FiCornerUpRight, FiType, FiBold, FiItalic, FiCornerUpLeft } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 import Modal from '../../../components/common/Modal';
 
@@ -12,7 +12,9 @@ export const TopToolbar = ({
   onApplyTemplate, 
   totalSlides,
   onLoadProject,
-  generatedContent
+  generatedContent,
+  onUndo,
+  canUndo
 }) => {
   const {
     bgColor, setBgColor, bgColor2, setBgColor2, bgColor3, setBgColor3,
@@ -166,6 +168,19 @@ export const TopToolbar = ({
             <p className="text-sm font-black text-gray-600">Guardar Proyecto</p>
           </div>
           <FiSave className="text-gray-400" />
+        </button>
+
+        {/* Undo Action */}
+        <button 
+          onClick={onUndo} 
+          disabled={!canUndo}
+          className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all group ${canUndo ? 'bg-amber-50 border-amber-100 hover:bg-amber-100' : 'bg-gray-50 border-gray-100 opacity-50 cursor-not-allowed'}`}
+        >
+          <div className="text-left">
+            <p className={`text-[9px] font-black uppercase leading-none mb-1 ${canUndo ? 'text-amber-400' : 'text-gray-400'}`}>Historial</p>
+            <p className={`text-sm font-black ${canUndo ? 'text-amber-600' : 'text-gray-600'}`}>Deshacer</p>
+          </div>
+          <FiCornerUpLeft className={canUndo ? 'text-amber-500' : 'text-gray-400'} />
         </button>
 
         {/* BG Colors */}
