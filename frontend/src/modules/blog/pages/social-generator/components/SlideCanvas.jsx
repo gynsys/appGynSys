@@ -191,7 +191,6 @@ export const SlideCanvas = ({
               <>
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center cursor-alias text-[10px] z-40" 
                   onMouseDown={(e) => handleTransformStart(e, index, 'rotate', 'extra', elId, containerRef.current, { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation })}>↻</div>
-                
                 {el.type === 'text' && (
                   <div className="absolute -top-8 -right-2 flex gap-1 z-40">
                     <button 
@@ -203,16 +202,6 @@ export const SlideCanvas = ({
                       }}
                     >
                       <span className="font-black text-xs">B</span>
-                    </button>
-                    <button 
-                      className="w-7 h-7 bg-amber-500 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-125 transition-transform"
-                      title="Editar texto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditText({ slideIndex: index, elId: el.id, content: el.content });
-                      }}
-                    >
-                      <FiEdit3 size={12} />
                     </button>
                   </div>
                 )}
