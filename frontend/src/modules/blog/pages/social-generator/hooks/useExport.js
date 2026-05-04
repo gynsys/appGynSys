@@ -27,6 +27,9 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       designer.canvas.setSelectedExtraId(null);
       designer.canvas.setSelectedImageId(null);
       designer.canvas.setSelectedContentIndex(null);
+      
+      // Set export mode flag for proper SVG gradient rendering
+      designer.canvas.setIsExportMode(true);
 
       // Iterar por cada diapositiva usando el canvas principal
       for (let i = 0; i < generatedContent.slides.length; i++) {
@@ -56,6 +59,9 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       designer.canvas.setSelectedExtraId(originalExtraId);
       designer.canvas.setSelectedImageId(originalImageId);
       designer.canvas.setSelectedContentIndex(originalContentIndex);
+      
+      // Restore export mode flag
+      designer.canvas.setIsExportMode(false);
 
       const content = await zip.generateAsync({ type: 'blob' });
       const link = document.createElement('a');

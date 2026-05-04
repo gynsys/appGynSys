@@ -35,6 +35,7 @@ export const useSlideDesigner = () => {
   const [selectedLogo, setSelectedLogo] = useState(false);
   const [selectedDoctorName, setSelectedDoctorName] = useState(false);
   const [selectedDivider, setSelectedDivider] = useState(false);
+  const [isExportMode, setIsExportMode] = useState(false);
 
   // Custom Templates Management
   const [customTemplates, setCustomTemplates] = useState(() => {
@@ -263,6 +264,8 @@ export const useSlideDesigner = () => {
       removeExtraElement,
       selectElement,
       applyTemplateToAll,
+      isExportMode,
+      setIsExportMode,
       customTemplates,
       saveCustomTemplate,
       applyCustomTemplate,
