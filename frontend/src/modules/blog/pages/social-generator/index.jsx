@@ -535,7 +535,7 @@ export default function SocialGenerator() {
                                             designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { 
                                               fullWidth: true, 
                                               x: 50,
-                                              width: 482
+                                              width: 410
                                             });
                                           }}
                                           className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${elementData.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
