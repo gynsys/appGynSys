@@ -435,6 +435,20 @@ export default function SocialGenerator() {
                                       <>
                                         <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
                                         <div className="flex items-center gap-2">
+                                          <label className="text-[9px] font-black uppercase text-gray-400">Texto:</label>
+                                          <input
+                                            type="text"
+                                            value={elementData.content}
+                                            onChange={(e) => {
+                                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                              designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { content: e.target.value });
+                                            }}
+                                            className="w-32 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400"
+                                            placeholder="Editar texto..."
+                                          />
+                                        </div>
+                                        <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                        <div className="flex items-center gap-2">
                                           <label className="text-[9px] font-black uppercase text-gray-400">Tamaño</label>
                                           <input
                                             type="number" min="8" max="72"
