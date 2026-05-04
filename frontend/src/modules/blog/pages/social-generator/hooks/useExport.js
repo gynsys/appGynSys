@@ -46,7 +46,11 @@ export const useExport = (selectedPost, designer, generatedContent) => {
           useCORS: true,
           scale: 3,
           backgroundColor: designer.design.bgColor || '#ffffff',
-          logging: false
+          logging: false,
+          allowTaint: true,
+          imageTimeout: 15000,
+          removeContainer: false,
+          foreignObjectRendering: false
         });
         
         const imgData = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];

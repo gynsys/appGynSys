@@ -92,7 +92,7 @@ export const SlideCanvas = ({
           onMouseDown={(e) => isSelected && handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos)}
           onClick={(e) => { e.stopPropagation(); isSelected && selectElement('logo', 'global-logo'); }}
         >
-          <img src={doctorLogo} alt="Logo" crossOrigin="anonymous" className="w-10 h-10 object-contain" />
+          <img src={doctorLogo} alt="Logo" crossOrigin="anonymous" className="w-[2.5rem] h-[2.5rem] object-contain max-w-[2.5rem] max-h-[2.5rem]" style={{aspectRatio: 'auto'}} />
         </div>
       )}
 
