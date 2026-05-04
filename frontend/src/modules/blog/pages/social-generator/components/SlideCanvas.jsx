@@ -244,38 +244,68 @@ export const SlideCanvas = ({
               >{el.content}</div>
             ) : (
               <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center">
-                {IconComp && (
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="100%" 
-                    height="100%" 
-                    viewBox="0 0 24 24"
-                    className="w-full h-full"
-                    preserveAspectRatio="none"
-                    style={{ display: 'block' }}
-                  >
-                    {el.useGradient ? (
-                      <>
-                        <defs>
-                          <linearGradient id={`grad-${elId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style={{stopColor: el.color}} />
-                            <stop offset="50%" style={{stopColor: el.color2 || el.color}} />
-                            <stop offset="100%" style={{stopColor: el.color3 || el.color}} />
-                          </linearGradient>
-                        </defs>
-                        <path 
-                          d={getIconPath(el.content)}
-                          fill={`url(#grad-${elId})`}
-                        />
-                      </>
-                    ) : (
-                      <path 
-                        d={getIconPath(el.content)}
-                        fill={el.color}
-                      />
-                    )}
-                  </svg>
-                )}
+                {(() => {
+                  // Check if this is a React Icon component (new icons) or SVG path (original icons)
+                  const isReactIcon = ['check', 'x', 'alertTriangle', 'bell', 'calendar', 'clock', 'mail', 'phone', 'user', 'mapPin', 'home', 'briefcase', 'heartIcon', 'starIcon', 'trendingUp', 'activity', 'zap', 'sun', 'moon', 'cloud', 'umbrella', 'target', 'compass', 'navigation', 'flag', 'bookmark', 'messageSquare', 'share2', 'refreshCw', 'cpu', 'database', 'wifi', 'bluetooth', 'battery', 'volume2', 'volumeX', 'play', 'pause', 'skipBack', 'skipForward', 'repeat'].includes(el.content);
+                  
+                  if (isReactIcon && IconComp) {
+                    // Render React Icon component directly
+                    return (
+                      <div 
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ 
+                          color: el.useGradient ? `url(#grad-${elId})` : el.color,
+                          fontSize: `${Math.min(el.width, el.height) * 0.8}px`
+                        }}
+                      >
+                        {el.useGradient && (
+                          <defs>
+                            <linearGradient id={`grad-${elId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style={{stopColor: el.color}} />
+                              <stop offset="50%" style={{stopColor: el.color2 || el.color}} />
+                              <stop offset="100%" style={{stopColor: el.color3 || el.color}} />
+                            </linearGradient>
+                          </defs>
+                        )}
+                        <IconComp style={{ width: '100%', height: '100%' }} />
+                      </div>
+                    );
+                  } else {
+                    // Render original SVG icons
+                    return (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="100%" 
+                        height="100%" 
+                        viewBox="0 0 24 24"
+                        className="w-full h-full"
+                        preserveAspectRatio="none"
+                        style={{ display: 'block' }}
+                      >
+                        {el.useGradient ? (
+                          <>
+                            <defs>
+                              <linearGradient id={`grad-${elId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style={{stopColor: el.color}} />
+                                <stop offset="50%" style={{stopColor: el.color2 || el.color}} />
+                                <stop offset="100%" style={{stopColor: el.color3 || el.color}} />
+                              </linearGradient>
+                            </defs>
+                            <path 
+                              d={getIconPath(el.content)}
+                              fill={`url(#grad-${elId})`}
+                            />
+                          </>
+                        ) : (
+                          <path 
+                            d={getIconPath(el.content)}
+                            fill={el.color}
+                          />
+                        )}
+                      </svg>
+                    );
+                  }
+                })()}
               </div>
             )}
 
