@@ -75,7 +75,7 @@ uploads_path.mkdir(parents=True, exist_ok=True)
 static_app = FastAPI()
 static_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for static assets
+    allow_origins=["https://gynsys.net", "https://www.gynsys.net", "https://social-generator.gynsys.net", "https://app.gynsys.net"], # Allow specific domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
