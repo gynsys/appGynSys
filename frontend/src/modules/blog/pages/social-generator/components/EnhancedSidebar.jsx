@@ -13,7 +13,8 @@ export const EnhancedSidebar = ({
   onPreview,
   selectedElement,
   totalSlides,
-  generatedContent
+  generatedContent,
+  onRemoveImage
 }) => {
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -474,19 +475,34 @@ export const EnhancedSidebar = ({
                 </button>
 
                 {/* Layer Controls */}
-                {selectedElement && (
+                {(selectedElement || canvas.selectedImageId) && (
                   <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
                     <h3 className="text-xs font-black text-amber-600 uppercase tracking-wider mb-3">Control de Elemento</h3>
                     <div className="space-y-2">
                       <button
                         onClick={() => {
                           if (selectedElement) {
+                            // Handle shape/extra element layer control
                             const [slideIdx, elId] = selectedElement.split('-');
                             const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
                             if (el) {
                               canvas.updateExtraElement(parseInt(slideIdx), elId, { 
                                 zIndex: el.zIndex === 30 ? 10 : 30 
                               });
+                            }
+                          } else if (canvas.selectedImageId) {
+                            // Handle image layer control
+                            const [slideIdx, imgIdx] = canvas.selectedImageId.split('-');
+                            const slide = canvas.slides?.[slideIdx];
+                            if (slide && slide.images && slide.images[imgIdx]) {
+                              const img = slide.images[imgIdx];
+                              const newZIndex = img.zIndex === 30 ? 10 : 30;
+                              // Update image z-index
+                              const updatedImages = [...slide.images];
+                              updatedImages[imgIdx] = { ...img, zIndex: newZIndex };
+                              const updatedSlides = [...canvas.slides];
+                              updatedSlides[slideIdx] = { ...slide, images: updatedImages };
+                              canvas.setSlides(updatedSlides);
                             }
                           }
                         }}
@@ -498,6 +514,12 @@ export const EnhancedSidebar = ({
                             const [slideIdx, elId] = selectedElement.split('-');
                             const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
                             return el?.zIndex === 30 ? 'Enviar al fondo' : 'Traer al frente';
+                          } else if (canvas.selectedImageId) {
+                            const [slideIdx, imgIdx] = canvas.selectedImageId.split('-');
+                            const slide = canvas.slides?.[slideIdx];
+                            if (slide && slide.images && slide.images[imgIdx]) {
+                              return slide.images[imgIdx].zIndex === 30 ? 'Enviar al fondo' : 'Traer al frente';
+                            }
                           }
                           return 'Mover capa';
                         })()}
@@ -507,6 +529,12 @@ export const EnhancedSidebar = ({
                           if (selectedElement) {
                             const [slideIdx, elId] = selectedElement.split('-');
                             canvas.removeExtraElement(parseInt(slideIdx), elId);
+                          } else if (canvas.selectedImageId) {
+                            // Handle image deletion
+                            const [slideIdx, imgIdx] = canvas.selectedImageId.split('-');
+                            if (onRemoveImage) {
+                              onRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                            }
                           }
                         }}
                         className="w-full p-2 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-2"

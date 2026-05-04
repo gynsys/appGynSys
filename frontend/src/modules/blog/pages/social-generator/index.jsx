@@ -345,6 +345,7 @@ export default function SocialGenerator() {
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
                           totalSlides={generatedContent.slides.length}
                           generatedContent={generatedContent}
+                          onRemoveImage={handleRemoveImage}
                         />
                         
                         {/* Main Editor Area */}
