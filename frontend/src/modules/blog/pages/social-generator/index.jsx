@@ -344,6 +344,7 @@ export default function SocialGenerator() {
                           onPreview={() => setPreviewIndex(0)}
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
                           totalSlides={generatedContent.slides.length}
+                          generatedContent={generatedContent}
                         />
                         
                         {/* Main Editor Area */}

@@ -12,10 +12,12 @@ export const EnhancedSidebar = ({
   onSave, 
   onPreview,
   selectedElement,
-  totalSlides 
+  totalSlides,
+  generatedContent
 }) => {
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   return (
     <div className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'} flex flex-col h-full`}>
@@ -138,17 +140,16 @@ export const EnhancedSidebar = ({
                 <div>
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Formas</h3>
                   <div className="grid grid-cols-3 gap-2">
-                    {SHAPES_CONFIG.slice(0, 12).map(shape => (
-                      <button
+                    {SHAPES_CONFIG.map(shape => (
+                      <button 
                         key={shape.id}
-                        onClick={() => onAddElement(currentSlide, 'shape', shape.id)}
-                        className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center gap-1"
+                        onClick={() => onAddElement(currentSlide, 'shape', shape.id)} 
+                        className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group p-2" 
                         title={shape.label}
                       >
-                        <div className="w-6 h-6 text-indigo-600">
+                        <div className="group-hover:scale-110 transition-transform">
                           {shape.icon}
                         </div>
-                        <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{shape.label}</span>
                       </button>
                     ))}
                   </div>
@@ -404,6 +405,74 @@ export const EnhancedSidebar = ({
             {/* Actions Tab */}
             {activeTab === 'actions' && (
               <div className="p-4 space-y-4">
+                {/* Templates Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowTemplates(!showTemplates)}
+                    className="w-full flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-xl transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FiFolder className="text-indigo-600" />
+                      <span className="text-sm font-black text-indigo-600">Mis Plantillas</span>
+                    </div>
+                    <FiChevronDown className={`transition-transform duration-300 text-indigo-600 ${showTemplates ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showTemplates && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[100] overflow-hidden animate-fadeIn">
+                      <div className="p-3 border-b border-gray-50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/50">
+                        <span className="text-[10px] font-black uppercase text-gray-400">Seleccionar Estilo</span>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {canvas.customTemplates?.length > 0 ? (
+                          canvas.customTemplates.map(t => (
+                            <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0">
+                              <button 
+                                onClick={() => { 
+                                  canvas.applyCustomTemplate(t, totalSlides); 
+                                  setShowTemplates(false); 
+                                }}
+                                className="text-left w-full"
+                              >
+                                <p className="text-sm font-bold text-gray-900 dark:text-white">{t.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t.slides.length} diapositivas</p>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  canvas.deleteTemplate(t.id);
+                                  setShowTemplates(false);
+                                }}
+                                className="text-xs text-red-500 hover:text-red-700 mt-1"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-4 text-center text-gray-400 text-xs">
+                            No hay plantillas guardadas
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Save Template */}
+                <button
+                  onClick={() => {
+                    const name = prompt('Nombre de la plantilla:');
+                    if (name) {
+                      canvas.saveCustomTemplate(name, generatedContent);
+                      setShowTemplates(false);
+                    }
+                  }}
+                  className="w-full flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-xl transition-all"
+                >
+                  <FiSave className="text-green-600" />
+                  <span className="text-sm font-black text-green-600">Guardar Plantilla</span>
+                </button>
+
                 {/* Layer Controls */}
                 {selectedElement && (
                   <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
@@ -456,30 +525,7 @@ export const EnhancedSidebar = ({
                   </button>
                 </div>
 
-                {/* Slide Navigation */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <h3 className="text-xs font-black text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3">Navegación</h3>
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => canvas.setCurrentSlidePage(Math.max(0, canvas.currentSlidePage - 1))}
-                      disabled={canvas.currentSlidePage === 0}
-                      className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <FiChevronLeft size={16} />
-                    </button>
-                    <span className="text-xs font-medium">
-                      {canvas.currentSlidePage + 1} / {totalSlides}
-                    </span>
-                    <button
-                      onClick={() => canvas.setCurrentSlidePage(Math.min(totalSlides - 1, canvas.currentSlidePage + 1))}
-                      disabled={canvas.currentSlidePage === totalSlides - 1}
-                      className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <FiChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                              </div>
             )}
           </>
         )}
