@@ -14,8 +14,6 @@ import { useExport } from './hooks/useExport';
 
 // Components
 import { SlideCanvas } from './components/SlideCanvas';
-import { DesignSidebar } from './components/DesignSidebar';
-import { TopToolbar } from './components/TopToolbar';
 import { SlidePaginator } from './components/SlidePaginator';
 import { PreviewModal } from './components/PreviewModal';
 import { EnhancedSidebar } from './components/EnhancedSidebar';

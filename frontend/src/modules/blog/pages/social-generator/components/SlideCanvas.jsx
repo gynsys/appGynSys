@@ -231,6 +231,8 @@ export const SlideCanvas = ({
           >
             {el.type === 'text' ? (
               <div 
+                contentEditable={isElSelected}
+                suppressContentEditableWarning={true}
                 className="font-bold whitespace-nowrap outline-none px-2"
                 style={{ 
                   fontSize: (el.height * 0.8) + 'px', 
@@ -239,9 +241,23 @@ export const SlideCanvas = ({
                   WebkitBackgroundClip: el.useGradient ? 'text' : 'initial',
                   WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial',
                   fontWeight: el.bold ? '900' : '500',
-                  fontStyle: el.italic ? 'italic' : 'normal'
+                  fontStyle: el.italic ? 'italic' : 'normal',
+                  cursor: isElSelected ? 'text' : 'default'
                 }}
-              >{el.content}</div>
+                onBlur={(e) => {
+                  if (isElSelected && canvas.updateExtraElement) {
+                    const newContent = e.target.innerText || e.target.textContent;
+                    canvas.updateExtraElement(parseInt(index), el.id, { content: newContent });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
+                  }
+                }}
+                dangerouslySetInnerHTML={{ __html: el.content }}
+              />
             ) : (
               <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center">
                 {(() => {
