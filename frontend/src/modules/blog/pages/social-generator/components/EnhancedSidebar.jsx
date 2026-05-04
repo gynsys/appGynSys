@@ -487,7 +487,7 @@ export const EnhancedSidebar = ({
                             const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
                             if (el) {
                               canvas.updateExtraElement(parseInt(slideIdx), elId, { 
-                                zIndex: el.zIndex === 30 ? 10 : 30 
+                                zIndex: el.zIndex === 30 ? 5 : 30 
                               });
                             }
                           } else if (canvas.selectedImageId) {
@@ -496,7 +496,7 @@ export const EnhancedSidebar = ({
                             const slide = canvas.slides?.[slideIdx];
                             if (slide && slide.images && slide.images[imgIdx]) {
                               const img = slide.images[imgIdx];
-                              const newZIndex = img.zIndex === 30 ? 10 : 30;
+                              const newZIndex = img.zIndex === 20 ? 5 : 20;
                               // Update image z-index
                               const updatedImages = [...slide.images];
                               updatedImages[imgIdx] = { ...img, zIndex: newZIndex };
@@ -518,7 +518,7 @@ export const EnhancedSidebar = ({
                             const [slideIdx, imgIdx] = canvas.selectedImageId.split('-');
                             const slide = canvas.slides?.[slideIdx];
                             if (slide && slide.images && slide.images[imgIdx]) {
-                              return slide.images[imgIdx].zIndex === 30 ? 'Enviar al fondo' : 'Traer al frente';
+                              return slide.images[imgIdx].zIndex === 20 ? 'Enviar al fondo' : 'Traer al frente';
                             }
                           }
                           return 'Mover capa';
