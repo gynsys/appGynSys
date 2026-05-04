@@ -36,8 +36,8 @@ export const useExport = (selectedPost, designer, generatedContent) => {
         // Cambiar la pagina activa
         designer.canvas.setCurrentSlidePage(i);
         
-        // Esperar a que React renderice la nueva diapositiva y las imagenes se carguen
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Esperar a que React renderice la nueva diapositiva, las imagenes se carguen y los gradientes SVG se procesen
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         const slideNode = document.getElementById('main-slide-canvas');
         if (!slideNode) continue;

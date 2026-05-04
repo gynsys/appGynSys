@@ -213,8 +213,38 @@ export const SlideCanvas = ({
               >{el.content}</div>
             ) : (
               <div style={{ width: '100%', height: '100%', color: el.color }} className="flex items-center justify-center">
-                {IconComp && <IconComp xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" className="w-full h-full" preserveAspectRatio="none" style={{ display: 'block' }} fill={el.useGradient ? `url(#grad-${elId}-${isExport || canvas.isExportMode ? 'exp' : 'reg'})` : 'currentColor'} />}
-                {el.useGradient && <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" className="absolute"><defs><linearGradient id={`grad-${elId}-${isExport || canvas.isExportMode ? 'exp' : 'reg'}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: el.color}} /><stop offset="50%" style={{stopColor: el.color2}} /><stop offset="100%" style={{stopColor: el.color3}} /></linearGradient></defs></svg>}
+                {IconComp && (
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="100%" 
+                    height="100%" 
+                    viewBox="0 0 24 24"
+                    className="w-full h-full"
+                    preserveAspectRatio="none"
+                    style={{ display: 'block' }}
+                  >
+                    {el.useGradient ? (
+                      <>
+                        <defs>
+                          <linearGradient id={`grad-${elId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style={{stopColor: el.color}} />
+                            <stop offset="50%" style={{stopColor: el.color2 || el.color}} />
+                            <stop offset="100%" style={{stopColor: el.color3 || el.color}} />
+                          </linearGradient>
+                        </defs>
+                        <path 
+                          d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" 
+                          fill={`url(#grad-${elId})`}
+                        />
+                      </>
+                    ) : (
+                      <path 
+                        d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" 
+                        fill={el.color}
+                      />
+                    )}
+                  </svg>
+                )}
               </div>
             )}
 
