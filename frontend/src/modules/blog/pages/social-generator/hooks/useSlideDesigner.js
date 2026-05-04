@@ -162,7 +162,7 @@ export const useSlideDesigner = () => {
     return content;
   };
 
-  const addExtraElement = (slideIndex, type, content = '') => {
+  const addExtraElement = (slideIndex, type, content = '', fontFamily = 'Arial') => {
     const id = Math.random().toString(36).substr(2, 9);
     const newElement = {
       id,
@@ -180,7 +180,8 @@ export const useSlideDesigner = () => {
       gradientDir: 'to bottom right',
       zIndex: 30,
       bold: true,
-      italic: false
+      italic: false,
+      fontFamily: type === 'text' ? fontFamily : 'Arial'
     };
     setExtraElements(prev => {
       const slideElements = prev[slideIndex] || [];

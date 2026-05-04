@@ -242,6 +242,7 @@ export const SlideCanvas = ({
                   WebkitTextFillColor: el.useGradient ? 'transparent' : 'initial',
                   fontWeight: el.bold ? '900' : '500',
                   fontStyle: el.italic ? 'italic' : 'normal',
+                  fontFamily: el.fontFamily || 'Arial',
                   cursor: isElSelected ? 'text' : 'default'
                 }}
                 onBlur={(e) => {

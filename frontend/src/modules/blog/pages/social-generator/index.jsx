@@ -333,8 +333,8 @@ export default function SocialGenerator() {
                           canvas={designer.canvas}
                           transform={transformer.state}
                           currentSlide={designer.canvas.currentSlidePage}
-                          onAddElement={(slideIndex, type, content) => {
-                            designer.canvas.addExtraElement(slideIndex, type, content);
+                          onAddElement={(slideIndex, type, content, fontFamily) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content, fontFamily);
                             pushToHistory(generatedContent);
                           }}
                           onDownload={exporter.downloadCarousel}
@@ -373,8 +373,10 @@ export default function SocialGenerator() {
                             
                             {/* Canvas Area */}
                             <div className="flex flex-col items-center" ref={editorWrapperRef}>
-                              {/* Contextual Action Bar */}
-                              {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (() => {
+                              {/* Fixed height spacer for contextual bar */}
+                              <div className="h-16 mb-4">
+                                {/* Contextual Action Bar */}
+                                {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (() => {
                                 // Determine element type and get element data
                                 let elementType = null;
                                 let elementData = null;
@@ -581,6 +583,7 @@ export default function SocialGenerator() {
                                   </div>
                                 );
                               })()}
+                              </div>
 
                               {/* Main Canvas */}
                               <div 
@@ -680,8 +683,8 @@ export default function SocialGenerator() {
                           canvas={designer.canvas}
                           transform={transformer}
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
-                          onAddElement={(slideIndex, type, content) => {
-                            designer.canvas.addExtraElement(slideIndex, type, content);
+                          onAddElement={(slideIndex, type, content, fontFamily) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content, fontFamily);
                             pushToHistory(generatedContent);
                           }}
                           onDeleteElement={() => {

@@ -19,6 +19,11 @@ export const EnhancedSidebar = ({
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showTextElements, setShowTextElements] = useState(true);
+  const [showShapeElements, setShowShapeElements] = useState(false);
+  const [showIconElements, setShowIconElements] = useState(false);
+  const [showEmojiElements, setShowEmojiElements] = useState(false);
+  const [selectedFont, setSelectedFont] = useState('Arial');
 
   return (
     <div className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'} flex flex-col h-full`}>
@@ -111,49 +116,132 @@ export const EnhancedSidebar = ({
           <>
             {/* Elements Tab */}
             {activeTab === 'elements' && (
-              <div className="p-4 space-y-6">
+              <div className="p-4 space-y-4">
                 {/* Text Elements */}
                 <div>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Texto</h3>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => onAddElement(currentSlide, 'text', 'Título')}
-                      className="w-full p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-left font-bold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Título
-                    </button>
-                    <button
-                      onClick={() => onAddElement(currentSlide, 'text', 'Subtítulo')}
-                      className="w-full p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Subtítulo
-                    </button>
-                    <button
-                      onClick={() => onAddElement(currentSlide, 'text', 'Cuerpo')}
-                      className="w-full p-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Cuerpo de texto
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setShowTextElements(!showTextElements)}
+                    className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <span className="text-sm font-bold">📝 Textos</span>
+                    <FiChevronDown className={`transition-transform ${showTextElements ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showTextElements && (
+                    <div className="mt-2 space-y-2 pl-4">
+                      <div className="mb-2">
+                        <label className="text-xs font-black text-gray-400 uppercase">Fuente:</label>
+                        <select
+                          value={selectedFont}
+                          onChange={(e) => setSelectedFont(e.target.value)}
+                          className="w-full mt-1 p-2 text-sm bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                        >
+                          <option value="Arial">Arial</option>
+                          <option value="Times New Roman">Times New Roman</option>
+                          <option value="Helvetica">Helvetica</option>
+                          <option value="Georgia">Georgia</option>
+                          <option value="Verdana">Verdana</option>
+                          <option value="Courier New">Courier New</option>
+                          <option value="Impact">Impact</option>
+                          <option value="Comic Sans MS">Comic Sans MS</option>
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => onAddElement(currentSlide, 'text', 'Título', selectedFont)}
+                        className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left font-bold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        Título
+                      </button>
+                      <button
+                        onClick={() => onAddElement(currentSlide, 'text', 'Subtítulo', selectedFont)}
+                        className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        Subtítulo
+                      </button>
+                      <button
+                        onClick={() => onAddElement(currentSlide, 'text', 'Cuerpo', selectedFont)}
+                        className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        Cuerpo de texto
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Shape Elements */}
                 <div>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Formas</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {SHAPES_CONFIG.map(shape => (
-                      <button 
-                        key={shape.id}
-                        onClick={() => onAddElement(currentSlide, 'shape', shape.id)} 
-                        className="aspect-square bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group p-2" 
-                        title={shape.label}
-                      >
-                        <div className="group-hover:scale-110 transition-transform">
-                          {shape.icon}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => setShowShapeElements(!showShapeElements)}
+                    className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <span className="text-sm font-bold">🔷 Formas</span>
+                    <FiChevronDown className={`transition-transform ${showShapeElements ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showShapeElements && (
+                    <div className="mt-2 grid grid-cols-3 gap-2 pl-4">
+                      {SHAPES_CONFIG.map(shape => (
+                        <button 
+                          key={shape.id}
+                          onClick={() => onAddElement(currentSlide, 'shape', shape.id)} 
+                          className="aspect-square bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group p-2" 
+                          title={shape.label}
+                        >
+                          <div className="group-hover:scale-110 transition-transform">
+                            {shape.icon}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Icon Elements */}
+                <div>
+                  <button
+                    onClick={() => setShowIconElements(!showIconElements)}
+                    className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <span className="text-sm font-bold">⭐ Iconos</span>
+                    <FiChevronDown className={`transition-transform ${showIconElements ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showIconElements && (
+                    <div className="mt-2 grid grid-cols-4 gap-2 pl-4">
+                      {['❤️', '⭐', '🔥', '💎', '🎯', '🚀', '💡', '🎨', '📱', '💻', '🌟', '✨', '🎪', '🎭', '🎪'].map((emoji, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => onAddElement(currentSlide, 'text', emoji)} 
+                          className="aspect-square bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center text-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all p-2" 
+                          title={`Emoji ${emoji}`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Emoji Elements */}
+                <div>
+                  <button
+                    onClick={() => setShowEmojiElements(!showEmojiElements)}
+                    className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <span className="text-sm font-bold">😀 Emojis</span>
+                    <FiChevronDown className={`transition-transform ${showEmojiElements ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showEmojiElements && (
+                    <div className="mt-2 grid grid-cols-6 gap-1 pl-4">
+                      {['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'].map((emoji, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => onAddElement(currentSlide, 'text', emoji)} 
+                          className="aspect-square bg-white dark:bg-gray-900 rounded-lg flex items-center justify-center text-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all p-1" 
+                          title={`Emoji ${emoji}`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
