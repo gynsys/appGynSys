@@ -420,14 +420,9 @@ export default function SocialGenerator() {
                                           }
                                         }
                                       }}
-                                      className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
+                                      className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all"
                                     >
-                                      <FiLayers size={14} /> Capa: {
-                                        (designer.canvas.selectedExtraId ? 
-                                          designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 5 :
-                                          designer.canvas.slides?.[designer.canvas.selectedImageId.split('-')[0]]?.images?.[designer.canvas.selectedImageId.split('-')[1]]?.zIndex === 5
-                                        ) ? 'Al Frente' : 'Al Fondo'
-                                      }
+                                      <FiLayers size={28} />
                                     </button>
 
                                     {/* Text-specific controls */}
@@ -568,9 +563,9 @@ export default function SocialGenerator() {
                                           designer.canvas.setSelectedImageId(null);
                                         }
                                       }}
-                                      className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
+                                      className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all"
                                     >
-                                      <FiTrash2 size={14} /> Eliminar
+                                      <FiTrash2 size={18} />
                                     </button>
 
                                     <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
