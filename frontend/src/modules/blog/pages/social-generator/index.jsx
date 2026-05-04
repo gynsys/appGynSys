@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2 } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -333,8 +333,8 @@ export default function SocialGenerator() {
                           canvas={designer.canvas}
                           transform={transformer.state}
                           currentSlide={designer.canvas.currentSlidePage}
-                          onAddElement={(slideIndex, type, content, fontFamily) => {
-                            designer.canvas.addExtraElement(slideIndex, type, content, fontFamily);
+                          onAddElement={(slideIndex, type, content) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content);
                             pushToHistory(generatedContent);
                           }}
                           onDownload={exporter.downloadCarousel}
@@ -704,8 +704,8 @@ export default function SocialGenerator() {
                           canvas={designer.canvas}
                           transform={transformer}
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
-                          onAddElement={(slideIndex, type, content, fontFamily) => {
-                            designer.canvas.addExtraElement(slideIndex, type, content, fontFamily);
+                          onAddElement={(slideIndex, type, content) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content);
                             pushToHistory(generatedContent);
                           }}
                           onDeleteElement={() => {

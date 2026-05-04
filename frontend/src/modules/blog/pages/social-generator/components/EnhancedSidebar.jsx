@@ -19,7 +19,7 @@ export const EnhancedSidebar = ({
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showTextElements, setShowTextElements] = useState(true);
+  const [showTextElements, setShowTextElements] = useState(false);
   const [showShapeElements, setShowShapeElements] = useState(false);
   const [showIconElements, setShowIconElements] = useState(false);
   const [showEmojiElements, setShowEmojiElements] = useState(false);
@@ -128,37 +128,20 @@ export const EnhancedSidebar = ({
                   </button>
                   {showTextElements && (
                     <div className="mt-2 space-y-2 pl-4">
-                      <div className="mb-2">
-                        <label className="text-xs font-black text-gray-400 uppercase">Fuente:</label>
-                        <select
-                          value={selectedFont}
-                          onChange={(e) => setSelectedFont(e.target.value)}
-                          className="w-full mt-1 p-2 text-sm bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
-                        >
-                          <option value="Arial">Arial</option>
-                          <option value="Times New Roman">Times New Roman</option>
-                          <option value="Helvetica">Helvetica</option>
-                          <option value="Georgia">Georgia</option>
-                          <option value="Verdana">Verdana</option>
-                          <option value="Courier New">Courier New</option>
-                          <option value="Impact">Impact</option>
-                          <option value="Comic Sans MS">Comic Sans MS</option>
-                        </select>
-                      </div>
                       <button
-                        onClick={() => onAddElement(currentSlide, 'text', 'Título', selectedFont)}
+                        onClick={() => onAddElement(currentSlide, 'text', 'Título')}
                         className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left font-bold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                       >
                         Título
                       </button>
                       <button
-                        onClick={() => onAddElement(currentSlide, 'text', 'Subtítulo', selectedFont)}
+                        onClick={() => onAddElement(currentSlide, 'text', 'Subtítulo')}
                         className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                       >
                         Subtítulo
                       </button>
                       <button
-                        onClick={() => onAddElement(currentSlide, 'text', 'Cuerpo', selectedFont)}
+                        onClick={() => onAddElement(currentSlide, 'text', 'Cuerpo')}
                         className="w-full p-2 bg-white dark:bg-gray-800 rounded-lg text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                       >
                         Cuerpo de texto
