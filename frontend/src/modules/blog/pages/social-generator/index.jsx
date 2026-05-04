@@ -446,7 +446,28 @@ export default function SocialGenerator() {
                                         </div>
                                         <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
                                         <div className="flex items-center gap-2">
-                                          <label className="text-[9px] font-black uppercase text-gray-400">Tamaño</label>
+                                          <FiType size={12} className="text-gray-400" />
+                                          <select
+                                            value={elementData.fontFamily || 'Arial'}
+                                            onChange={(e) => {
+                                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                              designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { fontFamily: e.target.value });
+                                            }}
+                                            className="px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400"
+                                          >
+                                            <option value="Arial">Arial</option>
+                                            <option value="Times New Roman">Times New Roman</option>
+                                            <option value="Helvetica">Helvetica</option>
+                                            <option value="Georgia">Georgia</option>
+                                            <option value="Verdana">Verdana</option>
+                                            <option value="Courier New">Courier New</option>
+                                            <option value="Impact">Impact</option>
+                                            <option value="Comic Sans MS">Comic Sans MS</option>
+                                          </select>
+                                        </div>
+                                        <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                        <div className="flex items-center gap-2">
+                                          <FiMaximize2 size={12} className="text-gray-400" />
                                           <input
                                             type="number" min="8" max="72"
                                             value={Math.round(elementData.height * 0.8)}

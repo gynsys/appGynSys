@@ -137,6 +137,7 @@ export const SVGIcons = {
   repeat: (props) => <FiRepeat {...props} />,
 };
 
+// Pure SVG shapes (geometric and medical shapes)
 export const SHAPES_CONFIG = [
   { id: 'circle', label: 'Círculo', icon: <SVGIcons.circle className="w-8 h-8" /> },
   { id: 'square', label: 'Rectángulo', icon: <SVGIcons.square className="w-8 h-8" /> },
@@ -157,7 +158,11 @@ export const SHAPES_CONFIG = [
   { id: 'blob1', label: 'Mancha Orgánica', icon: <SVGIcons.blob1 className="w-8 h-8" /> },
   { id: 'sparkle', label: 'Destello', icon: <SVGIcons.sparkle className="w-8 h-8" /> },
   { id: 'check', label: 'Check', icon: <SVGIcons.check className="w-8 h-8" /> },
-  { id: 'x', label: 'X', icon: <SVGIcons.x className="w-8 h-8" /> },
+  { id: 'x', label: 'X', icon: <SVGIcons.x className="w-8 h-8" /> }
+];
+
+// React Icons (UI and system icons)
+export const REACT_ICONS_CONFIG = [
   { id: 'alertTriangle', label: 'Alerta', icon: <SVGIcons.alertTriangle className="w-8 h-8" /> },
   { id: 'bell', label: 'Campana', icon: <SVGIcons.bell className="w-8 h-8" /> },
   { id: 'calendar', label: 'Calendario', icon: <SVGIcons.calendar className="w-8 h-8" /> },
@@ -195,6 +200,6 @@ export const SHAPES_CONFIG = [
   { id: 'play', label: 'Play', icon: <SVGIcons.play className="w-8 h-8" /> },
   { id: 'pause', label: 'Pausa', icon: <SVGIcons.pause className="w-8 h-8" /> },
   { id: 'skipBack', label: 'Retroceder', icon: <SVGIcons.skipBack className="w-8 h-8" /> },
-  { id: 'skipForward', label: 'Avanzar', icon: <SVGIcons.skipForward className="w-8 h-8" /> },
-  { id: 'repeat', label: 'Repetir', icon: <SVGIcons.repeat className="w-8 h-8" /> },
+  { id: 'skipForward', label: 'Adelantar', icon: <SVGIcons.skipForward className="w-8 h-8" /> },
+  { id: 'repeat', label: 'Repetir', icon: <SVGIcons.repeat className="w-8 h-8" /> }
 ];

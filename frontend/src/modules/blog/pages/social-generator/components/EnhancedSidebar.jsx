@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiFolder, FiCheck, FiX, FiAlertTriangle, FiBell, FiCalendar, FiClock, FiMail, FiPhone, FiUser, FiMapPin, FiHome, FiBriefcase, FiHeart, FiStar, FiTrendingUp, FiActivity, FiZap, FiSun, FiMoon, FiCloud, FiUmbrella, FiTarget, FiCompass, FiNavigation, FiFlag, FiBookmark, FiMessageSquare, FiShare2, FiRefreshCw, FiCpu, FiDatabase, FiWifi, FiBluetooth, FiBattery, FiVolume2, FiVolumeX, FiPlay, FiPause, FiSkipBack, FiSkipForward, FiRepeat } from 'react-icons/fi';
-import { SHAPES_CONFIG } from '../lib/svgIcons';
+import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
 
 export const EnhancedSidebar = ({ 
   design, 
@@ -205,14 +205,16 @@ export const EnhancedSidebar = ({
                   </button>
                   {showIconElements && (
                     <div className="mt-2 grid grid-cols-4 gap-2 pl-4">
-                      {['❤️', '⭐', '🔥', '💎', '🎯', '🚀', '💡', '🎨', '📱', '💻', '🌟', '✨', '🎪', '🎭', '🎪'].map((emoji, index) => (
+                      {REACT_ICONS_CONFIG.map(icon => (
                         <button 
-                          key={index}
-                          onClick={() => onAddElement(currentSlide, 'text', emoji)} 
-                          className="aspect-square bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center text-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all p-2" 
-                          title={`Emoji ${emoji}`}
+                          key={icon.id}
+                          onClick={() => onAddElement(currentSlide, 'icon', icon.id)} 
+                          className="aspect-square bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center text-gray-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-all group p-2" 
+                          title={icon.label}
                         >
-                          {emoji}
+                          <div className="group-hover:scale-110 transition-transform">
+                            {icon.icon}
+                          </div>
                         </button>
                       ))}
                     </div>
