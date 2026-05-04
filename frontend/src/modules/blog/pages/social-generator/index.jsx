@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -34,6 +34,17 @@ export default function SocialGenerator() {
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null);
   const [showProjects, setShowProjects] = useState(false);
   const [history, setHistory] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const pushToHistory = (content) => {
     setHistory(prev => [...prev.slice(-19), JSON.parse(JSON.stringify(content))]);
@@ -312,149 +323,264 @@ export default function SocialGenerator() {
                 </div>
 
                 {activeTab === 'carousel' && (
-                  <div className="space-y-8">
-                    <TopToolbar 
-                      design={designer.design} 
-                      canvas={designer.canvas} 
-                      transform={transformer.state}
-                      onDownload={exporter.downloadCarousel}
-                      onWatermark={handleWatermark}
-                      watermark={watermarkImage}
-                      onApplyTemplate={() => designer.canvas.applyTemplateToAll(generatedContent.slides.length)}
-                      totalSlides={generatedContent.slides.length}
-                      onLoadProject={handleLoadProject}
-                      generatedContent={generatedContent}
-                      onUndo={undo}
-                      canUndo={history.length > 0}
-                    />
-                    
-                    <div className="flex flex-col items-center gap-8 w-full" ref={editorWrapperRef}>
-                      <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                  <div className={`${isMobile ? 'pb-24' : ''}`}>
+                    {/* Desktop Layout */}
+                    {!isMobile && (
+                      <div className="flex gap-6">
+                        {/* Enhanced Sidebar */}
+                        <EnhancedSidebar
+                          design={designer.design}
+                          canvas={designer.canvas}
+                          transform={transformer.state}
+                          currentSlide={designer.canvas.currentSlidePage}
+                          onAddElement={(slideIndex, type, content) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content);
+                            pushToHistory(generatedContent);
+                          }}
+                          onDownload={exporter.downloadCarousel}
+                          onSave={() => designer.canvas.saveProject(generatedContent)}
+                          onPreview={() => setPreviewIndex(0)}
+                          selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
+                          totalSlides={generatedContent.slides.length}
+                        />
                         
-                      {/* Contextual Action Bar */}
-                      {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
-                        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-900 animate-slideDown z-50">
-                          <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mr-2">Control de Elemento</p>
-                          <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
-                          
-                          <button 
-                            onClick={() => {
-                              if (designer.canvas.selectedExtraId) {
-                                const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
-                                designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 10 ? 30 : 10 });
-                              } else if (designer.canvas.selectedImageId) {
-                                const id = designer.canvas.selectedImageId;
-                                const currentZ = transformer.state.imagePositions[id]?.zIndex || 20;
-                                transformer.handlers.updateImage(id, { zIndex: currentZ === 10 ? 20 : 10 });
-                              }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
-                          >
-                            <FiLayers size={14} /> Capa: {
-                              (designer.canvas.selectedExtraId ? 
-                                designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
-                                transformer.state.imagePositions[designer.canvas.selectedImageId]?.zIndex === 10
-                              ) ? 'Al Frente' : 'Al Fondo'
-                            }
-                          </button>
+                        {/* Main Editor Area */}
+                        <div className="flex-1">
+                          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                              <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                              
+                              {/* Quick Actions */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setPreviewIndex(0)}
+                                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                  title="Vista Previa"
+                                >
+                                  <FiEye size={16} />
+                                </button>
+                                <button
+                                  onClick={exporter.downloadCarousel}
+                                  className="p-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                                  title="Descargar"
+                                >
+                                  <FiDownload size={16} />
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* Canvas Area */}
+                            <div className="flex flex-col items-center" ref={editorWrapperRef}>
+                              {/* Contextual Action Bar */}
+                              {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
+                                <div className="flex items-center gap-4 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-900 animate-slideDown z-50 mb-4">
+                                  <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mr-2">Control de Elemento</p>
+                                  <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                  
+                                  <button 
+                                    onClick={() => {
+                                      if (designer.canvas.selectedExtraId) {
+                                        const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                        const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
+                                        designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 10 ? 30 : 10 });
+                                      } else if (designer.canvas.selectedImageId) {
+                                        const id = designer.canvas.selectedImageId;
+                                        const currentZ = transformer.state.imagePositions[id]?.zIndex || 20;
+                                        transformer.handlers.updateImage(id, { zIndex: currentZ === 10 ? 20 : 10 });
+                                      }
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
+                                  >
+                                    <FiLayers size={14} /> Capa: {
+                                      (designer.canvas.selectedExtraId ? 
+                                        designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
+                                        transformer.state.imagePositions[designer.canvas.selectedImageId]?.zIndex === 10
+                                      ) ? 'Al Frente' : 'Al Fondo'
+                                    }
+                                  </button>
 
-                          {/* Size controls — only for extra elements */}
-                          {designer.canvas.selectedExtraId && (() => {
-                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                            const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
-                            if (!el) return null;
-                            return (
-                              <>
-                                <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
-                                <div className="flex items-center gap-2">
-                                  <label className="text-[9px] font-black uppercase text-gray-400">W</label>
-                                  <input
-                                    type="number" min="10" max="410"
-                                    value={Math.round(el.width)}
-                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value), fullWidth: false })}
-                                    className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
-                                  />
-                                  <label className="text-[9px] font-black uppercase text-gray-400">H</label>
-                                  <input
-                                    type="number" min="10" max="410"
-                                    value={Math.round(el.height)}
-                                    onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) })}
-                                    className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                  {/* Size controls — only for extra elements */}
+                                  {designer.canvas.selectedExtraId && (() => {
+                                    const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                    const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                                    if (!el) return null;
+                                    return (
+                                      <>
+                                        <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                        <div className="flex items-center gap-2">
+                                          <label className="text-[9px] font-black uppercase text-gray-400">W</label>
+                                          <input
+                                            type="number" min="10" max="410"
+                                            value={Math.round(el.width)}
+                                            onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value), fullWidth: false })}
+                                            className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                          />
+                                          <label className="text-[9px] font-black uppercase text-gray-400">H</label>
+                                          <input
+                                            type="number" min="10" max="410"
+                                            value={Math.round(el.height)}
+                                            onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) })}
+                                            className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                          />
+                                        </div>
+                                        <button
+                                          onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { fullWidth: true, x: 50 })}
+                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${el.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                        >
+                                          ↔ Ancho Total
+                                        </button>
+                                      </>
+                                    );
+                                  })()}
+
+                                  <button 
+                                    onClick={() => {
+                                      if (designer.canvas.selectedExtraId) {
+                                        const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                        designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                      } else if (designer.canvas.selectedImageId) {
+                                        const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                        handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                        designer.canvas.setSelectedImageId(null);
+                                      }
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
+                                  >
+                                    <FiTrash2 size={14} /> Eliminar
+                                  </button>
+
+                                  <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
+                                  <button 
+                                    onClick={() => {
+                                      designer.canvas.setSelectedExtraId(null);
+                                      designer.canvas.setSelectedImageId(null);
+                                    }}
+                                    className="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase"
+                                  >
+                                    Deseleccionar
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Main Canvas */}
+                              <div 
+                                className="flex items-center justify-center transition-all duration-300 overflow-visible"
+                                style={{ 
+                                  width: 410 * scale, 
+                                  height: 410 * scale,
+                                  perspective: '1000px'
+                                }}
+                              >
+                                <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                                  <SlideCanvas 
+                                     slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                     index={designer.canvas.currentSlidePage}
+                                     doctor={doctor}
+                                     doctorLogo={doctorLogoBase64}
+                                     design={designer.design}
+                                     canvas={designer.canvas}
+                                     transform={transformer.state}
+                                     handlers={transformer.handlers}
+                                     watermark={watermarkImage}
+                                     onEdit={setEditingIndex}
+                                     onPreview={setPreviewIndex}
+                                     onCopy={(i) => {
+                                       const newSlides = [...generatedContent.slides];
+                                       newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                       setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                       showToast('Diapositiva duplicada', 'success');
+                                     }}
+                                     onRemove={handleRemoveSlide}
+                                     onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                                     onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
                                   />
                                 </div>
-                                <button
-                                  onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { fullWidth: true, x: 50 })}
-                                  className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${el.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-                                >
-                                  ↔ Ancho Total
-                                </button>
-                              </>
-                            );
-                          })()}
-
-                          <button 
-                            onClick={() => {
-                              if (designer.canvas.selectedExtraId) {
-                                const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
-                              } else if (designer.canvas.selectedImageId) {
-                                const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
-                                handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
-                                designer.canvas.setSelectedImageId(null);
-                              }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
-                          >
-                            <FiTrash2 size={14} /> Eliminar
-                          </button>
-
-                          <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
-                          <button 
-                            onClick={() => {
-                              designer.canvas.setSelectedExtraId(null);
-                              designer.canvas.setSelectedImageId(null);
-                            }}
-                            className="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase"
-                          >
-                            Deseleccionar
-                          </button>
-                        </div>
-                      )}
-                        <div 
-                          className="flex items-center justify-center transition-all duration-300 overflow-visible"
-                          style={{ 
-                            width: 410 * scale, 
-                            height: 410 * scale,
-                            perspective: '1000px'
-                          }}
-                        >
-                          <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
-                            <SlideCanvas 
-                               slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                               index={designer.canvas.currentSlidePage}
-                               doctor={doctor}
-                               doctorLogo={doctorLogoBase64}
-                               design={designer.design}
-                               canvas={designer.canvas}
-                               transform={transformer.state}
-                               handlers={transformer.handlers}
-                               watermark={watermarkImage}
-                               onEdit={setEditingIndex}
-                               onPreview={setPreviewIndex}
-                               onCopy={(i) => {
-                                 const newSlides = [...generatedContent.slides];
-                                 newSlides.splice(i + 1, 0, { ...newSlides[i] });
-                                 setGeneratedContent({ ...generatedContent, slides: newSlides });
-                                 showToast('Diapositiva duplicada', 'success');
-                               }}
-                               onRemove={handleRemoveSlide}
-                               onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                               onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
-                            />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Mobile Layout */}
+                    {isMobile && (
+                      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                        {/* Mobile Header */}
+                        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+                          <div className="flex items-center justify-between">
+                            <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                            <button
+                              onClick={() => setPreviewIndex(0)}
+                              className="p-2 rounded-lg bg-indigo-600 text-white"
+                            >
+                              <FiEye size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Mobile Canvas - Full Screen */}
+                        <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4">
+                          <div 
+                            className="flex items-center justify-center transition-all duration-300"
+                            style={{ 
+                              width: 410 * scale, 
+                              height: 410 * scale,
+                              perspective: '1000px'
+                            }}
+                          >
+                            <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                              <SlideCanvas 
+                                 slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                 index={designer.canvas.currentSlidePage}
+                                 doctor={doctor}
+                                 doctorLogo={doctorLogoBase64}
+                                 design={designer.design}
+                                 canvas={designer.canvas}
+                                 transform={transformer.state}
+                                 handlers={transformer.handlers}
+                                 watermark={watermarkImage}
+                                 onEdit={setEditingIndex}
+                                 onPreview={setPreviewIndex}
+                                 onCopy={(i) => {
+                                   const newSlides = [...generatedContent.slides];
+                                   newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                   setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                   showToast('Diapositiva duplicada', 'success');
+                                 }}
+                                 onRemove={handleRemoveSlide}
+                                 onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                                 onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mobile Toolbar */}
+                        <MobileToolbar
+                          canvas={designer.canvas}
+                          transform={transformer}
+                          selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
+                          onAddElement={(slideIndex, type, content) => {
+                            designer.canvas.addExtraElement(slideIndex, type, content);
+                            pushToHistory(generatedContent);
+                          }}
+                          onDeleteElement={() => {
+                            if (designer.canvas.selectedExtraId) {
+                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                              designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                            } else if (designer.canvas.selectedImageId) {
+                              const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                              handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                              designer.canvas.setSelectedImageId(null);
+                            }
+                          }}
+                          onDownload={exporter.downloadCarousel}
+                          onSave={() => designer.canvas.saveProject(generatedContent)}
+                          onPreview={() => setPreviewIndex(0)}
+                          currentSlide={designer.canvas.currentSlidePage}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
                 
