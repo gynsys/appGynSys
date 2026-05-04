@@ -374,95 +374,204 @@ export default function SocialGenerator() {
                             {/* Canvas Area */}
                             <div className="flex flex-col items-center" ref={editorWrapperRef}>
                               {/* Contextual Action Bar */}
-                              {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
-                                <div className="flex items-center gap-4 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-900 animate-slideDown z-50 mb-4">
-                                  <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mr-2">Control de Elemento</p>
-                                  <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
-                                  
-                                  <button 
-                                    onClick={() => {
-                                      if (designer.canvas.selectedExtraId) {
-                                        const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                        const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
-                                        designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 10 ? 30 : 10 });
-                                      } else if (designer.canvas.selectedImageId) {
-                                        const id = designer.canvas.selectedImageId;
-                                        const currentZ = transformer.state.imagePositions[id]?.zIndex || 20;
-                                        transformer.handlers.updateImage(id, { zIndex: currentZ === 10 ? 20 : 10 });
-                                      }
-                                    }}
-                                    className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
-                                  >
-                                    <FiLayers size={14} /> Capa: {
-                                      (designer.canvas.selectedExtraId ? 
-                                        designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 10 :
-                                        transformer.state.imagePositions[designer.canvas.selectedImageId]?.zIndex === 10
-                                      ) ? 'Al Frente' : 'Al Fondo'
-                                    }
-                                  </button>
+                              {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (() => {
+                                // Determine element type and get element data
+                                let elementType = null;
+                                let elementData = null;
+                                
+                                if (designer.canvas.selectedExtraId) {
+                                  const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                  elementData = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                                  elementType = elementData?.type || 'unknown';
+                                } else if (designer.canvas.selectedImageId) {
+                                  elementType = 'image';
+                                }
 
-                                  {/* Size controls — only for extra elements */}
-                                  {designer.canvas.selectedExtraId && (() => {
-                                    const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                    const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
-                                    if (!el) return null;
-                                    return (
+                                if (!elementType) return null;
+
+                                return (
+                                  <div className="flex items-center gap-4 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-900 animate-slideDown z-50 mb-4">
+                                    <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mr-2">
+                                      Control {elementType === 'text' ? 'de Texto' : 
+                                             elementType === 'image' ? 'de Imagen' : 
+                                             elementType === 'shape' || elementType === 'icon' ? 'de Forma' : 
+                                             'de Elemento'}
+                                    </p>
+                                    <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                    
+                                    {/* Layer control - common to all elements */}
+                                    <button 
+                                      onClick={() => {
+                                        if (designer.canvas.selectedExtraId) {
+                                          const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                          const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
+                                          designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 30 ? 5 : 30 });
+                                        } else if (designer.canvas.selectedImageId) {
+                                          const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                          const slide = designer.canvas.slides?.[slideIdx];
+                                          if (slide && slide.images && slide.images[imgIdx]) {
+                                            const img = slide.images[imgIdx];
+                                            const newZIndex = img.zIndex === 20 ? 5 : 20;
+                                            const updatedImages = [...slide.images];
+                                            updatedImages[imgIdx] = { ...img, zIndex: newZIndex };
+                                            const updatedSlides = [...designer.canvas.slides];
+                                            updatedSlides[slideIdx] = { ...slide, images: updatedImages };
+                                            designer.canvas.setSlides(updatedSlides);
+                                          }
+                                        }
+                                      }}
+                                      className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all font-black text-[10px] uppercase"
+                                    >
+                                      <FiLayers size={14} /> Capa: {
+                                        (designer.canvas.selectedExtraId ? 
+                                          designer.canvas.extraElements[designer.canvas.selectedExtraId.split('-')[0]]?.find(e => e.id === designer.canvas.selectedExtraId.split('-')[1])?.zIndex === 5 :
+                                          designer.canvas.slides?.[designer.canvas.selectedImageId.split('-')[0]]?.images?.[designer.canvas.selectedImageId.split('-')[1]]?.zIndex === 5
+                                        ) ? 'Al Frente' : 'Al Fondo'
+                                      }
+                                    </button>
+
+                                    {/* Text-specific controls */}
+                                    {elementType === 'text' && elementData && (
+                                      <>
+                                        <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                        <div className="flex items-center gap-2">
+                                          <label className="text-[9px] font-black uppercase text-gray-400">Tamaño</label>
+                                          <input
+                                            type="number" min="8" max="72"
+                                            value={Math.round(elementData.height * 0.8)}
+                                            onChange={(e) => {
+                                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                              designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) / 0.8 });
+                                            }}
+                                            className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
+                                          />
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { 
+                                              bold: !elementData.bold 
+                                            });
+                                          }}
+                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all ${elementData.bold ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        >
+                                          <FiBold size={12} />
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { 
+                                              italic: !elementData.italic 
+                                            });
+                                          }}
+                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all ${elementData.italic ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        >
+                                          <FiItalic size={12} />
+                                        </button>
+                                      </>
+                                    )}
+
+                                    {/* Shape/Icon-specific controls */}
+                                    {(elementType === 'shape' || elementType === 'icon') && elementData && (
                                       <>
                                         <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
                                         <div className="flex items-center gap-2">
                                           <label className="text-[9px] font-black uppercase text-gray-400">W</label>
                                           <input
                                             type="number" min="10" max="410"
-                                            value={Math.round(el.width)}
-                                            onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value), fullWidth: false })}
+                                            value={Math.round(elementData.width)}
+                                            onChange={(e) => {
+                                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                              designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { width: Number(e.target.value), fullWidth: false });
+                                            }}
                                             className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
                                           />
                                           <label className="text-[9px] font-black uppercase text-gray-400">H</label>
                                           <input
                                             type="number" min="10" max="410"
-                                            value={Math.round(el.height)}
-                                            onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) })}
+                                            value={Math.round(elementData.height)}
+                                            onChange={(e) => {
+                                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                              designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { height: Number(e.target.value) });
+                                            }}
                                             className="w-14 px-2 py-1 text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg text-center outline-none focus:border-indigo-400"
                                           />
                                         </div>
                                         <button
-                                          onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { fullWidth: true, x: 50 })}
-                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${el.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                          onClick={() => {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { 
+                                              fullWidth: true, 
+                                              x: 50,
+                                              width: 410
+                                            });
+                                          }}
+                                          className={`px-3 py-1.5 rounded-xl text-[9px] font-black transition-all whitespace-nowrap ${elementData.fullWidth ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                                         >
                                           ↔ Ancho Total
                                         </button>
                                       </>
-                                    );
-                                  })()}
+                                    )}
 
-                                  <button 
-                                    onClick={() => {
-                                      if (designer.canvas.selectedExtraId) {
-                                        const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                        designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
-                                      } else if (designer.canvas.selectedImageId) {
-                                        const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
-                                        handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                    {/* Image-specific controls */}
+                                    {elementType === 'image' && (
+                                      <>
+                                        <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900"></div>
+                                        <div className="flex items-center gap-2">
+                                          <label className="text-[9px] font-black uppercase text-gray-400">Borde</label>
+                                          <select
+                                            onChange={(e) => {
+                                              const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                              const slide = designer.canvas.slides?.[slideIdx];
+                                              if (slide && slide.images && slide.images[imgIdx]) {
+                                                const img = slide.images[imgIdx];
+                                                const updatedImages = [...slide.images];
+                                                updatedImages[imgIdx] = { ...img, borderRadius: e.target.value };
+                                                const updatedSlides = [...designer.canvas.slides];
+                                                updatedSlides[slideIdx] = { ...slide, images: updatedImages };
+                                                designer.canvas.setSlides(updatedSlides);
+                                              }
+                                            }}
+                                            className="text-xs px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400"
+                                          >
+                                            <option value="0">Cuadrado</option>
+                                            <option value="8">Redondeado</option>
+                                            <option value="9999">Círculo</option>
+                                          </select>
+                                        </div>
+                                      </>
+                                    )}
+
+                                    {/* Delete button - common to all elements */}
+                                    <button 
+                                      onClick={() => {
+                                        if (designer.canvas.selectedExtraId) {
+                                          const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                          designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                        } else if (designer.canvas.selectedImageId) {
+                                          const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                          handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                          designer.canvas.setSelectedImageId(null);
+                                        }
+                                      }}
+                                      className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
+                                    >
+                                      <FiTrash2 size={14} /> Eliminar
+                                    </button>
+
+                                    <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
+                                    <button 
+                                      onClick={() => {
+                                        designer.canvas.setSelectedExtraId(null);
                                         designer.canvas.setSelectedImageId(null);
-                                      }
-                                    }}
-                                    className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all font-black text-[10px] uppercase"
-                                  >
-                                    <FiTrash2 size={14} /> Eliminar
-                                  </button>
-
-                                  <div className="h-6 w-[1px] bg-indigo-100 dark:bg-indigo-900 mx-2"></div>
-                                  <button 
-                                    onClick={() => {
-                                      designer.canvas.setSelectedExtraId(null);
-                                      designer.canvas.setSelectedImageId(null);
-                                    }}
-                                    className="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase"
-                                  >
-                                    Deseleccionar
-                                  </button>
-                                </div>
-                              )}
+                                      }}
+                                      className="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase"
+                                    >
+                                      Deseleccionar
+                                    </button>
+                                  </div>
+                                );
+                              })()}
 
                               {/* Main Canvas */}
                               <div 
