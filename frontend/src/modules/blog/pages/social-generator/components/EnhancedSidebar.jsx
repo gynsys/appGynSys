@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const EnhancedSidebar = ({ 
@@ -159,35 +159,74 @@ export const EnhancedSidebar = ({
             {/* Design Tab */}
             {activeTab === 'design' && (
               <div className="p-4 space-y-6">
-                {/* Colors */}
+                {/* Background Colors & Gradients */}
                 <div>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Colores</h3>
+                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Fondo</h3>
                   <div className="space-y-3">
-                    <div>
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Fondo</label>
+                    <div className="flex items-center gap-2">
                       <input
                         type="color"
                         value={design.bgColor}
                         onChange={(e) => design.setBgColor(e.target.value)}
-                        className="w-full h-10 rounded cursor-pointer"
+                        className="w-12 h-8 rounded cursor-pointer"
                       />
+                      {design.useBgGradient && (
+                        <>
+                          <input
+                            type="color"
+                            value={design.bgColor2}
+                            onChange={(e) => design.setBgColor2(e.target.value)}
+                            className="w-12 h-8 rounded cursor-pointer"
+                          />
+                          <input
+                            type="color"
+                            value={design.bgColor3}
+                            onChange={(e) => design.setBgColor3(e.target.value)}
+                            className="w-12 h-8 rounded cursor-pointer"
+                          />
+                        </>
+                      )}
+                      <button
+                        onClick={() => design.setUseBgGradient(!design.useBgGradient)}
+                        className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${
+                          design.useBgGradient ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        Gradiente
+                      </button>
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Texto Principal</label>
+                  </div>
+                </div>
+
+                {/* Text Colors */}
+                <div>
+                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Colores de Texto</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-gray-600 dark:text-gray-400">Título</label>
                       <input
                         type="color"
                         value={design.titleColor}
                         onChange={(e) => design.setTitleColor(e.target.value)}
-                        className="w-full h-10 rounded cursor-pointer"
+                        className="w-12 h-8 rounded cursor-pointer"
                       />
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Texto Secundario</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-gray-600 dark:text-gray-400">Contenido</label>
                       <input
                         type="color"
                         value={design.contentColor}
                         onChange={(e) => design.setContentColor(e.target.value)}
-                        className="w-full h-10 rounded cursor-pointer"
+                        className="w-12 h-8 rounded cursor-pointer"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-gray-600 dark:text-gray-400">Marca</label>
+                      <input
+                        type="color"
+                        value={design.headerColor}
+                        onChange={(e) => design.setHeaderColor(e.target.value)}
+                        className="w-12 h-8 rounded cursor-pointer"
                       />
                     </div>
                   </div>
@@ -198,31 +237,167 @@ export const EnhancedSidebar = ({
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Tipografía</h3>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Tamaño Título</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs text-gray-600 dark:text-gray-400">Título</label>
+                        <span className="text-[9px] font-mono text-gray-500">{design.titleFontSize}px</span>
+                      </div>
                       <input
                         type="range"
                         min="16"
-                        max="32"
+                        max="48"
                         value={design.titleFontSize}
                         onChange={(e) => design.setTitleFontSize(Number(e.target.value))}
                         className="w-full"
                       />
-                      <span className="text-xs text-gray-500">{design.titleFontSize}px</span>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Tamaño Contenido</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs text-gray-600 dark:text-gray-400">Contenido</label>
+                        <span className="text-[9px] font-mono text-gray-500">{design.fontSize}px</span>
+                      </div>
                       <input
                         type="range"
                         min="10"
-                        max="20"
+                        max="24"
                         value={design.fontSize}
                         onChange={(e) => design.setFontSize(Number(e.target.value))}
                         className="w-full"
                       />
-                      <span className="text-xs text-gray-500">{design.fontSize}px</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs text-gray-600 dark:text-gray-400">Marca</label>
+                        <span className="text-[9px] font-mono text-gray-500">{design.headerFontSize}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="8"
+                        max="24"
+                        value={design.headerFontSize}
+                        onChange={(e) => design.setHeaderFontSize(Number(e.target.value))}
+                        className="w-full"
+                      />
                     </div>
                   </div>
                 </div>
+
+                {/* Image Border Radius */}
+                <div>
+                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Bordes de Imágenes</h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => design.setImageBorderRadius('0px')}
+                      className={`p-2 rounded-lg transition-all ${
+                        design.imageBorderRadius === '0px'
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title="Cuadrado"
+                    >
+                      <FiSquare size={14} />
+                    </button>
+                    <button
+                      onClick={() => design.setImageBorderRadius('24px')}
+                      className={`p-2 rounded-lg transition-all ${
+                        design.imageBorderRadius === '24px'
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title="Redondeado"
+                    >
+                      <FiCornerUpRight size={14} />
+                    </button>
+                    <button
+                      onClick={() => design.setImageBorderRadius('999px')}
+                      className={`p-2 rounded-lg transition-all ${
+                        design.imageBorderRadius === '999px'
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title="Círculo"
+                    >
+                      <FiCircle size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Selected Element Controls */}
+                {selectedElement && (() => {
+                  const [slideIdx, elId] = selectedElement.split('-');
+                  const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                  if (!el) return null;
+
+                  return (
+                    <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                      <h3 className="text-xs font-black text-indigo-600 uppercase tracking-wider mb-3">Elemento Seleccionado</h3>
+                      <div className="space-y-3">
+                        {/* Element Color Controls */}
+                        <div>
+                          <label className="text-xs text-gray-600 dark:text-gray-400">Color del Elemento</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={el.color}
+                              onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color: e.target.value })}
+                              className="w-12 h-8 rounded cursor-pointer"
+                            />
+                            {el.useGradient && (
+                              <>
+                                <input
+                                  type="color"
+                                  value={el.color2}
+                                  onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color2: e.target.value })}
+                                  className="w-12 h-8 rounded cursor-pointer"
+                                />
+                                <input
+                                  type="color"
+                                  value={el.color3}
+                                  onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color3: e.target.value })}
+                                  className="w-12 h-8 rounded cursor-pointer"
+                                />
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Gradient Toggle */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={el.useGradient}
+                            onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { useGradient: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-indigo-600"
+                          />
+                          <label className="text-xs text-gray-600 dark:text-gray-400">Usar Gradiente</label>
+                        </div>
+
+                        {/* Text Formatting (for text elements) */}
+                        {el.type === 'text' && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { bold: !el.bold })}
+                              className={`p-2 rounded-lg transition-all ${
+                                el.bold ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                              }`}
+                              title="Negrita"
+                            >
+                              <FiBold size={14} />
+                            </button>
+                            <button
+                              onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { italic: !el.italic })}
+                              className={`p-2 rounded-lg transition-all ${
+                                el.italic ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                              }`}
+                              title="Cursiva"
+                            >
+                              <FiItalic size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
