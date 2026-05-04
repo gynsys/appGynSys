@@ -44,7 +44,8 @@ origins.extend([
     "https://gynsys.net",
     "https://www.gynsys.net",
     "https://api.gynsys.net",
-    "https://app.gynsys.net"
+    "https://app.gynsys.net",
+    "https://social-generator.gynsys.net"
 ])
 
 # Remove duplicates and clean
