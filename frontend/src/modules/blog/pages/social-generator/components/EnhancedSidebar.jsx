@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiFolder } from 'react-icons/fi';
+import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiFolder, FiCheck, FiX, FiAlertTriangle, FiBell, FiCalendar, FiClock, FiMail, FiPhone, FiUser, FiMapPin, FiHome, FiBriefcase, FiHeart, FiStar, FiTrendingUp, FiActivity, FiZap, FiSun, FiMoon, FiCloud, FiUmbrella, FiTarget, FiCompass, FiNavigation, FiFlag, FiBookmark, FiMessageSquare, FiShare2, FiRefreshCw, FiCpu, FiDatabase, FiWifi, FiBluetooth, FiBattery, FiVolume2, FiVolumeX, FiPlay, FiPause, FiSkipBack, FiSkipForward, FiRepeat } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const EnhancedSidebar = ({ 
@@ -480,16 +480,34 @@ export const EnhancedSidebar = ({
                     <div className="space-y-2">
                       <button
                         onClick={() => {
-                          // Layer logic here
+                          if (selectedElement) {
+                            const [slideIdx, elId] = selectedElement.split('-');
+                            const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                            if (el) {
+                              canvas.updateExtraElement(parseInt(slideIdx), elId, { 
+                                zIndex: el.zIndex === 30 ? 10 : 30 
+                              });
+                            }
+                          }
                         }}
                         className="w-full p-2 bg-white dark:bg-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
                       >
                         <FiLayers size={14} />
-                        Mover capa
+                        {(() => {
+                          if (selectedElement) {
+                            const [slideIdx, elId] = selectedElement.split('-');
+                            const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                            return el?.zIndex === 30 ? 'Enviar al fondo' : 'Traer al frente';
+                          }
+                          return 'Mover capa';
+                        })()}
                       </button>
                       <button
                         onClick={() => {
-                          // Delete logic here
+                          if (selectedElement) {
+                            const [slideIdx, elId] = selectedElement.split('-');
+                            canvas.removeExtraElement(parseInt(slideIdx), elId);
+                          }
                         }}
                         className="w-full p-2 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-2"
                       >
