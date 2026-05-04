@@ -70,7 +70,7 @@ export const SlideCanvas = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-[410px] h-[410px] overflow-hidden shadow-2xl transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-4 ring-offset-gray-50' : ''}`}
+      className={`relative w-[410px] h-[410px] overflow-visible shadow-2xl transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-4 ring-offset-gray-50' : ''}`}
       style={{ 
         background: design.useBgGradient 
           ? `linear-gradient(to bottom right, ${design.bgColor}, ${design.bgColor2}, ${design.bgColor3})` 
@@ -79,8 +79,10 @@ export const SlideCanvas = ({
       }}
       onClick={() => isSelected && selectElement(null, null)}
     >
-      {/* Logo Section */}
-      {doctorLogo && (
+      {/* Inner container for slide content */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Logo Section */}
+        {doctorLogo && (
         <div 
           className={`absolute z-30 transition-shadow ${isSelected && selectedLogo ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
           style={{
@@ -365,6 +367,7 @@ export const SlideCanvas = ({
           <button onClick={(e) => { e.stopPropagation(); onRemove(index); }} className="p-2 bg-white text-red-400 hover:bg-red-500 hover:text-white rounded-xl shadow-xl border border-gray-100 transition-all transform hover:scale-110" title="Eliminar"><FiTrash2 size={14} /></button>
         </div>
       )}
+      </div>
     </div>
   );
 };
