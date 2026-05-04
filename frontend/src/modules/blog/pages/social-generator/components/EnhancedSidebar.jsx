@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic } from 'react-icons/fi';
+import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiFolder } from 'react-icons/fi';
 import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const EnhancedSidebar = ({ 

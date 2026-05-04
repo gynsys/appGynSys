@@ -208,7 +208,7 @@ export const SlideCanvas = ({
       {(extraElements[index] || []).map((el) => {
         const elId = `${index}-${el.id}`;
         const isElSelected = isSelected && selectedExtraId === elId;
-        const IconComp = el.type === 'icon' ? SVGIcons[el.content] : null;
+        const IconComp = (el.type === 'shape' || el.type === 'icon') ? SVGIcons[el.content] : null;
 
         return (
           <div
