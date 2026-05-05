@@ -756,33 +756,35 @@ export default function SocialGenerator() {
                             </div>
 
                             {/* Mobile Toolbar in Full-Screen */}
-                            <MobileToolbar
-                              canvas={designer.canvas}
-                              transform={transformer}
-                              selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
-                              onAddElement={(slideIndex, type, content) => {
-                                designer.canvas.addExtraElement(slideIndex, type, content);
-                                pushToHistory(generatedContent);
-                              }}
-                              onDeleteElement={() => {
-                                if (designer.canvas.selectedExtraId) {
-                                  const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                                  designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
-                                } else if (designer.canvas.selectedImageId) {
-                                  const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
-                                  handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
-                                  designer.canvas.setSelectedImageId(null);
-                                }
-                              }}
-                              onDownload={exporter.downloadCarousel}
-                              onSave={() => designer.canvas.saveProject(generatedContent)}
-                              onPreview={() => setPreviewIndex(0)}
-                              currentSlide={designer.canvas.currentSlidePage}
-                            />
+                            {!(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
+                              <MobileToolbar
+                                canvas={designer.canvas}
+                                transform={transformer}
+                                selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
+                                onAddElement={(slideIndex, type, content) => {
+                                  designer.canvas.addExtraElement(slideIndex, type, content);
+                                  pushToHistory(generatedContent);
+                                }}
+                                onDeleteElement={() => {
+                                  if (designer.canvas.selectedExtraId) {
+                                    const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                    designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                  } else if (designer.canvas.selectedImageId) {
+                                    const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                    handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                    designer.canvas.setSelectedImageId(null);
+                                  }
+                                }}
+                                onDownload={exporter.downloadCarousel}
+                                onSave={() => designer.canvas.saveProject(generatedContent)}
+                                onPreview={() => setPreviewIndex(0)}
+                                currentSlide={designer.canvas.currentSlidePage}
+                              />
+                            )}
 
                             {/* Mobile Contextual Control Bar */}
                             {isMobile && (designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
-                              <div className="fixed bottom-20 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[80] p-3">
+                              <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[90] p-3">
                                 <div className="max-w-md mx-auto">
                                   <div className="flex items-center justify-between">
                                     {/* Element info */}
