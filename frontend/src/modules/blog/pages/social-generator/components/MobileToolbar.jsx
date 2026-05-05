@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiType, FiBox, FiPlus, FiTrash2, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiSettings, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { SHAPES_CONFIG } from '../lib/svgIcons';
 
 export const MobileToolbar = ({ 
   canvas, 
@@ -108,11 +109,11 @@ export const MobileToolbar = ({
                   <span className="text-xs">Cuadro</span>
                 </button>
                 <button
-                  onClick={() => onAddElement(currentSlide, 'shape', 'arrow')}
+                  onClick={() => onAddElement(currentSlide, 'shape', 'triangle')}
                   className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-gray-700 rounded-xl"
                 >
-                  <FiMove size={20} className="text-indigo-600" />
-                  <span className="text-xs">Flecha</span>
+                  <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[17px] border-b-indigo-600"></div>
+                  <span className="text-xs">Triángulo</span>
                 </button>
               </div>
             </div>
@@ -122,21 +123,18 @@ export const MobileToolbar = ({
           {activeSection === 'elements' && (
             <div className="p-4">
               <div className="grid grid-cols-4 gap-3">
-                {/* Add more shapes here */}
-                <button
-                  onClick={() => onAddElement(currentSlide, 'shape', 'star')}
-                  className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-gray-700 rounded-xl"
-                >
-                  <span className="text-lg">⭐</span>
-                  <span className="text-xs">Estrella</span>
-                </button>
-                <button
-                  onClick={() => onAddElement(currentSlide, 'shape', 'heart')}
-                  className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-gray-700 rounded-xl"
-                >
-                  <span className="text-lg">❤️</span>
-                  <span className="text-xs">Corazón</span>
-                </button>
+                {SHAPES_CONFIG.slice(4, 12).map((shape) => (
+                  <button
+                    key={shape.id}
+                    onClick={() => onAddElement(currentSlide, 'shape', shape.id)}
+                    className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-gray-700 rounded-xl"
+                  >
+                    <div className="w-5 h-5 text-indigo-600">
+                      {shape.icon}
+                    </div>
+                    <span className="text-xs">{shape.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}

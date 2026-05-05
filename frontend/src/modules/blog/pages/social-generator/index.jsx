@@ -108,17 +108,30 @@ export default function SocialGenerator() {
   // Prevent touch events that could cause scrolling/swiping in full-screen mode
   useEffect(() => {
     if (isMobileFullscreen) {
-      const preventTouch = (e) => {
+      const preventTouchMove = (e) => {
+        // Allow touch on interactive elements
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas')) {
+          return;
+        }
         e.preventDefault();
         return false;
       };
 
-      document.addEventListener('touchmove', preventTouch, { passive: false });
-      document.addEventListener('touchstart', preventTouch, { passive: false });
+      const preventTouchStart = (e) => {
+        // Allow touch on interactive elements
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas')) {
+          return;
+        }
+        e.preventDefault();
+        return false;
+      };
+
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
+      document.addEventListener('touchstart', preventTouchStart, { passive: false });
 
       return () => {
-        document.removeEventListener('touchmove', preventTouch);
-        document.removeEventListener('touchstart', preventTouch);
+        document.removeEventListener('touchmove', preventTouchMove);
+        document.removeEventListener('touchstart', preventTouchStart);
       };
     }
   }, [isMobileFullscreen]);
