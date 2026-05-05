@@ -176,6 +176,8 @@ export const SlideCanvas = ({
         return (
           <div
             key={imgId}
+            data-element="image"
+            data-slide-element="true"
             className={`absolute transition-shadow ${isSelected && selectedImageId === imgId ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 shadow-xl' : ''}`}
             style={{
               zIndex: pos.zIndex || 20,
@@ -221,6 +223,8 @@ export const SlideCanvas = ({
         return (
           <div
             key={elId}
+            data-element="extra"
+            data-slide-element="true"
             className={`absolute transition-all ${isElSelected ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 bg-white/5' : ''}`}
             style={{
               zIndex: el.zIndex || 30,

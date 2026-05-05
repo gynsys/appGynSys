@@ -109,8 +109,8 @@ export default function SocialGenerator() {
   useEffect(() => {
     if (isMobileFullscreen) {
       const preventTouchMove = (e) => {
-        // Allow touch on interactive elements
-        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas')) {
+        // Allow touch on all canvas elements and interactive elements
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .z-[60], .pointer-events-auto, [data-element], [data-slide-element]')) {
           return;
         }
         e.preventDefault();
@@ -118,8 +118,8 @@ export default function SocialGenerator() {
       };
 
       const preventTouchStart = (e) => {
-        // Allow touch on interactive elements
-        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas')) {
+        // Allow touch on all canvas elements and interactive elements
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .z-[60], .pointer-events-auto, [data-element], [data-slide-element]')) {
           return;
         }
         e.preventDefault();
