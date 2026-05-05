@@ -812,20 +812,67 @@ export default function SocialGenerator() {
                                     </div>
 
                                     {/* Controls */}
-                                    <div className="flex items-center gap-3" data-contextual-bar="true">
-                                      {/* Color Picker - for elements that support it */}
+                                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1" data-contextual-bar="true">
+                                      {/* Color Pickers & Gradient Toggle */}
                                       {(() => {
-                                        let currentColor = null;
-                                        let onColorChange = null;
-
                                         if (designer.canvas.selectedExtraId) {
                                           const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
                                           const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
-                                          if (el && el.type !== 'image') {
-                                            currentColor = el.color;
-                                            onColorChange = (color) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { color });
-                                          }
-                                        } else if (designer.canvas.selectedDoctorName) {
+                                          if (!el || el.type === 'image') return null;
+
+                                          return (
+                                            <div className="flex items-center gap-2" data-contextual-bar="true">
+                                              {/* Main Color */}
+                                              <div className="relative flex items-center justify-center w-9 h-9 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-sm bg-white dark:bg-gray-700">
+                                                <input
+                                                  type="color"
+                                                  value={el.color || '#000000'}
+                                                  onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { color: e.target.value })}
+                                                  className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent z-0"
+                                                />
+                                                <div className="pointer-events-none z-10 text-white mix-blend-difference">
+                                                  <FiDroplet size={14} />
+                                                </div>
+                                              </div>
+
+                                              {/* Gradient Toggle */}
+                                              <button
+                                                onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { useGradient: !el.useGradient })}
+                                                className={`p-2 rounded-xl transition-all ${el.useGradient ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}
+                                                title="Usar Gradiente"
+                                              >
+                                                <FiZap size={18} />
+                                              </button>
+
+                                              {/* Extra Colors for Gradient */}
+                                              {el.useGradient && (
+                                                <>
+                                                  <div className="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-sm bg-white dark:bg-gray-700">
+                                                    <input
+                                                      type="color"
+                                                      value={el.color2 || '#ffffff'}
+                                                      onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { color2: e.target.value })}
+                                                      className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+                                                    />
+                                                  </div>
+                                                  <div className="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-sm bg-white dark:bg-gray-700">
+                                                    <input
+                                                      type="color"
+                                                      value={el.color3 || '#ffffff'}
+                                                      onChange={(e) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { color3: e.target.value })}
+                                                      className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+                                                    />
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
+                                          );
+                                        }
+
+                                        // Fallback for Doctor Name & Divider
+                                        let currentColor = null;
+                                        let onColorChange = null;
+                                        if (designer.canvas.selectedDoctorName) {
                                           currentColor = designer.design.headerColor;
                                           onColorChange = (color) => designer.design.setHeaderColor(color);
                                         } else if (designer.canvas.selectedDivider) {
@@ -833,22 +880,41 @@ export default function SocialGenerator() {
                                           onColorChange = (color) => designer.design.setDividerColor(color);
                                         }
 
-                                        if (!onColorChange) return null;
-
-                                        return (
-                                          <div className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-lg active:scale-90 transition-transform bg-white dark:bg-gray-700">
-                                            <input
-                                              type="color"
-                                              value={currentColor || '#000000'}
-                                              onChange={(e) => onColorChange(e.target.value)}
-                                              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent z-0"
-                                              style={{ appearance: 'none', WebkitAppearance: 'none' }}
-                                            />
-                                            <div className="pointer-events-none z-10 text-white mix-blend-difference">
-                                              <FiDroplet size={16} />
+                                        if (onColorChange) {
+                                          return (
+                                            <div className="relative flex items-center justify-center w-9 h-9 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-sm bg-white dark:bg-gray-700">
+                                              <input
+                                                type="color"
+                                                value={currentColor || '#000000'}
+                                                onChange={(e) => onColorChange(e.target.value)}
+                                                className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+                                              />
                                             </div>
-                                          </div>
-                                        );
+                                          );
+                                        }
+                                        return null;
+                                      })()}
+
+                                      {/* Full Width Control (Ancho Total) */}
+                                      {designer.canvas.selectedExtraId && (() => {
+                                        const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                        const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                                        if (el && (el.type === 'shape' || el.type === 'icon' || el.type === 'text')) {
+                                          return (
+                                            <button
+                                              onClick={() => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { 
+                                                fullWidth: !el.fullWidth,
+                                                x: el.fullWidth ? el.x : 50,
+                                                width: el.fullWidth ? (el.width || 100) : 410
+                                              })}
+                                              className={`p-3 rounded-2xl transition-all ${el.fullWidth ? 'bg-indigo-600 text-white shadow-md' : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600'}`}
+                                              title="Ancho Total"
+                                            >
+                                              <FiMaximize2 size={20} />
+                                            </button>
+                                          );
+                                        }
+                                        return null;
                                       })()}
 
                                       {/* Layer control */}
@@ -898,7 +964,7 @@ export default function SocialGenerator() {
                                         <FiTrash2 size={20} />
                                       </button>
 
-                                      <div className="w-[1px] h-8 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                      <div className="min-w-[1px] w-[1px] h-8 bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
                                       <button 
                                         onClick={() => designer.canvas.selectElement(null, null)}
