@@ -813,6 +813,41 @@ export default function SocialGenerator() {
 
                                     {/* Controls */}
                                     <div className="flex items-center gap-3" data-contextual-bar="true">
+                                      {/* Color Picker - for elements that support it */}
+                                      {(() => {
+                                        let currentColor = null;
+                                        let onColorChange = null;
+
+                                        if (designer.canvas.selectedExtraId) {
+                                          const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                          const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                                          if (el && el.type !== 'image') {
+                                            currentColor = el.color;
+                                            onColorChange = (color) => designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { color });
+                                          }
+                                        } else if (designer.canvas.selectedDoctorName) {
+                                          currentColor = designer.design.headerColor;
+                                          onColorChange = (color) => designer.design.setHeaderColor(color);
+                                        } else if (designer.canvas.selectedDivider) {
+                                          currentColor = designer.design.dividerColor;
+                                          onColorChange = (color) => designer.design.setDividerColor(color);
+                                        }
+
+                                        if (!onColorChange) return null;
+
+                                        return (
+                                          <div className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-white dark:border-gray-600 overflow-hidden shadow-lg active:scale-90 transition-transform bg-gray-100 dark:bg-gray-700">
+                                            <input
+                                              type="color"
+                                              value={currentColor || '#000000'}
+                                              onChange={(e) => onColorChange(e.target.value)}
+                                              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+                                              style={{ appearance: 'none', WebkitAppearance: 'none' }}
+                                            />
+                                          </div>
+                                        );
+                                      })()}
+
                                       {/* Layer control */}
                                       <button
                                         onClick={() => {
@@ -834,11 +869,10 @@ export default function SocialGenerator() {
                                             }
                                           }
                                         }}
-                                        className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all active:scale-95"
+                                        className="p-3 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-2xl hover:bg-amber-100 transition-all active:scale-95 shadow-sm"
                                         title="Enviar al fondo"
                                       >
-                                        <FiLayers size={18} />
-                                        <span className="text-[10px] font-black uppercase">Capa</span>
+                                        <FiLayers size={20} />
                                       </button>
 
                                       {/* Delete */}
@@ -855,20 +889,19 @@ export default function SocialGenerator() {
                                              designer.canvas.selectElement(null, null);
                                           }
                                         }}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all active:scale-95"
+                                        className="p-3 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-2xl hover:bg-red-100 transition-all active:scale-95 shadow-sm"
                                         title="Eliminar"
                                       >
-                                        <FiTrash2 size={18} />
-                                        <span className="text-[10px] font-black uppercase">Borrar</span>
+                                        <FiTrash2 size={20} />
                                       </button>
 
-                                      <div className="w-[1px] h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                      <div className="w-[1px] h-8 bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
                                       <button 
                                         onClick={() => designer.canvas.selectElement(null, null)}
                                         className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                                       >
-                                        <FiX size={20} />
+                                        <FiX size={24} />
                                       </button>
                                     </div>
                                   </div>
