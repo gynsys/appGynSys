@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDropper } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -845,7 +845,7 @@ export default function SocialGenerator() {
                                               style={{ appearance: 'none', WebkitAppearance: 'none' }}
                                             />
                                             <div className="pointer-events-none z-10 text-white mix-blend-difference">
-                                              <FiDropper size={16} />
+                                              <FiDroplet size={16} />
                                             </div>
                                           </div>
                                         );
