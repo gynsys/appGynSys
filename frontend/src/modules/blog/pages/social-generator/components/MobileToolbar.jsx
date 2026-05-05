@@ -122,17 +122,19 @@ export const MobileToolbar = ({
           {/* Elements Section */}
           {activeSection === 'elements' && (
             <div className="p-4">
-              <div className="grid grid-cols-4 gap-3">
-                {SHAPES_CONFIG.slice(4, 12).map((shape) => (
+              <div className="grid grid-cols-4 gap-4">
+                {SHAPES_CONFIG.map((shape) => (
                   <button
                     key={shape.id}
                     onClick={() => onAddElement(currentSlide, 'shape', shape.id)}
-                    className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-gray-700 rounded-xl"
+                    className="flex flex-col items-center justify-between gap-2 p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm hover:bg-gray-50 transition-all active:scale-95 min-h-[80px]"
                   >
-                    <div className="w-5 h-5 text-indigo-600">
-                      {shape.icon}
+                    <div className="w-10 h-10 flex items-center justify-center text-indigo-600">
+                      {React.cloneElement(shape.icon, { className: 'w-full h-full' })}
                     </div>
-                    <span className="text-xs">{shape.label}</span>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-300 text-center leading-tight">
+                      {shape.label}
+                    </span>
                   </button>
                 ))}
               </div>

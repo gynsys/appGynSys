@@ -18,7 +18,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
   const rafRef = useRef(null);
 
   const handleDragStart = (e, index, type, id, container, initialPos) => {
-    e.preventDefault();
+    // Only prevent default on mouse events at the start
+    if (!e.touches) e.preventDefault();
     e.stopPropagation();
     
     // Handle both mouse and touch events
@@ -38,6 +39,9 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
     };
 
     const handleMouseMove = (moveEvent) => {
+      // Prevent scrolling during drag
+      if (moveEvent.cancelable) moveEvent.preventDefault();
+      
       if (!draggingRef.current) return;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
@@ -87,7 +91,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
   };
 
   const handleTransformStart = (e, index, action, type, id, container, initialData) => {
-    e.preventDefault();
+    // Only prevent default on mouse events at the start
+    if (!e.touches) e.preventDefault();
     e.stopPropagation();
 
     // Handle both mouse and touch events
@@ -106,6 +111,9 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
     };
 
     const handleMouseMove = (moveEvent) => {
+      // Prevent scrolling during transform
+      if (moveEvent.cancelable) moveEvent.preventDefault();
+
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
       rafRef.current = requestAnimationFrame(() => {
