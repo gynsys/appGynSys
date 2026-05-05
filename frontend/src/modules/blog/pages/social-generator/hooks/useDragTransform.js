@@ -21,8 +21,12 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
     e.preventDefault();
     e.stopPropagation();
     
-    const startX = e.clientX;
-    const startY = e.clientY;
+    // Handle both mouse and touch events
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const startX = clientX;
+    const startY = clientY;
     const rect = container.getBoundingClientRect();
 
     draggingRef.current = {
@@ -39,8 +43,13 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
 
       rafRef.current = requestAnimationFrame(() => {
         const { type, id, index, startX, startY, initialX, initialY, rect } = draggingRef.current;
-        const dx = (moveEvent.clientX - startX) / scale;
-        const dy = (moveEvent.clientY - startY) / scale;
+        
+        // Handle both mouse and touch events
+        const clientX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+        const clientY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+        
+        const dx = (clientX - startX) / scale;
+        const dy = (clientY - startY) / scale;
 
         const newX = initialX + (dx / rect.width) * 100 * scale;
         const newY = initialY + (dy / rect.height) * 100 * scale;
@@ -67,18 +76,26 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('touchend', handleMouseUp);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleMouseMove);
+    window.addEventListener('touchend', handleMouseUp);
   };
 
   const handleTransformStart = (e, index, action, type, id, container, initialData) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    // Handle both mouse and touch events
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const startX = clientX;
+    const startY = clientY;
     const rect = container.getBoundingClientRect();
 
     const transformData = {
@@ -92,13 +109,22 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
       rafRef.current = requestAnimationFrame(() => {
-        const dx = (moveEvent.clientX - startX) / scale;
-        const dy = (moveEvent.clientY - startY) / scale;
+        // Handle both mouse and touch events
+        const clientX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+        const clientY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+        
+        const dx = (clientX - startX) / scale;
+        const dy = (clientY - startY) / scale;
 
         if (action === 'rotate') {
           const centerX = rect.left + (transformData.x / 100) * rect.width;
           const centerY = rect.top + (transformData.y / 100) * rect.height;
-          const angle = Math.atan2(moveEvent.clientY - centerY, moveEvent.clientX - centerX) * (180 / Math.PI);
+          
+          // Handle both mouse and touch events for rotation
+          const moveClientY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+          const moveClientX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+          
+          const angle = Math.atan2(moveClientY - centerY, moveClientX - centerX) * (180 / Math.PI);
           const newRotation = angle + 90;
 
           if (type === 'image') setImageRotations(prev => ({ ...prev, [id]: newRotation }));
@@ -127,10 +153,14 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('touchend', handleMouseUp);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleMouseMove);
+    window.addEventListener('touchend', handleMouseUp);
   };
 
   return {
