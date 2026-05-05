@@ -92,7 +92,12 @@ export const SlideCanvas = ({
             cursor: isSelected ? 'grab' : 'default',
           }}
           onMouseDown={(e) => isSelected && handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos)}
-          onTouchStart={(e) => isSelected && handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos)}
+          onTouchStart={(e) => { 
+            if (isSelected) {
+              selectElement('logo', 'global-logo');
+              handleDragStart(e, index, 'logo', 'global-logo', containerRef.current, logoPos);
+            }
+          }}
           onClick={(e) => { e.stopPropagation(); isSelected && selectElement('logo', 'global-logo'); }}
         >
           <div 
@@ -115,7 +120,12 @@ export const SlideCanvas = ({
           cursor: isSelected ? 'grab' : 'default',
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'doctorName', 'global-name', containerRef.current, doctorNamePos)}
-          onTouchStart={(e) => isSelected && handleDragStart(e, index, 'doctorName', 'global-name', containerRef.current, doctorNamePos)}
+          onTouchStart={(e) => {
+            if (isSelected) {
+              selectElement('doctorName', 'global-name');
+              handleDragStart(e, index, 'doctorName', 'global-name', containerRef.current, doctorNamePos);
+            }
+          }}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('doctorName', 'global-name'); }}
       >
         <span className="font-black tracking-tighter uppercase whitespace-nowrap" style={{ color: headerColor, fontSize: headerFontSize + 'px' }}>
@@ -134,7 +144,12 @@ export const SlideCanvas = ({
           cursor: isSelected ? 'grab' : 'default',
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, dividerPos)}
-          onTouchStart={(e) => isSelected && handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, dividerPos)}
+          onTouchStart={(e) => {
+            if (isSelected) {
+              selectElement('divider', 'global-divider');
+              handleDragStart(e, index, 'divider', 'global-divider', containerRef.current, dividerPos);
+            }
+          }}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('divider', 'global-divider'); }}
       >
         <div 
@@ -156,7 +171,12 @@ export const SlideCanvas = ({
           cursor: isSelected ? 'grab' : 'default',
         }}
         onMouseDown={(e) => isSelected && handleDragStart(e, index, 'content', index, containerRef.current, contentPositions[index] || { x: 50, y: 60 })}
-          onTouchStart={(e) => isSelected && handleDragStart(e, index, 'content', index, containerRef.current, contentPositions[index] || { x: 50, y: 60 })}
+          onTouchStart={(e) => {
+            if (isSelected) {
+              selectElement('content', index);
+              handleDragStart(e, index, 'content', index, containerRef.current, contentPositions[index] || { x: 50, y: 60 });
+            }
+          }}
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('content', index); }}
       >
         <div className="text-center relative">
@@ -191,6 +211,12 @@ export const SlideCanvas = ({
               overflow: 'hidden'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'image', imgId, containerRef.current, pos)}
+            onTouchStart={(e) => {
+              if (isSelected) {
+                selectElement('image', imgId);
+                handleDragStart(e, index, 'image', imgId, containerRef.current, pos);
+              }
+            }}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('image', imgId); }}
           >
             <img src={img} alt="Custom" className="w-full h-full object-contain" style={{ borderRadius: imageBorderRadius }} />
@@ -239,8 +265,14 @@ export const SlideCanvas = ({
               justifyContent: 'center'
             }}
             onMouseDown={(e) => isSelected && handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y })}
-            onTouchStart={(e) => isSelected && handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y })}
+            onTouchStart={(e) => {
+              if (isSelected) {
+                selectElement('extra', elId);
+                handleDragStart(e, index, 'extra', elId, containerRef.current, { x: el.x, y: el.y });
+              }
+            }}
             onClick={(e) => { e.stopPropagation(); isSelected && selectElement('extra', elId); }}
+
           >
             {el.type === 'text' ? (
               <div 

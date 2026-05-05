@@ -110,7 +110,7 @@ export default function SocialGenerator() {
     if (isMobileFullscreen) {
       const preventTouchMove = (e) => {
         // Allow touch on all canvas elements and interactive elements
-        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .pointer-events-auto, [data-element], [data-slide-element]')) {
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .pointer-events-auto, [data-element], [data-slide-element], [data-contextual-bar]')) {
           return;
         }
         e.preventDefault();
@@ -119,7 +119,7 @@ export default function SocialGenerator() {
 
       const preventTouchStart = (e) => {
         // Allow touch on all canvas elements and interactive elements
-        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .pointer-events-auto, [data-element], [data-slide-element]')) {
+        if (e.target.closest('button, input, textarea, [role="button"], .slide-canvas, #main-slide-canvas, .absolute, .z-10, .z-20, .z-30, .z-40, .z-50, .pointer-events-auto, [data-element], [data-slide-element], [data-contextual-bar]')) {
           return;
         }
         e.preventDefault();
@@ -783,19 +783,36 @@ export default function SocialGenerator() {
                             )}
 
                             {/* Mobile Contextual Control Bar */}
-                            {isMobile && (designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
-                              <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[90] p-3">
-                                <div className="max-w-md mx-auto">
-                                  <div className="flex items-center justify-between">
+                            {(designer.canvas.selectedExtraId || designer.canvas.selectedImageId || designer.canvas.selectedLogo || designer.canvas.selectedDoctorName || designer.canvas.selectedDivider) && (
+                              <div 
+                                data-contextual-bar="true"
+                                className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[150] p-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.1)] pointer-events-auto animate-slideUp"
+                              >
+                                <div className="max-w-md mx-auto" data-contextual-bar="true">
+                                  <div className="flex items-center justify-between" data-contextual-bar="true">
                                     {/* Element info */}
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                        {designer.canvas.selectedExtraId ? 'Forma' : 'Imagen'}
+                                    <div className="flex items-center gap-2" data-contextual-bar="true">
+                                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                                      <span className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                        {(() => {
+                                          if (designer.canvas.selectedExtraId) {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            const el = designer.canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                                            if (el?.type === 'text') return 'Texto';
+                                            if (el?.type === 'shape' || el?.type === 'icon') return 'Forma';
+                                            return 'Elemento';
+                                          }
+                                          if (designer.canvas.selectedImageId) return 'Imagen';
+                                          if (designer.canvas.selectedLogo) return 'Logo';
+                                          if (designer.canvas.selectedDoctorName) return 'Nombre';
+                                          if (designer.canvas.selectedDivider) return 'Divisor';
+                                          return 'Seleccionado';
+                                        })()}
                                       </span>
                                     </div>
 
                                     {/* Controls */}
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3" data-contextual-bar="true">
                                       {/* Layer control */}
                                       <button
                                         onClick={() => {
@@ -817,10 +834,11 @@ export default function SocialGenerator() {
                                             }
                                           }
                                         }}
-                                        className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-lg"
+                                        className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl hover:bg-amber-100 transition-all active:scale-95"
                                         title="Enviar al fondo"
                                       >
-                                        <FiLayers size={16} />
+                                        <FiLayers size={18} />
+                                        <span className="text-[10px] font-black uppercase">Capa</span>
                                       </button>
 
                                       {/* Delete */}
@@ -833,12 +851,24 @@ export default function SocialGenerator() {
                                             const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
                                             handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
                                             designer.canvas.setSelectedImageId(null);
+                                          } else if (designer.canvas.selectedLogo || designer.canvas.selectedDoctorName || designer.canvas.selectedDivider) {
+                                             designer.canvas.selectElement(null, null);
                                           }
                                         }}
-                                        className="p-2 bg-red-50 dark:bg-red-900/30 text-red-600 rounded-lg"
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 transition-all active:scale-95"
                                         title="Eliminar"
                                       >
-                                        <FiTrash2 size={16} />
+                                        <FiTrash2 size={18} />
+                                        <span className="text-[10px] font-black uppercase">Borrar</span>
+                                      </button>
+
+                                      <div className="w-[1px] h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+
+                                      <button 
+                                        onClick={() => designer.canvas.selectElement(null, null)}
+                                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                      >
+                                        <FiX size={20} />
                                       </button>
                                     </div>
                                   </div>
