@@ -779,6 +779,70 @@ export default function SocialGenerator() {
                               onPreview={() => setPreviewIndex(0)}
                               currentSlide={designer.canvas.currentSlidePage}
                             />
+
+                            {/* Mobile Contextual Control Bar */}
+                            {isMobile && (designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
+                              <div className="fixed bottom-20 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[80] p-3">
+                                <div className="max-w-md mx-auto">
+                                  <div className="flex items-center justify-between">
+                                    {/* Element info */}
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                        {designer.canvas.selectedExtraId ? 'Forma' : 'Imagen'}
+                                      </span>
+                                    </div>
+
+                                    {/* Controls */}
+                                    <div className="flex items-center gap-3">
+                                      {/* Layer control */}
+                                      <button
+                                        onClick={() => {
+                                          if (designer.canvas.selectedExtraId) {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            const el = designer.canvas.extraElements[slideIdx].find(e => e.id === elId);
+                                            designer.canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 30 ? 5 : 30 });
+                                          } else if (designer.canvas.selectedImageId) {
+                                            const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                            const slide = designer.canvas.slides?.[slideIdx];
+                                            if (slide && slide.images && slide.images[imgIdx]) {
+                                              const img = slide.images[imgIdx];
+                                              const newZIndex = img.zIndex === 20 ? 5 : 20;
+                                              const updatedImages = [...slide.images];
+                                              updatedImages[imgIdx] = { ...img, zIndex: newZIndex };
+                                              const updatedSlides = [...designer.canvas.slides];
+                                              updatedSlides[slideIdx] = { ...slide, images: updatedImages };
+                                              designer.canvas.setSlides(updatedSlides);
+                                            }
+                                          }
+                                        }}
+                                        className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-lg"
+                                        title="Enviar al fondo"
+                                      >
+                                        <FiLayers size={16} />
+                                      </button>
+
+                                      {/* Delete */}
+                                      <button
+                                        onClick={() => {
+                                          if (designer.canvas.selectedExtraId) {
+                                            const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                            designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                          } else if (designer.canvas.selectedImageId) {
+                                            const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                            handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                            designer.canvas.setSelectedImageId(null);
+                                          }
+                                        }}
+                                        className="p-2 bg-red-50 dark:bg-red-900/30 text-red-600 rounded-lg"
+                                        title="Eliminar"
+                                      >
+                                        <FiTrash2 size={16} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

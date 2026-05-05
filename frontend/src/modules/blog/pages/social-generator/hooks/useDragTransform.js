@@ -82,8 +82,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleMouseMove);
-    window.addEventListener('touchend', handleMouseUp);
+    window.addEventListener('touchmove', handleMouseMove, { passive: false });
+    window.addEventListener('touchend', handleMouseUp, { passive: false });
   };
 
   const handleTransformStart = (e, index, action, type, id, container, initialData) => {
@@ -159,8 +159,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleMouseMove);
-    window.addEventListener('touchend', handleMouseUp);
+    window.addEventListener('touchmove', handleMouseMove, { passive: false });
+    window.addEventListener('touchend', handleMouseUp, { passive: false });
   };
 
   return {
