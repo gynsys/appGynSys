@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDropper } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -836,14 +836,17 @@ export default function SocialGenerator() {
                                         if (!onColorChange) return null;
 
                                         return (
-                                          <div className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-white dark:border-gray-600 overflow-hidden shadow-lg active:scale-90 transition-transform bg-gray-100 dark:bg-gray-700">
+                                          <div className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-lg active:scale-90 transition-transform bg-white dark:bg-gray-700">
                                             <input
                                               type="color"
                                               value={currentColor || '#000000'}
                                               onChange={(e) => onColorChange(e.target.value)}
-                                              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+                                              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent z-0"
                                               style={{ appearance: 'none', WebkitAppearance: 'none' }}
                                             />
+                                            <div className="pointer-events-none z-10 text-white mix-blend-difference">
+                                              <FiDropper size={16} />
+                                            </div>
                                           </div>
                                         );
                                       })()}
