@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2 } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -35,6 +35,7 @@ export default function SocialGenerator() {
   const [showProjects, setShowProjects] = useState(false);
   const [history, setHistory] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   // Mobile detection
   useEffect(() => {
@@ -45,6 +46,13 @@ export default function SocialGenerator() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Auto-enter full-screen mode on mobile when carousel content exists
+  useEffect(() => {
+    if (isMobile && generatedContent && generatedContent.slides && generatedContent.slides.length > 0) {
+      enterMobileFullscreen();
+    }
+  }, [isMobile, generatedContent]);
 
   const pushToHistory = (content) => {
     setHistory(prev => [...prev.slice(-19), JSON.parse(JSON.stringify(content))]);
@@ -77,6 +85,43 @@ export default function SocialGenerator() {
   }, []);
 
   const designer = useSlideDesigner();
+
+  // Mobile full-screen mode handlers
+  const enterMobileFullscreen = () => {
+    setIsMobileFullscreen(true);
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+  };
+
+  const exitMobileFullscreen = () => {
+    setIsMobileFullscreen(false);
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+    document.body.style.position = 'static';
+    document.body.style.width = 'auto';
+    document.body.style.height = 'auto';
+  };
+
+  // Prevent touch events that could cause scrolling/swiping in full-screen mode
+  useEffect(() => {
+    if (isMobileFullscreen) {
+      const preventTouch = (e) => {
+        e.preventDefault();
+        return false;
+      };
+
+      document.addEventListener('touchmove', preventTouch, { passive: false });
+      document.addEventListener('touchstart', preventTouch, { passive: false });
+
+      return () => {
+        document.removeEventListener('touchmove', preventTouch);
+        document.removeEventListener('touchstart', preventTouch);
+      };
+    }
+  }, [isMobileFullscreen]);
   const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
     setLogoPos: designer.design.setLogoPos,
     setDoctorNamePos: designer.design.setDoctorNamePos,
@@ -648,82 +693,159 @@ export default function SocialGenerator() {
 
                     {/* Mobile Layout */}
                     {isMobile && (
-                      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                        {/* Mobile Header */}
-                        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-                          <div className="flex items-center justify-between">
-                            <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                      <>
+                        {/* Mobile Full-Screen Mode */}
+                        {isMobileFullscreen ? (
+                          <div className="fixed inset-0 bg-white dark:bg-gray-900 z-[100] overflow-hidden">
+                            {/* Close Button */}
                             <button
-                              onClick={() => setPreviewIndex(0)}
-                              className="p-2 rounded-lg bg-indigo-600 text-white"
+                              onClick={exitMobileFullscreen}
+                              className="absolute top-4 right-4 z-[110] p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
                             >
-                              <FiEye size={16} />
+                              <FiX size={24} />
                             </button>
-                          </div>
-                        </div>
 
-                        {/* Mobile Canvas - Full Screen */}
-                        <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4">
-                          <div 
-                            className="flex items-center justify-center transition-all duration-300"
-                            style={{ 
-                              width: 410 * scale, 
-                              height: 410 * scale,
-                              perspective: '1000px'
-                            }}
-                          >
-                            <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
-                              <SlideCanvas 
-                                 slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                                 index={designer.canvas.currentSlidePage}
-                                 doctor={doctor}
-                                 doctorLogo={doctorLogoBase64}
-                                 design={designer.design}
-                                 canvas={designer.canvas}
-                                 transform={transformer.state}
-                                 handlers={transformer.handlers}
-                                 watermark={watermarkImage}
-                                 onEdit={setEditingIndex}
-                                 onPreview={setPreviewIndex}
-                                 onCopy={(i) => {
-                                   const newSlides = [...generatedContent.slides];
-                                   newSlides.splice(i + 1, 0, { ...newSlides[i] });
-                                   setGeneratedContent({ ...generatedContent, slides: newSlides });
-                                   showToast('Diapositiva duplicada', 'success');
-                                 }}
-                                 onRemove={handleRemoveSlide}
-                                 onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                                 onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
-                              />
+                            {/* Full-Screen Canvas */}
+                            <div className="flex items-center justify-center h-screen w-full">
+                              <div 
+                                className="flex items-center justify-center"
+                                style={{ 
+                                  width: 410 * scale, 
+                                  height: 410 * scale,
+                                  perspective: '1000px'
+                                }}
+                              >
+                                <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                                  <SlideCanvas 
+                                     slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                     index={designer.canvas.currentSlidePage}
+                                     doctor={doctor}
+                                     doctorLogo={doctorLogoBase64}
+                                     design={designer.design}
+                                     canvas={designer.canvas}
+                                     transform={transformer.state}
+                                     handlers={transformer.handlers}
+                                     watermark={watermarkImage}
+                                     onEdit={setEditingIndex}
+                                     onPreview={setPreviewIndex}
+                                     onCopy={(i) => {
+                                       const newSlides = [...generatedContent.slides];
+                                       newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                       setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                       showToast('Diapositiva duplicada', 'success');
+                                     }}
+                                     onRemove={handleRemoveSlide}
+                                     onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                                     onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
+                                  />
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Mobile Toolbar */}
-                        <MobileToolbar
-                          canvas={designer.canvas}
-                          transform={transformer}
-                          selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
-                          onAddElement={(slideIndex, type, content) => {
-                            designer.canvas.addExtraElement(slideIndex, type, content);
-                            pushToHistory(generatedContent);
-                          }}
-                          onDeleteElement={() => {
-                            if (designer.canvas.selectedExtraId) {
-                              const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
-                              designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
-                            } else if (designer.canvas.selectedImageId) {
-                              const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
-                              handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
-                              designer.canvas.setSelectedImageId(null);
-                            }
-                          }}
-                          onDownload={exporter.downloadCarousel}
-                          onSave={() => designer.canvas.saveProject(generatedContent)}
-                          onPreview={() => setPreviewIndex(0)}
-                          currentSlide={designer.canvas.currentSlidePage}
-                        />
-                      </div>
+                            {/* Mobile Toolbar in Full-Screen */}
+                            <MobileToolbar
+                              canvas={designer.canvas}
+                              transform={transformer}
+                              selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
+                              onAddElement={(slideIndex, type, content) => {
+                                designer.canvas.addExtraElement(slideIndex, type, content);
+                                pushToHistory(generatedContent);
+                              }}
+                              onDeleteElement={() => {
+                                if (designer.canvas.selectedExtraId) {
+                                  const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                  designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                } else if (designer.canvas.selectedImageId) {
+                                  const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                  handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                  designer.canvas.setSelectedImageId(null);
+                                }
+                              }}
+                              onDownload={exporter.downloadCarousel}
+                              onSave={() => designer.canvas.saveProject(generatedContent)}
+                              onPreview={() => setPreviewIndex(0)}
+                              currentSlide={designer.canvas.currentSlidePage}
+                            />
+                          </div>
+                        ) : (
+                          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                            {/* Mobile Header */}
+                            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+                              <div className="flex items-center justify-between">
+                                <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                                <button
+                                  onClick={() => setPreviewIndex(0)}
+                                  className="p-2 rounded-lg bg-indigo-600 text-white"
+                                >
+                                  <FiEye size={16} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Mobile Canvas - Regular View */}
+                            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4">
+                              <div 
+                                className="flex items-center justify-center transition-all duration-300"
+                                style={{ 
+                                  width: 410 * scale, 
+                                  height: 410 * scale,
+                                  perspective: '1000px'
+                                }}
+                              >
+                                <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                                  <SlideCanvas 
+                                     slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                     index={designer.canvas.currentSlidePage}
+                                     doctor={doctor}
+                                     doctorLogo={doctorLogoBase64}
+                                     design={designer.design}
+                                     canvas={designer.canvas}
+                                     transform={transformer.state}
+                                     handlers={transformer.handlers}
+                                     watermark={watermarkImage}
+                                     onEdit={setEditingIndex}
+                                     onPreview={setPreviewIndex}
+                                     onCopy={(i) => {
+                                       const newSlides = [...generatedContent.slides];
+                                       newSlides.splice(i + 1, 0, { ...newSlides[i] });
+                                       setGeneratedContent({ ...generatedContent, slides: newSlides });
+                                       showToast('Diapositiva duplicada', 'success');
+                                     }}
+                                     onRemove={handleRemoveSlide}
+                                     onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                                     onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Mobile Toolbar */}
+                            <MobileToolbar
+                              canvas={designer.canvas}
+                              transform={transformer}
+                              selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
+                              onAddElement={(slideIndex, type, content) => {
+                                designer.canvas.addExtraElement(slideIndex, type, content);
+                                pushToHistory(generatedContent);
+                              }}
+                              onDeleteElement={() => {
+                                if (designer.canvas.selectedExtraId) {
+                                  const [slideIdx, elId] = designer.canvas.selectedExtraId.split('-');
+                                  designer.canvas.removeExtraElement(parseInt(slideIdx), elId);
+                                } else if (designer.canvas.selectedImageId) {
+                                  const [slideIdx, imgIdx] = designer.canvas.selectedImageId.split('-');
+                                  handleRemoveImage(parseInt(slideIdx), parseInt(imgIdx));
+                                  designer.canvas.setSelectedImageId(null);
+                                }
+                              }}
+                              onDownload={exporter.downloadCarousel}
+                              onSave={() => designer.canvas.saveProject(generatedContent)}
+                              onPreview={() => setPreviewIndex(0)}
+                              currentSlide={designer.canvas.currentSlidePage}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
