@@ -323,7 +323,7 @@ export default function SocialGenerator() {
                 </div>
 
                 {activeTab === 'carousel' && (
-                  <div className={`${isMobile ? 'pb-24' : ''}`}>
+                  <div className={`${isMobile ? 'pb-32' : ''}`}>
                     {/* Desktop Layout */}
                     {!isMobile && (
                       <div className="flex gap-6">
