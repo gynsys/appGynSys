@@ -16,7 +16,7 @@ export const PreviewModal = ({ isOpen, currentIndex, total, slides, renderSlide,
         </button>
       )}
       
-      <div className="w-full max-w-xl shadow-2xl transition-all duration-300 scale-[1.1] md:scale-[1.3] z-[105]">
+      <div className="flex items-center justify-center transition-all duration-300 transform scale-[0.8] xs:scale-[0.9] sm:scale-100 md:scale-[1.2] lg:scale-[1.4] z-[105]">
         {renderSlide(slides[currentIndex], currentIndex, true)}
       </div>
       

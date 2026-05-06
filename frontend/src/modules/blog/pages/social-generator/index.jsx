@@ -1094,30 +1094,7 @@ export default function SocialGenerator() {
                             )}
                           </div>
                         ) : (
-                          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                            {/* Mobile Header */}
-                            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-[100]">
-                              <div className="flex items-center justify-between">
-                                 <div className="flex items-center gap-3">
-                                   <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                                     <FiInstagram size={20} />
-                                   </div>
-                                   <div>
-                                     <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight leading-none">Editor Social</h2>
-                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">GynSys Pro</p>
-                                   </div>
-                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => setShowProjects(!showProjects)}
-                                    className={`p-2.5 rounded-xl transition-all ${showProjects ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-indigo-500'}`}
-                                  >
-                                    <FiFolder size={20} />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
+                          <div className="h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden flex flex-col">
                             {/* Mobile Projects Modal */}
                             {showProjects && (
                               <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm animate-fadeIn flex flex-col">
@@ -1176,14 +1153,7 @@ export default function SocialGenerator() {
 
                             {/* Mobile Action Center */}
                             <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
-                              <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[40px] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 text-center animate-slideUp">
-                                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center text-indigo-600 mx-auto mb-6">
-                                  <FiImage size={40} />
-                                </div>
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Carrusel Generado</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 px-4">
-                                  Tu contenido está listo. Elige una acción para continuar.
-                                </p>
+                              <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[40px] p-10 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 text-center animate-slideUp">
                                 
                                 <div className="grid grid-cols-1 gap-3 w-full">
                                   <button
