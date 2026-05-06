@@ -275,7 +275,7 @@ def create_social_carousel(
     """Save a new carousel project to the database."""
     return crud.create_carousel(db=db, carousel=carousel, doctor_id=current_user.id)
 
-@router.get("/carousels", response_model=List[schemas.SocialCarouselResponse])
+@router.get("/carousels")
 def get_my_carousels(
     skip: int = 0,
     limit: int = 100,
