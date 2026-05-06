@@ -1094,7 +1094,7 @@ export default function SocialGenerator() {
                             )}
                           </div>
                         ) : (
-                          <div className="h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden flex flex-col">
+                          <div className="h-[100dvh] bg-gray-50 dark:bg-gray-900 overflow-hidden flex flex-col">
                             {/* Mobile Projects Modal */}
                             {showProjects && (
                               <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm animate-fadeIn flex flex-col">
@@ -1171,7 +1171,7 @@ export default function SocialGenerator() {
                                         onClick={() => {
                                           enterMobileFullscreen();
                                         }}
-                                        className="w-full py-4 px-2 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-3 px-1 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-1"
                                       >
                                         <FiMaximize2 size={16} />
                                         Editar Diseño
@@ -1179,7 +1179,7 @@ export default function SocialGenerator() {
                                       
                                       <button
                                         onClick={() => setPreviewIndex(0)}
-                                        className="w-full py-4 px-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-600 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-3 px-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-600 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-1"
                                       >
                                         <FiEye size={16} />
                                         Vista Previa
