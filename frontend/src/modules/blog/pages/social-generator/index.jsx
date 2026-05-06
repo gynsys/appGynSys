@@ -356,9 +356,12 @@ export default function SocialGenerator() {
                                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
                                   </button>
                                   <button 
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                       e.stopPropagation();
-                                      if (window.confirm('¿Eliminar proyecto?')) designer.canvas.deleteProject(p.id);
+                                      if (window.confirm('¿Eliminar proyecto?')) {
+                                        const ok = await designer.canvas.deleteProject(p.id);
+                                        if (ok) showToast('Proyecto eliminado', 'success');
+                                      }
                                     }} 
                                     className="p-3 text-red-400 hover:bg-red-50 rounded-2xl"
                                   >
@@ -389,9 +392,12 @@ export default function SocialGenerator() {
                                   <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
                                 </button>
                                 <button 
-                                  onClick={(e) => {
+                                  onClick={async (e) => {
                                     e.stopPropagation();
-                                    designer.canvas.deleteProject(p.id);
+                                    if (window.confirm('¿Eliminar proyecto?')) {
+                                      const ok = await designer.canvas.deleteProject(p.id);
+                                      if (ok) showToast('Proyecto eliminado', 'success');
+                                    }
                                   }} 
                                   className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 transition-all hover:bg-red-50 rounded-lg"
                                 >
@@ -452,11 +458,12 @@ export default function SocialGenerator() {
                             pushToHistory(generatedContent);
                           }}
                           onDownload={exporter.downloadCarousel}
-                          onSave={() => {
+                          onSave={async () => {
                             const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
                             if (name) {
-                              designer.canvas.saveProject(name, generatedContent);
-                              showToast('Proyecto guardado', 'success');
+                              const ok = await designer.canvas.saveProject(name, generatedContent);
+                              if (ok) showToast('Proyecto guardado', 'success');
+                              else showToast('Error al guardar', 'error');
                             }
                           }}
                           onPreview={() => setPreviewIndex(0)}
@@ -1093,9 +1100,12 @@ export default function SocialGenerator() {
                                             <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
                                           </button>
                                           <button 
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                               e.stopPropagation();
-                                              if (window.confirm('¿Eliminar proyecto?')) designer.canvas.deleteProject(p.id);
+                                              if (window.confirm('¿Eliminar proyecto?')) {
+                                                const ok = await designer.canvas.deleteProject(p.id);
+                                                if (ok) showToast('Proyecto eliminado', 'success');
+                                              }
                                             }} 
                                             className="p-3 text-red-400 hover:bg-red-50 rounded-2xl"
                                           >
@@ -1166,11 +1176,12 @@ export default function SocialGenerator() {
                                 }
                               }}
                               onDownload={exporter.downloadCarousel}
-                              onSave={() => {
+                              onSave={async () => {
                                 const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
                                 if (name) {
-                                  designer.canvas.saveProject(name, generatedContent);
-                                  showToast('Proyecto guardado', 'success');
+                                  const ok = await designer.canvas.saveProject(name, generatedContent);
+                                  if (ok) showToast('Proyecto guardado', 'success');
+                                  else showToast('Error al guardar', 'error');
                                 }
                               }}
                               onPreview={() => setPreviewIndex(0)}

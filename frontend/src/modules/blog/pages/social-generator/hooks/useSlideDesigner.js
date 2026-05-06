@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { DEFAULT_DESIGN } from '../lib/constants';
+import { blogService } from '../../../services/blogService';
 
 const TEMPLATE_STORAGE_KEY = 'gynsys_carousel_templates';
-const PROJECT_STORAGE_KEY = 'gynsys_carousel_projects';
 
 export const useSlideDesigner = () => {
-  // Colors & General Design
+  // ... existing state definitions ...
   const [bgColor, setBgColor] = useState(DEFAULT_DESIGN.bgColor);
   const [bgColor2, setBgColor2] = useState(DEFAULT_DESIGN.bgColor2);
   const [bgColor3, setBgColor3] = useState(DEFAULT_DESIGN.bgColor3);
@@ -18,7 +18,6 @@ export const useSlideDesigner = () => {
   const [headerColor, setHeaderColor] = useState(DEFAULT_DESIGN.headerColor);
   const [imageBorderRadius, setImageBorderRadius] = useState('0px');
 
-  // Global Template Settings (Logo, Name, Divider)
   const [logoPos, setLogoPos] = useState({ x: 25, y: 12 });
   const [doctorNamePos, setDoctorNamePos] = useState({ x: 60, y: 12 });
   const [dividerPos, setDividerPos] = useState({ x: 50, y: 22 });
@@ -26,7 +25,6 @@ export const useSlideDesigner = () => {
   const [dividerHeight, setDividerHeight] = useState(2);
   const [dividerWidth, setDividerWidth] = useState(80);
   
-  // Elements & Selection
   const [extraElements, setExtraElements] = useState({});
   const [currentSlidePage, setCurrentSlidePage] = useState(0);
   const [selectedExtraId, setSelectedExtraId] = useState(null);
@@ -37,17 +35,31 @@ export const useSlideDesigner = () => {
   const [selectedDivider, setSelectedDivider] = useState(false);
   const [isExportMode, setIsExportMode] = useState(false);
 
-  // Custom Templates Management
+  // Custom Templates Management (Keeping localStorage for now as they are small styles)
   const [customTemplates, setCustomTemplates] = useState(() => {
-    const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(TEMPLATE_STORAGE_KEY) : null;
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Projects Management
-  const [projects, setProjects] = useState(() => {
-    const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Projects Management (Now using Backend)
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  const fetchProjects = async () => {
+    setLoadingProjects(true);
+    try {
+      const data = await blogService.getCarouselProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   const saveCustomTemplate = (name) => {
     if (!name) return;
@@ -109,10 +121,9 @@ export const useSlideDesigner = () => {
     setExtraElements(newExtraElements);
   };
 
-  const saveProject = (name, generatedContent) => {
+  const saveProject = async (name, generatedContent) => {
     if (!name || !generatedContent) return;
-    const newProject = {
-      id: Date.now(),
+    const projectData = {
       name,
       content: generatedContent,
       design: {
@@ -121,25 +132,38 @@ export const useSlideDesigner = () => {
         titleColor, contentColor, headerColor,
         imageBorderRadius
       },
-      global: {
+      global_settings: {
         logoPos, doctorNamePos, dividerPos, dividerColor, dividerHeight, dividerWidth
       },
       elements: extraElements
     };
-    const updated = [...projects, newProject];
-    setProjects(updated);
-    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(updated));
+    
+    try {
+      await blogService.saveCarouselProject(projectData);
+      await fetchProjects();
+      return true;
+    } catch (error) {
+      console.error('Error saving project:', error);
+      return false;
+    }
   };
 
-  const deleteProject = (id) => {
-    const updated = projects.filter(p => p.id !== id);
-    setProjects(updated);
-    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(updated));
+  const deleteProject = async (id) => {
+    try {
+      await blogService.deleteCarouselProject(id);
+      await fetchProjects();
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      return false;
+    }
   };
 
   const loadProject = (project) => {
     if (!project) return null;
-    const { design, global, elements, content } = project;
+    const { design, elements, content } = project;
+    const global = project.global_settings || project.global;
+    
     setBgColor(design.bgColor);
     setBgColor2(design.bgColor2);
     setBgColor3(design.bgColor3);
@@ -151,12 +175,16 @@ export const useSlideDesigner = () => {
     setContentColor(design.contentColor);
     setHeaderColor(design.headerColor);
     setImageBorderRadius(design.imageBorderRadius || '0px');
-    setLogoPos(global.logoPos || { x: 25, y: 12 });
-    setDoctorNamePos(global.doctorNamePos || { x: 60, y: 12 });
-    setDividerPos(global.dividerPos);
-    setDividerColor(global.dividerColor);
-    setDividerHeight(global.dividerHeight);
-    setDividerWidth(global.dividerWidth);
+    
+    if (global) {
+      setLogoPos(global.logoPos || { x: 25, y: 12 });
+      setDoctorNamePos(global.doctorNamePos || { x: 60, y: 12 });
+      setDividerPos(global.dividerPos);
+      setDividerColor(global.dividerColor);
+      setDividerHeight(global.dividerHeight);
+      setDividerWidth(global.dividerWidth);
+    }
+    
     setExtraElements(elements);
     setCurrentSlidePage(0);
     return content;

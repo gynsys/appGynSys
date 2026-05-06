@@ -130,6 +130,26 @@ class SocialContentResponse(BaseModel):
     slides: Optional[List[SocialContentSlide]] = None
     image_prompts: Optional[List[str]] = None
 
+# Social Carousel Schemas
+class SocialCarouselBase(BaseModel):
+    name: str
+    content: dict
+    design: dict
+    global_settings: dict
+    elements: dict
+
+class SocialCarouselCreate(SocialCarouselBase):
+    pass
+
+class SocialCarouselResponse(SocialCarouselBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    doctor_id: int
+
+    class Config:
+        from_attributes = True
+
 # Validating models after all definitions are complete
 BlogPostCreate.model_rebuild()
 BlogPostUpdate.model_rebuild()

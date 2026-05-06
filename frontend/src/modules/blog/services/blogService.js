@@ -59,5 +59,26 @@ export const blogService = {
   generateSocialContent: async (postId, genType) => {
     const response = await api.post(`/blog/${postId}/generate-social?gen_type=${genType}`)
     return response.data
+  },
+
+  // Social Carousel Projects
+  getCarouselProjects: async () => {
+    const response = await api.get('/blog/carousels')
+    return response.data
+  },
+
+  saveCarouselProject: async (projectData) => {
+    const response = await api.post('/blog/carousels', projectData)
+    return response.data
+  },
+
+  updateCarouselProject: async (projectId, projectData) => {
+    const response = await api.put(`/blog/carousels/${projectId}`, projectData)
+    return response.data
+  },
+
+  deleteCarouselProject: async (projectId) => {
+    const response = await api.delete(`/blog/carousels/${projectId}`)
+    return response.data
   }
 }

@@ -1,8 +1,45 @@
 import re
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from app.blog.models import BlogPost, Comment, BlogPostSEO
-from app.blog.schemas import BlogPostCreate, BlogPostUpdate, CommentCreate
+from app.blog.models import BlogPost, Comment, BlogPostSEO, SocialCarousel
+from app.blog.schemas import BlogPostCreate, BlogPostUpdate, CommentCreate, SocialCarouselCreate
+
+def get_carousel(db: Session, carousel_id: int):
+    return db.query(SocialCarousel).filter(SocialCarousel.id == carousel_id).first()
+
+def get_carousels_by_doctor(db: Session, doctor_id: int, skip: int = 0, limit: int = 100):
+    return db.query(SocialCarousel).filter(SocialCarousel.doctor_id == doctor_id).order_by(SocialCarousel.created_at.desc()).offset(skip).limit(limit).all()
+
+def create_carousel(db: Session, carousel: SocialCarouselCreate, doctor_id: int):
+    db_carousel = SocialCarousel(
+        **carousel.model_dump(),
+        doctor_id=doctor_id
+    )
+    db.add(db_carousel)
+    db.commit()
+    db.refresh(db_carousel)
+    return db_carousel
+
+def update_carousel(db: Session, carousel_id: int, carousel: SocialCarouselCreate, doctor_id: int):
+    db_carousel = db.query(SocialCarousel).filter(SocialCarousel.id == carousel_id, SocialCarousel.doctor_id == doctor_id).first()
+    if not db_carousel:
+        return None
+    
+    update_data = carousel.model_dump()
+    for key, value in update_data.items():
+        setattr(db_carousel, key, value)
+        
+    db.add(db_carousel)
+    db.commit()
+    db.refresh(db_carousel)
+    return db_carousel
+
+def delete_carousel(db: Session, carousel_id: int, doctor_id: int):
+    db_carousel = db.query(SocialCarousel).filter(SocialCarousel.id == carousel_id, SocialCarousel.doctor_id == doctor_id).first()
+    if db_carousel:
+        db.delete(db_carousel)
+        db.commit()
+    return db_carousel
 
 def slugify(text: str) -> str:
     text = text.lower()

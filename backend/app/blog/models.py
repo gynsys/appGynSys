@@ -1,7 +1,24 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
+
+class SocialCarousel(Base):
+    __tablename__ = "social_carousels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    content = Column(JSON, nullable=False)
+    design = Column(JSON, nullable=False)
+    global_settings = Column(JSON, nullable=False)
+    elements = Column(JSON, nullable=False)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    
+    doctor = relationship("Doctor")
 
 class BlogPost(Base):
     __tablename__ = "blog_posts"

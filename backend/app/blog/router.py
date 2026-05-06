@@ -264,3 +264,48 @@ def delete_post(
         raise HTTPException(status_code=403, detail="Not authorized to delete this post")
     
     return crud.delete_post(db=db, post_id=post_id)
+
+# Social Carousel Endpoints
+@router.post("/carousels", response_model=schemas.SocialCarouselResponse)
+def create_social_carousel(
+    carousel: schemas.SocialCarouselCreate,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """Save a new carousel project to the database."""
+    return crud.create_carousel(db=db, carousel=carousel, doctor_id=current_user.id)
+
+@router.get("/carousels", response_model=List[schemas.SocialCarouselResponse])
+def get_my_carousels(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """List all carousel projects for the current doctor."""
+    return crud.get_carousels_by_doctor(db=db, doctor_id=current_user.id, skip=skip, limit=limit)
+
+@router.put("/carousels/{carousel_id}", response_model=schemas.SocialCarouselResponse)
+def update_social_carousel(
+    carousel_id: int,
+    carousel: schemas.SocialCarouselCreate,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """Update an existing carousel project."""
+    result = crud.update_carousel(db=db, carousel_id=carousel_id, carousel=carousel, doctor_id=current_user.id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Carousel not found")
+    return result
+
+@router.delete("/carousels/{carousel_id}", response_model=schemas.SocialCarouselResponse)
+def delete_social_carousel(
+    carousel_id: int,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """Delete a carousel project."""
+    result = crud.delete_carousel(db=db, carousel_id=carousel_id, doctor_id=current_user.id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Carousel not found")
+    return result
