@@ -327,37 +327,82 @@ export default function SocialGenerator() {
                   </button>
 
                   {showProjects && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden animate-fadeIn">
-                      <div className="max-h-64 overflow-y-auto">
-                        {designer.canvas.projects.length === 0 ? (
-                          <div className="p-8 text-center text-gray-400 italic text-sm">No tienes carruseles guardados todavía.</div>
-                        ) : (
-                          designer.canvas.projects.map(p => (
-                            <div key={p.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 flex items-center justify-between group">
-                              <button 
-                                onClick={() => {
-                                  handleLoadProject(p);
-                                  setShowProjects(false);
-                                }}
-                                className="text-left flex-1"
-                              >
-                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate pr-4">{p.name}</p>
-                                <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
-                              </button>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  designer.canvas.deleteProject(p.id);
-                                }} 
-                                className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 transition-all hover:bg-red-50 rounded-lg"
-                              >
-                                <FiTrash2 size={14} />
-                              </button>
-                            </div>
-                          ))
-                        )}
+                    isMobile ? (
+                      <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm animate-fadeIn flex flex-col">
+                        <div className="mt-auto bg-white dark:bg-gray-800 rounded-t-[40px] shadow-2xl p-6 h-[70vh] flex flex-col">
+                          <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Mis Carruseles</h3>
+                            <button 
+                              onClick={() => setShowProjects(false)}
+                              className="p-2 text-gray-400"
+                            >
+                              <FiX size={24} />
+                            </button>
+                          </div>
+                          <div className="flex-1 overflow-y-auto space-y-3 pb-8 no-scrollbar">
+                            {designer.canvas.projects.length === 0 ? (
+                              <div className="py-12 text-center text-gray-400 italic">No tienes carruseles guardados todavía.</div>
+                            ) : (
+                              designer.canvas.projects.map(p => (
+                                <div key={p.id} className="p-5 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-between border border-gray-100 dark:border-gray-700">
+                                  <button 
+                                    onClick={() => {
+                                      handleLoadProject(p);
+                                      setShowProjects(false);
+                                    }}
+                                    className="text-left flex-1"
+                                  >
+                                    <p className="font-bold text-gray-900 dark:text-white mb-1">{p.name}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
+                                  </button>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('¿Eliminar proyecto?')) designer.canvas.deleteProject(p.id);
+                                    }} 
+                                    className="p-3 text-red-400 hover:bg-red-50 rounded-2xl"
+                                  >
+                                    <FiTrash2 size={18} />
+                                  </button>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden animate-fadeIn">
+                        <div className="max-h-64 overflow-y-auto">
+                          {designer.canvas.projects.length === 0 ? (
+                            <div className="p-8 text-center text-gray-400 italic text-sm">No tienes carruseles guardados todavía.</div>
+                          ) : (
+                            designer.canvas.projects.map(p => (
+                              <div key={p.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 flex items-center justify-between group">
+                                <button 
+                                  onClick={() => {
+                                    handleLoadProject(p);
+                                    setShowProjects(false);
+                                  }}
+                                  className="text-left flex-1"
+                                >
+                                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate pr-4">{p.name}</p>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    designer.canvas.deleteProject(p.id);
+                                  }} 
+                                  className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 transition-all hover:bg-red-50 rounded-lg"
+                                >
+                                  <FiTrash2 size={14} />
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
