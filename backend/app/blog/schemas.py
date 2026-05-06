@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -133,10 +133,10 @@ class SocialContentResponse(BaseModel):
 # Social Carousel Schemas
 class SocialCarouselBase(BaseModel):
     name: str
-    content: dict
-    design: dict
-    global_settings: dict
-    elements: dict
+    content: Any
+    design: Any
+    global_settings: Any
+    elements: Any
 
 class SocialCarouselCreate(SocialCarouselBase):
     pass
