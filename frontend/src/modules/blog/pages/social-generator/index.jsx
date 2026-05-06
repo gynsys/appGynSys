@@ -73,8 +73,8 @@ export default function SocialGenerator() {
 
   useEffect(() => {
     const handleResize = (width) => {
-      // Padding/margins increased to 100px to ensure side icons are visible
-      const s = Math.min(1, (width - 100) / 410);
+      // Adjusted margin to 75px (middle ground between 48 and 100)
+      const s = Math.min(1, (width - 75) / 410);
       setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
     };
 
