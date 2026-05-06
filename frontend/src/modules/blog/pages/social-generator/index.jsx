@@ -803,23 +803,7 @@ export default function SocialGenerator() {
                               <FiX size={24} />
                             </button>
 
-                            {/* Mobile Fullscreen Navigation */}
-                            {designer.canvas.currentSlidePage > 0 && (
-                              <button
-                                onClick={() => designer.canvas.setCurrentSlidePage(designer.canvas.currentSlidePage - 1)}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 z-[110] p-3 bg-white/90 text-indigo-600 rounded-full shadow-lg hover:bg-white transition-colors active:scale-95"
-                              >
-                                <FiChevronLeft size={24} />
-                              </button>
-                            )}
-                            {designer.canvas.currentSlidePage < generatedContent.slides.length - 1 && (
-                              <button
-                                onClick={() => designer.canvas.setCurrentSlidePage(designer.canvas.currentSlidePage + 1)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 z-[110] p-3 bg-white/90 text-indigo-600 rounded-full shadow-lg hover:bg-white transition-colors active:scale-95"
-                              >
-                                <FiChevronRight size={24} />
-                              </button>
-                            )}
+
 
                             {/* Full-Screen Canvas */}
                             <div className="flex items-center justify-center h-screen w-full">
@@ -855,6 +839,34 @@ export default function SocialGenerator() {
                                      onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
                                   />
                                 </div>
+                              </div>
+                            </div>
+
+                            {/* Mobile Fullscreen Navigation - BOTTOM */}
+                            <div className="fixed bottom-24 left-0 right-0 z-[110] flex justify-center items-center px-4">
+                              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg border border-gray-100 dark:border-gray-700 p-1 flex items-center gap-4">
+                                <button
+                                  onClick={() => designer.canvas.setCurrentSlidePage(Math.max(0, designer.canvas.currentSlidePage - 1))}
+                                  disabled={designer.canvas.currentSlidePage === 0}
+                                  className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === 0 ? 'text-gray-300' : 'text-indigo-600 hover:bg-indigo-50 active:scale-90'}`}
+                                >
+                                  <FiChevronLeft size={24} />
+                                </button>
+                                
+                                <div className="flex flex-col items-center min-w-[60px]">
+                                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Diapositiva</span>
+                                  <span className="text-sm font-black text-indigo-600 leading-none">
+                                    {designer.canvas.currentSlidePage + 1} <span className="text-gray-300 mx-0.5">/</span> {generatedContent.slides.length}
+                                  </span>
+                                </div>
+
+                                <button
+                                  onClick={() => designer.canvas.setCurrentSlidePage(Math.min(generatedContent.slides.length - 1, designer.canvas.currentSlidePage + 1))}
+                                  disabled={designer.canvas.currentSlidePage === generatedContent.slides.length - 1}
+                                  className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === generatedContent.slides.length - 1 ? 'text-gray-300' : 'text-indigo-600 hover:bg-indigo-50 active:scale-90'}`}
+                                >
+                                  <FiChevronRight size={24} />
+                                </button>
                               </div>
                             </div>
 
@@ -1086,25 +1098,21 @@ export default function SocialGenerator() {
                             {/* Mobile Header */}
                             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-[100]">
                               <div className="flex items-center justify-between">
-                                <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
+                                 <div className="flex items-center gap-3">
+                                   <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                                     <FiInstagram size={20} />
+                                   </div>
+                                   <div>
+                                     <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight leading-none">Editor Social</h2>
+                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">GynSys Pro</p>
+                                   </div>
+                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => setShowProjects(!showProjects)}
-                                    className={`p-2 rounded-lg transition-colors ${showProjects ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                    className={`p-2.5 rounded-xl transition-all ${showProjects ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-indigo-500'}`}
                                   >
-                                    <FiFolder size={18} />
-                                  </button>
-                                  <button
-                                    onClick={() => setPreviewIndex(0)}
-                                    className="p-2 rounded-lg bg-indigo-600 text-white shadow-sm"
-                                  >
-                                    <FiEye size={18} />
-                                  </button>
-                                  <button
-                                    onClick={enterMobileFullscreen}
-                                    className="p-2 rounded-lg bg-emerald-500 text-white shadow-sm"
-                                  >
-                                    <FiMaximize2 size={18} />
+                                    <FiFolder size={20} />
                                   </button>
                                 </div>
                               </div>
@@ -1166,40 +1174,40 @@ export default function SocialGenerator() {
                               </div>
                             )}
 
-                            {/* Mobile Canvas - Regular View */}
-                            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4" ref={mobileEditorWrapperRef}>
-                              <div 
-                                className="flex items-center justify-center transition-all duration-300"
-                                style={{ 
-                                  width: 410 * scale, 
-                                  height: 410 * scale,
-                                  perspective: '1000px'
-                                }}
-                              >
-                                <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
-                                  <SlideCanvas 
-                                     slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                                     index={designer.canvas.currentSlidePage}
-                                     doctor={doctor}
-                                     doctorLogo={doctorLogoBase64}
-                                     design={designer.design}
-                                     canvas={designer.canvas}
-                                     transform={transformer.state}
-                                     handlers={transformer.handlers}
-                                     watermark={watermarkImage}
-                                     onEdit={setEditingIndex}
-                                     onPreview={setPreviewIndex}
-                                     onCopy={(i) => {
-                                       const newSlides = [...generatedContent.slides];
-                                       newSlides.splice(i + 1, 0, { ...newSlides[i] });
-                                       setGeneratedContent({ ...generatedContent, slides: newSlides });
-                                       showToast('Diapositiva duplicada', 'success');
-                                     }}
-                                     onRemove={handleRemoveSlide}
-                                     onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                                     onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
-                                  />
+                            {/* Mobile Action Center */}
+                            <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+                              <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[40px] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 text-center animate-slideUp">
+                                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center text-indigo-600 mx-auto mb-6">
+                                  <FiImage size={40} />
                                 </div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Carrusel Generado</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 px-4">
+                                  Tu contenido está listo. Elige una acción para continuar.
+                                </p>
+                                
+                                <div className="grid grid-cols-1 gap-3 w-full">
+                                  <button
+                                    onClick={enterMobileFullscreen}
+                                    className="w-full py-4 px-6 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                  >
+                                    <FiMaximize2 size={18} />
+                                    Editar Diseño
+                                  </button>
+                                  
+                                  <button
+                                    onClick={() => setPreviewIndex(0)}
+                                    className="w-full py-4 px-6 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                  >
+                                    <FiEye size={18} />
+                                    Vista Previa
+                                  </button>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
+                                <div className="w-8 h-[1px] bg-gray-200"></div>
+                                {generatedContent.slides.length} Diapositivas Listas
+                                <div className="w-8 h-[1px] bg-gray-200"></div>
                               </div>
                             </div>
 
