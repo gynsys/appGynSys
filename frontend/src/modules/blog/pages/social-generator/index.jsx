@@ -73,8 +73,8 @@ export default function SocialGenerator() {
 
   useEffect(() => {
     const handleResize = (width) => {
-      // Reduced margin to 55px as requested
-      const s = Math.min(1, (width - 55) / 410);
+      // Reduced margin to 50px
+      const s = Math.min(1, (width - 50) / 410);
       setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
     };
 
@@ -992,17 +992,71 @@ export default function SocialGenerator() {
                         ) : (
                           <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                             {/* Mobile Header */}
-                            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+                            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-[100]">
                               <div className="flex items-center justify-between">
                                 <SlidePaginator current={designer.canvas.currentSlidePage} total={generatedContent.slides.length} onChange={designer.canvas.setCurrentSlidePage} />
-                                <button
-                                  onClick={() => setPreviewIndex(0)}
-                                  className="p-2 rounded-lg bg-indigo-600 text-white"
-                                >
-                                  <FiEye size={16} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setShowProjects(!showProjects)}
+                                    className={`p-2 rounded-lg transition-colors ${showProjects ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                  >
+                                    <FiFolder size={18} />
+                                  </button>
+                                  <button
+                                    onClick={() => setPreviewIndex(0)}
+                                    className="p-2 rounded-lg bg-indigo-600 text-white"
+                                  >
+                                    <FiEye size={18} />
+                                  </button>
+                                </div>
                               </div>
                             </div>
+
+                            {/* Mobile Projects Modal */}
+                            {showProjects && (
+                              <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm animate-fadeIn flex flex-col">
+                                <div className="mt-auto bg-white dark:bg-gray-800 rounded-t-[40px] shadow-2xl p-6 h-[70vh] flex flex-col">
+                                  <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Mis Proyectos</h3>
+                                    <button 
+                                      onClick={() => setShowProjects(false)}
+                                      className="p-2 text-gray-400 hover:text-gray-600"
+                                    >
+                                      <FiX size={24} />
+                                    </button>
+                                  </div>
+                                  <div className="flex-1 overflow-y-auto space-y-3 pb-8 no-scrollbar">
+                                    {designer.canvas.projects.length === 0 ? (
+                                      <div className="py-12 text-center text-gray-400 italic">No tienes carruseles guardados todavía.</div>
+                                    ) : (
+                                      designer.canvas.projects.map(p => (
+                                        <div key={p.id} className="p-5 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-between border border-gray-100 dark:border-gray-700">
+                                          <button 
+                                            onClick={() => {
+                                              handleLoadProject(p);
+                                              setShowProjects(false);
+                                            }}
+                                            className="text-left flex-1"
+                                          >
+                                            <p className="font-bold text-gray-900 dark:text-white mb-1">{p.name}</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
+                                          </button>
+                                          <button 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (window.confirm('¿Eliminar proyecto?')) designer.canvas.deleteProject(p.id);
+                                            }} 
+                                            className="p-3 text-red-400 hover:bg-red-50 rounded-2xl"
+                                          >
+                                            <FiTrash2 size={18} />
+                                          </button>
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
 
                             {/* Mobile Canvas - Regular View */}
                             <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4" ref={mobileEditorWrapperRef}>
