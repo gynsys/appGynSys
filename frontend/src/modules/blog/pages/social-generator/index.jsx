@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -803,6 +803,24 @@ export default function SocialGenerator() {
                               <FiX size={24} />
                             </button>
 
+                            {/* Mobile Fullscreen Navigation */}
+                            {designer.canvas.currentSlidePage > 0 && (
+                              <button
+                                onClick={() => designer.canvas.setCurrentSlidePage(designer.canvas.currentSlidePage - 1)}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 z-[110] p-3 bg-white/90 text-indigo-600 rounded-full shadow-lg hover:bg-white transition-colors active:scale-95"
+                              >
+                                <FiChevronLeft size={24} />
+                              </button>
+                            )}
+                            {designer.canvas.currentSlidePage < generatedContent.slides.length - 1 && (
+                              <button
+                                onClick={() => designer.canvas.setCurrentSlidePage(designer.canvas.currentSlidePage + 1)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 z-[110] p-3 bg-white/90 text-indigo-600 rounded-full shadow-lg hover:bg-white transition-colors active:scale-95"
+                              >
+                                <FiChevronRight size={24} />
+                              </button>
+                            )}
+
                             {/* Full-Screen Canvas */}
                             <div className="flex items-center justify-center h-screen w-full">
                               <div 
@@ -1078,9 +1096,15 @@ export default function SocialGenerator() {
                                   </button>
                                   <button
                                     onClick={() => setPreviewIndex(0)}
-                                    className="p-2 rounded-lg bg-indigo-600 text-white"
+                                    className="p-2 rounded-lg bg-indigo-600 text-white shadow-sm"
                                   >
                                     <FiEye size={18} />
+                                  </button>
+                                  <button
+                                    onClick={enterMobileFullscreen}
+                                    className="p-2 rounded-lg bg-emerald-500 text-white shadow-sm"
+                                  >
+                                    <FiMaximize2 size={18} />
                                   </button>
                                 </div>
                               </div>
