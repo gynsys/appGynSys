@@ -75,8 +75,8 @@ export default function SocialGenerator() {
     const ro = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const width = entry.contentRect.width;
-        // Padding/margins roughly 48px
-        const s = Math.min(1, (width - 48) / 410);
+        // Padding/margins increased to 100px to ensure side icons are visible
+        const s = Math.min(1, (width - 100) / 410);
         setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
       }
     });
