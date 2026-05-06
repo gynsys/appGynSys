@@ -367,7 +367,9 @@ export default function SocialGenerator() {
                                         {p.is_backend ? 'Nube' : 'Local'}
                                       </span>
                                     </div>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : (typeof p.id === 'number' && p.id > 1000000 ? new Date(p.id).toLocaleDateString() : 'Reciente')} - {p.content.slides.length} slides
+                                    </p>
                                   </button>
                                   <button 
                                     onClick={async (e) => {
@@ -408,7 +410,9 @@ export default function SocialGenerator() {
                                       {p.is_backend ? 'Nube' : 'Local'}
                                     </span>
                                   </div>
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                                    {p.created_at ? new Date(p.created_at).toLocaleDateString() : (typeof p.id === 'number' && p.id > 1000000 ? new Date(p.id).toLocaleDateString() : 'Reciente')} - {p.content.slides.length} diapositivas
+                                  </p>
                                 </button>
                                 <button 
                                   onClick={async (e) => {
@@ -1114,7 +1118,9 @@ export default function SocialGenerator() {
                                                 {p.is_backend ? 'Nube' : 'Local'}
                                               </span>
                                             </div>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                                              {p.created_at ? new Date(p.created_at).toLocaleDateString() : (typeof p.id === 'number' && p.id > 1000000 ? new Date(p.id).toLocaleDateString() : 'Reciente')} - {p.content.slides.length} slides
+                                            </p>
                                           </button>
                                           <button 
                                             onClick={async (e) => {
