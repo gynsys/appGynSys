@@ -27,6 +27,7 @@ export default function SocialGenerator() {
   const [generatedContent, setGeneratedContent] = useState(null);
   const [scale, setScale] = useState(1);
   const editorWrapperRef = React.useRef(null);
+  const mobileEditorWrapperRef = React.useRef(null);
   const [activeTab, setActiveTab] = useState('reel');
   const [previewIndex, setPreviewIndex] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -71,18 +72,28 @@ export default function SocialGenerator() {
   const { user: doctor } = useAuthStore();
 
   useEffect(() => {
-    if (!editorWrapperRef.current) return;
+    const handleResize = (width) => {
+      // Padding/margins increased to 100px to ensure side icons are visible
+      const s = Math.min(1, (width - 100) / 410);
+      setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
+    };
+
     const ro = new ResizeObserver((entries) => {
       for (let entry of entries) {
-        const width = entry.contentRect.width;
-        // Padding/margins increased to 100px to ensure side icons are visible
-        const s = Math.min(1, (width - 100) / 410);
-        setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
+        handleResize(entry.contentRect.width);
       }
     });
-    ro.observe(editorWrapperRef.current);
+
+    if (editorWrapperRef.current) ro.observe(editorWrapperRef.current);
+    if (mobileEditorWrapperRef.current) ro.observe(mobileEditorWrapperRef.current);
+
+    // Initial calculation for mobile if window is available
+    if (typeof window !== 'undefined') {
+      handleResize(window.innerWidth);
+    }
+
     return () => ro.disconnect();
-  }, []);
+  }, [isMobileFullscreen]);
 
   const designer = useSlideDesigner();
 
@@ -994,7 +1005,7 @@ export default function SocialGenerator() {
                             </div>
 
                             {/* Mobile Canvas - Regular View */}
-                            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4">
+                            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4" ref={mobileEditorWrapperRef}>
                               <div 
                                 className="flex items-center justify-center transition-all duration-300"
                                 style={{ 
