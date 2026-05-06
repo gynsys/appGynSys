@@ -216,6 +216,15 @@ export default function SocialGenerator() {
     showToast('Lienzo de prueba cargado', 'success');
   };
 
+  const handleSaveProject = async () => {
+    const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
+    if (name) {
+      const ok = await designer.canvas.saveProject(name, generatedContent);
+      if (ok) showToast('Proyecto guardado', 'success');
+      else showToast('Error al guardar', 'error');
+    }
+  };
+
   const handleAddImage = (index, e) => {
     const file = e.target.files[0];
     if (file) {
@@ -468,14 +477,7 @@ export default function SocialGenerator() {
                             pushToHistory(generatedContent);
                           }}
                           onDownload={exporter.downloadCarousel}
-                          onSave={async () => {
-                            const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
-                            if (name) {
-                              const ok = await designer.canvas.saveProject(name, generatedContent);
-                              if (ok) showToast('Proyecto guardado', 'success');
-                              else showToast('Error al guardar', 'error');
-                            }
-                          }}
+                          onSave={handleSaveProject}
                           onPreview={() => setPreviewIndex(0)}
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
                           totalSlides={generatedContent.slides.length}
@@ -855,7 +857,7 @@ export default function SocialGenerator() {
                                   }
                                 }}
                                 onDownload={exporter.downloadCarousel}
-                                onSave={() => designer.canvas.saveProject(generatedContent)}
+                                onSave={handleSaveProject}
                                 onPreview={() => setPreviewIndex(0)}
                                 currentSlide={designer.canvas.currentSlidePage}
                               />
@@ -1191,14 +1193,7 @@ export default function SocialGenerator() {
                                 }
                               }}
                               onDownload={exporter.downloadCarousel}
-                              onSave={async () => {
-                                const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
-                                if (name) {
-                                  const ok = await designer.canvas.saveProject(name, generatedContent);
-                                  if (ok) showToast('Proyecto guardado', 'success');
-                                  else showToast('Error al guardar', 'error');
-                                }
-                              }}
+                              onSave={handleSaveProject}
                               onPreview={() => setPreviewIndex(0)}
                               currentSlide={designer.canvas.currentSlidePage}
                             />
