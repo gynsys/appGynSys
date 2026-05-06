@@ -73,8 +73,8 @@ export default function SocialGenerator() {
 
   useEffect(() => {
     const handleResize = (width) => {
-      // Adjusted margin to 75px (middle ground between 48 and 100)
-      const s = Math.min(1, (width - 75) / 410);
+      // Reduced margin to 55px as requested
+      const s = Math.min(1, (width - 55) / 410);
       setScale(Math.max(0.4, s)); // Min scale 0.4 for very small screens
     };
 
