@@ -352,14 +352,19 @@ export default function SocialGenerator() {
                                     }}
                                     className="text-left flex-1"
                                   >
-                                    <p className="font-bold text-gray-900 dark:text-white mb-1">{p.name}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="font-bold text-gray-900 dark:text-white truncate">{p.name}</p>
+                                      <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {p.is_backend ? 'Nube' : 'Local'}
+                                      </span>
+                                    </div>
                                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
                                   </button>
                                   <button 
                                     onClick={async (e) => {
                                       e.stopPropagation();
                                       if (window.confirm('¿Eliminar proyecto?')) {
-                                        const ok = await designer.canvas.deleteProject(p.id);
+                                        const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
                                         if (ok) showToast('Proyecto eliminado', 'success');
                                       }
                                     }} 
@@ -388,14 +393,19 @@ export default function SocialGenerator() {
                                   }}
                                   className="text-left flex-1"
                                 >
-                                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate pr-4">{p.name}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate pr-1">{p.name}</p>
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                                      {p.is_backend ? 'Nube' : 'Local'}
+                                    </span>
+                                  </div>
                                   <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} diapositivas</p>
                                 </button>
                                 <button 
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     if (window.confirm('¿Eliminar proyecto?')) {
-                                      const ok = await designer.canvas.deleteProject(p.id);
+                                      const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
                                       if (ok) showToast('Proyecto eliminado', 'success');
                                     }
                                   }} 
@@ -1096,14 +1106,19 @@ export default function SocialGenerator() {
                                             }}
                                             className="text-left flex-1"
                                           >
-                                            <p className="font-bold text-gray-900 dark:text-white mb-1">{p.name}</p>
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <p className="font-bold text-gray-900 dark:text-white">{p.name}</p>
+                                              <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                                                {p.is_backend ? 'Nube' : 'Local'}
+                                              </span>
+                                            </div>
                                             <p className="text-[10px] text-gray-400 uppercase tracking-widest">{new Date(p.id).toLocaleDateString()} - {p.content.slides.length} slides</p>
                                           </button>
                                           <button 
                                             onClick={async (e) => {
                                               e.stopPropagation();
                                               if (window.confirm('¿Eliminar proyecto?')) {
-                                                const ok = await designer.canvas.deleteProject(p.id);
+                                                const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
                                                 if (ok) showToast('Proyecto eliminado', 'success');
                                               }
                                             }} 

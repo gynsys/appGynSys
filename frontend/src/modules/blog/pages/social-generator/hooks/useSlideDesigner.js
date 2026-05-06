@@ -41,15 +41,23 @@ export const useSlideDesigner = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Projects Management (Now using Backend)
-  const [projects, setProjects] = useState([]);
+  // Projects Management (Now using Backend + Local Fallback)
+  const [projects, setProjects] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('gynsys_carousel_projects') : null;
+    return saved ? JSON.parse(saved) : [];
+  });
   const [loadingProjects, setLoadingProjects] = useState(false);
 
   const fetchProjects = async () => {
     setLoadingProjects(true);
     try {
-      const data = await blogService.getCarouselProjects();
-      setProjects(data);
+      const backendProjects = await blogService.getCarouselProjects();
+      
+      // Merge with local projects (avoiding duplicates if they were migrated)
+      setProjects(prev => {
+        const local = prev.filter(p => !p.is_backend); // Keep only truly local ones
+        return [...backendProjects.map(p => ({ ...p, is_backend: true })), ...local];
+      });
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {
@@ -148,14 +156,21 @@ export const useSlideDesigner = () => {
     }
   };
 
-  const deleteProject = async (id) => {
-    try {
-      await blogService.deleteCarouselProject(id);
-      await fetchProjects();
+  const deleteProject = async (id, isBackend) => {
+    if (isBackend) {
+      try {
+        await blogService.deleteCarouselProject(id);
+        await fetchProjects();
+        return true;
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        return false;
+      }
+    } else {
+      const updated = projects.filter(p => p.id !== id);
+      setProjects(updated);
+      localStorage.setItem('gynsys_carousel_projects', JSON.stringify(updated));
       return true;
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      return false;
     }
   };
 
