@@ -945,6 +945,7 @@ export default function SocialGenerator() {
                         {!(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
                           <MobileToolbar
                             canvas={designer.canvas}
+                            design={designer.design}
                             transform={transformer}
                             selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
                             onAddElement={(slideIndex, type, content) => {
