@@ -1,4 +1,4 @@
-from typing import List, Annotated
+from typing import List, Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
@@ -270,7 +270,7 @@ def delete_post(
 def create_social_carousel(
     carousel: schemas.SocialCarouselCreate,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Any = Depends(get_current_user)
 ):
     """Save a new carousel project to the database."""
     return crud.create_carousel(db=db, carousel=carousel, doctor_id=current_user.id)
@@ -280,7 +280,7 @@ def get_my_carousels(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Any = Depends(get_current_user)
 ):
     """List all carousel projects for the current doctor."""
     return crud.get_carousels_by_doctor(db=db, doctor_id=current_user.id, skip=skip, limit=limit)
@@ -290,7 +290,7 @@ def update_social_carousel(
     carousel_id: int,
     carousel: schemas.SocialCarouselCreate,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Any = Depends(get_current_user)
 ):
     """Update an existing carousel project."""
     result = crud.update_carousel(db=db, carousel_id=carousel_id, carousel=carousel, doctor_id=current_user.id)
@@ -302,7 +302,7 @@ def update_social_carousel(
 def delete_social_carousel(
     carousel_id: int,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Any = Depends(get_current_user)
 ):
     """Delete a carousel project."""
     result = crud.delete_carousel(db=db, carousel_id=carousel_id, doctor_id=current_user.id)
