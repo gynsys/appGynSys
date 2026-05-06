@@ -407,7 +407,13 @@ export default function SocialGenerator() {
                             pushToHistory(generatedContent);
                           }}
                           onDownload={exporter.downloadCarousel}
-                          onSave={() => designer.canvas.saveProject(generatedContent)}
+                          onSave={() => {
+                            const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
+                            if (name) {
+                              designer.canvas.saveProject(name, generatedContent);
+                              showToast('Proyecto guardado', 'success');
+                            }
+                          }}
                           onPreview={() => setPreviewIndex(0)}
                           selectedElement={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
                           totalSlides={generatedContent.slides.length}
@@ -1115,7 +1121,13 @@ export default function SocialGenerator() {
                                 }
                               }}
                               onDownload={exporter.downloadCarousel}
-                              onSave={() => designer.canvas.saveProject(generatedContent)}
+                              onSave={() => {
+                                const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
+                                if (name) {
+                                  designer.canvas.saveProject(name, generatedContent);
+                                  showToast('Proyecto guardado', 'success');
+                                }
+                              }}
                               onPreview={() => setPreviewIndex(0)}
                               currentSlide={designer.canvas.currentSlidePage}
                             />

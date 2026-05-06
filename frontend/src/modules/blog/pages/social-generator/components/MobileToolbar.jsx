@@ -72,6 +72,12 @@ export const MobileToolbar = ({
             <FiEye size={20} />
           </button>
           <button
+            onClick={onSave}
+            className="p-3 rounded-xl bg-emerald-600 text-white"
+          >
+            <FiSave size={20} />
+          </button>
+          <button
             onClick={onDownload}
             className="p-3 rounded-xl bg-indigo-600 text-white"
           >
