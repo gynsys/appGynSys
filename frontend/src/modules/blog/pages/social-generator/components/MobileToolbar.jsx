@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiPlus, FiTrash2, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiSettings, FiChevronUp, FiChevronDown } from 'react-icons/fi';
-import { SHAPES_CONFIG } from '../lib/svgIcons';
+import { FiType, FiBox, FiPlus, FiMinus, FiTrash2, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiSettings, FiChevronUp, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic } from 'react-icons/fi';
+import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
 
 export const MobileToolbar = ({ 
   canvas, 
@@ -18,7 +18,7 @@ export const MobileToolbar = ({
   const [showLayerControls, setShowLayerControls] = useState(false);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-[70] pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-[120] pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
       {/* Main Toolbar */}
       <div className="flex items-center justify-between px-4 py-3">
         {/* Left Section - Tools */}
@@ -27,7 +27,7 @@ export const MobileToolbar = ({
             onClick={() => setActiveSection(activeSection === 'tools' ? null : 'tools')}
             className={`p-3 rounded-2xl transition-all ${activeSection === 'tools' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
           >
-            <FiPlus size={20} />
+            {activeSection === 'tools' ? <FiMinus size={20} /> : <FiPlus size={20} />}
           </button>
           <button
             onClick={() => setActiveSection(activeSection === 'design' ? null : 'design')}
@@ -117,6 +117,12 @@ export const MobileToolbar = ({
                             onChange={(e) => design.setBgColor2(e.target.value)}
                             className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
                           />
+                          <input
+                            type="color"
+                            value={design.bgColor3}
+                            onChange={(e) => design.setBgColor3(e.target.value)}
+                            className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
+                          />
                         </>
                       )}
                     </div>
@@ -177,6 +183,105 @@ export const MobileToolbar = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Image Border Radius */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Bordes de Imágenes</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => design.setImageBorderRadius('0px')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
+                        design.imageBorderRadius === '0px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                      }`}
+                    >
+                      <FiSquare size={14} /> Cuadrado
+                    </button>
+                    <button
+                      onClick={() => design.setImageBorderRadius('24px')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
+                        design.imageBorderRadius === '24px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                      }`}
+                    >
+                      <FiCornerUpRight size={14} /> Redondo
+                    </button>
+                    <button
+                      onClick={() => design.setImageBorderRadius('999px')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
+                        design.imageBorderRadius === '999px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                      }`}
+                    >
+                      <FiCircle size={14} /> Círculo
+                    </button>
+                  </div>
+                </div>
+
+                {/* Selected Element Controls */}
+                {selectedElement && (() => {
+                  const [slideIdx, elId] = selectedElement.split('-');
+                  const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                  if (!el) return null;
+
+                  return (
+                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl space-y-4">
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Elemento Seleccionado</p>
+                      
+                      {/* Element Color */}
+                      <div className="space-y-2">
+                        <span className="text-[9px] font-black text-gray-400 uppercase">Color</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={el.color}
+                            onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color: e.target.value })}
+                            className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
+                          />
+                          {el.useGradient && (
+                            <>
+                              <input
+                                type="color"
+                                value={el.color2}
+                                onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color2: e.target.value })}
+                                className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
+                              />
+                              <input
+                                type="color"
+                                value={el.color3}
+                                onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color3: e.target.value })}
+                                className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
+                              />
+                            </>
+                          )}
+                          <button
+                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { useGradient: !el.useGradient })}
+                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${
+                              el.useGradient ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                            }`}
+                          >
+                            Gradiente
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Text formatting (only for text elements) */}
+                      {el.type === 'text' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { bold: !el.bold })}
+                            className={`p-2.5 rounded-xl transition-all ${el.bold ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}
+                          >
+                            <FiBold size={16} />
+                          </button>
+                          <button
+                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { italic: !el.italic })}
+                            className={`p-2.5 rounded-xl transition-all ${el.italic ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}
+                          >
+                            <FiItalic size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
