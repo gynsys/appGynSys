@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage } from 'react-icons/fi';
+import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage, FiFolder, FiCopy } from 'react-icons/fi';
 import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
 
 export const MobileToolbar = ({ 
@@ -11,8 +11,11 @@ export const MobileToolbar = ({
   onDeleteElement, 
   onDownload,
   onSave,
+  onSaveAs,
+  onSaveTemplate,
   onPreview,
-  currentSlide 
+  currentSlide,
+  activeProjectName
 }) => {
   const [activePanel, setActivePanel] = useState(null);
 
@@ -249,10 +252,20 @@ export const MobileToolbar = ({
         </div>
       )}
 
+      {/* ─── PROJECT NAME BAR ─── */}
+      {activeProjectName && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 px-4 py-1.5 flex items-center justify-between border-t border-indigo-100 dark:border-indigo-800">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <FiFolder className="text-indigo-500 flex-shrink-0" size={12} />
+            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wide truncate">{activeProjectName}</span>
+          </div>
+        </div>
+      )}
+
       {/* ─── BOTTOM BAR ─── */}
       <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between px-3 py-2">
-          {/* Left: Creation tools - each opens its own panel */}
+          {/* Left: Creation tools */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => togglePanel('text')}
@@ -293,17 +306,23 @@ export const MobileToolbar = ({
 
           {/* Right: Action buttons */}
           <div className="flex items-center gap-1">
-            <button onClick={onPreview} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 transition-all">
-              <FiEye size={18} />
-              <span className="text-[7px] font-bold mt-0.5">Ver</span>
+            <button onClick={onPreview} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 transition-all">
+              <FiEye size={16} />
+              <span className="text-[6px] font-bold mt-0.5">Ver</span>
             </button>
-            <button onClick={onSave} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500 text-white shadow-lg transition-all">
-              <FiSave size={18} />
-              <span className="text-[7px] font-bold mt-0.5">Guardar</span>
+            <button onClick={onSave} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-white shadow-lg transition-all">
+              <FiSave size={16} />
+              <span className="text-[6px] font-bold mt-0.5">Guardar</span>
             </button>
-            <button onClick={onDownload} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-lg transition-all">
-              <FiDownload size={18} />
-              <span className="text-[7px] font-bold mt-0.5">Bajar</span>
+            {onSaveTemplate && (
+              <button onClick={onSaveTemplate} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 border border-amber-100 dark:border-amber-800 transition-all">
+                <FiCopy size={16} />
+                <span className="text-[6px] font-bold mt-0.5">Plantilla</span>
+              </button>
+            )}
+            <button onClick={onDownload} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 text-white shadow-lg transition-all">
+              <FiDownload size={16} />
+              <span className="text-[6px] font-bold mt-0.5">Bajar</span>
             </button>
           </div>
         </div>

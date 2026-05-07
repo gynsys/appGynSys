@@ -129,7 +129,7 @@ export const useSlideDesigner = () => {
     setExtraElements(newExtraElements);
   };
 
-  const saveProject = async (name, generatedContent) => {
+  const saveProject = async (name, generatedContent, projectId = null) => {
     if (!name || !generatedContent) return;
     const projectData = {
       name,
@@ -145,6 +145,11 @@ export const useSlideDesigner = () => {
       },
       elements: extraElements
     };
+    
+    // Include ID for overwrite
+    if (projectId) {
+      projectData.id = projectId;
+    }
     
     try {
       await blogService.saveCarouselProject(projectData);

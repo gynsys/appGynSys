@@ -38,6 +38,8 @@ export default function SocialGenerator() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
   const [mobileActionPerformed, setMobileActionPerformed] = useState(false);
+  const [activeProjectName, setActiveProjectName] = useState(null);
+  const [activeProjectId, setActiveProjectId] = useState(null);
 
   // Mobile detection
   useEffect(() => {
@@ -220,11 +222,33 @@ export default function SocialGenerator() {
   };
 
   const handleSaveProject = async () => {
-    const name = prompt('Nombre del proyecto:', selectedPost?.title || 'Mi Carrusel');
+    if (activeProjectId && activeProjectName) {
+      const ok = await designer.canvas.saveProject(activeProjectName, generatedContent, activeProjectId);
+      if (ok) showToast(`"${activeProjectName}" guardado`, 'success');
+      else showToast('Error al guardar', 'error');
+    } else {
+      handleSaveProjectAs();
+    }
+  };
+
+  const handleSaveProjectAs = async () => {
+    const name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
     if (name) {
       const ok = await designer.canvas.saveProject(name, generatedContent);
-      if (ok) showToast('Proyecto guardado', 'success');
-      else showToast('Error al guardar', 'error');
+      if (ok) {
+        setActiveProjectName(name);
+        showToast(`"${name}" guardado`, 'success');
+      } else {
+        showToast('Error al guardar', 'error');
+      }
+    }
+  };
+
+  const handleSaveTemplate = () => {
+    const name = prompt('Nombre de la plantilla:');
+    if (name) {
+      designer.canvas.saveCustomTemplate(name, generatedContent);
+      showToast(`Plantilla "${name}" guardada`, 'success');
     }
   };
 
@@ -271,8 +295,10 @@ export default function SocialGenerator() {
     if (content) {
       setGeneratedContent(content);
       setActiveTab('carousel');
+      setActiveProjectName(project.name || null);
+      setActiveProjectId(project.id || null);
       setMobileActionPerformed(false);
-      showToast('Proyecto cargado', 'success');
+      showToast(`Proyecto "${project.name || 'Sin nombre'}" cargado`, 'success');
     }
   };
 
@@ -894,8 +920,19 @@ export default function SocialGenerator() {
               </div>
             ) : (
               <div className="w-full flex flex-col items-center justify-center space-y-4 animate-fadeIn">
-                <div className="w-full bg-white dark:bg-gray-800 p-6 rounded-[40px] shadow-lg border border-gray-100 dark:border-gray-700 text-center">
-                  <div className="grid grid-cols-2 gap-3 w-full">
+                {/* Active Project Info */}
+                {activeProjectName && (
+                  <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 px-5 py-3 rounded-2xl border border-indigo-100 dark:border-indigo-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FiFolder className="text-indigo-500 flex-shrink-0" size={16} />
+                      <span className="text-[11px] font-black text-indigo-600 uppercase tracking-wide truncate">{activeProjectName}</span>
+                    </div>
+                    <span className="text-[9px] font-bold text-indigo-400 flex-shrink-0 ml-2">{generatedContent?.slides?.length || 0} slides</span>
+                  </div>
+                )}
+
+                <div className="w-full bg-white dark:bg-gray-800 p-5 rounded-[32px] shadow-lg border border-gray-100 dark:border-gray-700">
+                  <div className="grid grid-cols-2 gap-3 w-full mb-3">
                     <button
                       onClick={() => { enterMobileFullscreen(); setMobileActionPerformed(true); }}
                       className="w-full py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-1"
@@ -909,12 +946,26 @@ export default function SocialGenerator() {
                       <FiEye size={16} /> Preview
                     </button>
                   </div>
+                  <div className="grid grid-cols-3 gap-2 w-full">
+                    <button onClick={handleSaveProject} className="w-full py-2.5 bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1">
+                      <FiSave size={14} /> Guardar
+                    </button>
+                    <button onClick={handleSaveProjectAs} className="w-full py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1">
+                      <FiFolder size={14} /> Guardar Como
+                    </button>
+                    <button onClick={handleSaveTemplate} className="w-full py-2.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1 border border-amber-100 dark:border-amber-800">
+                      <FiLayers size={14} /> Plantilla
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
-                  <div className="w-8 h-[1px] bg-gray-200"></div>
-                  {generatedContent?.slides?.length || 0} Slides
-                  <div className="w-8 h-[1px] bg-gray-200"></div>
-                </div>
+
+                {!activeProjectName && (
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
+                    <div className="w-8 h-[1px] bg-gray-200"></div>
+                    {generatedContent?.slides?.length || 0} Slides
+                    <div className="w-8 h-[1px] bg-gray-200"></div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1011,8 +1062,11 @@ export default function SocialGenerator() {
                   }}
                   onDownload={exporter.downloadCarousel}
                   onSave={handleSaveProject}
+                  onSaveAs={handleSaveProjectAs}
+                  onSaveTemplate={handleSaveTemplate}
                   onPreview={() => setPreviewIndex(0)}
                   currentSlide={designer.canvas.currentSlidePage}
+                  activeProjectName={activeProjectName}
                 />
               )}
 
