@@ -934,9 +934,9 @@ export default function SocialGenerator() {
                             </div>
 
                             <button
-                              onClick={() => designer.canvas.setCurrentSlidePage(Math.min(generatedContent.slides.length - 1, designer.canvas.currentSlidePage + 1))}
-                              disabled={designer.canvas.currentSlidePage === generatedContent.slides.length - 1}
-                              className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === generatedContent.slides.length - 1 ? 'text-gray-300' : 'text-indigo-600 hover:bg-indigo-50 active:scale-90'}`}
+                              onClick={() => designer.canvas.setCurrentSlidePage(Math.min((generatedContent?.slides?.length || 1) - 1, designer.canvas.currentSlidePage + 1))}
+                              disabled={designer.canvas.currentSlidePage === (generatedContent?.slides?.length || 1) - 1}
+                              className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === (generatedContent?.slides?.length || 1) - 1 ? 'text-gray-300' : 'text-indigo-600 hover:bg-indigo-50 active:scale-90'}`}
                             >
                               <FiChevronRight size={24} />
                             </button>
