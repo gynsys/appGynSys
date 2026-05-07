@@ -888,18 +888,19 @@ export default function SocialGenerator() {
                           >
                             <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                               <SlideCanvas 
-                                 slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                 slide={generatedContent?.slides?.[designer.canvas.currentSlidePage]}
                                  index={designer.canvas.currentSlidePage}
                                  doctor={doctor}
                                  doctorLogo={doctorLogoBase64}
                                  design={designer.design}
                                  canvas={designer.canvas}
-                                 transform={transformer.state}
-                                 handlers={transformer.handlers}
+                                 transform={transformer?.state}
+                                 handlers={transformer?.handlers}
                                  watermark={watermarkImage}
                                  onEdit={setEditingIndex}
                                  onPreview={setPreviewIndex}
                                  onCopy={(i) => {
+                                   if (!generatedContent?.slides) return;
                                    const newSlides = [...generatedContent.slides];
                                    newSlides.splice(i + 1, 0, { ...newSlides[i] });
                                    setGeneratedContent({ ...generatedContent, slides: newSlides });
@@ -927,7 +928,7 @@ export default function SocialGenerator() {
                             <div className="flex flex-col items-center min-w-[60px]">
                               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Diapositiva</span>
                               <span className="text-sm font-black text-indigo-600 leading-none">
-                                {designer.canvas.currentSlidePage + 1} <span className="text-gray-300 mx-0.5">/</span> {generatedContent.slides.length}
+                                {designer.canvas.currentSlidePage + 1} <span className="text-gray-300 mx-0.5">/</span> {generatedContent?.slides?.length || 0}
                               </span>
                             </div>
 
@@ -1154,9 +1155,9 @@ export default function SocialGenerator() {
                 <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Título de la Diapositiva</label>
                 <input 
                   type="text"
-                  className="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-black uppercase tracking-tight outline-none"
-                  value={generatedContent.slides[editingIndex].title}
+                  className="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-black                   value={generatedContent?.slides?.[editingIndex]?.title || ''}
                   onChange={(e) => {
+                    if (!generatedContent?.slides) return;
                     const newSlides = [...generatedContent.slides];
                     newSlides[editingIndex].title = e.target.value;
                     setGeneratedContent({ ...generatedContent, slides: newSlides });
@@ -1167,11 +1168,14 @@ export default function SocialGenerator() {
                 <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Contenido Principal</label>
                 <textarea 
                   className="w-full h-48 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-bold leading-relaxed outline-none"
-                  value={generatedContent.slides[editingIndex].content}
+                  value={generatedContent?.slides?.[editingIndex]?.content || ''}
                   onChange={(e) => {
+                    if (!generatedContent?.slides) return;
                     const newSlides = [...generatedContent.slides];
                     newSlides[editingIndex].content = e.target.value;
                     setGeneratedContent({ ...generatedContent, slides: newSlides });
+                  }}
+es: newSlides });
                   }}
                 />
               </div>
