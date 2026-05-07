@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiPlus, FiMinus, FiTrash2, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiSettings, FiChevronUp, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic } from 'react-icons/fi';
+import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage } from 'react-icons/fi';
 import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
 
 export const MobileToolbar = ({ 
@@ -14,130 +14,147 @@ export const MobileToolbar = ({
   onPreview,
   currentSlide 
 }) => {
-  const [activeSection, setActiveSection] = useState(null);
-  const [showLayerControls, setShowLayerControls] = useState(false);
+  const [activePanel, setActivePanel] = useState(null);
+
+  const togglePanel = (panel) => {
+    setActivePanel(activePanel === panel ? null : panel);
+  };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-[120] pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
-      {/* Main Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left Section - Tools */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setActiveSection(activeSection === 'tools' ? null : 'tools')}
-            className={`p-3 rounded-2xl transition-all ${activeSection === 'tools' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
-          >
-            {activeSection === 'tools' ? <FiMinus size={20} /> : <FiPlus size={20} />}
-          </button>
-          <button
-            onClick={() => setActiveSection(activeSection === 'design' ? null : 'design')}
-            className={`p-3 rounded-2xl transition-all ${activeSection === 'design' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
-          >
-            <FiSettings size={20} />
-          </button>
-          <button
-            onClick={() => setActiveSection(activeSection === 'elements' ? null : 'elements')}
-            className={`p-3 rounded-2xl transition-all ${activeSection === 'elements' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
-          >
-            <FiBox size={20} />
-          </button>
-        </div>
+    <div className="fixed bottom-0 left-0 right-0 z-[120] pb-[env(safe-area-inset-bottom)]">
+      {/* Expandable Panels */}
+      {activePanel && (
+        <div className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-[0_-10px_40px_rgba(0,0,0,0.12)] animate-slideUp rounded-t-3xl overflow-hidden">
+          
+          {/* ─── TEXT PANEL ─── */}
+          {activePanel === 'text' && (
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Agregar Texto</h3>
+                <button onClick={() => setActivePanel(null)} className="p-1 text-gray-400"><FiChevronDown size={18} /></button>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => { onAddElement(currentSlide, 'text', 'Título'); setActivePanel(null); }}
+                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
+                >
+                  <span className="text-lg font-black text-indigo-600">T</span>
+                  <span className="text-[9px] font-bold text-gray-500">Título</span>
+                </button>
+                <button
+                  onClick={() => { onAddElement(currentSlide, 'text', 'Subtítulo'); setActivePanel(null); }}
+                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
+                >
+                  <span className="text-base font-bold text-indigo-600">Aa</span>
+                  <span className="text-[9px] font-bold text-gray-500">Subtítulo</span>
+                </button>
+                <button
+                  onClick={() => { onAddElement(currentSlide, 'text', 'Cuerpo de texto'); setActivePanel(null); }}
+                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
+                >
+                  <span className="text-sm text-indigo-600">Abc</span>
+                  <span className="text-[9px] font-bold text-gray-500">Cuerpo</span>
+                </button>
+              </div>
 
-        {/* Center Section - Selection Context */}
-        <div className="flex items-center gap-1">
-          {selectedElement && (
-            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 p-1 rounded-xl border border-amber-100 dark:border-amber-800 animate-fadeIn">
-              <button
-                onClick={() => setShowLayerControls(!showLayerControls)}
-                className="p-2 rounded-lg text-amber-600"
-              >
-                <FiLayers size={18} />
-              </button>
-              <button
-                onClick={onDeleteElement}
-                className="p-2 rounded-lg text-red-500"
-              >
-                <FiTrash2 size={18} />
-              </button>
+              {/* Emojis quick row */}
+              <div className="mt-4">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Emojis</p>
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                  {['😀','😍','🔥','💡','✅','⭐','❤️','👍','🎯','💪','🚀','✨','📌','🏆','💎','🌟','👏','💬'].map((emoji, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { onAddElement(currentSlide, 'text', emoji); setActivePanel(null); }}
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-xl text-lg active:scale-90 transition-all"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Right Section - Actions */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={onPreview}
-            className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500"
-          >
-            <FiEye size={20} />
-          </button>
-          <button
-            onClick={onSave}
-            className="p-3 rounded-2xl bg-emerald-500 text-white shadow-lg"
-          >
-            <FiSave size={20} />
-          </button>
-          <button
-            onClick={onDownload}
-            className="p-3 rounded-2xl bg-indigo-600 text-white shadow-lg"
-          >
-            <FiDownload size={20} />
-          </button>
-        </div>
-      </div>
-
-      {/* Expandable Sections */}
-      {(activeSection || showLayerControls) && (
-        <div className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 animate-slideUp">
-          {/* Design Section */}
-          {activeSection === 'design' && design && (
-            <div className="p-5 max-h-[60vh] overflow-y-auto no-scrollbar">
+          {/* ─── SHAPES PANEL ─── */}
+          {activePanel === 'shapes' && (
+            <div className="p-5 max-h-[55vh] overflow-y-auto no-scrollbar">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Ajustes Globales</h3>
-                <button onClick={() => setActiveSection(null)} className="p-1 text-gray-300"><FiChevronDown /></button>
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Formas e Iconos</h3>
+                <button onClick={() => setActivePanel(null)} className="p-1 text-gray-400"><FiChevronDown size={18} /></button>
               </div>
               
-              <div className="space-y-6 pb-4">
-                {/* Background Section */}
+              {/* Basic shapes */}
+              <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-2">Formas Básicas</p>
+              <div className="grid grid-cols-5 gap-2 mb-5">
+                {SHAPES_CONFIG.map((shape) => (
+                  <button
+                    key={shape.id}
+                    onClick={() => { onAddElement(currentSlide, 'shape', shape.id); setActivePanel(null); }}
+                    className="aspect-square flex flex-col items-center justify-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-2xl active:scale-90 transition-all border border-gray-100 dark:border-gray-700"
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center text-indigo-600">
+                      {React.cloneElement(shape.icon, { className: 'w-full h-full' })}
+                    </div>
+                    <span className="text-[7px] font-bold text-gray-400 leading-none">{shape.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Icons */}
+              {REACT_ICONS_CONFIG && REACT_ICONS_CONFIG.length > 0 && (
+                <>
+                  <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-2">Iconos</p>
+                  <div className="grid grid-cols-6 gap-2">
+                    {REACT_ICONS_CONFIG.map((icon) => (
+                      <button
+                        key={icon.id}
+                        onClick={() => { onAddElement(currentSlide, 'icon', icon.id); setActivePanel(null); }}
+                        className="aspect-square flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-xl active:scale-90 transition-all text-gray-600 hover:text-indigo-600 border border-gray-100 dark:border-gray-700"
+                        title={icon.label}
+                      >
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          {icon.icon}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ─── DESIGN PANEL ─── */}
+          {activePanel === 'design' && design && (
+            <div className="p-5 max-h-[60vh] overflow-y-auto no-scrollbar">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Diseño</h3>
+                <button onClick={() => setActivePanel(null)} className="p-1 text-gray-400"><FiChevronDown size={18} /></button>
+              </div>
+              
+              <div className="space-y-6 pb-2">
+                {/* Background */}
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Fondo de Diapositiva</p>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Fondo</p>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <input
-                        type="color"
-                        value={design.bgColor}
-                        onChange={(e) => design.setBgColor(e.target.value)}
-                        className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                      />
+                      <input type="color" value={design.bgColor} onChange={(e) => design.setBgColor(e.target.value)} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
                       {design.useBgGradient && (
                         <>
-                          <input
-                            type="color"
-                            value={design.bgColor2}
-                            onChange={(e) => design.setBgColor2(e.target.value)}
-                            className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                          />
-                          <input
-                            type="color"
-                            value={design.bgColor3}
-                            onChange={(e) => design.setBgColor3(e.target.value)}
-                            className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                          />
+                          <input type="color" value={design.bgColor2} onChange={(e) => design.setBgColor2(e.target.value)} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
+                          <input type="color" value={design.bgColor3} onChange={(e) => design.setBgColor3(e.target.value)} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
                         </>
                       )}
                     </div>
                     <button
                       onClick={() => design.setUseBgGradient(!design.useBgGradient)}
-                      className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
-                        design.useBgGradient ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400'
-                      }`}
+                      className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${design.useBgGradient ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}
                     >
                       Gradiente
                     </button>
                   </div>
                 </div>
 
-                {/* Text Colors Section */}
+                {/* Text Colors */}
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Colores de Texto</p>
                   <div className="grid grid-cols-3 gap-3">
@@ -156,28 +173,25 @@ export const MobileToolbar = ({
                   </div>
                 </div>
 
-                {/* Font Sizes Section */}
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Tamaños de Fuente</p>
-                  <div className="space-y-4 px-2">
+                {/* Font Sizes */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Tamaños</p>
+                  <div className="space-y-3 px-1">
                     <div className="space-y-1">
                       <div className="flex justify-between text-[9px] font-black text-gray-400 uppercase">
-                        <span>Título</span>
-                        <span>{design.titleFontSize}px</span>
+                        <span>Título</span><span>{design.titleFontSize}px</span>
                       </div>
                       <input type="range" min="16" max="48" value={design.titleFontSize} onChange={(e) => design.setTitleFontSize(Number(e.target.value))} className="w-full accent-indigo-600" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[9px] font-black text-gray-400 uppercase">
-                        <span>Cuerpo</span>
-                        <span>{design.fontSize}px</span>
+                        <span>Cuerpo</span><span>{design.fontSize}px</span>
                       </div>
                       <input type="range" min="10" max="24" value={design.fontSize} onChange={(e) => design.setFontSize(Number(e.target.value))} className="w-full accent-indigo-600" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[9px] font-black text-gray-400 uppercase">
-                        <span>Marca</span>
-                        <span>{design.headerFontSize}px</span>
+                        <span>Marca</span><span>{design.headerFontSize}px</span>
                       </div>
                       <input type="range" min="8" max="24" value={design.headerFontSize} onChange={(e) => design.setHeaderFontSize(Number(e.target.value))} className="w-full accent-indigo-600" />
                     </div>
@@ -187,30 +201,15 @@ export const MobileToolbar = ({
                 {/* Image Border Radius */}
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Bordes de Imágenes</p>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => design.setImageBorderRadius('0px')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
-                        design.imageBorderRadius === '0px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                      }`}
-                    >
-                      <FiSquare size={14} /> Cuadrado
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => design.setImageBorderRadius('0px')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[9px] font-black uppercase transition-all ${design.imageBorderRadius === '0px' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+                      <FiSquare size={12} /> Cuadrado
                     </button>
-                    <button
-                      onClick={() => design.setImageBorderRadius('24px')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
-                        design.imageBorderRadius === '24px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                      }`}
-                    >
-                      <FiCornerUpRight size={14} /> Redondo
+                    <button onClick={() => design.setImageBorderRadius('24px')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[9px] font-black uppercase transition-all ${design.imageBorderRadius === '24px' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+                      <FiCornerUpRight size={12} /> Redondo
                     </button>
-                    <button
-                      onClick={() => design.setImageBorderRadius('999px')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${
-                        design.imageBorderRadius === '999px' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                      }`}
-                    >
-                      <FiCircle size={14} /> Círculo
+                    <button onClick={() => design.setImageBorderRadius('999px')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[9px] font-black uppercase transition-all ${design.imageBorderRadius === '999px' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+                      <FiCircle size={12} /> Círculo
                     </button>
                   </div>
                 </div>
@@ -220,63 +219,25 @@ export const MobileToolbar = ({
                   const [slideIdx, elId] = selectedElement.split('-');
                   const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
                   if (!el) return null;
-
                   return (
-                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl space-y-4">
+                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl space-y-3">
                       <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Elemento Seleccionado</p>
-                      
-                      {/* Element Color */}
-                      <div className="space-y-2">
-                        <span className="text-[9px] font-black text-gray-400 uppercase">Color</span>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={el.color}
-                            onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color: e.target.value })}
-                            className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                          />
-                          {el.useGradient && (
-                            <>
-                              <input
-                                type="color"
-                                value={el.color2}
-                                onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color2: e.target.value })}
-                                className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                              />
-                              <input
-                                type="color"
-                                value={el.color3}
-                                onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color3: e.target.value })}
-                                className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer"
-                              />
-                            </>
-                          )}
-                          <button
-                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { useGradient: !el.useGradient })}
-                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${
-                              el.useGradient ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                            }`}
-                          >
-                            Gradiente
-                          </button>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={el.color} onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color: e.target.value })} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
+                        {el.useGradient && (
+                          <>
+                            <input type="color" value={el.color2} onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color2: e.target.value })} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
+                            <input type="color" value={el.color3} onChange={(e) => canvas.updateExtraElement(parseInt(slideIdx), elId, { color3: e.target.value })} className="w-10 h-10 rounded-xl border-none p-0 cursor-pointer" />
+                          </>
+                        )}
+                        <button onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { useGradient: !el.useGradient })} className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase ${el.useGradient ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
+                          Grad
+                        </button>
                       </div>
-
-                      {/* Text formatting (only for text elements) */}
                       {el.type === 'text' && (
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { bold: !el.bold })}
-                            className={`p-2.5 rounded-xl transition-all ${el.bold ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}
-                          >
-                            <FiBold size={16} />
-                          </button>
-                          <button
-                            onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { italic: !el.italic })}
-                            className={`p-2.5 rounded-xl transition-all ${el.italic ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}
-                          >
-                            <FiItalic size={16} />
-                          </button>
+                          <button onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { bold: !el.bold })} className={`p-2 rounded-xl ${el.bold ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}><FiBold size={14} /></button>
+                          <button onClick={() => canvas.updateExtraElement(parseInt(slideIdx), elId, { italic: !el.italic })} className={`p-2 rounded-xl ${el.italic ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}><FiItalic size={14} /></button>
                         </div>
                       )}
                     </div>
@@ -285,89 +246,68 @@ export const MobileToolbar = ({
               </div>
             </div>
           )}
-
-          {/* Tools Section */}
-          {activeSection === 'tools' && (
-            <div className="p-5">
-              <div className="grid grid-cols-4 gap-3">
-                <button
-                  onClick={() => { onAddElement(currentSlide, 'text', 'Texto'); setActiveSection(null); }}
-                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-indigo-50 transition-all"
-                >
-                  <FiType size={20} className="text-indigo-600" />
-                  <span className="text-[10px] font-bold">Texto</span>
-                </button>
-                <button
-                  onClick={() => { onAddElement(currentSlide, 'shape', 'circle'); setActiveSection(null); }}
-                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-indigo-50 transition-all"
-                >
-                  <div className="w-5 h-5 bg-indigo-600 rounded-full"></div>
-                  <span className="text-[10px] font-bold">Círculo</span>
-                </button>
-                <button
-                  onClick={() => { onAddElement(currentSlide, 'shape', 'square'); setActiveSection(null); }}
-                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-indigo-50 transition-all"
-                >
-                  <div className="w-5 h-5 bg-indigo-600"></div>
-                  <span className="text-[10px] font-bold">Cuadro</span>
-                </button>
-                <button
-                  onClick={() => { onAddElement(currentSlide, 'shape', 'triangle'); setActiveSection(null); }}
-                  className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-indigo-50 transition-all"
-                >
-                  <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[17px] border-b-indigo-600"></div>
-                  <span className="text-[10px] font-bold">Triángulo</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Elements Section */}
-          {activeSection === 'elements' && (
-            <div className="p-5 max-h-[50vh] overflow-y-auto no-scrollbar">
-              <div className="grid grid-cols-4 gap-3">
-                {SHAPES_CONFIG.map((shape) => (
-                  <button
-                    key={shape.id}
-                    onClick={() => { onAddElement(currentSlide, 'shape', shape.id); setActiveSection(null); }}
-                    className="flex flex-col items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm min-h-[80px]"
-                  >
-                    <div className="w-8 h-8 flex items-center justify-center text-indigo-600">
-                      {React.cloneElement(shape.icon, { className: 'w-full h-full' })}
-                    </div>
-                    <span className="text-[9px] font-bold text-gray-500 text-center leading-tight">
-                      {shape.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Layer Controls */}
-          {showLayerControls && (
-            <div className="p-6 bg-amber-50/50 dark:bg-amber-900/10">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-amber-600 tracking-widest">Posición de Capa</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => { /* Layer move logic */ }}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-800 text-amber-600 rounded-xl font-bold text-xs shadow-sm border border-amber-100 dark:border-amber-900"
-                  >
-                    <FiChevronUp size={16} /> Frente
-                  </button>
-                  <button
-                    onClick={() => { /* Layer move logic */ }}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-800 text-amber-600 rounded-xl font-bold text-xs shadow-sm border border-amber-100 dark:border-amber-900"
-                  >
-                    <FiChevronDown size={16} /> Fondo
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
+
+      {/* ─── BOTTOM BAR ─── */}
+      <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center justify-between px-3 py-2">
+          {/* Left: Creation tools - each opens its own panel */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => togglePanel('text')}
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${activePanel === 'text' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
+            >
+              <FiType size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Texto</span>
+            </button>
+            <button
+              onClick={() => togglePanel('shapes')}
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${activePanel === 'shapes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
+            >
+              <FiBox size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Formas</span>
+            </button>
+            <button
+              onClick={() => togglePanel('design')}
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${activePanel === 'design' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
+            >
+              <FiSettings size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Diseño</span>
+            </button>
+          </div>
+
+          {/* Center: Selected element actions */}
+          {selectedElement && (
+            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 p-1 rounded-xl border border-amber-100 dark:border-amber-800">
+              <button onClick={() => {
+                if (selectedElement) {
+                  const [slideIdx, elId] = selectedElement.split('-');
+                  const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+                  if (el) canvas.updateExtraElement(parseInt(slideIdx), elId, { zIndex: el.zIndex === 30 ? 5 : 30 });
+                }
+              }} className="p-2 rounded-lg text-amber-600"><FiLayers size={16} /></button>
+              <button onClick={onDeleteElement} className="p-2 rounded-lg text-red-500"><FiTrash2 size={16} /></button>
+            </div>
+          )}
+
+          {/* Right: Action buttons */}
+          <div className="flex items-center gap-1">
+            <button onClick={onPreview} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 transition-all">
+              <FiEye size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Ver</span>
+            </button>
+            <button onClick={onSave} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500 text-white shadow-lg transition-all">
+              <FiSave size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Guardar</span>
+            </button>
+            <button onClick={onDownload} className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-lg transition-all">
+              <FiDownload size={18} />
+              <span className="text-[7px] font-bold mt-0.5">Bajar</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
