@@ -422,7 +422,6 @@ export default function SocialGenerator() {
                     <h3 className="font-black text-gray-400 uppercase tracking-tighter">Esperando selección de artículo</h3>
                   </div>
                 )}
-              </div>
             </div>
           </>
         )}
@@ -430,9 +429,8 @@ export default function SocialGenerator() {
         {generatedContent && !isMobile && (
           <div className="space-y-8">
             {activeTab === 'carousel' && (
-              <div>
-                {/* Desktop Layout */}
-                <div className="flex gap-6">
+              {/* Desktop Layout */}
+              <div className="flex gap-6">
                     {/* Enhanced Sidebar */}
                     <EnhancedSidebar
                       design={designer.design}
@@ -752,7 +750,6 @@ export default function SocialGenerator() {
                     </div>
                   </div>
                 </div>
-              </div>
             )}
 
             {activeTab === 'reel' && (
@@ -881,7 +878,6 @@ export default function SocialGenerator() {
                     ))
                   )}
                 </div>
-              </div>
             </div>
           )}
 
@@ -895,7 +891,6 @@ export default function SocialGenerator() {
                 <h3 className="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] px-4 leading-relaxed">
                   Selecciona un artículo y genera contenido
                 </h3>
-              </div>
             ) : (
               <div className="w-full flex flex-col items-center justify-center space-y-4 animate-fadeIn">
                 <div className="w-full bg-white dark:bg-gray-800 p-6 rounded-[40px] shadow-lg border border-gray-100 dark:border-gray-700 text-center">
@@ -919,7 +914,6 @@ export default function SocialGenerator() {
                   {generatedContent?.slides?.length || 0} Slides
                   <div className="w-8 h-[1px] bg-gray-200"></div>
                 </div>
-              </div>
             )}
           </div>
 
@@ -964,7 +958,6 @@ export default function SocialGenerator() {
                     />
                   </div>
                 </div>
-              </div>
 
               {/* Navigation */}
               <div className="fixed bottom-24 left-0 right-0 z-[110] flex justify-center px-4">
@@ -990,7 +983,6 @@ export default function SocialGenerator() {
                     <FiChevronRight size={24} />
                   </button>
                 </div>
-              </div>
 
               {/* Mobile Toolbar */}
               {!(designer.canvas.selectedExtraId || designer.canvas.selectedImageId) && (
@@ -1115,7 +1107,6 @@ export default function SocialGenerator() {
                     setGeneratedContent({ ...generatedContent, slides: newSlides });
                   }}
                 />
-              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Contenido Principal</label>
                 <textarea 
@@ -1128,11 +1119,9 @@ export default function SocialGenerator() {
                     setGeneratedContent({ ...generatedContent, slides: newSlides });
                   }}
                 />
-              </div>
               <div className="flex gap-4 pt-4">
                 <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-gray-100 text-gray-600 rounded-2xl font-black hover:bg-gray-200 transition-all uppercase tracking-widest text-xs">Cerrar</button>
                 <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs">Listo</button>
-              </div>
             </div>
           </div>
         </div>
