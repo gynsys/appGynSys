@@ -724,7 +724,7 @@ export default function SocialGenerator() {
                           >
                             <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                               <SlideCanvas 
-                                 slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                                 slide={generatedContent?.slides?.[designer.canvas.currentSlidePage]}
                                  index={designer.canvas.currentSlidePage}
                                  doctor={doctor}
                                  doctorLogo={doctorLogoBase64}
@@ -736,6 +736,7 @@ export default function SocialGenerator() {
                                  onEdit={setEditingIndex}
                                  onPreview={setPreviewIndex}
                                  onCopy={(i) => {
+                                   if (!generatedContent?.slides) return;
                                    const newSlides = [...generatedContent.slides];
                                    newSlides.splice(i + 1, 0, { ...newSlides[i] });
                                    setGeneratedContent({ ...generatedContent, slides: newSlides });
@@ -1076,7 +1077,7 @@ export default function SocialGenerator() {
                             
                             <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
                               <div className="w-8 h-[1px] bg-gray-200"></div>
-                              {generatedContent.slides.length} Slides
+                              {(generatedContent?.slides?.length || 0)} Slides
                               <div className="w-8 h-[1px] bg-gray-200"></div>
                             </div>
                           </div>
