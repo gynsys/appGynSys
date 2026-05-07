@@ -1156,7 +1156,8 @@ export default function SocialGenerator() {
                 <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-1">Título de la Diapositiva</label>
                 <input 
                   type="text"
-                  className="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-black                   value={generatedContent?.slides?.[editingIndex]?.title || ''}
+                  className="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 transition-all font-black uppercase tracking-tight outline-none"
+                  value={generatedContent?.slides?.[editingIndex]?.title || ''}
                   onChange={(e) => {
                     if (!generatedContent?.slides) return;
                     const newSlides = [...generatedContent.slides];
