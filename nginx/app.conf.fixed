@@ -17,14 +17,28 @@ server {
     # Docker internal DNS resolver
     resolver 127.0.0.11 valid=30s;
 
-    # Global CORS headers for API and Static files
-    add_header 'Access-Control-Allow-Origin' 'https://gynsys.net' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
-    add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
-    add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
-    add_header 'Access-Control-Allow-Credentials' 'true' always;
-
     location / {
+        set $upstream_backend backend;
+        proxy_pass http://$upstream_backend:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Force CORS headers in this specific location
+        add_header 'Access-Control-Allow-Origin' 'https://gynsys.net' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+        # Hide CORS headers from backend to avoid duplication
+        proxy_hide_header 'Access-Control-Allow-Origin';
+        proxy_hide_header 'Access-Control-Allow-Methods';
+        proxy_hide_header 'Access-Control-Allow-Headers';
+        proxy_hide_header 'Access-Control-Allow-Credentials';
+        proxy_hide_header 'Vary';
+
         if ($request_method = 'OPTIONS') {
             add_header 'Access-Control-Allow-Origin' 'https://gynsys.net' always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
@@ -34,19 +48,6 @@ server {
             add_header 'Content-Length' 0;
             return 204;
         }
-
-        set $upstream_backend backend;
-        proxy_pass http://$upstream_backend:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        
-        # Prevent double headers if backend also sends them
-        proxy_hide_header 'Access-Control-Allow-Origin';
-        proxy_hide_header 'Access-Control-Allow-Methods';
-        proxy_hide_header 'Access-Control-Allow-Headers';
-        proxy_hide_header 'Access-Control-Allow-Credentials';
     }
 
     location /docs {
