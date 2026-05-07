@@ -1176,8 +1176,6 @@ export default function SocialGenerator() {
                     newSlides[editingIndex].content = e.target.value;
                     setGeneratedContent({ ...generatedContent, slides: newSlides });
                   }}
-es: newSlides });
-                  }}
                 />
               </div>
               <div className="flex gap-4 pt-4">
