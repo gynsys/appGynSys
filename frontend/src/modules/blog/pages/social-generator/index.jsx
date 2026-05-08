@@ -932,7 +932,7 @@ export default function SocialGenerator() {
                 )}
 
                 <div className="w-full bg-white dark:bg-gray-800 p-5 rounded-[32px] shadow-lg border border-gray-100 dark:border-gray-700">
-                  <div className="grid grid-cols-2 gap-3 w-full mb-3">
+                  <div className="grid grid-cols-2 gap-3 w-full">
                     <button
                       onClick={() => { enterMobileFullscreen(); setMobileActionPerformed(true); }}
                       className="w-full py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-1"
@@ -944,17 +944,6 @@ export default function SocialGenerator() {
                       className="w-full py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-600 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-1"
                     >
                       <FiEye size={16} /> Preview
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 w-full">
-                    <button onClick={handleSaveProject} className="w-full py-2.5 bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1">
-                      <FiSave size={14} /> Guardar
-                    </button>
-                    <button onClick={handleSaveProjectAs} className="w-full py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1">
-                      <FiFolder size={14} /> Guardar Como
-                    </button>
-                    <button onClick={handleSaveTemplate} className="w-full py-2.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1 border border-amber-100 dark:border-amber-800">
-                      <FiLayers size={14} /> Plantilla
                     </button>
                   </div>
                 </div>
