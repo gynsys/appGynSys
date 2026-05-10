@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FiSend, FiPlus, FiClock, FiCheckCircle, FiAlertCircle, 
+  FiPlus, FiClock, FiSend, FiUsers, FiUser, FiSmartphone, FiPlusCircle, 
+  FiTrash2, FiExternalLink, FiSearch, FiCalendar, FiCheckCircle,
   FiFileText, FiLayers, FiMessageSquare, FiMail, FiBell, 
-  FiChevronRight, FiCheck, FiUsers, FiSearch, FiTrash2, 
-  FiUserPlus, FiRefreshCw, FiMinus, FiSmartphone, FiUser, 
-  FiList, FiPlusCircle, FiEdit2 
+  FiChevronRight, FiCheck, FiUserPlus, FiRefreshCw, FiMinus, FiEdit2 
 } from 'react-icons/fi';
+import { scheduledAppointmentService } from '../../services/scheduledAppointmentService';
 import { campaignService } from '../../services/campaignService';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
@@ -37,6 +37,8 @@ export default function CampaignsPage() {
   };
   const [sources, setSources] = useState([]);
   const [history, setHistory] = useState([]);
+  const [scheduledAppointments, setScheduledAppointments] = useState([]);
+  const [loadingScheduled, setLoadingScheduled] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -68,6 +70,35 @@ export default function CampaignsPage() {
 
   const [selectedCampaignImage, setSelectedCampaignImage] = useState(null);
   const [selectedSourceMeta, setSelectedSourceMeta] = useState(null);
+
+  useEffect(() => {
+    if (activeTab === 'scheduled') {
+      fetchScheduled();
+    }
+  }, [activeTab]);
+
+  const fetchScheduled = async () => {
+    setLoadingScheduled(true);
+    try {
+      const data = await scheduledAppointmentService.getAll({ upcoming: true });
+      setScheduledAppointments(data);
+    } catch (error) {
+      console.error("Error fetching scheduled appointments", error);
+    } finally {
+      setLoadingScheduled(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await scheduledAppointmentService.update(id, { status });
+      fetchScheduled();
+      toast.success(`Cita marcada como ${status === 'completed' ? 'completada' : 'cancelada'}`);
+    } catch (error) {
+      console.error("Error updating status", error);
+      toast.error("Error al actualizar estado");
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -288,7 +319,94 @@ export default function CampaignsPage() {
             >
               <FiClock /> Historial
             </button>
+            <button 
+              onClick={() => setActiveTab('scheduled')} 
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'scheduled' ? 'bg-white dark:bg-gray-700 shadow-md' : 'text-gray-500'}`}
+              style={activeTab === 'scheduled' ? { color: primaryColor } : {}}
+            >
+              <FiCalendar /> Próximas Citas
+            </button>
           </div>
+
+          {activeTab === 'scheduled' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-black uppercase text-gray-800 dark:text-white">Recordatorios de Seguimiento</h3>
+                <button 
+                  onClick={fetchScheduled}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Refrescar lista"
+                >
+                  <FiClock className={loadingScheduled ? 'animate-spin' : ''} />
+                </button>
+              </div>
+
+              {loadingScheduled ? (
+                <div className="py-20 text-center text-gray-400">Cargando citas...</div>
+              ) : scheduledAppointments.length === 0 ? (
+                <div className="py-20 text-center bg-gray-50 dark:bg-gray-900/40 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+                  <FiCalendar className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-sm font-bold text-gray-500">No hay citas programadas pendientes</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {scheduledAppointments.map((appt) => (
+                    <div key={appt.id} className="p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all group">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                            <FiUser />
+                          </div>
+                          <div>
+                            <h4 className="font-black text-sm text-gray-900 dark:text-white leading-tight">{appt.patient_name}</h4>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{appt.patient_ci}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/20 uppercase">
+                            {new Date(appt.scheduled_date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 italic">
+                          {appt.notes || "Sin notas adicionales."}
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500">
+                          <FiClock className="w-3 h-3" />
+                          <span>Intervalo: {appt.interval_type?.replace('_', ' ')}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2 border-t border-gray-50 dark:border-gray-700/50">
+                        <button 
+                          onClick={() => handleStatusUpdate(appt.id, 'completed')}
+                          className="flex-1 py-2 rounded-xl text-[10px] font-black uppercase bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <FiCheckCircle /> Completada
+                        </button>
+                        <button 
+                          onClick={() => handleStatusUpdate(appt.id, 'cancelled')}
+                          className="py-2 px-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
+                          title="Cancelar"
+                        >
+                          <FiTrash2 />
+                        </button>
+                        <button 
+                          onClick={() => navigate(`/dashboard/consultation?patient_ci=${appt.patient_ci}`)}
+                          className="py-2 px-3 rounded-xl text-indigo-500 hover:bg-indigo-50 transition-colors"
+                          title="Iniciar Consulta"
+                        >
+                          <FiExternalLink />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {activeTab === 'new' ? (
              <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
