@@ -31,6 +31,10 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.email_tasks.check_and_send_appointment_reminders",
         "schedule": crontab(minute='*/15'),
     },
+    "check-scheduled-reminders": {
+        "task": "app.tasks.scheduled_appointment_reminders.check_scheduled_reminders",
+        "schedule": crontab(hour=9, minute=0),
+    },
 }
 # Auto-discover tasks and ensure modules are loaded
 celery_app.autodiscover_tasks(['app'])
@@ -40,5 +44,6 @@ try:
     import app.tasks.email_tasks
     import app.tasks.notifications
     import app.tasks.campaigns
+    import app.tasks.scheduled_appointment_reminders
 except ImportError:
     pass
