@@ -20,7 +20,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Import all models so Alembic can detect them
-from app.db.models import doctor, appointment, patient, testimonial, gallery, consultation, consultation_asset, location, service, cycle_user, preconsultation_template, endometriosis_result, oauth_whitelist, push_subscription, patient_activation_token, notification, cycle_predictor, campaign
+from app.db.models import doctor, appointment, patient, testimonial, gallery, consultation, consultation_asset, location, service, cycle_user, preconsultation_template, endometriosis_result, oauth_whitelist, push_subscription, patient_activation_token, notification, cycle_predictor, campaign, scheduled_appointment
 from app.db.models.preconsultation import PreconsultationQuestion
 from app.blog import models as blog
 
