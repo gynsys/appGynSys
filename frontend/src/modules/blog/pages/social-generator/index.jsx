@@ -617,7 +617,18 @@ export default function SocialGenerator() {
                 ) : generatedContent ? (
                   <div className="space-y-8 animate-fadeIn">
                     <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit mx-auto">
-                      <button onClick={() => setActiveTab('video')} className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'video' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Generador de Video</button>
+                      <button 
+                        onClick={() => {
+                          if (!generatedContent.video_slides) {
+                            handleConvertToVideo();
+                          } else {
+                            setActiveTab('video');
+                          }
+                        }} 
+                        className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'video' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        {generating && activeTab === 'carousel' ? 'Generando...' : 'Generador de Video'}
+                      </button>
                       <button onClick={() => setActiveTab('carousel')} className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Editor de Carrusel</button>
                     </div>
                   </div>
