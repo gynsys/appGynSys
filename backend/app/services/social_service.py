@@ -76,21 +76,30 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     
     if generation_type == 'reel':
         prompt = f"""
-        Actúa como un experto en marketing digital. 
-        Analiza el artículo y crea un guion de Reel.
+        Actúa como un estratega de contenido para Instagram especializado en medicina y ginecología. 
+        Transforma este artículo en un guion de Reel de alto impacto para una audiencia de pacientes.
         
         ARTÍCULO:
         Título: {post_title}
         Contenido: {clean_text}
         
+        REGLAS DEL GUION:
+        1. TONO: Profesional pero cercano, empático y educativo.
+        2. ESTRUCTURA: Usa el método AIDA.
+        3. GANCHOS: Proporciona 3 opciones de ganchos diferentes (uno de curiosidad, uno de alerta/miedo y uno de beneficio directo).
+        
         Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
         {{
-          "hook": "frase inicial",
-          "scenes": [
-            {{ "time": "00:00", "text": "descripción", "audio": "voz" }}
-          ],
-          "cta": "llamada a la acción",
-          "image_prompts": ["idea 1"]
+          "hook": "El mejor gancho (principal)",
+          "hooks": ["Gancho de curiosidad", "Gancho de alerta", "Gancho de beneficio"],
+          "structure": {{
+            "problem": "Descripción breve del dolor o duda de la paciente",
+            "solution": "El consejo médico clave o explicación simplificada",
+            "visual_guide": "Instrucciones de actuación (ej: Señala a la cámara, texto aparece arriba, cambia de outfit, gesto de sorpresa)"
+          }},
+          "caption": "Un texto listo para el post de Instagram, con emojis y 5 hashtags estratégicos",
+          "cta": "Llamada a la acción final (ej: Agenda tu cita, descarga la guía)",
+          "image_prompts": ["Sugerencia de fondo o recurso visual"]
         }}
         """
     else:

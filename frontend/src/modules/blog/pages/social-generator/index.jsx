@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -778,19 +778,149 @@ export default function SocialGenerator() {
               )}
 
             {activeTab === 'reel' && (
-               <div className="bg-white dark:bg-gray-800 rounded-3xl p-10 shadow-sm border border-gray-100 max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-black mb-8 text-center">Guion de Reel Generado</h3>
-                  <div className="space-y-8">
-                     {generatedContent.hook && (
-                       <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl border border-indigo-100">
-                          <p className="text-xs font-black uppercase text-indigo-400 mb-3 tracking-widest">Hook (Gancho)</p>
-                          <p className="text-lg font-bold leading-relaxed">{generatedContent.hook}</p>
-                       </div>
-                     )}
-                     <div className="p-6 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-100">
-                        <p className="text-xs font-black uppercase text-gray-400 mb-3 tracking-widest">Contenido Principal</p>
-                        <p className="whitespace-pre-wrap text-lg leading-relaxed">{generatedContent.content}</p>
-                     </div>
+               <div className="max-w-5xl mx-auto space-y-8 animate-fadeIn">
+                  {/* Header de Producción */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center text-indigo-600">
+                        <FiVideo size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black">Plan de Producción de Reel</h3>
+                        <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Guion Estratégico Generado</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => copyToClipboard(`GANCHO: ${generatedContent.hook}\n\nPROBLEMA: ${generatedContent.structure?.problem}\nSOLUCIÓN: ${generatedContent.structure?.solution}\n\nCTA: ${generatedContent.cta}`)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-bold transition-all"
+                      >
+                        <FiCopy /> Copiar Guion
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Columna de Guion (Izquierda/Centro) */}
+                    <div className="lg:col-span-2 space-y-6">
+                      {/* GANCHOS ALTERNATIVOS */}
+                      <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
+                        <div className="flex items-center gap-3 mb-6">
+                          <FiZap className="text-amber-500" />
+                          <h4 className="font-black uppercase text-sm tracking-widest">Opciones de Gancho (Hook)</h4>
+                        </div>
+                        <div className="space-y-4">
+                          {(generatedContent.hooks || [generatedContent.hook]).map((hook, i) => (
+                            <div key={i} className={`p-4 rounded-2xl border transition-all cursor-pointer group ${i === 0 ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20' : 'bg-gray-50 border-gray-100 hover:border-indigo-200'}`}>
+                              <div className="flex items-start justify-between gap-4">
+                                <p className="text-base font-bold leading-relaxed">{hook}</p>
+                                <button onClick={() => copyToClipboard(hook)} className="opacity-0 group-hover:opacity-100 p-2 text-indigo-400 hover:text-indigo-600">
+                                  <FiCopy size={14} />
+                                </button>
+                              </div>
+                              <span className="text-[10px] font-black uppercase text-indigo-400 mt-2 block">
+                                {i === 0 ? 'Recomendado' : i === 1 ? 'Curiosidad' : 'Impacto'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* ESTRUCTURA DEL CONTENIDO */}
+                      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-8 border-b border-gray-50 flex items-center gap-3">
+                          <FiActivity className="text-indigo-600" />
+                          <h4 className="font-black uppercase text-sm tracking-widest">Guion de Grabación</h4>
+                        </div>
+                        
+                        <div className="divide-y divide-gray-50">
+                          {/* PROBLEMA */}
+                          <div className="p-8 flex gap-6">
+                            <div className="flex-shrink-0 w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center font-black">1</div>
+                            <div className="space-y-2">
+                              <p className="text-xs font-black uppercase text-red-400 tracking-widest">El Problema</p>
+                              <p className="text-lg font-medium leading-relaxed">{generatedContent.structure?.problem || generatedContent.content?.split('\n')[0]}</p>
+                            </div>
+                          </div>
+
+                          {/* SOLUCION */}
+                          <div className="p-8 flex gap-6">
+                            <div className="flex-shrink-0 w-10 h-10 bg-green-50 text-green-500 rounded-xl flex items-center justify-center font-black">2</div>
+                            <div className="space-y-2">
+                              <p className="text-xs font-black uppercase text-green-400 tracking-widest">La Solución / Valor</p>
+                              <p className="text-lg font-medium leading-relaxed">{generatedContent.structure?.solution || generatedContent.content}</p>
+                            </div>
+                          </div>
+
+                          {/* CTA */}
+                          <div className="p-8 flex gap-6">
+                            <div className="flex-shrink-0 w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-black">3</div>
+                            <div className="space-y-2">
+                              <p className="text-xs font-black uppercase text-blue-400 tracking-widest">Cierre / CTA</p>
+                              <p className="text-lg font-bold text-indigo-600">{generatedContent.cta}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Columna Lateral (Derecha) */}
+                    <div className="space-y-8">
+                      {/* GUIA VISUAL */}
+                      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 text-white shadow-lg">
+                        <div className="flex items-center gap-3 mb-6">
+                          <FiEye className="text-indigo-200" />
+                          <h4 className="font-black uppercase text-xs tracking-widest">Guía Visual (Para ti)</h4>
+                        </div>
+                        <p className="text-sm italic text-indigo-100 leading-relaxed mb-6">
+                          "{generatedContent.structure?.visual_guide || 'Asegúrate de grabar en vertical con buena iluminación natural.'}"
+                        </p>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl border border-white/10">
+                            <FiActivity size={14} />
+                            <span className="text-[10px] font-bold uppercase">Mantén el contacto visual</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl border border-white/10">
+                            <FiType size={14} />
+                            <span className="text-[10px] font-bold uppercase">Añade subtítulos dinámicos</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CAPTION PARA INSTAGRAM */}
+                      <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <FiMessageCircle className="text-pink-500" />
+                            <h4 className="font-black uppercase text-xs tracking-widest">Caption Sugerido</h4>
+                          </div>
+                          <button onClick={() => copyToClipboard(generatedContent.caption)} className="p-2 hover:bg-gray-50 rounded-lg transition-all text-gray-400 hover:text-indigo-600">
+                            <FiCopy size={16} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap italic bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-50">
+                          {generatedContent.caption || "¡Próximamente!"}
+                        </p>
+                      </div>
+
+                      {/* TIPS DE GRABACION */}
+                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-3xl p-8 border border-amber-100 dark:border-amber-900/50">
+                        <h4 className="text-xs font-black uppercase tracking-tighter text-amber-600 mb-4 flex items-center gap-2">
+                           <FiZap /> Tips de Producción
+                        </h4>
+                        <ul className="space-y-3">
+                          <li className="text-[11px] font-bold text-amber-700 flex gap-2">
+                             <span className="opacity-50">•</span> Mira a la lente, no a la pantalla.
+                          </li>
+                          <li className="text-[11px] font-bold text-amber-700 flex gap-2">
+                             <span className="opacity-50">•</span> Usa la luz de una ventana frente a ti.
+                          </li>
+                          <li className="text-[11px] font-bold text-amber-700 flex gap-2">
+                             <span className="opacity-50">•</span> Habla con energía, ¡sonríe al inicio!
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                </div>
             )}

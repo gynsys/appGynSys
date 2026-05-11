@@ -113,19 +113,18 @@ class AIGenerationResponse(BaseModel):
     summary: str
     generated_content: str
 
-class SocialContentScene(BaseModel):
-    time: str
-    text: str
-    audio: str
-
-class SocialContentSlide(BaseModel):
-    title: str
-    content: str
+class SocialContentStructure(BaseModel):
+    problem: str
+    solution: str
+    visual_guide: str
 
 class SocialContentResponse(BaseModel):
     type: str # 'reel' or 'carousel'
     hook: Optional[str] = None
+    hooks: Optional[List[str]] = None # Multiple hooks for the user to choose
     scenes: Optional[List[SocialContentScene]] = None
+    structure: Optional[SocialContentStructure] = None # Structured script
+    caption: Optional[str] = None # Instagram caption with hashtags
     cta: Optional[str] = None
     slides: Optional[List[SocialContentSlide]] = None
     image_prompts: Optional[List[str]] = None
