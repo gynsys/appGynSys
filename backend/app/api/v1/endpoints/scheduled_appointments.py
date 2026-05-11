@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
-from app.api import deps
+from app.db.base import get_db
+from app.api.v1.endpoints.auth import get_current_user
 from app.crud import scheduled_appointment as crud_scheduled
 from app.schemas import scheduled_appointment as schema_scheduled
 
@@ -11,11 +12,11 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schema_scheduled.ScheduledAppointment])
 def read_scheduled_appointments(
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     upcoming: bool = Query(False, description="Filter only upcoming appointments"),
-    current_user: Any = Depends(deps.get_current_active_user),
+    current_user: Any = Depends(get_current_user),
 ) -> Any:
     """
     Retrieve scheduled appointments for the logged-in doctor.
@@ -29,9 +30,9 @@ def read_scheduled_appointments(
 @router.post("/", response_model=schema_scheduled.ScheduledAppointment)
 def create_scheduled_appointment(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     obj_in: schema_scheduled.ScheduledAppointmentCreate,
-    current_user: Any = Depends(deps.get_current_active_user),
+    current_user: Any = Depends(get_current_user),
 ) -> Any:
     """
     Create a new scheduled appointment.
@@ -43,10 +44,10 @@ def create_scheduled_appointment(
 @router.put("/{id}", response_model=schema_scheduled.ScheduledAppointment)
 def update_scheduled_appointment(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     id: int,
     obj_in: schema_scheduled.ScheduledAppointmentUpdate,
-    current_user: Any = Depends(deps.get_current_active_user),
+    current_user: Any = Depends(get_current_user),
 ) -> Any:
     """
     Update a scheduled appointment.
@@ -62,9 +63,9 @@ def update_scheduled_appointment(
 @router.delete("/{id}", response_model=schema_scheduled.ScheduledAppointment)
 def delete_scheduled_appointment(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     id: int,
-    current_user: Any = Depends(deps.get_current_active_user),
+    current_user: Any = Depends(get_current_user),
 ) -> Any:
     """
     Delete/Cancel a scheduled appointment.
