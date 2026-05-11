@@ -14,7 +14,8 @@ export const EnhancedSidebar = ({
   selectedElement,
   totalSlides,
   generatedContent,
-  onRemoveImage
+  onRemoveImage,
+  onConvertToVideo
 }) => {
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -621,6 +622,13 @@ export const EnhancedSidebar = ({
 
                 {/* Quick Actions */}
                 <div className="space-y-2">
+                  <button
+                    onClick={onConvertToVideo}
+                    className="w-full p-3 bg-amber-500 text-white rounded-xl text-xs font-black hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <FiVideo size={16} />
+                    ✨ Convertir a Video
+                  </button>
                   <button
                     onClick={onPreview}
                     className="w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"

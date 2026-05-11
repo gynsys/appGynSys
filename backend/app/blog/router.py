@@ -74,6 +74,34 @@ def generate_social_ai(
             detail=f"Error en la generación social: {error_msg}"
         )
 
+@router.post("/generate-social-from-content", response_model=schemas.SocialContentResponse)
+def generate_social_from_content_ai(
+    request_data: schemas.SocialContentFromContentRequest,
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Generates social media content (Video/Carousel) from arbitrary text content.
+    Useful for converting saved carousels to videos.
+    """
+    try:
+        from app.services import social_service
+        result = social_service.generate_social_content(
+            post_title=request_data.title,
+            post_content=request_data.content,
+            generation_type=request_data.gen_type
+        )
+        
+        if isinstance(result, dict):
+            result['type'] = request_data.gen_type
+            
+        return schemas.SocialContentResponse(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error en generación social desde contenido: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno al generar contenido social.")
+
 @router.get("/menu/mega/{doctor_slug}", response_model=List[schemas.MegaMenuItem])
 def get_mega_menu(
     doctor_slug: str,

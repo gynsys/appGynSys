@@ -61,6 +61,11 @@ export const blogService = {
     return response.data
   },
 
+  generateSocialFromContent: async (title, content, genType) => {
+    const response = await api.post('/blog/generate-social-from-content', { title, content, gen_type: genType })
+    return response.data
+  },
+
   // Social Carousel Projects
   getCarouselProjects: async () => {
     const response = await api.get('/blog/carousels')

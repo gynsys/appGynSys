@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage, FiFolder, FiCopy } from 'react-icons/fi';
+import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage, FiFolder, FiCopy, FiVideo } from 'react-icons/fi';
 import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
 
 export const MobileToolbar = ({ 
@@ -15,7 +15,8 @@ export const MobileToolbar = ({
   onSaveTemplate,
   onPreview,
   currentSlide,
-  activeProjectName
+  activeProjectName,
+  onConvertToVideo
 }) => {
   const [activePanel, setActivePanel] = useState(null);
 
@@ -306,6 +307,10 @@ export const MobileToolbar = ({
 
           {/* Right: Action buttons */}
           <div className="flex items-center gap-1">
+            <button onClick={onConvertToVideo} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-amber-500 text-white shadow-lg transition-all active:scale-95">
+              <FiVideo size={16} />
+              <span className="text-[6px] font-bold mt-0.5">Video</span>
+            </button>
             <button onClick={onPreview} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 transition-all">
               <FiEye size={16} />
               <span className="text-[6px] font-bold mt-0.5">Ver</span>

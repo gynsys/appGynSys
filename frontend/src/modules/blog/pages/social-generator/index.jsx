@@ -253,6 +253,41 @@ export default function SocialGenerator() {
     }
   };
 
+  const handleConvertToVideo = async () => {
+    if (!generatedContent?.slides || generatedContent.slides.length === 0) {
+      showToast('No hay contenido en el carrusel para convertir', 'error');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      // Tomar los textos actuales del carrusel (por si el médico los editó)
+      const carouselText = generatedContent.slides
+        .map(s => `${s.title}\n${s.content}`)
+        .join('\n\n');
+      
+      const title = activeProjectName || selectedPost?.title || 'Mi Video';
+      
+      const result = await blogService.generateSocialFromContent(title, carouselText, 'video');
+      
+      setGeneratedContent(prev => ({
+        ...prev,
+        video_slides: result.video_slides,
+        music_suggestion: result.music_suggestion,
+        type: 'video'
+      }));
+      
+      setActiveTab('video');
+      setCurrentVideoSlide(0);
+      showToast('¡Carrusel convertido a video con éxito!', 'success');
+    } catch (error) {
+      console.error('Error converting to video:', error);
+      showToast('Error al convertir carrusel a video', 'error');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handleTestDesign = () => {
     setActiveTab('carousel');
     setGeneratedContent({
@@ -519,6 +554,7 @@ export default function SocialGenerator() {
                       totalSlides={generatedContent.slides.length}
                       generatedContent={generatedContent}
                       onRemoveImage={handleRemoveImage}
+                      onConvertToVideo={handleConvertToVideo}
                     />
                     
                     {/* Main Editor Area */}
@@ -1225,6 +1261,7 @@ export default function SocialGenerator() {
                   onPreview={() => setPreviewIndex(0)}
                   currentSlide={designer.canvas.currentSlidePage}
                   activeProjectName={activeProjectName}
+                  onConvertToVideo={handleConvertToVideo}
                 />
               )}
 

@@ -113,6 +113,11 @@ class AIGenerationResponse(BaseModel):
     summary: str
     generated_content: str
 
+class SocialContentFromContentRequest(BaseModel):
+    title: str
+    content: str
+    gen_type: str # 'video' or 'carousel'
+
 class SocialContentScene(BaseModel):
     time: str
     text: str
