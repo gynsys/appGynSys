@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay, FiClock } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay, FiClock, FiVolume2, FiVolumeX } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -178,7 +178,13 @@ export default function SocialGenerator() {
   useEffect(() => {
     if (audioRef.current) {
       if (activeTab === 'video' && isPlaying) {
-        audioRef.current.play().catch(e => console.log("Autoplay blocked"));
+        audioRef.current.load();
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log("[GynSys] Autoplay prevented, waiting for user interaction");
+          });
+        }
       } else {
         audioRef.current.pause();
       }
@@ -196,12 +202,29 @@ export default function SocialGenerator() {
       canvas.width = 720;
       canvas.height = 1280;
       const ctx = canvas.getContext('2d');
-      const stream = canvas.captureStream(30);
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+      
+      // COMBINAR AUDIO Y VIDEO PARA EXPORTACIÓN
+      const videoStream = canvas.captureStream(30);
+      let combinedStream = videoStream;
+
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+        const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
+        combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+      }
+
+      const recorder = new MediaRecorder(combinedStream, { 
+        mimeType: 'video/webm;codecs=vp9,opus' 
+      });
       const chunks = [];
       
       recorder.ondataavailable = e => chunks.push(e.data);
       recorder.onstop = () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
         const blob = new Blob(chunks, { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -209,7 +232,7 @@ export default function SocialGenerator() {
         a.download = `video_gynsys_${selectedPost?.id}.mp4`;
         a.click();
         setIsExporting(false);
-        showToast('¡Video generado con éxito!', 'success');
+        showToast('¡Video con Audio generado con éxito!', 'success');
       };
 
       recorder.start();
@@ -1055,12 +1078,16 @@ export default function SocialGenerator() {
                             <FiPlay className="text-white fill-white ml-1" size={32} />
                           )}
                         </div>
+                        <div className="absolute top-10 right-10">
+                           {isPlaying ? <FiVolume2 className="text-white/50" /> : <FiVolumeX className="text-white/50" />}
+                        </div>
                       </div>
                       
                       {/* Hidden Audio Element */}
                       <audio 
                         ref={audioRef}
                         src={AUDIO_TRACKS[selectedAudio]} 
+                        crossOrigin="anonymous"
                         loop 
                       />
                     </div>
