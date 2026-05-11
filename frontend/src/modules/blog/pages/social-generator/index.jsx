@@ -40,6 +40,9 @@ export default function SocialGenerator() {
   const [mobileActionPerformed, setMobileActionPerformed] = useState(false);
   const [activeProjectName, setActiveProjectName] = useState(null);
   const [activeProjectId, setActiveProjectId] = useState(null);
+  const [currentVideoSlide, setCurrentVideoSlide] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
 
   // Mobile detection
   useEffect(() => {
@@ -149,6 +152,37 @@ export default function SocialGenerator() {
       };
     }
   }, [isMobileFullscreen]);
+
+  // Video Playback Timer
+  useEffect(() => {
+    let interval;
+    if (activeTab === 'video' && generatedContent?.video_slides?.length > 0 && !isExporting) {
+      interval = setInterval(() => {
+        setCurrentVideoSlide(prev => (prev + 1) % generatedContent.video_slides.length);
+      }, 3000); // 3 seconds per slide
+    }
+    return () => clearInterval(interval);
+  }, [activeTab, generatedContent, isExporting]);
+
+  const handleExportVideo = () => {
+    setIsExporting(true);
+    setExportProgress(0);
+    
+    // Simular renderizado
+    const interval = setInterval(() => {
+      setExportProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsExporting(false);
+            showToast('Video exportado con éxito (Simulado)', 'success');
+          }, 500);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 100);
+  };
   const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
     setLogoPos: designer.design.setLogoPos,
     setDoctorNamePos: designer.design.setDoctorNamePos,
@@ -192,17 +226,28 @@ export default function SocialGenerator() {
     }
   };
 
-  const handleGenerate = async (type) => {
-    if (!selectedPost) return;
+  const handleGenerate = async (genType) => {
+    if (!selectedPost) {
+      showToast('Selecciona un artículo primero', 'error');
+      return;
+    }
+
+    setGenerating(true);
     try {
-      setGenerating(true);
-      setActiveTab(type);
-      const response = await blogService.generateSocialContent(selectedPost.id, type);
-      setGeneratedContent(response);
-      setMobileActionPerformed(false);
-      showToast('¡Estrategia generada!', 'success');
+      const result = await blogService.generateSocialContent(selectedPost.id, genType);
+      
+      // Clean previous content and set new one
+      setGeneratedContent(result);
+      setActiveTab(genType === 'video' ? 'video' : 'carousel');
+      
+      if (genType === 'video') {
+         setCurrentVideoSlide(0); // Reset video player
+      }
+
+      showToast(`${genType === 'video' ? 'Video' : 'Carrusel'} generado con éxito`, 'success');
     } catch (error) {
-      showToast('Error en la IA', 'error');
+      console.error('Error generating content:', error);
+      showToast('Error al generar contenido con IA', 'error');
     } finally {
       setGenerating(false);
     }
@@ -792,9 +837,19 @@ export default function SocialGenerator() {
                   </div>
                   <div className="flex gap-2">
                     <button 
-                      className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-lg"
+                      onClick={handleExportVideo}
+                      disabled={isExporting}
+                      className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-lg disabled:opacity-50"
                     >
-                      <FiDownload /> Exportar Video MP4
+                      {isExporting ? (
+                        <>
+                          <FiLoader className="animate-spin" /> {exportProgress}%
+                        </>
+                      ) : (
+                        <>
+                          <FiDownload /> Exportar Video MP4
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -805,12 +860,23 @@ export default function SocialGenerator() {
                     <div className="bg-gray-900 rounded-[32px] aspect-[9/16] max-h-[600px] mx-auto overflow-hidden relative shadow-2xl border-8 border-gray-800 group">
                       {/* Simulación de Video pasando solo */}
                       <div className="absolute inset-0 flex items-center justify-center p-10 text-center">
-                        <div className="animate-pulse duration-[3000ms] space-y-4">
-                          <p className="text-white text-2xl font-black leading-tight">
-                            {generatedContent.video_slides?.[0]?.text || "Tu contenido aquí..."}
+                        <div key={currentVideoSlide} className="animate-fadeIn space-y-6">
+                          <p className="text-white text-3xl font-black leading-tight drop-shadow-lg">
+                            {generatedContent.video_slides?.[currentVideoSlide]?.text || "Tu contenido aquí..."}
                           </p>
-                          <div className="w-12 h-1 bg-indigo-500 mx-auto rounded-full"></div>
+                          <div className="w-16 h-1.5 bg-indigo-500 mx-auto rounded-full shadow-lg"></div>
                         </div>
+                      </div>
+
+                      {/* Indicador de Progreso (Barra arriba) */}
+                      <div className="absolute top-4 left-4 right-4 flex gap-1.5">
+                        {generatedContent.video_slides?.map((_, i) => (
+                           <div key={i} className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full bg-white transition-all duration-[3000ms] linear ${i === currentVideoSlide ? 'w-full' : i < currentVideoSlide ? 'w-full' : 'w-0'}`}
+                              ></div>
+                           </div>
+                        ))}
                       </div>
                       
                       {/* Branding Superpuesto */}
