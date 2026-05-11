@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay, FiClock } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -154,7 +154,9 @@ export default function SocialGenerator() {
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [selectedAudio, setSelectedAudio] = useState('Medical');
+  const [slideDuration, setSlideDuration] = useState(3); // Default 3s
   const audioRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
 
   const AUDIO_TRACKS = {
     'Soft': 'https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3',
@@ -168,10 +170,10 @@ export default function SocialGenerator() {
     if (activeTab === 'video' && generatedContent?.video_slides && isPlaying && !isExporting) {
       interval = setInterval(() => {
         setCurrentVideoSlide((prev) => (prev + 1) % generatedContent.video_slides.length);
-      }, 3000);
+      }, slideDuration * 1000);
     }
     return () => clearInterval(interval);
-  }, [activeTab, generatedContent, isPlaying, isExporting]);
+  }, [activeTab, generatedContent, isPlaying, isExporting, slideDuration]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -183,52 +185,99 @@ export default function SocialGenerator() {
     }
   }, [activeTab, isPlaying, selectedAudio]);
 
-  const handleExportVideo = () => {
-    if (!generatedContent?.video_slides) {
-      showToast('No hay contenido de video para exportar', 'error');
-      return;
-    }
-
+  const handleExportVideo = async () => {
+    if (!generatedContent?.video_slides) return;
+    
     setIsExporting(true);
     setExportProgress(0);
     
-    // Simular renderizado visual
-    const interval = setInterval(() => {
-      setExportProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          
-          // GENERACIÓN DE VIDEO MP4 (RECORDING SIMULATION)
-          // Nota: Para MP4 real se requiere procesamiento frame-by-frame o servicio backend
-          // Por ahora, generamos un contenedor de video reproducible
-          try {
-            const scriptData = generatedContent.video_slides.map((s, i) => `ESCENA ${i+1}: ${s.text}`).join('\n');
-            const blob = new Blob([scriptData], { type: 'video/mp4' }); // Fake blob type for download testing
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
-            document.body.appendChild(a);
-            a.click();
-            
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 720;
+      canvas.height = 1280;
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+      const chunks = [];
+      
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `video_gynsys_${selectedPost?.id}.mp4`;
+        a.click();
+        setIsExporting(false);
+        showToast('¡Video generado con éxito!', 'success');
+      };
 
-            setTimeout(() => {
-              setIsExporting(false);
-              showToast('Video MP4 generado (Formato de Guion Técnico)', 'success');
-            }, 500);
-          } catch (err) {
-            console.error('[GynSys] Error en exportación:', err);
-            setIsExporting(false);
-            showToast('Error técnico al generar el MP4', 'error');
-          }
-          return 100;
+      recorder.start();
+      
+      for (let i = 0; i < generatedContent.video_slides.length; i++) {
+        const slide = generatedContent.video_slides[i];
+        
+        // Draw Background
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw Image if exists
+        if (slide.image) {
+          try {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.src = slide.image;
+            });
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; // Overlay
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          } catch (e) { console.log("Error loading slide image"); }
         }
-        return prev + 10;
-      });
-    }, 150);
+
+        // Draw Text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 48px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const words = slide.text.split(' ');
+        let line = '';
+        let y = canvas.height / 2 - 100;
+        
+        for (let n = 0; n < words.length; n++) {
+          let testLine = line + words[n] + ' ';
+          if (ctx.measureText(testLine).width > 600 && n > 0) {
+            ctx.fillText(line, canvas.width / 2, y);
+            line = words[n] + ' ';
+            y += 60;
+          } else { line = testLine; }
+        }
+        ctx.fillText(line, canvas.width / 2, y);
+        
+        setExportProgress(Math.round(((i + 1) / generatedContent.video_slides.length) * 100));
+        await new Promise(r => setTimeout(r, slideDuration * 1000));
+      }
+      
+      recorder.stop();
+    } catch (err) {
+      console.error(err);
+      setIsExporting(false);
+      showToast('Error al renderizar el video', 'error');
+    }
+  };
+
+  const handleAddImageToVideoSlide = (index, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const newSlides = [...generatedContent.video_slides];
+      newSlides[index].image = event.target.result;
+      setGeneratedContent({ ...generatedContent, video_slides: newSlides });
+    };
+    reader.readAsDataURL(file);
   };
   const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
     setLogoPos: designer.design.setLogoPos,
@@ -949,7 +998,14 @@ export default function SocialGenerator() {
                     >
                       {/* Simulación de Video pasando solo */}
                       <div className="absolute inset-0 flex items-center justify-center p-10 text-center">
-                        <div key={currentVideoSlide} className="animate-fadeIn space-y-6">
+                        {generatedContent.video_slides?.[currentVideoSlide]?.image && (
+                          <img 
+                            src={generatedContent.video_slides[currentVideoSlide].image} 
+                            className="absolute inset-0 w-full h-full object-cover opacity-50"
+                            alt="Background"
+                          />
+                        )}
+                        <div key={currentVideoSlide} className="animate-fadeIn space-y-6 relative z-10">
                           <p className="text-white text-3xl font-black leading-tight drop-shadow-lg">
                             {generatedContent.video_slides?.[currentVideoSlide]?.text || "Tu contenido aquí..."}
                           </p>
@@ -1020,6 +1076,29 @@ export default function SocialGenerator() {
                                 {slide.text.split(' ').length} palabras {slide.text.split(' ').length > 12 && '(Demasiado largo para Reel)'}
                               </p>
                             </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center hover:bg-indigo-50 transition-all">
+                                <input 
+                                  type="file" 
+                                  className="hidden" 
+                                  accept="image/*"
+                                  onChange={(e) => handleAddImageToVideoSlide(i, e)} 
+                                />
+                                <FiImage size={14} className={slide.image ? 'text-indigo-600' : 'text-gray-400'} />
+                              </label>
+                              {slide.image && (
+                                <button 
+                                  onClick={() => {
+                                    const newSlides = [...generatedContent.video_slides];
+                                    delete newSlides[i].image;
+                                    setGeneratedContent({...generatedContent, video_slides: newSlides});
+                                  }}
+                                  className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100"
+                                >
+                                  <FiTrash2 size={12} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1053,6 +1132,29 @@ export default function SocialGenerator() {
                       <p className="text-[10px] text-gray-400 mt-4 italic text-center">
                         Sugerencia IA: "{generatedContent.music_suggestion || 'Médica Moderna'}"
                       </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-3 mb-6">
+                        <FiClock className="text-indigo-600" />
+                        <h4 className="font-black uppercase text-xs tracking-widest">Tiempo por Escena</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="10" 
+                          step="0.5"
+                          value={slideDuration}
+                          onChange={(e) => setSlideDuration(parseFloat(e.target.value))}
+                          className="w-full accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[10px] font-black uppercase text-gray-400">
+                          <span>Rápido (1s)</span>
+                          <span className="text-indigo-600">{slideDuration} Segundos</span>
+                          <span>Lento (10s)</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="bg-amber-50 dark:bg-amber-900/20 rounded-3xl p-8 border border-amber-100 dark:border-amber-900/50">
