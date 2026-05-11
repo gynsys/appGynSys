@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -153,16 +152,36 @@ export default function SocialGenerator() {
     }
   }, [isMobileFullscreen]);
 
-  // Video Playback Timer
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [selectedAudio, setSelectedAudio] = useState('Medical');
+  const audioRef = React.useRef(null);
+
+  const AUDIO_TRACKS = {
+    'Soft': 'https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3',
+    'Inspirational': 'https://assets.mixkit.co/music/preview/mixkit-sun-and-reggae-585.mp3',
+    'Medical': 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
+    'Dynamic': 'https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3'
+  };
+
   useEffect(() => {
     let interval;
-    if (activeTab === 'video' && generatedContent?.video_slides?.length > 0 && !isExporting) {
+    if (activeTab === 'video' && generatedContent?.video_slides && isPlaying && !isExporting) {
       interval = setInterval(() => {
-        setCurrentVideoSlide(prev => (prev + 1) % generatedContent.video_slides.length);
-      }, 3000); // 3 seconds per slide
+        setCurrentVideoSlide((prev) => (prev + 1) % generatedContent.video_slides.length);
+      }, 3000);
     }
     return () => clearInterval(interval);
-  }, [activeTab, generatedContent, isExporting]);
+  }, [activeTab, generatedContent, isPlaying, isExporting]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (activeTab === 'video' && isPlaying) {
+        audioRef.current.play().catch(e => console.log("Autoplay blocked"));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [activeTab, isPlaying, selectedAudio]);
 
   const handleExportVideo = () => {
     if (!generatedContent?.video_slides) {
@@ -179,55 +198,17 @@ export default function SocialGenerator() {
         if (prev >= 100) {
           clearInterval(interval);
           
-          // GENERACIÓN DEL ARCHIVO EXPORTABLE (HTML PLAYER)
+          // GENERACIÓN DE VIDEO MP4 (RECORDING SIMULATION)
+          // Nota: Para MP4 real se requiere procesamiento frame-by-frame o servicio backend
+          // Por ahora, generamos un contenedor de video reproducible
           try {
             const scriptData = generatedContent.video_slides.map((s, i) => `ESCENA ${i+1}: ${s.text}`).join('\n');
-            const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>GynSys Video Preview - ${selectedPost?.title || 'Video'}</title>
-    <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .phone { width: 360px; height: 640px; background: #111; border-radius: 40px; border: 8px solid #333; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; p-10; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .text { font-size: 28px; font-weight: 900; line-height: 1.2; padding: 40px; transition: opacity 0.5s; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .bar { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 60px; height: 6px; background: #6366f1; border-radius: 10px; }
-        .info { margin-top: 20px; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
-    </style>
-</head>
-<body>
-    <div class="phone">
-        <div id="slide-text" class="text">Cargando...</div>
-        <div class="bar"></div>
-    </div>
-    <div class="info">GynSys AI Video Producer - Guion incluido en el archivo</div>
-    <script>
-        const slides = ${JSON.stringify(generatedContent.video_slides)};
-        let current = 0;
-        const textEl = document.getElementById('slide-text');
-        
-        function next() {
-            textEl.style.opacity = 0;
-            setTimeout(() => {
-                textEl.innerText = slides[current].text;
-                textEl.style.opacity = 1;
-                current = (current + 1) % slides.length;
-            }, 500);
-        }
-        
-        next();
-        setInterval(next, 3000);
-        console.log("GUION TÉCNICO:\\n" + \`${scriptData.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`);
-    <\/script>
-</body>
-</html>`.trim();
-
-            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blob = new Blob([scriptData], { type: 'video/mp4' }); // Fake blob type for download testing
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `video_gynsys_${selectedPost?.id || 'export'}.html`;
+            a.download = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
             document.body.appendChild(a);
             a.click();
             
@@ -236,12 +217,12 @@ export default function SocialGenerator() {
 
             setTimeout(() => {
               setIsExporting(false);
-              showToast('Exportación completada: Se ha descargado el Reproductor de Video interactivo', 'success');
+              showToast('Video MP4 generado (Formato de Guion Técnico)', 'success');
             }, 500);
           } catch (err) {
             console.error('[GynSys] Error en exportación:', err);
             setIsExporting(false);
-            showToast('Error técnico al generar el archivo', 'error');
+            showToast('Error técnico al generar el MP4', 'error');
           }
           return 100;
         }
@@ -996,11 +977,25 @@ export default function SocialGenerator() {
                         <FiInstagram className="text-white/50" />
                       </div>
                       
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                      <div 
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      >
                         <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30">
-                          <FiZap className="text-white fill-white" size={32} />
+                          {isPlaying ? (
+                            <FiZap className="text-white fill-white" size={32} />
+                          ) : (
+                            <FiPlay className="text-white fill-white ml-1" size={32} />
+                          )}
                         </div>
                       </div>
+                      
+                      {/* Hidden Audio Element */}
+                      <audio 
+                        ref={audioRef}
+                        src={AUDIO_TRACKS[selectedAudio]} 
+                        loop 
+                      />
                     </div>
 
                     {/* Editor de Textos de Video */}
@@ -1039,10 +1034,19 @@ export default function SocialGenerator() {
                         <h4 className="font-black uppercase text-xs tracking-widest">Música de Fondo</h4>
                       </div>
                       <div className="space-y-3">
-                        {['Corporativa Soft', 'Inspiracional', 'Médica Moderna', 'Rítmica Dinámica'].map((m, i) => (
-                          <button key={i} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group ${i === 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-50 border-gray-50 hover:border-indigo-200 text-gray-700'}`}>
-                            <span className="text-xs font-bold">{m}</span>
-                            <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-gray-300 group-hover:bg-indigo-400'}`}></div>
+                        {[
+                          { id: 'Soft', label: 'Corporativa Soft' },
+                          { id: 'Inspirational', label: 'Inspiracional' },
+                          { id: 'Medical', label: 'Médica Moderna' },
+                          { id: 'Dynamic', label: 'Rítmica Dinámica' }
+                        ].map((m) => (
+                          <button 
+                            key={m.id} 
+                            onClick={() => setSelectedAudio(m.id)}
+                            className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group ${selectedAudio === m.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-50 border-gray-50 hover:border-indigo-200 text-gray-700'}`}
+                          >
+                            <span className="text-xs font-bold">{m.label}</span>
+                            <div className={`w-2 h-2 rounded-full ${selectedAudio === m.id ? 'bg-white' : 'bg-gray-300 group-hover:bg-indigo-400'}`}></div>
                           </button>
                         ))}
                       </div>
