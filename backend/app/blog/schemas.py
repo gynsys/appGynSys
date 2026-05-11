@@ -127,15 +127,22 @@ class SocialContentStructure(BaseModel):
     solution: str
     visual_guide: str
 
+class VideoSlide(BaseModel):
+    text: str
+
 class SocialContentResponse(BaseModel):
-    type: str # 'reel' or 'carousel'
+    type: str # 'video', 'carousel'
     hook: Optional[str] = None
-    hooks: Optional[List[str]] = None # Multiple hooks for the user to choose
+    hooks: Optional[List[str]] = None 
     scenes: Optional[List[SocialContentScene]] = None
-    structure: Optional[SocialContentStructure] = None # Structured script
-    caption: Optional[str] = None # Instagram caption with hashtags
+    structure: Optional[SocialContentStructure] = None 
+    caption: Optional[str] = None 
     cta: Optional[str] = None
     slides: Optional[List[SocialContentSlide]] = None
+    video_slides: Optional[List[VideoSlide]] = None # New: for Reel Video
+    music_suggestion: Optional[str] = None # New: for music player
+    duration_per_slide: Optional[int] = 3
+    total_duration: Optional[int] = 20
     image_prompts: Optional[List[str]] = None
 
 # Social Carousel Schemas

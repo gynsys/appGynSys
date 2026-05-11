@@ -74,32 +74,28 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     # Limpiar el contenido antes de procesar
     clean_text = clean_content_for_ai(post_content)
     
-    if generation_type == 'reel':
+    if generation_type == 'video':
         prompt = f"""
-        Actúa como un estratega de contenido para Instagram especializado en medicina y ginecología. 
-        Transforma este artículo en un guion de Reel de alto impacto para una audiencia de pacientes.
+        Actúa como un editor de video experto en Reels de Instagram médicos. 
+        Tu objetivo es TRANSFORMAR el contenido de un carrusel en una secuencia de video corto (Reel).
         
-        ARTÍCULO:
+        CONTENIDO ORIGINAL:
         Título: {post_title}
         Contenido: {clean_text}
         
-        REGLAS DEL GUION:
-        1. TONO: Profesional pero cercano, empático y educativo.
-        2. ESTRUCTURA: Usa el método AIDA.
-        3. GANCHOS: Proporciona 3 opciones de ganchos diferentes (uno de curiosidad, uno de alerta/miedo y uno de beneficio directo).
+        REGLAS DE ORO PARA VIDEO:
+        1. BREVEDAD EXTREMA: Un Reel pasa rápido. Máximo 10-12 palabras por escena/diapositiva.
+        2. IMPACTO: Usa verbos de acción y frases directas. Elimina explicaciones largas.
+        3. ESTRUCTURA: Genera entre 5 y 8 escenas breves.
         
         Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
         {{
-          "hook": "El mejor gancho (principal)",
-          "hooks": ["Gancho de curiosidad", "Gancho de alerta", "Gancho de beneficio"],
-          "structure": {{
-            "problem": "Descripción breve del dolor o duda de la paciente",
-            "solution": "El consejo médico clave o explicación simplificada",
-            "visual_guide": "Instrucciones de actuación (ej: Señala a la cámara, texto aparece arriba, cambia de outfit, gesto de sorpresa)"
-          }},
-          "caption": "Un texto listo para el post de Instagram, con emojis y 5 hashtags estratégicos",
-          "cta": "Llamada a la acción final (ej: Agenda tu cita, descarga la guía)",
-          "image_prompts": ["Sugerencia de fondo o recurso visual"]
+          "video_slides": [
+            {{ "text": "Frase corta e impactante" }}
+          ],
+          "music_suggestion": "Tipo de música (ej: rítmica, calma, inspiracional)",
+          "duration_per_slide": 3,
+          "total_duration": 20
         }}
         """
     else:
