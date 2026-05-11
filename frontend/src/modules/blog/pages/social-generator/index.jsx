@@ -179,46 +179,69 @@ export default function SocialGenerator() {
         if (prev >= 100) {
           clearInterval(interval);
           
-          // GENERACIÓN REAL DEL ARCHIVO DE GUION
+          // GENERACIÓN DEL ARCHIVO EXPORTABLE (HTML PLAYER)
           try {
-            const scriptContent = `
-PLAN DE PRODUCCIÓN DE VIDEO REEL
----------------------------------
-Artículo: ${selectedPost?.title || 'Sin título'}
-Música Sugerida: ${generatedContent.music_suggestion || 'Médica Moderna'}
-Duración Estimada: ${generatedContent.total_duration || '20'} segundos
----------------------------------
+            const scriptData = generatedContent.video_slides.map((s, i) => `ESCENA ${i+1}: ${s.text}`).join('\n');
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GynSys Video Preview - ${selectedPost?.title || 'Video'}</title>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .phone { width: 360px; height: 640px; background: #111; border-radius: 40px; border: 8px solid #333; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; p-10; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .text { font-size: 28px; font-weight: 900; line-height: 1.2; padding: 40px; transition: opacity 0.5s; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .bar { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 60px; height: 6px; background: #6366f1; border-radius: 10px; }
+        .info { margin-top: 20px; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div id="slide-text" class="text">Cargando...</div>
+        <div class="bar"></div>
+    </div>
+    <div class="info">GynSys AI Video Producer - Guion incluido en el archivo</div>
+    <script>
+        const slides = ${JSON.stringify(generatedContent.video_slides)};
+        let current = 0;
+        const textEl = document.getElementById('slide-text');
+        
+        function next() {
+            textEl.style.opacity = 0;
+            setTimeout(() => {
+                textEl.innerText = slides[current].text;
+                textEl.style.opacity = 1;
+                current = (current + 1) % slides.length;
+            }, 500);
+        }
+        
+        next();
+        setInterval(next, 3000);
+        console.log("GUION TÉCNICO:\\n" + \`${scriptData.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`);
+    <\/script>
+</body>
+</html>`.trim();
 
-SECUENCIA DE ESCENAS:
-${generatedContent.video_slides.map((s, i) => `ESCENA ${i+1}: "${s.text}"`).join('\n')}
-
----------------------------------
-CONSEJOS DE GRABACIÓN:
-1. Graba en vertical (9:16).
-2. Asegura buena iluminación natural.
-3. Habla con energía y mira a la cámara.
----------------------------------
-Generado por GynSys AI.
-            `.trim();
-
-            const blob = new Blob([scriptContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `guion_video_${selectedPost?.id || 'nuevo'}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `video_gynsys_${selectedPost?.id || 'export'}.html`;
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
 
             setTimeout(() => {
               setIsExporting(false);
-              showToast('Guion descargado correctamente', 'success');
+              showToast('Exportación completada: Se ha descargado el Reproductor de Video interactivo', 'success');
             }, 500);
           } catch (err) {
-            console.error('Error al generar el archivo:', err);
+            console.error('[GynSys] Error en exportación:', err);
             setIsExporting(false);
-            showToast('Error al generar la descarga', 'error');
+            showToast('Error técnico al generar el archivo', 'error');
           }
           return 100;
         }
