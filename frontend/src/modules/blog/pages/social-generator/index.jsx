@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay, FiClock, FiVolume2, FiVolumeX } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiImage, FiLoader, FiUpload, FiPlusCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiTrash2, FiFolder, FiSave, FiLayers, FiEye, FiDownload, FiBold, FiItalic, FiType, FiMaximize2, FiX, FiDroplet, FiZap, FiVideo, FiMessageCircle, FiCopy, FiActivity, FiPlay, FiClock, FiVolume2, FiVolumeX, FiPause } from 'react-icons/fi';
 import { blogService } from '../../services/blogService';
 import Spinner from '../../../../components/common/Spinner';
 import { useToastStore } from '../../../../store/toastStore';
@@ -154,8 +154,20 @@ export default function SocialGenerator() {
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [selectedAudio, setSelectedAudio] = useState('Medical');
-  const [slideDuration, setSlideDuration] = useState(3); // Default 3s
+  const [slideDuration, setSlideDuration] = useState(3);
+  const [customAudioUrl, setCustomAudioUrl] = useState(null);
+  const [prelisteningTrack, setPrelisteningTrack] = useState(null);
+  
+  // Video Styles
+  const [videoStyles, setVideoStyles] = useState({
+    fontFamily: 'sans-serif',
+    fontSize: 48,
+    textColor: '#ffffff',
+    bgColor: '#111827'
+  });
+
   const audioRef = React.useRef(null);
+  const previewAudioRef = React.useRef(null);
   const canvasRef = React.useRef(null);
 
   const AUDIO_TRACKS = {
@@ -163,6 +175,11 @@ export default function SocialGenerator() {
     'Inspirational': 'https://assets.mixkit.co/music/preview/mixkit-sun-and-reggae-585.mp3',
     'Medical': 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
     'Dynamic': 'https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3'
+  };
+
+  const getActiveAudioSrc = () => {
+    if (selectedAudio === 'Custom' && customAudioUrl) return customAudioUrl;
+    return AUDIO_TRACKS[selectedAudio] || AUDIO_TRACKS['Medical'];
   };
 
   useEffect(() => {
@@ -178,18 +195,31 @@ export default function SocialGenerator() {
   useEffect(() => {
     if (audioRef.current) {
       if (activeTab === 'video' && isPlaying) {
+        audioRef.current.src = getActiveAudioSrc();
         audioRef.current.load();
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(error => {
-            console.log("[GynSys] Autoplay prevented, waiting for user interaction");
+            console.log("[GynSys] Autoplay prevented");
           });
         }
       } else {
         audioRef.current.pause();
       }
     }
-  }, [activeTab, isPlaying, selectedAudio]);
+  }, [activeTab, isPlaying, selectedAudio, customAudioUrl]);
+
+  useEffect(() => {
+    if (previewAudioRef.current) {
+      if (prelisteningTrack) {
+        previewAudioRef.current.src = prelisteningTrack === 'Custom' ? customAudioUrl : AUDIO_TRACKS[prelisteningTrack];
+        previewAudioRef.current.load();
+        previewAudioRef.current.play();
+      } else {
+        previewAudioRef.current.pause();
+      }
+    }
+  }, [prelisteningTrack]);
 
   const handleExportVideo = async () => {
     if (!generatedContent?.video_slides) return;
@@ -241,7 +271,7 @@ export default function SocialGenerator() {
         const slide = generatedContent.video_slides[i];
         
         // Draw Background
-        ctx.fillStyle = '#111827';
+        ctx.fillStyle = videoStyles.bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // Draw Image if exists
@@ -260,8 +290,8 @@ export default function SocialGenerator() {
         }
 
         // Draw Text
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 48px sans-serif';
+        ctx.fillStyle = videoStyles.textColor;
+        ctx.font = `bold ${videoStyles.fontSize}px ${videoStyles.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
@@ -1083,13 +1113,9 @@ export default function SocialGenerator() {
                         </div>
                       </div>
                       
-                      {/* Hidden Audio Element */}
-                      <audio 
-                        ref={audioRef}
-                        src={AUDIO_TRACKS[selectedAudio]} 
-                        crossOrigin="anonymous"
-                        loop 
-                      />
+                      {/* Hidden Audio Elements */}
+                      <audio ref={audioRef} loop crossOrigin="anonymous" />
+                      <audio ref={previewAudioRef} crossOrigin="anonymous" />
                     </div>
 
                     {/* Editor de Textos de Video */}
@@ -1145,6 +1171,68 @@ export default function SocialGenerator() {
 
                   {/* Configuración de Audio y Estilo */}
                   <div className="space-y-8">
+                    {/* Estilos Visuales */}
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-3 mb-6">
+                        <FiType className="text-indigo-600" />
+                        <h4 className="font-black uppercase text-xs tracking-widest">Estilos de Video</h4>
+                      </div>
+                      <div className="space-y-6">
+                        {/* Font Family */}
+                        <div>
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Fuente</label>
+                          <select 
+                            value={videoStyles.fontFamily}
+                            onChange={(e) => setVideoStyles({...videoStyles, fontFamily: e.target.value})}
+                            className="w-full bg-gray-50 border-none rounded-xl text-xs font-bold p-3 outline-none"
+                          >
+                            <option value="sans-serif">Sans Serif (Moderno)</option>
+                            <option value="serif">Serif (Clásico)</option>
+                            <option value="monospace">Monospace (Tech)</option>
+                            <option value="Manrope">Manrope (GynSys)</option>
+                            <option value="Impact">Impact (Bold)</option>
+                          </select>
+                        </div>
+
+                        {/* Colors */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Texto</label>
+                            <input 
+                              type="color" 
+                              value={videoStyles.textColor}
+                              onChange={(e) => setVideoStyles({...videoStyles, textColor: e.target.value})}
+                              className="w-full h-10 rounded-xl cursor-pointer border-none bg-gray-50 p-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Fondo</label>
+                            <input 
+                              type="color" 
+                              value={videoStyles.bgColor}
+                              onChange={(e) => setVideoStyles({...videoStyles, bgColor: e.target.value})}
+                              className="w-full h-10 rounded-xl cursor-pointer border-none bg-gray-50 p-1"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Font Size */}
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tamaño Texto</label>
+                            <span className="text-[10px] font-black text-indigo-600">{videoStyles.fontSize}px</span>
+                          </div>
+                          <input 
+                            type="range" min="20" max="80" 
+                            value={videoStyles.fontSize}
+                            onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})}
+                            className="w-full accent-indigo-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Música de Fondo */}
                     <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100">
                       <div className="flex items-center gap-3 mb-6">
                         <FiDroplet className="text-indigo-600" />
@@ -1157,15 +1245,53 @@ export default function SocialGenerator() {
                           { id: 'Medical', label: 'Médica Moderna' },
                           { id: 'Dynamic', label: 'Rítmica Dinámica' }
                         ].map((m) => (
-                          <button 
-                            key={m.id} 
-                            onClick={() => setSelectedAudio(m.id)}
-                            className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group ${selectedAudio === m.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-50 border-gray-50 hover:border-indigo-200 text-gray-700'}`}
-                          >
-                            <span className="text-xs font-bold">{m.label}</span>
-                            <div className={`w-2 h-2 rounded-full ${selectedAudio === m.id ? 'bg-white' : 'bg-gray-300 group-hover:bg-indigo-400'}`}></div>
-                          </button>
+                          <div key={m.id} className="flex gap-2">
+                            <button 
+                              onClick={() => setSelectedAudio(m.id)}
+                              className={`flex-1 text-left p-4 rounded-2xl border transition-all flex items-center justify-between group ${selectedAudio === m.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-50 border-gray-50 hover:border-indigo-200 text-gray-700'}`}
+                            >
+                              <span className="text-xs font-bold">{m.label}</span>
+                              <div className={`w-2 h-2 rounded-full ${selectedAudio === m.id ? 'bg-white' : 'bg-gray-300 group-hover:bg-indigo-400'}`}></div>
+                            </button>
+                            <button 
+                              onClick={() => setPrelisteningTrack(prelisteningTrack === m.id ? null : m.id)}
+                              className={`p-4 rounded-2xl border flex items-center justify-center transition-all ${prelisteningTrack === m.id ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-gray-50 border-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                            >
+                              {prelisteningTrack === m.id ? <FiPause size={14} /> : <FiPlay size={14} />}
+                            </button>
+                          </div>
                         ))}
+
+                        {/* Custom Audio Upload */}
+                        <div className="mt-4 pt-4 border-t border-gray-50">
+                          <label className="cursor-pointer w-full flex items-center justify-center gap-2 p-4 bg-indigo-50 text-indigo-600 rounded-2xl font-bold text-xs hover:bg-indigo-100 transition-all">
+                            <FiUpload size={14} />
+                            {customAudioUrl ? 'Cambiar Audio Propio' : 'Subir Audio Externo (MP3)'}
+                            <input 
+                              type="file" 
+                              accept="audio/*" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  const url = URL.createObjectURL(file);
+                                  setCustomAudioUrl(url);
+                                  setSelectedAudio('Custom');
+                                  showToast('Audio externo cargado', 'success');
+                                }
+                              }}
+                            />
+                          </label>
+                          {customAudioUrl && (
+                            <button 
+                              onClick={() => setSelectedAudio('Custom')}
+                              className={`w-full mt-2 p-4 rounded-2xl border transition-all flex items-center justify-between ${selectedAudio === 'Custom' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-green-50 text-green-700 border-green-100'}`}
+                            >
+                              <span className="text-xs font-bold">Usar Audio Subido</span>
+                              <div className={`w-2 h-2 rounded-full ${selectedAudio === 'Custom' ? 'bg-white' : 'bg-green-500'}`}></div>
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-[10px] text-gray-400 mt-4 italic text-center">
                         Sugerencia IA: "{generatedContent.music_suggestion || 'Médica Moderna'}"
