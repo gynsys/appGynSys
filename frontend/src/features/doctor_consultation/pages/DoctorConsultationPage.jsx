@@ -145,19 +145,18 @@ export const DoctorConsultationPage = () => {
   }, [appointmentId]);
 
   // Handle Automatic Date Calculation
-  useEffect(() => {
-    if (shouldScheduleAppointment && scheduledInterval) {
-      const today = new Date();
-      let monthsToAdd = 3;
-      if (scheduledInterval === '1_mes') monthsToAdd = 1;
-      else if (scheduledInterval === '3_meses') monthsToAdd = 3;
-      else if (scheduledInterval === '6_meses') monthsToAdd = 6;
-      else if (scheduledInterval === '1_año') monthsToAdd = 12;
-      
-      const nextDate = new Date(today.setMonth(today.getMonth() + monthsToAdd));
-      setScheduledDate(nextDate.toISOString().split('T')[0]);
-    }
-  }, [shouldScheduleAppointment, scheduledInterval]);
+  const calculateNextDate = (interval) => {
+    setScheduledInterval(interval);
+    const today = new Date();
+    let monthsToAdd = 3;
+    if (interval === '1_mes') monthsToAdd = 1;
+    else if (interval === '3_meses') monthsToAdd = 3;
+    else if (interval === '6_meses') monthsToAdd = 6;
+    else if (interval === '1_año') monthsToAdd = 12;
+    
+    const nextDate = new Date(today.setMonth(today.getMonth() + monthsToAdd));
+    setScheduledDate(nextDate.toISOString().split('T')[0]);
+  };
 
   // Load patient data
   useEffect(() => {
@@ -1261,7 +1260,7 @@ export const DoctorConsultationPage = () => {
                       ].map((opt) => (
                         <button
                           key={opt.id}
-                          onClick={() => setScheduledInterval(opt.id)}
+                          onClick={() => calculateNextDate(opt.id)}
                           className={`py-2 px-3 text-sm rounded-lg border transition-all ${
                             scheduledInterval === opt.id 
                             ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' 

@@ -165,23 +165,66 @@ export default function SocialGenerator() {
   }, [activeTab, generatedContent, isExporting]);
 
   const handleExportVideo = () => {
+    if (!generatedContent?.video_slides) {
+      showToast('No hay contenido de video para exportar', 'error');
+      return;
+    }
+
     setIsExporting(true);
     setExportProgress(0);
     
-    // Simular renderizado
+    // Simular renderizado visual
     const interval = setInterval(() => {
       setExportProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
+          
+          // GENERACIÓN REAL DEL ARCHIVO DE GUION
+          try {
+            const scriptContent = `
+PLAN DE PRODUCCIÓN DE VIDEO REEL
+---------------------------------
+Artículo: ${selectedPost?.title || 'Sin título'}
+Música Sugerida: ${generatedContent.music_suggestion || 'Médica Moderna'}
+Duración Estimada: ${generatedContent.total_duration || '20'} segundos
+---------------------------------
+
+SECUENCIA DE ESCENAS:
+${generatedContent.video_slides.map((s, i) => `ESCENA ${i+1}: "${s.text}"`).join('\n')}
+
+---------------------------------
+CONSEJOS DE GRABACIÓN:
+1. Graba en vertical (9:16).
+2. Asegura buena iluminación natural.
+3. Habla con energía y mira a la cámara.
+---------------------------------
+Generado por GynSys AI.
+            `.trim();
+
+            const blob = new Blob([scriptContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `guion_video_${selectedPost?.id || 'nuevo'}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            setTimeout(() => {
+              setIsExporting(false);
+              showToast('Guion descargado correctamente', 'success');
+            }, 500);
+          } catch (err) {
+            console.error('Error al generar el archivo:', err);
             setIsExporting(false);
-            showToast('Video exportado con éxito (Simulado)', 'success');
-          }, 500);
+            showToast('Error al generar la descarga', 'error');
+          }
           return 100;
         }
-        return prev + 5;
+        return prev + 10;
       });
-    }, 100);
+    }, 150);
   };
   const transformer = useDragTransform(designer.canvas.updateExtraElement, scale, {
     setLogoPos: designer.design.setLogoPos,
@@ -236,8 +279,11 @@ export default function SocialGenerator() {
     try {
       const result = await blogService.generateSocialContent(selectedPost.id, genType);
       
+      console.log(`[GynSys] AI Result (${genType}):`, result);
+
       // Clean previous content and set new one
       setGeneratedContent(result);
+      setCurrentVideoSlide(0);
       setActiveTab(genType === 'video' ? 'video' : 'carousel');
       
       if (genType === 'video') {
@@ -893,7 +939,10 @@ export default function SocialGenerator() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Vista Previa de Video */}
                   <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-gray-900 rounded-[32px] aspect-[9/16] max-h-[600px] mx-auto overflow-hidden relative shadow-2xl border-8 border-gray-800 group">
+                    <div 
+                      key={generatedContent.video_slides?.length + (generatedContent.music_suggestion || '')}
+                      className="bg-gray-900 rounded-[32px] aspect-[9/16] max-h-[600px] mx-auto overflow-hidden relative shadow-2xl border-8 border-gray-800 group"
+                    >
                       {/* Simulación de Video pasando solo */}
                       <div className="absolute inset-0 flex items-center justify-center p-10 text-center">
                         <div key={currentVideoSlide} className="animate-fadeIn space-y-6">
