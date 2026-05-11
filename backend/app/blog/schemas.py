@@ -113,6 +113,15 @@ class AIGenerationResponse(BaseModel):
     summary: str
     generated_content: str
 
+class SocialContentScene(BaseModel):
+    time: str
+    text: str
+    audio: str
+
+class SocialContentSlide(BaseModel):
+    title: str
+    content: str
+
 class SocialContentStructure(BaseModel):
     problem: str
     solution: str
