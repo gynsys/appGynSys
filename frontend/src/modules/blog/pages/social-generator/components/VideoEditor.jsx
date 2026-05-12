@@ -360,7 +360,6 @@ export const VideoEditor = ({
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 };
