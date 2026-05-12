@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { FiCpu, FiInstagram, FiImage, FiZap, FiFolder, FiChevronDown } from 'react-icons/fi';
+import { ProjectGrid } from './ProjectGrid';
 
 export const ArticleSelector = ({
   posts,
@@ -11,7 +12,11 @@ export const ArticleSelector = ({
   setShowProjects,
   handleGenerate,
   handleTestDesign,
-  generating
+  generating,
+  projects,
+  onLoadProject,
+  onDeleteProject,
+  activeProjectId
 }) => {
   return (
     <div className="space-y-6">
@@ -46,6 +51,17 @@ export const ArticleSelector = ({
               </div>
               <FiChevronDown className={`text-indigo-400 transition-transform ${showProjects ? 'rotate-180' : ''}`} />
             </button>
+
+            {/* Proyectos desplegables aquí para correcto posicionamiento absolute */}
+            {showProjects && (
+              <ProjectGrid 
+                projects={projects}
+                onLoad={onLoadProject}
+                onDelete={onDeleteProject}
+                activeProjectId={activeProjectId}
+                variant="compact"
+              />
+            )}
           </div>
         </div>
       </div>

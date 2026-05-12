@@ -313,19 +313,11 @@ export default function SocialGenerator() {
             setShowProjects={setShowProjects} handleGenerate={handleGenerate}
             handleTestDesign={() => { setActiveTab('carousel'); setGeneratedContent({ type: 'carousel', slides: [{ title: 'Prueba', content: 'Contenido' }] }); }}
             generating={generating}
+            projects={designer.canvas.projects}
+            onLoadProject={(p) => { handleLoadProject(p); setShowProjects(false); }}
+            onDeleteProject={designer.canvas.deleteProject}
+            activeProjectId={activeProjectId}
           />
-
-          {showProjects && (
-            <div className="animate-fadeIn">
-              <ProjectGrid 
-                projects={designer.canvas.projects} 
-                onLoad={(p) => { handleLoadProject(p); setShowProjects(false); }}
-                onDelete={designer.canvas.deleteProject}
-                activeProjectId={activeProjectId}
-                variant="compact"
-              />
-            </div>
-          )}
 
           {/* RESTAURACIÓN DEL LAYOUT ORIGINAL DE TABS */}
           {generatedContent && (
