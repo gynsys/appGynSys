@@ -218,42 +218,32 @@ export default function SocialGenerator() {
   };
 
   const handleSaveProject = async () => {
-    if (activeProjectId && activeProjectName) {
-      setSaving(true);
-      try {
-        const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-        const contentToSave = { ...generatedContent, videoSettings };
-        const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
-        if (ok) {
-          showToast(`"${activeProjectName}" guardado con éxito`, 'success');
-        }
-      } catch (error) {
-        showToast('Error al guardar el proyecto', 'error');
-      } finally {
-        setSaving(false);
-      }
-    } else {
-      handleSaveProjectAs();
-    }
-  };
+    let name = activeProjectName;
+    const isNewProject = !activeProjectId || !activeProjectName;
 
-  const handleSaveProjectAs = async () => {
-    const name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
-    if (name) {
-      setSaving(true);
-      try {
-        const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-        const contentToSave = { ...generatedContent, videoSettings };
-        const ok = await designer.canvas.saveProject(name, contentToSave);
-        if (ok) {
-          setActiveProjectName(name);
-          showToast(`"${name}" guardado con éxito`, 'success');
-        }
-      } catch (error) {
-        showToast('Error al guardar el proyecto', 'error');
-      } finally {
-        setSaving(false);
+    if (isNewProject) {
+      name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
+      if (!name) return; // User cancelled
+    }
+
+    setSaving(true);
+    try {
+      const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
+      const contentToSave = { ...generatedContent, videoSettings };
+      const ok = await designer.canvas.saveProject(name, contentToSave, activeProjectId);
+      
+      if (ok) {
+        if (isNewProject) setActiveProjectName(name);
+        showToast(`"${name}" guardado con éxito`, 'success');
+      } else {
+        showToast('No se pudo guardar el proyecto', 'error');
       }
+    } catch (error) {
+      console.error('[GynSys] Error saving project:', error);
+      showToast('Error crítico al guardar el proyecto', 'error');
+    } finally {
+      // Small timeout to ensure the UI updates correctly and avoid "flashing"
+      setTimeout(() => setSaving(false), 300);
     }
   };
 
