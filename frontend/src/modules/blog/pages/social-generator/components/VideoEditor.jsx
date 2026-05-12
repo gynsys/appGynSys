@@ -461,7 +461,6 @@ export const VideoEditor = ({
                     <span>Lento (10s)</span>
                   </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
