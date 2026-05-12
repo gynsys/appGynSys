@@ -171,10 +171,10 @@ export default function SocialGenerator() {
   const canvasRef = React.useRef(null);
 
   const AUDIO_TRACKS = {
-    'Soft': 'https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3',
-    'Inspirational': 'https://assets.mixkit.co/music/preview/mixkit-sun-and-reggae-585.mp3',
-    'Medical': 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
-    'Dynamic': 'https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3'
+    'Soft': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3',
+    'Inspirational': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Motion/Chad_Crouch_-_Algorithms.mp3',
+    'Medical': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Universal_Law/Ketsa_-_02_-_Causal_Factors.mp3',
+    'Dynamic': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes_Music/Corporate_Motivational_Royalty_Free_Music/Scott_Holmes_Music_-_04_-_Corporate_Motivational_3.mp3'
   };
 
   const getActiveAudioSrc = () => {
@@ -1186,8 +1186,17 @@ export default function SocialGenerator() {
                       </div>
                       
                       {/* Hidden Audio Elements */}
-                      <audio ref={audioRef} loop crossOrigin="anonymous" />
-                      <audio ref={previewAudioRef} crossOrigin="anonymous" />
+                      <audio 
+                        ref={audioRef} 
+                        loop 
+                        crossOrigin="anonymous" 
+                        onError={() => showToast('Error al cargar audio principal. Prueba con uno externo.', 'error')}
+                      />
+                      <audio 
+                        ref={previewAudioRef} 
+                        crossOrigin="anonymous" 
+                        onError={() => showToast('Error en previsualización de audio.', 'error')}
+                      />
                     </div>
 
                     {/* Editor de Textos de Video */}
