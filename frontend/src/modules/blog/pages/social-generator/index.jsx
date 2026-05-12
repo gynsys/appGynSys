@@ -158,12 +158,19 @@ export default function SocialGenerator() {
     setGenerating(true);
     try {
       const result = await blogService.generateSocialContent(selectedPost.id, genType);
+      console.log(`[GynSys] AI Result (${genType}):`, result);
+      
       setGeneratedContent(result);
       setCurrentVideoSlide(0);
-      // REPARACIÓN: Soporte para 'reel' o 'video'
-      setActiveTab(genType === 'carousel' ? 'carousel' : 'video');
+      // REPARACIÓN: Soporte robusto para 'reel', 'video' o 'carousel'
+      if (genType === 'carousel') {
+        setActiveTab('carousel');
+      } else {
+        setActiveTab('video');
+      }
       showToast(`${genType === 'carousel' ? 'Carrusel' : 'Video'} generado con éxito`, 'success');
     } catch (error) {
+      console.error('Error generating content:', error);
       showToast('Error al generar contenido con IA', 'error');
     } finally {
       setGenerating(false);
