@@ -152,7 +152,11 @@ export const useSlideDesigner = () => {
     }
     
     try {
-      await blogService.saveCarouselProject(projectData);
+      if (projectId) {
+        await blogService.updateCarouselProject(projectId, projectData);
+      } else {
+        await blogService.saveCarouselProject(projectData);
+      }
       await fetchProjects();
       return true;
     } catch (error) {

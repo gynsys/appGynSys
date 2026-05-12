@@ -218,31 +218,52 @@ export default function SocialGenerator() {
   };
 
   const handleSaveProject = async () => {
-    let name = activeProjectName;
-    const isNewProject = !activeProjectId || !activeProjectName;
-
-    if (isNewProject) {
-      name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
-      if (!name) return; // User cancelled
+    if (!activeProjectId || !activeProjectName) {
+      return handleSaveProjectAs();
     }
 
     setSaving(true);
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
       const contentToSave = { ...generatedContent, videoSettings };
-      const ok = await designer.canvas.saveProject(name, contentToSave, activeProjectId);
+      const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
       
       if (ok) {
-        if (isNewProject) setActiveProjectName(name);
-        showToast(`"${name}" guardado con éxito`, 'success');
+        showToast(`"${activeProjectName}" actualizado con éxito`, 'success');
       } else {
-        showToast('No se pudo guardar el proyecto', 'error');
+        showToast('No se pudo actualizar el proyecto', 'error');
       }
     } catch (error) {
-      console.error('[GynSys] Error saving project:', error);
-      showToast('Error crítico al guardar el proyecto', 'error');
+      console.error('[GynSys] Error updating project:', error);
+      showToast('Error crítico al actualizar el proyecto', 'error');
     } finally {
-      // Small timeout to ensure the UI updates correctly and avoid "flashing"
+      setTimeout(() => setSaving(false), 300);
+    }
+  };
+
+  const handleSaveProjectAs = async () => {
+    const name = prompt('Nombre del nuevo proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
+    if (!name) return;
+
+    setSaving(true);
+    try {
+      const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
+      const contentToSave = { ...generatedContent, videoSettings };
+      // Pasamos null como ID para forzar la creación de un nuevo proyecto
+      const ok = await designer.canvas.saveProject(name, contentToSave, null);
+      
+      if (ok) {
+        setActiveProjectName(name);
+        // El ID se actualizará en la próxima carga de proyectos o mediante el retorno de la API si lo implementamos,
+        // pero por ahora forzamos a que el usuario sepa que es uno nuevo.
+        showToast(`Nuevo proyecto "${name}" creado con éxito`, 'success');
+      } else {
+        showToast('No se pudo crear el nuevo proyecto', 'error');
+      }
+    } catch (error) {
+      console.error('[GynSys] Error saving new project:', error);
+      showToast('Error crítico al crear el proyecto', 'error');
+    } finally {
       setTimeout(() => setSaving(false), 300);
     }
   };
@@ -372,7 +393,14 @@ export default function SocialGenerator() {
                   className="px-8 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-pink-200 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
                 >
                   {saving ? <FiLoader className="animate-spin" /> : <FiSave />} 
-                  {saving ? 'Guardando...' : 'Guardar Proyecto'}
+                  {saving ? 'Guardar' : 'Guardar'}
+                </button>
+                <button 
+                  onClick={handleSaveProjectAs} 
+                  disabled={saving}
+                  className="px-8 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                >
+                  <FiSave /> Guardar como...
                 </button>
               </div>
             </div>
