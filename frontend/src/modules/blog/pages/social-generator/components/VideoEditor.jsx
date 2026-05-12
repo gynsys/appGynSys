@@ -348,7 +348,7 @@ export const VideoEditor = ({
 
                       <div className="flex justify-between items-center px-1">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-gray-400'}`}>
-                          {slideText.split(' ').filter(Boolean).length} / 12 PALABRAS
+                          {slideText.split(' ').filter(Boolean).length} {'/ 12 PALABRAS'}
                         </p>
                         {slide.image && <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1"><FiImage size={10} /> Imagen Cargada</span>}
                       </div>
