@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AUDIO_TRACKS } from '../constants';
-import { blogService } from '../../services/blogService';
+import { blogService } from '../../../services/blogService';
 
 export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) => {
   const [selectedAudio, setSelectedAudio] = useState('Medical');

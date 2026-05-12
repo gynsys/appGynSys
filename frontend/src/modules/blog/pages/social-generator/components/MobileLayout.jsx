@@ -63,7 +63,11 @@ export const MobileLayout = ({
   exportProgress,
   handleExportVideo,
   handleAddImageToVideoSlide,
-  enterMobileFullscreen
+  enterMobileFullscreen,
+  userAudios = [],
+  loadingAudios = false,
+  handleUploadAudio,
+  handleDeleteAudio
 }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20">
@@ -220,6 +224,8 @@ export const MobileLayout = ({
                 isExporting={isExporting} exportProgress={exportProgress}
                 handleExportVideo={handleExportVideo} doctor={doctor}
                 showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+                userAudios={userAudios} loadingAudios={loadingAudios}
+                handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
               />
             ) : (
               <div className="w-full flex flex-col items-center justify-center space-y-4 pt-6">
