@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export const useVideoExport = (generatedContent, videoStyles, slideDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
+export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
 
@@ -70,62 +70,55 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
       recorder.start();
       
       const fps = 30;
-      const durationPerSlide = slideDuration; // segundos
-      const transitionDuration = 0.5; // segundos de fade
-      const framesPerSlide = fps * durationPerSlide;
+      const framesPerSlide = fps * slideDuration;
       const transitionFrames = fps * transitionDuration;
 
       for (let i = 0; i < scenes.length; i++) {
         for (let f = 0; f < framesPerSlide; f++) {
-          // Determinar opacidad para la transición
-          let opacity = 1;
+          let progress = 1; // 0 to 1
           if (f < transitionFrames && i > 0) {
-            opacity = f / transitionFrames; // Fade in
+            progress = f / transitionFrames; // Transición entrando
           }
           
-          // Limpiar Canvas
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          // Fondo
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = videoStyles.bgColor || videoStyles.backgroundColor || '#000000';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // Imagen de fondo (con opacidad de escena)
-          ctx.globalAlpha = opacity;
-          if (loadedImages[i]) {
-            ctx.drawImage(loadedImages[i], 0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+
+          // Lógica de Transición
+          if (f < transitionFrames && i > 0) {
+            const prevIndex = i - 1;
+            const exitProgress = 1 - progress;
+
+            // Dibujar la escena anterior (Saliendo)
+            ctx.save();
+            if (transitionType === 'fade') ctx.globalAlpha = exitProgress;
+            else if (transitionType === 'slide') ctx.translate(-progress * canvas.width, 0);
+            else if (transitionType === 'zoom') {
+               ctx.translate(canvas.width/2, canvas.height/2);
+               ctx.scale(1 + progress, 1 + progress);
+               ctx.translate(-canvas.width/2, -canvas.height/2);
+               ctx.globalAlpha = exitProgress;
+            }
+            drawScene(ctx, scenes[prevIndex], loadedImages[prevIndex], videoStyles, canvas);
+            ctx.restore();
+
+            // Dibujar la escena actual (Entrando)
+            ctx.save();
+            if (transitionType === 'fade') ctx.globalAlpha = progress;
+            else if (transitionType === 'slide') ctx.translate(canvas.width - progress * canvas.width, 0);
+            else if (transitionType === 'zoom') {
+               ctx.translate(canvas.width/2, canvas.height/2);
+               ctx.scale(progress, progress);
+               ctx.translate(-canvas.width/2, -canvas.height/2);
+               ctx.globalAlpha = progress;
+            }
+            drawScene(ctx, scenes[i], loadedImages[i], videoStyles, canvas);
+            ctx.restore();
+          } else {
+            // Escena estática
+            drawScene(ctx, scenes[i], loadedImages[i], videoStyles, canvas);
           }
 
-          // Dibujar Texto
-          ctx.fillStyle = videoStyles.textColor || '#ffffff';
-          ctx.font = `bold ${videoStyles.fontSize || 40}px ${videoStyles.fontFamily || 'sans-serif'}`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          
-          const slideText = scenes[i].text || scenes[i].content || scenes[i].title || '';
-          const words = slideText.split(' ').filter(Boolean);
-          let line = '';
-          let lines = [];
-          
-          for (let n = 0; n < words.length; n++) {
-            let testLine = line + words[n] + ' ';
-            if (ctx.measureText(testLine).width > 600 && n > 0) {
-              lines.push(line);
-              line = words[n] + ' ';
-            } else { line = testLine; }
-          }
-          lines.push(line);
-          
-          let y = (canvas.height / 2) - ((lines.length - 1) * (videoStyles.fontSize || 40) * 0.6);
-          lines.forEach(l => {
-            ctx.fillText(l, canvas.width / 2, y);
-            y += (videoStyles.fontSize || 40) * 1.2;
-          });
-
-          // Esperar un frame
+          ctx.restore();
           await new Promise(r => setTimeout(r, 1000 / fps));
         }
         setExportProgress(Math.round(((i + 1) / scenes.length) * 100));
@@ -136,6 +129,52 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
       console.error(err);
       setIsExporting(false);
       showToast('Error al renderizar el video', 'error');
+    }
+  };
+
+  const drawScene = (ctx, slide, image, styles, canvas) => {
+    // Fondo
+    ctx.fillStyle = styles.bgColor || styles.backgroundColor || '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Imagen
+    if (image) {
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Texto
+    ctx.fillStyle = styles.textColor || '#ffffff';
+    ctx.font = `bold ${styles.fontSize || 40}px ${styles.fontFamily || 'sans-serif'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const slideText = slide.text || slide.content || slide.title || '';
+    const words = slideText.split(' ').filter(Boolean);
+    let line = '';
+    let lines = [];
+    
+    for (let n = 0; n < words.length; n++) {
+      let testLine = line + words[n] + ' ';
+      if (ctx.measureText(testLine).width > 600 && n > 0) {
+        lines.push(line);
+        line = words[n] + ' ';
+      } else { line = testLine; }
+    }
+    lines.push(line);
+    
+    let y = (canvas.height / 2) - ((lines.length - 1) * (styles.fontSize || 40) * 0.6);
+    lines.forEach(l => {
+      ctx.fillText(l, canvas.width / 2, y);
+      y += (styles.fontSize || 40) * 1.2;
+    });
+
+    // Texto Secundario (Overlay)
+    if (slide.overlayText) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = `500 ${Math.max(16, (styles.fontSize || 40) * 0.5)}px ${styles.fontFamily || 'sans-serif'}`;
+      ctx.fillText(slide.overlayText, canvas.width / 2, y + 20);
     }
   };
 

@@ -50,6 +50,8 @@ export default function SocialGenerator() {
   const [scale, setScale] = useState(1);
   const [videoStyles, setVideoStyles] = useState(DEFAULT_VIDEO_STYLES);
   const [slideDuration, setSlideDuration] = useState(3);
+  const [transitionType, setTransitionType] = useState('fade');
+  const [transitionDuration, setTransitionDuration] = useState(0.5);
 
   // --- Refs ---
   const editorWrapperRef = useRef(null);
@@ -73,7 +75,7 @@ export default function SocialGenerator() {
   } = useAudioPlayback(activeTab, isPlaying, setIsPlaying, showToast);
 
   const { isExporting, exportProgress, handleExportVideo } = useVideoExport(
-    generatedContent, videoStyles, slideDuration, selectedPost, audioRef, getActiveAudioSrc, showToast
+    generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast
   );
 
   const { isMobileFullscreen, enterMobileFullscreen, exitMobileFullscreen } = useMobileFullscreen(
@@ -373,6 +375,8 @@ export default function SocialGenerator() {
                   generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
                   videoStyles={videoStyles} setVideoStyles={setVideoStyles}
                   slideDuration={slideDuration} setSlideDuration={setSlideDuration}
+                  transitionType={transitionType} setTransitionType={setTransitionType}
+                  transitionDuration={transitionDuration} setTransitionDuration={setTransitionDuration}
                   isPlaying={isPlaying} setIsPlaying={setIsPlaying}
                   currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
                   selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}

@@ -12,6 +12,10 @@ export const VideoEditor = ({
   setVideoStyles,
   slideDuration, 
   setSlideDuration,
+  transitionType = 'fade',
+  setTransitionType,
+  transitionDuration = 0.5,
+  setTransitionDuration,
   isPlaying, 
   setIsPlaying,
   currentVideoSlide,
@@ -94,7 +98,7 @@ export const VideoEditor = ({
                     alt="Scene background"
                   />
                 )}
-                <div className="relative z-10 p-10 text-center w-full">
+                 <div className="relative z-10 p-10 text-center w-full space-y-4">
                   <p 
                     className="font-black leading-tight animate-slideUp"
                     style={{ 
@@ -105,6 +109,17 @@ export const VideoEditor = ({
                   >
                     {scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || ''}
                   </p>
+                  {scenes[currentVideoSlide]?.overlayText && (
+                    <p 
+                      className="text-white/80 font-medium animate-fadeIn"
+                      style={{ 
+                        fontFamily: videoStyles.fontFamily,
+                        fontSize: `${Math.max(14, videoStyles.fontSize * 0.4)}px`
+                      }}
+                    >
+                      {scenes[currentVideoSlide].overlayText}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -133,13 +148,36 @@ export const VideoEditor = ({
                 </div>
               </div>
               
-              {/* Progress Bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+              {/* Progress Bar (Interactive Seeker) */}
+              <div className="absolute bottom-0 left-0 right-0 h-2 bg-white/10 cursor-pointer group/seeker"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const percent = x / rect.width;
+                  const newSlide = Math.floor(percent * scenes.length);
+                  setCurrentVideoSlide(Math.min(newSlide, scenes.length - 1));
+                  setIsPlaying(false);
+                }}
+              >
                 <div 
-                  className="h-full bg-white transition-all duration-300"
-                  style={{ width: `${((currentVideoSlide + 1) / scenes.length) * 100}%` }}
-                ></div>
+                  className="h-full bg-indigo-500 transition-all duration-100 relative"
+                  style={{ width: `${((currentVideoSlide + (isPlaying ? 0.5 : 0)) / scenes.length) * 100}%` }}
+                >
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg scale-0 group-hover/seeker:scale-100 transition-transform"></div>
+                </div>
               </div>
+            </div>
+
+            {/* Quick Navigation Dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              {scenes.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setCurrentVideoSlide(i); setIsPlaying(false); }}
+                  className={`w-2 h-2 rounded-full transition-all ${currentVideoSlide === i ? 'bg-indigo-600 w-6' : 'bg-gray-200 dark:bg-gray-700'}`}
+                />
+              ))}
+            </div>
 
               {/* Hidden Audio Elements */}
               <audio 
@@ -185,22 +223,32 @@ export const VideoEditor = ({
                     return (
                       <div key={i} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                         <span className="text-[10px] font-black bg-white dark:bg-gray-800 w-6 h-6 flex items-center justify-center rounded-lg shadow-sm dark:text-white">{i+1}</span>
-                        <div className="flex-1">
-                          <input 
-                            type="text" 
+                        <div className="flex-1 space-y-2">
+                          <textarea 
                             value={slideText} 
                             onChange={(e) => {
                               const newSlides = [...scenes];
-                              // Actualizar el campo que ya existe o por defecto 'text'
                               if (slide.content) newSlides[i].content = e.target.value;
                               else if (slide.title) newSlides[i].title = e.target.value;
                               else newSlides[i].text = e.target.value;
-                              
                               setGeneratedContent({...generatedContent, video_slides: newSlides});
                             }}
-                            className="w-full bg-transparent font-bold text-gray-800 dark:text-white outline-none"
+                            rows={2}
+                            className="w-full bg-gray-50 dark:bg-gray-900/80 rounded-xl p-3 text-xs font-bold text-gray-800 dark:text-white border-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                            placeholder="Texto principal..."
                           />
-                          <p className={`text-[9px] mt-1 font-bold uppercase ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-green-500'}`}>
+                          <input 
+                            type="text"
+                            value={slide.overlayText || ''}
+                            onChange={(e) => {
+                              const newSlides = [...scenes];
+                              newSlides[i].overlayText = e.target.value;
+                              setGeneratedContent({...generatedContent, video_slides: newSlides});
+                            }}
+                            className="w-full bg-indigo-50/30 dark:bg-indigo-900/20 border border-indigo-100/30 dark:border-indigo-800/20 rounded-lg px-3 py-2 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 placeholder:text-indigo-300 outline-none focus:border-indigo-300 transition-all"
+                            placeholder="Añadir texto secundario o subtítulo..."
+                          />
+                          <p className={`text-[9px] font-bold uppercase ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-green-500'}`}>
                             {slideText.split(' ').filter(Boolean).length} palabras {slideText.split(' ').filter(Boolean).length > 12 && '(Demasiado largo para Reel)'}
                           </p>
                         </div>
@@ -260,7 +308,11 @@ export const VideoEditor = ({
                       <option value="serif">Serif (Clásico)</option>
                       <option value="monospace">Monospace (Tech)</option>
                       <option value="Manrope">Manrope (GynSys)</option>
-                      <option value="Impact">Impact (Bold)</option>
+                      <option value="Montserrat">Montserrat (Moderno)</option>
+                      <option value="Playfair Display">Playfair (Elegante)</option>
+                      <option value="Bebas Neue">Bebas Neue (Impacto)</option>
+                      <option value="Outfit">Outfit (Geométrico)</option>
+                      <option value="Impact">Impact (Clásico)</option>
                     </select>
                   </div>
 
@@ -350,6 +402,42 @@ export const VideoEditor = ({
                         }}
                       />
                     </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transitions Control */}
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <FiZap className="text-indigo-600" />
+                  <h4 className="font-black uppercase text-xs tracking-widest text-gray-900 dark:text-white">Transiciones</h4>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Tipo de Transición</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['fade', 'slide', 'zoom'].map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setTransitionType(type)}
+                          className={`py-2 text-[10px] font-black uppercase rounded-xl border transition-all ${transitionType === type ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400 hover:border-indigo-200'}`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Duración Transición</label>
+                      <span className="text-[10px] font-black text-indigo-600">{transitionDuration}s</span>
+                    </div>
+                    <input 
+                      type="range" min="0.1" max="2" step="0.1"
+                      value={transitionDuration}
+                      onChange={(e) => setTransitionDuration(parseFloat(e.target.value))}
+                      className="w-full accent-indigo-600"
+                    />
                   </div>
                 </div>
               </div>
