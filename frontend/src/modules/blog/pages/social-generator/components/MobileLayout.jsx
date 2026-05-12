@@ -7,6 +7,8 @@ import {
 import { SlideCanvas } from './SlideCanvas';
 import { MobileToolbar } from './MobileToolbar';
 
+import { VideoEditor } from './VideoEditor';
+
 export const MobileLayout = ({
   posts,
   selectedPost,
@@ -38,10 +40,32 @@ export const MobileLayout = ({
   handleSaveProject,
   handleSaveProjectAs,
   handleSaveTemplate,
-  activeProjectId
+  activeProjectId,
+  activeTab,
+  setActiveTab,
+  videoStyles,
+  setVideoStyles,
+  slideDuration,
+  setSlideDuration,
+  isPlaying,
+  setIsPlaying,
+  currentVideoSlide,
+  setCurrentVideoSlide,
+  selectedAudio,
+  setSelectedAudio,
+  prelisteningTrack,
+  setPrelisteningTrack,
+  customAudioUrl,
+  setCustomAudioUrl,
+  audioRef,
+  previewAudioRef,
+  isExporting,
+  exportProgress,
+  handleExportVideo,
+  handleAddImageToVideoSlide
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20">
       {/* Compact Mobile Header */}
       <div className="p-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between mb-3">
@@ -148,10 +172,30 @@ export const MobileLayout = ({
         </div>
       )}
 
+      {/* Tab Switcher for Mobile */}
+      {generatedContent && (
+        <div className="px-4 mt-4">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
+            <button 
+              onClick={() => setActiveTab('video')} 
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'video' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400'}`}
+            >
+              Reel
+            </button>
+            <button 
+              onClick={() => setActiveTab('carousel')} 
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400'}`}
+            >
+              Carrusel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Main Area */}
-      <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-hidden">
+      <div className="flex-1 flex flex-col p-4 overflow-y-auto">
         {!generatedContent ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border-2 border-dashed border-gray-100 dark:border-gray-700 text-center p-10">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border-2 border-dashed border-gray-100 dark:border-gray-700 text-center p-10 mt-6">
             <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-center text-gray-200 dark:text-gray-700 mb-6">
               <FiZap size={40} />
             </div>
@@ -160,40 +204,37 @@ export const MobileLayout = ({
             </h3>
           </div>
         ) : (
-          <div className="w-full flex flex-col items-center justify-center space-y-4 animate-fadeIn">
-            {/* Active Project Info */}
-            {activeProjectName && (
-              <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 px-5 py-3 rounded-2xl border border-indigo-100 dark:border-indigo-800 flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <FiFolder className="text-indigo-500 flex-shrink-0" size={16} />
-                  <span className="text-[11px] font-black text-indigo-600 uppercase tracking-wide truncate">{activeProjectName}</span>
+          <div className="w-full flex flex-col space-y-4 animate-fadeIn">
+            {activeTab === 'video' ? (
+              <VideoEditor 
+                generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
+                videoStyles={videoStyles} setVideoStyles={setVideoStyles}
+                slideDuration={slideDuration} setSlideDuration={setSlideDuration}
+                isPlaying={isPlaying} setIsPlaying={setIsPlaying}
+                currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
+                selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+                prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
+                customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
+                audioRef={audioRef} previewAudioRef={previewAudioRef}
+                isExporting={isExporting} exportProgress={exportProgress}
+                handleExportVideo={handleExportVideo} doctor={doctor}
+                showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+              />
+            ) : (
+              <div className="w-full flex flex-col items-center justify-center space-y-4 pt-6">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 border border-gray-100 dark:border-gray-700">
+                  <div className="w-[300px] h-[300px] bg-gray-50 dark:bg-gray-900 rounded-2xl flex flex-col items-center justify-center text-center p-6" onClick={enterMobileFullscreen}>
+                      <FiMaximize2 className="text-indigo-200 mb-3" size={40} />
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Toca para editar carrusel</p>
+                  </div>
                 </div>
-                <span className="text-[9px] font-bold text-indigo-400 flex-shrink-0 ml-2">{generatedContent?.slides?.length || 0} slides</span>
+                
+                <div className="flex gap-3 w-full">
+                  <button onClick={() => setPreviewIndex(0)} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg"><FiPlay /> Previa</button>
+                  <button onClick={handleSaveProject} className="flex-1 py-4 bg-white dark:bg-gray-800 text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm border border-indigo-100 flex items-center justify-center gap-2"><FiSave /> Guardar</button>
+                </div>
               </div>
             )}
-
-            {/* Mobile Editor Canvas Placeholder (Real one is in Fullscreen) */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 border border-gray-100 dark:border-gray-700">
-               <div className="w-[300px] h-[300px] bg-gray-50 dark:bg-gray-900 rounded-2xl flex flex-col items-center justify-center text-center p-6">
-                  <FiMaximize2 className="text-indigo-200 mb-3" size={40} />
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Editor a pantalla completa activo</p>
-               </div>
-            </div>
-
-            <div className="flex gap-3 w-full">
-               <button 
-                onClick={() => setPreviewIndex(0)}
-                className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
-               >
-                 <FiPlay /> Previa
-               </button>
-               <button 
-                onClick={handleSaveProject}
-                className="flex-1 py-4 bg-white dark:bg-gray-800 text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm border border-indigo-100 dark:border-gray-700 flex items-center justify-center gap-2"
-               >
-                 <FiSave /> Guardar
-               </button>
-            </div>
           </div>
         )}
       </div>

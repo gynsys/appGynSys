@@ -300,6 +300,17 @@ export default function SocialGenerator() {
         handleConvertToVideo={handleConvertToVideo} handleSaveProject={handleSaveProject}
         handleSaveProjectAs={handleSaveProjectAs} handleSaveTemplate={() => {}}
         activeProjectId={activeProjectId} exporter={exporter}
+        activeTab={activeTab} setActiveTab={setActiveTab}
+        videoStyles={videoStyles} setVideoStyles={setVideoStyles}
+        slideDuration={slideDuration} setSlideDuration={setSlideDuration}
+        isPlaying={isPlaying} setIsPlaying={setIsPlaying}
+        currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
+        selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+        prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
+        customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
+        audioRef={audioRef} previewAudioRef={previewAudioRef}
+        isExporting={isExporting} exportProgress={exportProgress}
+        handleExportVideo={handleExportVideo} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
       />
     );
   }
