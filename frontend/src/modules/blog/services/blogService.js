@@ -83,7 +83,7 @@ export const blogService = {
   },
 
   deleteCarouselProject: async (projectId) => {
-    const response = await api.delete(`/blog/carousels/${projectId}`)
+    const response = await api.delete(`/blog/carousels/${projectId}/`)
     return response.data
   }
 }

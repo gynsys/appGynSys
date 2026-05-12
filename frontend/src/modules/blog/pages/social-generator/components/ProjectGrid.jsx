@@ -9,6 +9,18 @@ export const ProjectGrid = ({
   variant = 'full', 
   activeProjectId 
 }) => {
+  const [isDeleting, setIsDeleting] = React.useState(null);
+
+  const handleDelete = async (p) => {
+    if (window.confirm(`¿Eliminar el proyecto "${p.name}" permanentemente?`)) {
+      setIsDeleting(p.id);
+      try {
+        await onDelete(p.id, p.is_backend);
+      } finally {
+        setIsDeleting(null);
+      }
+    }
+  };
   if (!projects || projects.length === 0) {
     return (
       <div className={`text-center py-12 text-gray-400 italic ${variant === 'compact' ? 'px-6' : ''}`}>
@@ -42,16 +54,19 @@ export const ProjectGrid = ({
                   {p.is_backend ? 'Nube' : 'Local'}
                 </span>
                 <button 
+                  disabled={isDeleting === p.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm('¿Eliminar este proyecto permanentemente?')) {
-                      onDelete(p.id, p.is_backend);
-                    }
+                    handleDelete(p);
                   }}
-                  className="p-2 text-gray-300 hover:text-red-500 transition-all active:scale-90"
+                  className={`p-2 rounded-lg transition-all ${isDeleting === p.id ? 'opacity-50' : 'hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500'}`}
                   title="Eliminar proyecto"
                 >
-                  <FiTrash2 size={14} />
+                  {isDeleting === p.id ? (
+                    <FiCpu className="animate-spin" size={14} />
+                  ) : (
+                    <FiTrash2 size={14} />
+                  )}
                 </button>
               </div>
             </div>

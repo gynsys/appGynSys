@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DEFAULT_DESIGN } from '../lib/constants';
 import { blogService } from '../../../services/blogService';
+import { toast } from 'react-hot-toast';
 
 const TEMPLATE_STORAGE_KEY = 'gynsys_carousel_templates';
 
@@ -166,20 +167,22 @@ export const useSlideDesigner = () => {
   };
 
   const deleteProject = async (id, isBackend) => {
-    if (isBackend) {
-      try {
+    try {
+      if (isBackend) {
         await blogService.deleteCarouselProject(id);
-        await fetchProjects();
-        return true;
-      } catch (error) {
-        console.error('Error deleting project:', error);
-        return false;
+      } else {
+        const updated = projects.filter(p => p.id !== id);
+        setProjects(updated);
+        localStorage.setItem('gynsys_carousel_projects', JSON.stringify(updated));
       }
-    } else {
-      const updated = projects.filter(p => p.id !== id);
-      setProjects(updated);
-      localStorage.setItem('gynsys_carousel_projects', JSON.stringify(updated));
+      await fetchProjects();
+      toast.success('Proyecto eliminado correctamente');
       return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      const msg = error.response?.data?.detail || 'No se pudo eliminar el proyecto';
+      toast.error(msg);
+      return false;
     }
   };
 
