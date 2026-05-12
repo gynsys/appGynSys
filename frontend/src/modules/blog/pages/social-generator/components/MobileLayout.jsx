@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FiCpu, FiFolder, FiLoader, FiInstagram, FiImage, FiZap, FiX, FiTrash2, 
-  FiChevronLeft, FiChevronRight, FiBold, FiItalic, FiType, FiLayers, FiDownload, FiSave, FiCopy
+  FiChevronLeft, FiChevronRight, FiBold, FiItalic, FiType, FiLayers, FiDownload, FiSave, FiCopy, FiMaximize2, FiPlay
 } from 'react-icons/fi';
 import { SlideCanvas } from './SlideCanvas';
 import { MobileToolbar } from './MobileToolbar';
