@@ -212,9 +212,11 @@ export default function SocialGenerator() {
   useEffect(() => {
     if (previewAudioRef.current) {
       if (prelisteningTrack) {
+        // Al pre-escuchar, pausamos el video principal para no mezclar sonidos
+        setIsPlaying(false);
         previewAudioRef.current.src = prelisteningTrack === 'Custom' ? customAudioUrl : AUDIO_TRACKS[prelisteningTrack];
         previewAudioRef.current.load();
-        previewAudioRef.current.play();
+        previewAudioRef.current.play().catch(e => console.log("Error in preview audio:", e));
       } else {
         previewAudioRef.current.pause();
       }
@@ -238,6 +240,11 @@ export default function SocialGenerator() {
       let combinedStream = videoStream;
 
       if (audioRef.current) {
+        audioRef.current.src = getActiveAudioSrc();
+        audioRef.current.load();
+        await new Promise(resolve => {
+            audioRef.current.oncanplaythrough = resolve;
+        });
         audioRef.current.currentTime = 0;
         audioRef.current.play();
         const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
@@ -1061,7 +1068,10 @@ export default function SocialGenerator() {
                       className="bg-gray-900 rounded-[32px] aspect-[9/16] max-h-[600px] mx-auto overflow-hidden relative shadow-2xl border-8 border-gray-800 group"
                     >
                       {/* Simulación de Video pasando solo */}
-                      <div className="absolute inset-0 flex items-center justify-center p-10 text-center">
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center p-10 text-center transition-all duration-500"
+                        style={{ backgroundColor: videoStyles.bgColor }}
+                      >
                         {generatedContent.video_slides?.[currentVideoSlide]?.image && (
                           <img 
                             src={generatedContent.video_slides[currentVideoSlide].image} 
@@ -1070,10 +1080,20 @@ export default function SocialGenerator() {
                           />
                         )}
                         <div key={currentVideoSlide} className="animate-fadeIn space-y-6 relative z-10">
-                          <p className="text-white text-3xl font-black leading-tight drop-shadow-lg">
+                          <p 
+                            className="text-3xl font-black leading-tight drop-shadow-lg transition-all"
+                            style={{ 
+                              color: videoStyles.textColor,
+                              fontFamily: videoStyles.fontFamily,
+                              fontSize: `${videoStyles.fontSize / 1.5}px` // Scale down for preview
+                            }}
+                          >
                             {generatedContent.video_slides?.[currentVideoSlide]?.text || "Tu contenido aquí..."}
                           </p>
-                          <div className="w-16 h-1.5 bg-indigo-500 mx-auto rounded-full shadow-lg"></div>
+                          <div 
+                            className="w-16 h-1.5 mx-auto rounded-full shadow-lg"
+                            style={{ backgroundColor: videoStyles.textColor }}
+                          ></div>
                         </div>
                       </div>
 
@@ -1254,8 +1274,14 @@ export default function SocialGenerator() {
                               <div className={`w-2 h-2 rounded-full ${selectedAudio === m.id ? 'bg-white' : 'bg-gray-300 group-hover:bg-indigo-400'}`}></div>
                             </button>
                             <button 
-                              onClick={() => setPrelisteningTrack(prelisteningTrack === m.id ? null : m.id)}
-                              className={`p-4 rounded-2xl border flex items-center justify-center transition-all ${prelisteningTrack === m.id ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-gray-50 border-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                              onClick={() => {
+                                if (prelisteningTrack === m.id) {
+                                  setPrelisteningTrack(null);
+                                } else {
+                                  setPrelisteningTrack(m.id);
+                                }
+                              }}
+                              className={`p-4 rounded-2xl border flex items-center justify-center transition-all ${prelisteningTrack === m.id ? 'bg-amber-500 border-amber-600 text-white shadow-lg animate-pulse' : 'bg-gray-50 border-gray-50 text-gray-400 hover:bg-gray-100'}`}
                             >
                               {prelisteningTrack === m.id ? <FiPause size={14} /> : <FiPlay size={14} />}
                             </button>
