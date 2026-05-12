@@ -156,7 +156,7 @@ export const VideoEditor = ({
                       <div className="flex-1">
                         <input 
                           type="text" 
-                          value={slide.text} 
+                          value={slide.text || ''} 
                           onChange={(e) => {
                             const newSlides = [...scenes];
                             newSlides[i].text = e.target.value;
@@ -164,8 +164,8 @@ export const VideoEditor = ({
                           }}
                           className="w-full bg-transparent font-bold text-gray-800 dark:text-white outline-none"
                         />
-                        <p className={`text-[9px] mt-1 font-bold uppercase ${slide.text.split(' ').length > 12 ? 'text-red-500' : 'text-green-500'}`}>
-                          {slide.text.split(' ').length} palabras {slide.text.split(' ').length > 12 && '(Demasiado largo para Reel)'}
+                        <p className={`text-[9px] mt-1 font-bold uppercase ${(slide.text || '').split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-green-500'}`}>
+                          {(slide.text || '').split(' ').filter(Boolean).length} palabras {(slide.text || '').split(' ').filter(Boolean).length > 12 && '(Demasiado largo para Reel)'}
                         </p>
                       </div>
                       <div className="flex flex-col gap-2">
