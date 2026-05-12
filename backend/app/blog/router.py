@@ -31,7 +31,8 @@ def generate_blog_ai(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        from app.core.logging import logger
+        import logging
+        logger = logging.getLogger(__name__)
         logger.error(f"Error en generación de IA: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno al generar contenido con IA.")
 
@@ -98,7 +99,8 @@ def generate_social_from_content_ai(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        from app.core.logging import logger
+        import logging
+        logger = logging.getLogger(__name__)
         logger.error(f"Error en generación social desde contenido: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error interno al generar contenido social.")
 
@@ -230,7 +232,8 @@ def delete_social_carousel(
     current_user: Doctor = Depends(get_current_user)
 ):
     """Delete a carousel project."""
-    from app.core.logging import logger
+    import logging
+    logger = logging.getLogger(__name__)
     try:
         logger.info(f"Attempting to delete carousel {carousel_id} for doctor {current_user.id}")
         result = crud.delete_carousel(db=db, carousel_id=carousel_id, doctor_id=current_user.id)
