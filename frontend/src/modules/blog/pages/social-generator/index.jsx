@@ -701,6 +701,8 @@ export default function SocialGenerator() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  </div>
                 </div>
                 
                 {selectedPost && (
@@ -1889,10 +1891,11 @@ export default function SocialGenerator() {
                 <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-gray-100 text-gray-600 rounded-2xl font-black hover:bg-gray-200 transition-all uppercase tracking-widest text-xs">Cerrar</button>
                 <button onClick={() => setEditingIndex(null)} className="flex-1 py-4 px-6 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs">Listo</button>
               </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
