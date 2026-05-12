@@ -5,6 +5,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
 
+  const handleExportVideo = async () => {
     const scenes = generatedContent?.video_slides || generatedContent?.slides;
     if (!scenes || !Array.isArray(scenes)) {
       showToast('No hay escenas para exportar', 'error');
