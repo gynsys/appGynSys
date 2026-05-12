@@ -85,5 +85,25 @@ export const blogService = {
   deleteCarouselProject: async (projectId) => {
     const response = await api.delete(`/blog/carousels/${projectId}`)
     return response.data
+  },
+
+  // Social Audios
+  getSocialAudios: async () => {
+    const response = await api.get('/blog/social-audios')
+    return response.data
+  },
+
+  uploadSocialAudio: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/uploads/social-audio', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  },
+
+  deleteSocialAudio: async (audioId) => {
+    const response = await api.delete(`/blog/social-audios/${audioId}`)
+    return response.data
   }
 }

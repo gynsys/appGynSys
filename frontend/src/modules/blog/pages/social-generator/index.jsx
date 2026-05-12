@@ -434,6 +434,8 @@ export default function SocialGenerator() {
                   isExporting={isExporting} exportProgress={exportProgress}
                   handleExportVideo={handleExportVideo} doctor={doctor}
                   showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+                  userAudios={userAudios} loadingAudios={loadingAudios}
+                  handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
                 />
               ) : (
                 <div className="flex gap-6">

@@ -214,6 +214,57 @@ async def upload_video(
     }
 
 
+@router.post("/social-audio", status_code=status.HTTP_201_CREATED)
+async def upload_social_audio(
+    current_user: Annotated[Doctor, Depends(get_current_user)],
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload an audio file for social media content.
+    Saves the file and creates a record in the database.
+    """
+    ALLOWED_AUDIO_TYPES = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a"]
+    
+    if file.content_type not in ALLOWED_AUDIO_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only MP3, WAV, OGG, and M4A audios are allowed."
+        )
+    
+    # Check file size (10MB for audio)
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    
+    MAX_AUDIO_SIZE = 10 * 1024 * 1024
+    if file_size > MAX_AUDIO_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large. Maximum size is 10MB"
+        )
+    
+    # Save file
+    # Ensure a directory for social audios exists
+    SOCIAL_AUDIO_DIR = UPLOAD_DIR / "social_audios"
+    SOCIAL_AUDIO_DIR.mkdir(exist_ok=True)
+    
+    audio_url = save_uploaded_file(file, SOCIAL_AUDIO_DIR, current_user.id, "social_audio")
+    
+    # Create record in database
+    from app.blog import crud, schemas
+    audio_data = schemas.SocialAudioCreate(
+        name=file.filename,
+        url=audio_url
+    )
+    db_audio = crud.create_social_audio(db=db, audio=audio_data, doctor_id=current_user.id)
+    
+    return {
+        "message": "Audio uploaded successfully",
+        "audio": db_audio
+    }
+
+
 @router.post("/location-photo", status_code=status.HTTP_200_OK)
 async def upload_location_photo(
     current_user: Annotated[Doctor, Depends(get_current_user)],

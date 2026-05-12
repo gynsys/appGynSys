@@ -212,6 +212,26 @@ def get_my_carousels(
     """List all carousel projects for the current doctor."""
     return crud.get_carousels_by_doctor(db=db, doctor_id=current_user.id, skip=skip, limit=limit)
 
+@router.get("/social-audios", response_model=List[schemas.SocialAudioResponse])
+def get_my_social_audios(
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """List all uploaded social audios for the current doctor."""
+    return crud.get_social_audios_by_doctor(db=db, doctor_id=current_user.id)
+
+@router.delete("/social-audios/{audio_id}", response_model=schemas.SocialAudioResponse)
+def delete_social_audio(
+    audio_id: int,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """Delete an uploaded social audio."""
+    result = crud.delete_social_audio(db=db, audio_id=audio_id, doctor_id=current_user.id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Audio not found")
+    return result
+
 @router.put("/carousels/{carousel_id}", response_model=schemas.SocialCarouselResponse)
 def update_social_carousel(
     carousel_id: int,

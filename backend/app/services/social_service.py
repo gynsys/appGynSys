@@ -76,26 +76,28 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     
     if generation_type in ['video', 'reel']:
         prompt = f"""
-        Actúa como un editor de video experto en Reels de Instagram médicos. 
-        Tu objetivo es TRANSFORMAR el contenido de un carrusel en una secuencia de video corto (Reel).
+        Actúa como un experto en neuro-copywriting médico y editor de video viral para Instagram Reels. 
+        Tu misión es TRANSFORMAR el contenido médico en una secuencia de video (Reel) altamente persuasiva, empática y que genere curiosidad inmediata.
         
         CONTENIDO ORIGINAL:
         Título: {post_title}
         Contenido: {clean_text}
         
-        REGLAS DE ORO PARA VIDEO:
-        1. BREVEDAD EXTREMA: Un Reel pasa rápido. Máximo 10-12 palabras por escena/diapositiva.
-        2. IMPACTO: Usa verbos de acción y frases directas. Elimina explicaciones largas.
-        3. ESTRUCTURA: Genera entre 5 y 8 escenas breves.
+        REGLAS DE ORO PARA EL GUION (REEL):
+        1. LÍMITE DE PALABRAS ESTRICTO: Cada diapositiva DEBE tener entre 8 y 12 palabras. Ni más, ni menos.
+        2. GANCHO (HOOK): La primera diapositiva debe ser un gancho irresistible que detenga el scroll (ej: "¿Sabías que...", "Lo que nadie te dice sobre...", "3 señales de...").
+        3. PSICOLOGÍA: Usa un tono que mezcle autoridad médica con cercanía humana. Empatiza con el problema de la paciente antes de dar la solución.
+        4. RITMO: Usa frases cortas, directas y con punch. Elimina el relleno académico.
+        5. ESTRUCTURA: Genera exactamente entre 6 y 9 escenas que cuenten una historia o den un consejo práctico.
         
         Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
         {{
           "video_slides": [
-            {{ "text": "Frase corta e impactante" }}
+            {{ "text": "Frase de 8 a 12 palabras exactamente" }}
           ],
-          "music_suggestion": "Tipo de música (ej: rítmica, calma, inspiracional)",
+          "music_suggestion": "Tipo de música específico (ej: Minimal tech rítmica, Lo-fi relajante, Cinematic inspiracional)",
           "duration_per_slide": 3,
-          "total_duration": 20
+          "total_duration": 25
         }}
         """
     else:

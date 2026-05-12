@@ -34,7 +34,11 @@ export const VideoEditor = ({
   handleExportVideo,
   doctor,
   showToast,
-  handleAddImageToVideoSlide
+  handleAddImageToVideoSlide,
+  userAudios = [],
+  loadingAudios = false,
+  handleUploadAudio,
+  handleDeleteAudio
 }) => {
 
   const handleSplitScene = (index) => {
@@ -247,50 +251,80 @@ export const VideoEditor = ({
             <div className="space-y-5">
               <div>
                 <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Banda Sonora</label>
-                <select 
-                  value={selectedAudio}
-                  onChange={(e) => setSelectedAudio(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-2xl text-xs font-bold p-3.5 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700"
-                >
-                  {Object.keys(AUDIO_TRACKS || {}).map(id => <option key={id} value={id}>{id}</option>)}
-                  <option value="Custom">Mi Audio Subido</option>
-                </select>
-                
-                {selectedAudio === 'Custom' && (
-                  <div className="mt-4 animate-fadeIn">
-                    <label className="flex items-center justify-center gap-3 w-full p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-2xl cursor-pointer hover:bg-indigo-100 transition-all">
-                      <FiUpload className="text-indigo-600" />
-                      <span className="text-[10px] font-black uppercase text-indigo-600">Subir MP3 Personalizado</span>
-                      <input 
-                        type="file" 
-                        accept="audio/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => setCustomAudioUrl(ev.target.result);
-                            reader.readAsDataURL(file);
-                          }
-                        }} 
-                      />
-                    </label>
-                    {customAudioUrl && (
-                      <p className="text-[9px] font-bold text-indigo-500 mt-2 flex items-center justify-between gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-xl">
-                        <span className="flex items-center gap-1.5">
-                          <FiVolume2 size={12} /> Audio personalizado listo
-                        </span>
-                        <button 
-                          onClick={() => setCustomAudioUrl(null)}
-                          className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-md transition-all"
-                          title="Eliminar audio"
-                        >
-                          <FiTrash2 size={12} />
-                        </button>
-                      </p>
+                <div className="flex gap-2">
+                  <select 
+                    value={selectedAudio}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedAudio(val);
+                      if (val.startsWith('User-')) {
+                        const audioId = parseInt(val.split('-')[1]);
+                        const audio = userAudios.find(a => a.id === audioId);
+                        if (audio) setCustomAudioUrl(audio.url);
+                      }
+                    }}
+                    className="flex-1 bg-gray-50 dark:bg-gray-900/50 border-none rounded-2xl text-xs font-bold p-3.5 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700"
+                  >
+                    <optgroup label="Predeterminados">
+                      {Object.keys(AUDIO_TRACKS || {}).map(id => <option key={id} value={id}>{id}</option>)}
+                    </optgroup>
+                    {userAudios.length > 0 && (
+                      <optgroup label="Mis Audios">
+                        {userAudios.map(audio => (
+                          <option key={audio.id} value={`User-${audio.id}`}>{audio.name}</option>
+                        ))}
+                      </optgroup>
                     )}
-                  </div>
-                )}
+                    <option value="Custom">Audio Temporal (Local)</option>
+                  </select>
+                  {selectedAudio.startsWith('User-') && (
+                    <button 
+                      onClick={() => {
+                        const audioId = parseInt(selectedAudio.split('-')[1]);
+                        if (window.confirm('¿Eliminar este audio permanentemente?')) handleDeleteAudio(audioId);
+                      }}
+                      className="p-3.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl hover:bg-red-100 transition-all border border-red-100 dark:border-red-900/30"
+                      title="Eliminar audio guardado"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="mt-4 animate-fadeIn">
+                  <label className="flex items-center justify-center gap-3 w-full p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-2xl cursor-pointer hover:bg-indigo-100 transition-all group">
+                    <FiUpload className="text-indigo-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-black uppercase text-indigo-600">Subir MP3 y Guardar</span>
+                    <input 
+                      type="file" 
+                      accept="audio/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) handleUploadAudio(file);
+                      }} 
+                    />
+                  </label>
+                  {customAudioUrl && selectedAudio === 'Custom' && (
+                    <p className="text-[9px] font-bold text-indigo-500 mt-2 flex items-center justify-between gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-xl">
+                      <span className="flex items-center gap-1.5">
+                        <FiVolume2 size={12} /> Audio temporal listo
+                      </span>
+                      <button 
+                        onClick={() => { setCustomAudioUrl(null); setSelectedAudio('Medical'); }}
+                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-md transition-all"
+                      >
+                        <FiTrash2 size={12} />
+                      </button>
+                    </p>
+                  )}
+                  {loadingAudios && (
+                    <div className="flex items-center gap-2 mt-2 px-2">
+                      <FiLoader className="animate-spin text-indigo-400" size={10} />
+                      <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Sincronizando audios...</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

@@ -170,6 +170,22 @@ class SocialCarouselResponse(SocialCarouselBase):
     class Config:
         from_attributes = True
 
+# Social Audio Schemas
+class SocialAudioBase(BaseModel):
+    name: str
+    url: str
+
+class SocialAudioCreate(SocialAudioBase):
+    pass
+
+class SocialAudioResponse(SocialAudioBase):
+    id: int
+    created_at: datetime
+    doctor_id: int
+
+    class Config:
+        from_attributes = True
+
 # Validating models after all definitions are complete
 BlogPostCreate.model_rebuild()
 BlogPostUpdate.model_rebuild()

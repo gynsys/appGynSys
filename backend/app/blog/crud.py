@@ -41,6 +41,30 @@ def delete_carousel(db: Session, carousel_id: int, doctor_id: int):
         db.commit()
     return db_carousel
 
+# Social Audio CRUD
+def get_social_audios_by_doctor(db: Session, doctor_id: int):
+    from app.blog.models import SocialAudio
+    return db.query(SocialAudio).filter(SocialAudio.doctor_id == doctor_id).order_by(SocialAudio.created_at.desc()).all()
+
+def create_social_audio(db: Session, audio: SocialAudioCreate, doctor_id: int):
+    from app.blog.models import SocialAudio
+    db_audio = SocialAudio(
+        **audio.model_dump(),
+        doctor_id=doctor_id
+    )
+    db.add(db_audio)
+    db.commit()
+    db.refresh(db_audio)
+    return db_audio
+
+def delete_social_audio(db: Session, audio_id: int, doctor_id: int):
+    from app.blog.models import SocialAudio
+    db_audio = db.query(SocialAudio).filter(SocialAudio.id == audio_id, SocialAudio.doctor_id == doctor_id).first()
+    if db_audio:
+        db.delete(db_audio)
+        db.commit()
+    return db_audio
+
 def slugify(text: str) -> str:
     text = text.lower()
     text = re.sub(r'[^a-z0-9\s-]', '', text)

@@ -3,6 +3,18 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
 
+class SocialAudio(Base):
+    __tablename__ = "social_audios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    
+    doctor = relationship("Doctor")
+
 class SocialCarousel(Base):
     __tablename__ = "social_carousels"
 
