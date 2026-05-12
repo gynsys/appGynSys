@@ -171,10 +171,10 @@ export default function SocialGenerator() {
   const canvasRef = React.useRef(null);
 
   const AUDIO_TRACKS = {
-    'Soft': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3',
-    'Inspirational': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Motion/Chad_Crouch_-_Algorithms.mp3',
-    'Medical': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Universal_Law/Ketsa_-_02_-_Causal_Factors.mp3',
-    'Dynamic': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes_Music/Corporate_Motivational_Royalty_Free_Music/Scott_Holmes_Music_-_04_-_Corporate_Motivational_3.mp3'
+    'Soft': 'https://api.gynsys.net/uploads/audio/soft.mp3',
+    'Inspirational': 'https://api.gynsys.net/uploads/audio/inspirational.mp3',
+    'Medical': 'https://api.gynsys.net/uploads/audio/medical.mp3',
+    'Dynamic': 'https://api.gynsys.net/uploads/audio/dynamic.mp3'
   };
 
   const getActiveAudioSrc = () => {
