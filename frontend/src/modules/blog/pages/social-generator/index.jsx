@@ -242,9 +242,13 @@ export default function SocialGenerator() {
       if (audioRef.current) {
         audioRef.current.src = getActiveAudioSrc();
         audioRef.current.load();
-        await new Promise(resolve => {
-            audioRef.current.oncanplaythrough = resolve;
-        });
+        
+        // Timeout para el audio (máx 5s de espera)
+        await Promise.race([
+          new Promise(resolve => { audioRef.current.oncanplaythrough = resolve; }),
+          new Promise(resolve => setTimeout(resolve, 5000))
+        ]);
+
         audioRef.current.currentTime = 0;
         audioRef.current.play();
         const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
@@ -286,13 +290,20 @@ export default function SocialGenerator() {
           try {
             const img = new Image();
             img.crossOrigin = "anonymous";
-            await new Promise((resolve) => {
-              img.onload = resolve;
-              img.src = slide.image;
-            });
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(0,0,0,0.4)'; // Overlay
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Timeout para imagen
+            await Promise.race([
+              new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                img.src = slide.image;
+              }),
+              new Promise(resolve => setTimeout(resolve, 3000))
+            ]);
+            if (img.complete && img.naturalWidth > 0) {
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = 'rgba(0,0,0,0.4)'; // Overlay
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
           } catch (e) { console.log("Error loading slide image"); }
         }
 
@@ -462,7 +473,20 @@ export default function SocialGenerator() {
 
   const handleSaveProject = async () => {
     if (activeProjectId && activeProjectName) {
-      const ok = await designer.canvas.saveProject(activeProjectName, generatedContent, activeProjectId);
+      // Incluir ajustes de video en el guardado
+      const videoSettings = {
+        videoStyles,
+        selectedAudio,
+        slideDuration,
+        customAudioUrl
+      };
+      
+      const contentToSave = {
+        ...generatedContent,
+        videoSettings
+      };
+
+      const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
       if (ok) showToast(`"${activeProjectName}" guardado`, 'success');
       else showToast('Error al guardar', 'error');
     } else {
@@ -473,7 +497,19 @@ export default function SocialGenerator() {
   const handleSaveProjectAs = async () => {
     const name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
     if (name) {
-      const ok = await designer.canvas.saveProject(name, generatedContent);
+      const videoSettings = {
+        videoStyles,
+        selectedAudio,
+        slideDuration,
+        customAudioUrl
+      };
+      
+      const contentToSave = {
+        ...generatedContent,
+        videoSettings
+      };
+
+      const ok = await designer.canvas.saveProject(name, contentToSave);
       if (ok) {
         setActiveProjectName(name);
         showToast(`"${name}" guardado`, 'success');
@@ -533,7 +569,23 @@ export default function SocialGenerator() {
     const content = designer.canvas.loadProject(project);
     if (content) {
       setGeneratedContent(content);
-      setActiveTab('carousel');
+      
+      // Restaurar ajustes de video si existen
+      if (content.videoSettings) {
+        if (content.videoSettings.videoStyles) setVideoStyles(content.videoSettings.videoStyles);
+        if (content.videoSettings.selectedAudio) setSelectedAudio(content.videoSettings.selectedAudio);
+        if (content.videoSettings.slideDuration) setSlideDuration(content.videoSettings.slideDuration);
+        if (content.videoSettings.customAudioUrl) setCustomAudioUrl(content.videoSettings.customAudioUrl);
+        
+        if (content.type === 'video' || content.video_slides) {
+          setActiveTab('video');
+        } else {
+          setActiveTab('carousel');
+        }
+      } else {
+        setActiveTab('carousel');
+      }
+
       setActiveProjectName(project.name || null);
       setActiveProjectId(project.id || null);
       setMobileActionPerformed(false);
