@@ -5,8 +5,11 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
 
-  const handleExportVideo = async () => {
-    if (!generatedContent?.video_slides) return;
+    const scenes = generatedContent?.video_slides || generatedContent?.slides;
+    if (!scenes || !Array.isArray(scenes)) {
+      showToast('No hay escenas para exportar', 'error');
+      return;
+    }
     
     setIsExporting(true);
     setExportProgress(0);
@@ -52,19 +55,20 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `video_gynsys_${selectedPost?.id}.mp4`;
+        a.download = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
         a.click();
         setIsExporting(false);
-        showToast('¡Video con Audio generado con éxito!', 'success');
+        showToast('¡Video generado con éxito!', 'success');
       };
 
       recorder.start();
       
-      for (let i = 0; i < generatedContent.video_slides.length; i++) {
-        const slide = generatedContent.video_slides[i];
+      for (let i = 0; i < scenes.length; i++) {
+        const slide = scenes[i];
+        const slideText = slide.text || slide.content || slide.title || '';
         
         // Draw Background
-        ctx.fillStyle = videoStyles.bgColor || videoStyles.backgroundColor;
+        ctx.fillStyle = videoStyles.bgColor || videoStyles.backgroundColor || '#000000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // Draw Image if exists
@@ -90,26 +94,26 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
         }
 
         // Draw Text
-        ctx.fillStyle = videoStyles.textColor;
-        ctx.font = `bold ${videoStyles.fontSize}px ${videoStyles.fontFamily}`;
+        ctx.fillStyle = videoStyles.textColor || '#ffffff';
+        ctx.font = `bold ${videoStyles.fontSize || 40}px ${videoStyles.fontFamily || 'sans-serif'}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        const words = slide.text.split(' ');
+        const words = slideText.split(' ').filter(Boolean);
         let line = '';
-        let y = canvas.height / 2 - 100;
+        let y = canvas.height / 2 - (words.length > 20 ? 200 : 100);
         
         for (let n = 0; n < words.length; n++) {
           let testLine = line + words[n] + ' ';
           if (ctx.measureText(testLine).width > 600 && n > 0) {
             ctx.fillText(line, canvas.width / 2, y);
             line = words[n] + ' ';
-            y += 60;
+            y += (videoStyles.fontSize || 40) * 1.2;
           } else { line = testLine; }
         }
         ctx.fillText(line, canvas.width / 2, y);
         
-        setExportProgress(Math.round(((i + 1) / generatedContent.video_slides.length) * 100));
+        setExportProgress(Math.round(((i + 1) / scenes.length) * 100));
         await new Promise(r => setTimeout(r, slideDuration * 1000));
       }
       
