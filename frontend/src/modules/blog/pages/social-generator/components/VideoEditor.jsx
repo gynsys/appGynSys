@@ -73,7 +73,7 @@ export const VideoEditor = ({
                       color: videoStyles.textColor
                     }}
                   >
-                    {scenes[currentVideoSlide]?.text}
+                    {scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || ''}
                   </p>
                 </div>
               </div>
@@ -150,49 +150,56 @@ export const VideoEditor = ({
               <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
                 <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-6">Secuencia de Escenas</h4>
                 <div className="space-y-4">
-                  {scenes?.map((slide, i) => (
-                    <div key={i} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <span className="text-[10px] font-black bg-white dark:bg-gray-800 w-6 h-6 flex items-center justify-center rounded-lg shadow-sm dark:text-white">{i+1}</span>
-                      <div className="flex-1">
-                        <input 
-                          type="text" 
-                          value={slide.text || ''} 
-                          onChange={(e) => {
-                            const newSlides = [...scenes];
-                            newSlides[i].text = e.target.value;
-                            setGeneratedContent({...generatedContent, video_slides: newSlides});
-                          }}
-                          className="w-full bg-transparent font-bold text-gray-800 dark:text-white outline-none"
-                        />
-                        <p className={`text-[9px] mt-1 font-bold uppercase ${(slide.text || '').split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-green-500'}`}>
-                          {(slide.text || '').split(' ').filter(Boolean).length} palabras {(slide.text || '').split(' ').filter(Boolean).length > 12 && '(Demasiado largo para Reel)'}
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-indigo-50 transition-all">
+                  {scenes?.map((slide, i) => {
+                    const slideText = slide.text || slide.content || slide.title || '';
+                    return (
+                      <div key={i} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <span className="text-[10px] font-black bg-white dark:bg-gray-800 w-6 h-6 flex items-center justify-center rounded-lg shadow-sm dark:text-white">{i+1}</span>
+                        <div className="flex-1">
                           <input 
-                            type="file" 
-                            className="hidden" 
-                            accept="image/*"
-                            onChange={(e) => handleAddImageToVideoSlide(i, e)} 
-                          />
-                          <FiImage size={14} className={slide.image ? 'text-indigo-600' : 'text-gray-400'} />
-                        </label>
-                        {slide.image && (
-                          <button 
-                            onClick={() => {
+                            type="text" 
+                            value={slideText} 
+                            onChange={(e) => {
                               const newSlides = [...scenes];
-                              delete newSlides[i].image;
+                              // Actualizar el campo que ya existe o por defecto 'text'
+                              if (slide.content) newSlides[i].content = e.target.value;
+                              else if (slide.title) newSlides[i].title = e.target.value;
+                              else newSlides[i].text = e.target.value;
+                              
                               setGeneratedContent({...generatedContent, video_slides: newSlides});
                             }}
-                            className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100"
-                          >
-                            <FiTrash2 size={12} />
-                          </button>
-                        )}
+                            className="w-full bg-transparent font-bold text-gray-800 dark:text-white outline-none"
+                          />
+                          <p className={`text-[9px] mt-1 font-bold uppercase ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-green-500'}`}>
+                            {slideText.split(' ').filter(Boolean).length} palabras {slideText.split(' ').filter(Boolean).length > 12 && '(Demasiado largo para Reel)'}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-indigo-50 transition-all">
+                            <input 
+                              type="file" 
+                              className="hidden" 
+                              accept="image/*"
+                              onChange={(e) => handleAddImageToVideoSlide(i, e)} 
+                            />
+                            <FiImage size={14} className={slide.image ? 'text-indigo-600' : 'text-gray-400'} />
+                          </label>
+                          {slide.image && (
+                            <button 
+                              onClick={() => {
+                                const newSlides = [...scenes];
+                                delete newSlides[i].image;
+                                setGeneratedContent({...generatedContent, video_slides: newSlides});
+                              }}
+                              className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100"
+                            >
+                              <FiTrash2 size={12} />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
