@@ -137,6 +137,8 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, sel
       setIsExporting(false);
       showToast('Error al renderizar el video', 'error');
     }
+  };
+
   return {
     handleExportVideo,
     isExporting,
