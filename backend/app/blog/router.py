@@ -230,10 +230,20 @@ def delete_social_carousel(
     current_user: Doctor = Depends(get_current_user)
 ):
     """Delete a carousel project."""
-    result = crud.delete_carousel(db=db, carousel_id=carousel_id, doctor_id=current_user.id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Carousel not found")
-    return result
+    from app.core.logging import logger
+    try:
+        logger.info(f"Attempting to delete carousel {carousel_id} for doctor {current_user.id}")
+        result = crud.delete_carousel(db=db, carousel_id=carousel_id, doctor_id=current_user.id)
+        if not result:
+            logger.warning(f"Carousel {carousel_id} not found for doctor {current_user.id}")
+            raise HTTPException(status_code=404, detail="Carousel not found")
+        logger.info(f"Carousel {carousel_id} deleted successfully")
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting carousel {carousel_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=schemas.BlogPostResponse)
 def create_post(
