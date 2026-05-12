@@ -16,6 +16,7 @@ Este es el archivo README original del proyecto, trasladado para organizar la do
 - [🚨 Guía de Diagnóstico de Crisis (502/CORS/Crashes)](file:///c:/Users/pablo/Documents/appgynsys/readme/guia_diagnostico_crisis.md)
 - [🛠️ Operaciones SaaS (Tenants, SQL, Backups)](file:///c:/Users/pablo/Documents/appgynsys/readme/saas_ops.md)
 - [📝 Cheat Sheet de Comandos](file:///c:/Users/pablo/Documents/appgynsys/readme/debug_commands.md)
+- [🎬 Generador de Reels (Video & IA)](file:///c:/Users/pablo/Documents/appgynsys/readme/GENERADOR_REELS_VIDEO.md)
 
 ### Conexión Remota (SSH)
 Para ejecutar comandos en el servidor desde Windows, usa el runner integrado:
