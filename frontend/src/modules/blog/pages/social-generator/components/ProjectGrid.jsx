@@ -22,12 +22,11 @@ export const ProjectGrid = ({
       <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[100] max-h-[400px] overflow-y-auto no-scrollbar animate-slideDown">
         <div className="p-2 space-y-1">
           {projects.map(p => (
-            <button
+            <div
               key={p.id}
-              onClick={() => onLoad(p)}
               className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${activeProjectId === p.id ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => onLoad(p)}>
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeProjectId === p.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-400 group-hover:text-indigo-500'}`}>
                    {p.content?.video_slides ? <FiVideo size={18} /> : <FiImage size={18} />}
                 </div>
@@ -38,10 +37,24 @@ export const ProjectGrid = ({
                   </p>
                 </div>
               </div>
-              <span className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded-md ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
-                {p.is_backend ? 'Nube' : 'Local'}
-              </span>
-            </button>
+              <div className="flex items-center gap-2">
+                <span className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded-md ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                  {p.is_backend ? 'Nube' : 'Local'}
+                </span>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('¿Eliminar este proyecto permanentemente?')) {
+                      onDelete(p.id, p.is_backend);
+                    }
+                  }}
+                  className="p-2 text-gray-300 hover:text-red-500 transition-all active:scale-90"
+                  title="Eliminar proyecto"
+                >
+                  <FiTrash2 size={14} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </div>
