@@ -52,6 +52,7 @@ export default function SocialGenerator() {
   const [slideDuration, setSlideDuration] = useState(3);
   const [transitionType, setTransitionType] = useState('fade');
   const [transitionDuration, setTransitionDuration] = useState(0.5);
+  const [saving, setSaving] = useState(false);
 
   // --- Refs ---
   const editorWrapperRef = useRef(null);
@@ -218,10 +219,19 @@ export default function SocialGenerator() {
 
   const handleSaveProject = async () => {
     if (activeProjectId && activeProjectName) {
-      const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-      const contentToSave = { ...generatedContent, videoSettings };
-      const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
-      if (ok) showToast(`"${activeProjectName}" guardado`, 'success');
+      setSaving(true);
+      try {
+        const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
+        const contentToSave = { ...generatedContent, videoSettings };
+        const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
+        if (ok) {
+          showToast(`"${activeProjectName}" guardado con éxito`, 'success');
+        }
+      } catch (error) {
+        showToast('Error al guardar el proyecto', 'error');
+      } finally {
+        setSaving(false);
+      }
     } else {
       handleSaveProjectAs();
     }
@@ -230,12 +240,19 @@ export default function SocialGenerator() {
   const handleSaveProjectAs = async () => {
     const name = prompt('Nombre del proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
     if (name) {
-      const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-      const contentToSave = { ...generatedContent, videoSettings };
-      const ok = await designer.canvas.saveProject(name, contentToSave);
-      if (ok) {
-        setActiveProjectName(name);
-        showToast(`"${name}" guardado`, 'success');
+      setSaving(true);
+      try {
+        const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
+        const contentToSave = { ...generatedContent, videoSettings };
+        const ok = await designer.canvas.saveProject(name, contentToSave);
+        if (ok) {
+          setActiveProjectName(name);
+          showToast(`"${name}" guardado con éxito`, 'success');
+        }
+      } catch (error) {
+        showToast('Error al guardar el proyecto', 'error');
+      } finally {
+        setSaving(false);
       }
     }
   };
@@ -360,9 +377,12 @@ export default function SocialGenerator() {
               <div className="flex gap-3">
                 <button 
                   onClick={handleSaveProject} 
-                  className="px-8 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 flex items-center gap-2"
+                  disabled={saving}
+                  style={{ backgroundColor: 'rgb(205, 8, 87)' }}
+                  className="px-8 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-pink-200 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
                 >
-                  <FiSave /> Guardar Proyecto
+                  {saving ? <FiLoader className="animate-spin" /> : <FiSave />} 
+                  {saving ? 'Guardando...' : 'Guardar Proyecto'}
                 </button>
               </div>
             </div>
