@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave } from 'react-icons/fi';
 
 // Config & Services
 import { blogService } from '../../services/blogService';
@@ -37,7 +37,7 @@ export default function SocialGenerator() {
   const [generating, setGenerating] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [generatedContent, setGeneratedContent] = useState(null);
-  const [activeTab, setActiveTab] = useState('reel');
+  const [activeTab, setActiveTab] = useState('video');
   const [activeProjectName, setActiveProjectName] = useState(null);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -62,15 +62,15 @@ export default function SocialGenerator() {
   // --- Custom Hooks ---
   const designer = useSlideDesigner();
   
+  const { isPlaying, setIsPlaying, currentVideoSlide, setCurrentVideoSlide } = useVideoPlayback(
+    activeTab, generatedContent, false, slideDuration
+  );
+
   const { 
     audioRef, previewAudioRef, selectedAudio, setSelectedAudio, 
     customAudioUrl, setCustomAudioUrl, prelisteningTrack, setPrelisteningTrack, 
     getActiveAudioSrc 
-  } = useAudioPlayback(activeTab, true, (v) => {}, showToast); // We'll manage isPlaying in videoPlayback
-
-  const { isPlaying, setIsPlaying, currentVideoSlide, setCurrentVideoSlide } = useVideoPlayback(
-    activeTab, generatedContent, false, slideDuration
-  );
+  } = useAudioPlayback(activeTab, isPlaying, setIsPlaying, showToast);
 
   const { isExporting, exportProgress, handleExportVideo } = useVideoExport(
     generatedContent, videoStyles, slideDuration, selectedPost, audioRef, getActiveAudioSrc, showToast
@@ -160,8 +160,9 @@ export default function SocialGenerator() {
       const result = await blogService.generateSocialContent(selectedPost.id, genType);
       setGeneratedContent(result);
       setCurrentVideoSlide(0);
-      setActiveTab(genType === 'video' ? 'video' : 'carousel');
-      showToast(`${genType === 'video' ? 'Video' : 'Carrusel'} generado con éxito`, 'success');
+      // REPARACIÓN: Soporte para 'reel' o 'video'
+      setActiveTab(genType === 'carousel' ? 'carousel' : 'video');
+      showToast(`${genType === 'carousel' ? 'Carrusel' : 'Video'} generado con éxito`, 'success');
     } catch (error) {
       showToast('Error al generar contenido con IA', 'error');
     } finally {
@@ -196,7 +197,7 @@ export default function SocialGenerator() {
         if (content.videoSettings.selectedAudio) setSelectedAudio(content.videoSettings.selectedAudio);
         if (content.videoSettings.slideDuration) setSlideDuration(content.videoSettings.slideDuration);
         if (content.videoSettings.customAudioUrl) setCustomAudioUrl(content.videoSettings.customAudioUrl);
-        setActiveTab(content.type === 'video' ? 'video' : 'carousel');
+        setActiveTab(content.type === 'video' || content.video_slides ? 'video' : 'carousel');
       } else {
         setActiveTab('carousel');
       }
@@ -291,7 +292,7 @@ export default function SocialGenerator() {
         setPreviewIndex={setPreviewIndex} showToast={showToast}
         handleConvertToVideo={handleConvertToVideo} handleSaveProject={handleSaveProject}
         handleSaveProjectAs={handleSaveProjectAs} handleSaveTemplate={() => {}}
-        activeProjectId={activeProjectId}
+        activeProjectId={activeProjectId} exporter={exporter}
       />
     );
   }
@@ -299,94 +300,112 @@ export default function SocialGenerator() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 font-manrope">
       <div className="max-w-[1480px] mx-auto px-4 pt-6">
-        <header className="mb-8 flex justify-between items-center">
+        <header className="mb-8">
           <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
             <FiCpu className="text-indigo-600" /> Editor GynSys
           </h1>
-          {generatedContent && (
-             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-                <button onClick={() => setActiveTab('reel')} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'reel' || activeTab === 'video' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Video Reel</button>
-                <button onClick={() => setActiveTab('carousel')} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>Carrusel</button>
-             </div>
-          )}
         </header>
 
-        <ArticleSelector 
-          posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost}
-          setGeneratedContent={setGeneratedContent} showProjects={showProjects}
-          setShowProjects={setShowProjects} handleGenerate={handleGenerate}
-          handleTestDesign={() => { setActiveTab('carousel'); setGeneratedContent({ type: 'carousel', slides: [{ title: 'Prueba', content: 'Contenido' }] }); }}
-          generating={generating}
-        />
+        <div className="space-y-8">
+          <ArticleSelector 
+            posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost}
+            setGeneratedContent={setGeneratedContent} showProjects={showProjects}
+            setShowProjects={setShowProjects} handleGenerate={handleGenerate}
+            handleTestDesign={() => { setActiveTab('carousel'); setGeneratedContent({ type: 'carousel', slides: [{ title: 'Prueba', content: 'Contenido' }] }); }}
+            generating={generating}
+          />
 
-        {showProjects && (
-           <div className="mt-8">
+          {showProjects && (
+            <div className="animate-fadeIn">
               <ProjectGrid 
                 projects={designer.canvas.projects} 
                 onLoad={(p) => { handleLoadProject(p); setShowProjects(false); }}
                 onDelete={designer.canvas.deleteProject}
                 activeProjectId={activeProjectId}
+                variant="compact"
               />
-           </div>
-        )}
+            </div>
+          )}
 
-        {generating && (
-           <div className="h-[400px] w-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-3xl mt-8">
-              <FiLoader className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
-              <p className="font-black text-gray-400 uppercase tracking-widest">GynSys IA creando contenido...</p>
-           </div>
-        )}
+          {/* RESTAURACIÓN DEL LAYOUT ORIGINAL DE TABS */}
+          {generatedContent && (
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-700 animate-fadeIn">
+              <div className="flex bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <button 
+                  onClick={() => setActiveTab('video')} 
+                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'video' || activeTab === 'reel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  Editor de Video
+                </button>
+                <button 
+                  onClick={() => setActiveTab('carousel')} 
+                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  Editor de Carrusel
+                </button>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleSaveProject} 
+                  className="px-8 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <FiSave /> Guardar Proyecto
+                </button>
+              </div>
+            </div>
+          )}
 
-        {generatedContent && !generating && (
-           <div className="mt-8">
+          {generatedContent && !generating && (
+            <div className="animate-fadeIn">
               {activeTab === 'video' || activeTab === 'reel' ? (
-                 <VideoEditor 
-                    generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
-                    videoStyles={videoStyles} setVideoStyles={setVideoStyles}
-                    slideDuration={slideDuration} setSlideDuration={setSlideDuration}
-                    isPlaying={isPlaying} setIsPlaying={setIsPlaying}
-                    currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
-                    selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
-                    prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
-                    customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
-                    audioRef={audioRef} previewAudioRef={previewAudioRef}
-                    isExporting={isExporting} exportProgress={exportProgress}
-                    handleExportVideo={handleExportVideo} doctor={doctor}
-                    showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
-                 />
+                <VideoEditor 
+                  generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
+                  videoStyles={videoStyles} setVideoStyles={setVideoStyles}
+                  slideDuration={slideDuration} setSlideDuration={setSlideDuration}
+                  isPlaying={isPlaying} setIsPlaying={setIsPlaying}
+                  currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
+                  selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+                  prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
+                  customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
+                  audioRef={audioRef} previewAudioRef={previewAudioRef}
+                  isExporting={isExporting} exportProgress={exportProgress}
+                  handleExportVideo={handleExportVideo} doctor={doctor}
+                  showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+                />
               ) : (
-                 <div className="flex gap-6 animate-fadeIn">
-                    <EnhancedSidebar 
-                      design={designer.design} canvas={designer.canvas} 
-                      transform={transformer.state} currentSlide={designer.canvas.currentSlidePage}
-                      onAddElement={designer.canvas.addExtraElement} onDownload={exporter.downloadCarousel}
-                      onSave={handleSaveProject} onConvertToVideo={handleConvertToVideo}
-                    />
-                    <div className="flex-1 space-y-6">
-                       <div ref={editorWrapperRef} className="bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative">
-                          <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
-                            <SlideCanvas 
-                              slide={generatedContent.slides[designer.canvas.currentSlidePage]}
-                              index={designer.canvas.currentSlidePage}
-                              doctor={doctor} doctorLogo={doctorLogoBase64}
-                              design={designer.design} canvas={designer.canvas}
-                              transform={transformer.state} handlers={transformer.handlers}
-                              watermark={watermarkImage} onEdit={setEditingIndex}
-                              onPreview={setPreviewIndex} onRemove={handleRemoveSlide}
-                              onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
-                            />
-                          </div>
-                       </div>
-                       <SlidePaginator 
-                        current={designer.canvas.currentSlidePage}
-                        total={generatedContent.slides.length}
-                        onChange={designer.canvas.setCurrentSlidePage}
-                       />
+                <div className="flex gap-6">
+                  <EnhancedSidebar 
+                    design={designer.design} canvas={designer.canvas} 
+                    transform={transformer.state} currentSlide={designer.canvas.currentSlidePage}
+                    onAddElement={designer.canvas.addExtraElement} onDownload={exporter.downloadCarousel}
+                    onSave={handleSaveProject} onConvertToVideo={handleConvertToVideo}
+                  />
+                  <div className="flex-1 space-y-6">
+                    <div ref={editorWrapperRef} className="bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative">
+                      <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                        <SlideCanvas 
+                          slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                          index={designer.canvas.currentSlidePage}
+                          doctor={doctor} doctorLogo={doctorLogoBase64}
+                          design={designer.design} canvas={designer.canvas}
+                          transform={transformer.state} handlers={transformer.handlers}
+                          watermark={watermarkImage} onEdit={setEditingIndex}
+                          onPreview={setPreviewIndex} onRemove={handleRemoveSlide}
+                          onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                        />
+                      </div>
                     </div>
-                 </div>
+                    <SlidePaginator 
+                      current={designer.canvas.currentSlidePage}
+                      total={generatedContent.slides.length}
+                      onChange={designer.canvas.setCurrentSlidePage}
+                    />
+                  </div>
+                </div>
               )}
-           </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       <ContextualBar 
