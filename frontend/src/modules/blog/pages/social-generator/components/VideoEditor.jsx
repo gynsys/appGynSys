@@ -253,7 +253,7 @@ export const VideoEditor = ({
                   onChange={(e) => setSelectedAudio(e.target.value)}
                   className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-2xl text-xs font-bold p-3.5 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700"
                 >
-                  {AUDIO_TRACKS?.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  {Object.keys(AUDIO_TRACKS || {}).map(id => <option key={id} value={id}>{id}</option>)}
                   <option value="Custom">Mi Audio Subido</option>
                 </select>
               </div>
