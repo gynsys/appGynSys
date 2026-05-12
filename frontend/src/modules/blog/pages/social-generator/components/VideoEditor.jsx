@@ -81,7 +81,12 @@ export const VideoEditor = ({
           <div className="sticky top-24">
             <div className="relative aspect-[9/16] bg-black rounded-[32px] overflow-hidden shadow-2xl border-8 border-gray-900 group">
               {/* Actual Video Content */}
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div 
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ 
+                  backgroundColor: !scenes[currentVideoSlide]?.image ? videoStyles.bgColor || videoStyles.backgroundColor : 'transparent' 
+                }}
+              >
                 {scenes[currentVideoSlide]?.image && (
                   <img 
                     src={scenes[currentVideoSlide].image} 
@@ -89,12 +94,7 @@ export const VideoEditor = ({
                     alt="Scene background"
                   />
                 )}
-                <div 
-                  className="relative z-10 p-10 text-center w-full"
-                  style={{ 
-                    backgroundColor: !scenes[currentVideoSlide]?.image ? videoStyles.bgColor || videoStyles.backgroundColor : 'transparent' 
-                  }}
-                >
+                <div className="relative z-10 p-10 text-center w-full">
                   <p 
                     className="font-black leading-tight animate-slideUp"
                     style={{ 
