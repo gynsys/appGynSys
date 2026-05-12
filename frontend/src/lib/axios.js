@@ -1,11 +1,15 @@
 // Axios instance with JWT interceptor
 import axios from 'axios'
 
-let baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+let baseURL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim();
 
 // Seguridad para evitar errores de Mixed Content en producción
-if (typeof window !== 'undefined' && window.location.protocol === 'https:' && baseURL.startsWith('http:')) {
-  baseURL = baseURL.replace('http:', 'https:');
+if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+  if (baseURL.startsWith('http:')) {
+    baseURL = baseURL.replace('http:', 'https:');
+  } else if (baseURL.startsWith('//')) {
+    baseURL = 'https:' + baseURL;
+  }
 }
 
 const api = axios.create({

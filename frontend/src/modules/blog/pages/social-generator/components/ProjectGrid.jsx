@@ -114,15 +114,18 @@ export const ProjectGrid = ({
               Abrir Proyecto
             </button>
             <button 
+              disabled={isDeleting === p.id}
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm('¿Eliminar este proyecto permanentemente?')) {
-                  onDelete(p.id, p.is_backend);
-                }
+                handleDelete(p);
               }}
-              className="w-12 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+              className={`w-12 flex items-center justify-center rounded-xl transition-all ${isDeleting === p.id ? 'opacity-50 bg-gray-100' : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'}`}
             >
-              <FiTrash2 size={16} />
+              {isDeleting === p.id ? (
+                <FiCpu className="animate-spin" size={16} />
+              ) : (
+                <FiTrash2 size={16} />
+              )}
             </button>
           </div>
         </div>
