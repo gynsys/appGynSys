@@ -5,8 +5,9 @@ let baseURL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim();
 
 // Seguridad para evitar errores de Mixed Content en producción
 if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-  if (baseURL.startsWith('http:')) {
-    baseURL = baseURL.replace('http:', 'https:');
+  // Usar regex para reemplazo robusto (insensible a mayúsculas y espacios adicionales)
+  if (/^http:/i.test(baseURL)) {
+    baseURL = baseURL.replace(/^http:/i, 'https:');
   } else if (baseURL.startsWith('//')) {
     baseURL = 'https:' + baseURL;
   }

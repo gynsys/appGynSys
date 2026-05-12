@@ -28,6 +28,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def log_user_agent(request, call_next):
+    # Detectar protocolo desde el proxy (Nginx) para evitar Mixed Content en redirects
+    if request.headers.get("x-forwarded-proto") == "https":
+        request.scope["scheme"] = "https"
+    
     ua = request.headers.get("user-agent", "unknown")
     print(f"[UA-DEBUG] Path: {request.url.path} | UA: {ua}", flush=True)
     return await call_next(request)
