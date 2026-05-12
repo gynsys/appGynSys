@@ -31,7 +31,17 @@ export const VideoEditor = ({
   showToast,
   handleAddImageToVideoSlide
 }) => {
-  if (!generatedContent?.video_slides) return null;
+  // Flexibilidad: Buscar video_slides o slides si no existen las primeras
+  const scenes = generatedContent?.video_slides || generatedContent?.slides;
+
+  if (!scenes || !Array.isArray(scenes)) {
+    return (
+      <div className="p-20 text-center bg-white dark:bg-gray-800 rounded-[40px] border-2 border-dashed border-gray-100 dark:border-gray-700">
+        <FiVideo className="mx-auto text-gray-200 mb-4" size={48} />
+        <p className="text-gray-400 font-black uppercase tracking-widest text-xs">Esperando secuencia de video...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fadeIn pb-12">
@@ -42,9 +52,9 @@ export const VideoEditor = ({
             <div className="relative aspect-[9/16] bg-black rounded-[32px] overflow-hidden shadow-2xl border-8 border-gray-900 group">
               {/* Actual Video Content */}
               <div className="absolute inset-0 flex items-center justify-center">
-                {generatedContent.video_slides[currentVideoSlide]?.image && (
+                {scenes[currentVideoSlide]?.image && (
                   <img 
-                    src={generatedContent.video_slides[currentVideoSlide].image} 
+                    src={scenes[currentVideoSlide].image} 
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                     alt="Scene background"
                   />
@@ -52,7 +62,7 @@ export const VideoEditor = ({
                 <div 
                   className="relative z-10 p-10 text-center w-full"
                   style={{ 
-                    backgroundColor: !generatedContent.video_slides[currentVideoSlide]?.image ? videoStyles.bgColor || videoStyles.backgroundColor : 'transparent' 
+                    backgroundColor: !scenes[currentVideoSlide]?.image ? videoStyles.bgColor || videoStyles.backgroundColor : 'transparent' 
                   }}
                 >
                   <p 
@@ -63,7 +73,7 @@ export const VideoEditor = ({
                       color: videoStyles.textColor
                     }}
                   >
-                    {generatedContent.video_slides[currentVideoSlide]?.text}
+                    {scenes[currentVideoSlide]?.text}
                   </p>
                 </div>
               </div>
@@ -97,7 +107,7 @@ export const VideoEditor = ({
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
                 <div 
                   className="h-full bg-white transition-all duration-300"
-                  style={{ width: `${((currentVideoSlide + 1) / generatedContent.video_slides.length) * 100}%` }}
+                  style={{ width: `${((currentVideoSlide + 1) / scenes.length) * 100}%` }}
                 ></div>
               </div>
 
@@ -140,7 +150,7 @@ export const VideoEditor = ({
               <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
                 <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-6">Secuencia de Escenas</h4>
                 <div className="space-y-4">
-                  {generatedContent.video_slides?.map((slide, i) => (
+                  {scenes?.map((slide, i) => (
                     <div key={i} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                       <span className="text-[10px] font-black bg-white dark:bg-gray-800 w-6 h-6 flex items-center justify-center rounded-lg shadow-sm dark:text-white">{i+1}</span>
                       <div className="flex-1">
@@ -148,7 +158,7 @@ export const VideoEditor = ({
                           type="text" 
                           value={slide.text} 
                           onChange={(e) => {
-                            const newSlides = [...generatedContent.video_slides];
+                            const newSlides = [...scenes];
                             newSlides[i].text = e.target.value;
                             setGeneratedContent({...generatedContent, video_slides: newSlides});
                           }}
@@ -171,7 +181,7 @@ export const VideoEditor = ({
                         {slide.image && (
                           <button 
                             onClick={() => {
-                              const newSlides = [...generatedContent.video_slides];
+                              const newSlides = [...scenes];
                               delete newSlides[i].image;
                               setGeneratedContent({...generatedContent, video_slides: newSlides});
                             }}
