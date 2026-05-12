@@ -235,7 +235,6 @@ export const VideoEditor = ({
               </div>
             </div>
           </div>
-          </div>
 
           {/* Audio & Motion */}
           <div className="bg-white dark:bg-gray-800 rounded-[32px] p-7 shadow-sm border border-gray-100 dark:border-gray-700">
