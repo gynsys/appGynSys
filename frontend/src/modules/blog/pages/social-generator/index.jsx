@@ -701,18 +701,16 @@ export default function SocialGenerator() {
                           </div>
                         </div>
                       )}
-                    </div>
-                  </div>
                 </div>
                 
                 {selectedPost && (
                   <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                      <div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-10 bg-white/5 backdrop-blur-md rounded-[40px] border border-white/10 shadow-2xl relative overflow-hidden group">
+                      <div className="relative z-10">
                         <h3 className="text-2xl font-black mb-1">IA Creator</h3>
                         <p className="text-indigo-100 text-sm">Transforma tu artículo en contenido social</p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 max-w-2xl">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 max-w-2xl relative z-10">
                         <button onClick={() => handleGenerate('video')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 p-4 rounded-2xl font-black transition-all border border-white/10 backdrop-blur-sm"><FiVideo /> Generar Video</button>
                         <button onClick={() => handleGenerate('carousel')} disabled={generating} className="flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 p-4 rounded-2xl font-black transition-all border border-white/10 backdrop-blur-sm"><FiImage /> Carousel</button>
                         <button onClick={handleTestDesign} className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 p-4 rounded-2xl font-black transition-all text-white shadow-lg">🧪 Draft Mode</button>
@@ -720,6 +718,83 @@ export default function SocialGenerator() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Proyectos Guardados Section */}
+              <div className="w-full mb-12">
+                <div className="bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                  <div 
+                    className="p-8 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+                    onClick={() => setShowProjects(!showProjects)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-pink-50 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center text-pink-500">
+                        <FiFolder size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] mb-1">Continuar Proyecto</p>
+                        <h4 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Mis Proyectos Guardados</h4>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-400 px-3 py-1 rounded-full text-xs font-black">{designer.canvas.projects.length}</span>
+                      <FiChevronDown className={`text-gray-400 transition-transform duration-300 ${showProjects ? 'rotate-180' : ''}`} size={20} />
+                    </div>
+                  </div>
+
+                  {showProjects && (
+                    <div className="border-t border-gray-50 dark:border-gray-700 animate-slideDown">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {designer.canvas.projects.length === 0 ? (
+                          <div className="p-8 text-center text-gray-400 italic text-sm col-span-full">No tienes proyectos guardados todavía.</div>
+                        ) : (
+                          designer.canvas.projects.map(p => (
+                            <div key={p.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-r border-gray-50 dark:border-gray-700/50 flex flex-col justify-between group transition-all">
+                              <div className="mb-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                                      {p.is_backend ? 'Nube' : 'Local'}
+                                    </span>
+                                    {p.content?.videoSettings && (
+                                      <span className="bg-red-100 text-red-600 text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black flex items-center gap-1">
+                                        <FiVideo size={8} /> Video
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-gray-400 font-bold">{p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Reciente'}</p>
+                                </div>
+                                <h5 className="font-black text-gray-900 dark:text-white uppercase tracking-tight line-clamp-1">{p.name}</h5>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{p.content?.slides?.length || 0} Diapositivas</p>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={() => handleLoadProject(p)}
+                                  className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md active:scale-95"
+                                >
+                                  Abrir
+                                </button>
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('¿Eliminar proyecto?')) {
+                                      const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
+                                      if (ok) showToast('Proyecto eliminado', 'success');
+                                    }
+                                  }}
+                                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                >
+                                  <FiTrash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Bottom Section: Editor Content */}
@@ -742,6 +817,7 @@ export default function SocialGenerator() {
                         {generating && activeTab === 'carousel' ? 'Generando...' : 'Generador de Video'}
                       </button>
                       <button onClick={() => setActiveTab('carousel')} className={`px-8 py-2.5 rounded-lg text-sm font-black transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Editor de Carrusel</button>
+                      <button onClick={handleSaveProject} className="px-8 py-2.5 rounded-lg text-sm font-black transition-all bg-indigo-600 text-white shadow-sm ml-2">Guardar Proyecto</button>
                     </div>
                   </div>
                 ) : (
@@ -1094,6 +1170,12 @@ export default function SocialGenerator() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <button 
+                      onClick={handleSaveProject}
+                      className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-600 rounded-2xl font-black hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                      <FiSave /> Guardar Reel
+                    </button>
                     <button 
                       onClick={handleExportVideo}
                       disabled={isExporting}
