@@ -74,7 +74,7 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
     # Limpiar el contenido antes de procesar
     clean_text = clean_content_for_ai(post_content)
     
-    if generation_type == 'video':
+    if generation_type in ['video', 'reel']:
         prompt = f"""
         Actúa como un editor de video experto en Reels de Instagram médicos. 
         Tu objetivo es TRANSFORMAR el contenido de un carrusel en una secuencia de video corto (Reel).

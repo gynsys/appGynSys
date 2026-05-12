@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FiZap, FiPlay, FiVolume2, FiVolumeX, FiImage, FiTrash2, 
-  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet
+  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors
 } from 'react-icons/fi';
 
 export const VideoEditor = ({ 
@@ -31,6 +31,36 @@ export const VideoEditor = ({
   showToast,
   handleAddImageToVideoSlide
 }) => {
+  const handleSplitScene = (index) => {
+    const scenes = generatedContent?.video_slides || generatedContent?.slides || [];
+    const text = scenes[index]?.text || scenes[index]?.content || '';
+    const words = text.split(' ').filter(Boolean);
+    
+    if (words.length <= 4) {
+      showToast('La escena es demasiado corta para dividirla', 'error');
+      return;
+    }
+
+    const mid = Math.ceil(words.length / 2);
+    const text1 = words.slice(0, mid).join(' ');
+    const text2 = words.slice(mid).join(' ');
+
+    const newScenes = [...scenes];
+    // Conservar el campo original (text o content)
+    if (newScenes[index].content) {
+      newScenes[index].content = text1;
+    } else {
+      newScenes[index].text = text1;
+    }
+
+    const nextScene = { ...newScenes[index], image: null };
+    if (nextScene.content) nextScene.content = text2;
+    else nextScene.text = text2;
+
+    newScenes.splice(index + 1, 0, nextScene);
+    setGeneratedContent({ ...generatedContent, video_slides: newScenes });
+    showToast('Escena dividida con éxito', 'success');
+  };
   // Flexibilidad: Buscar video_slides o slides si no existen las primeras
   const scenes = generatedContent?.video_slides || generatedContent?.slides;
 
@@ -175,6 +205,13 @@ export const VideoEditor = ({
                           </p>
                         </div>
                         <div className="flex flex-col gap-2">
+                          <button 
+                            onClick={() => handleSplitScene(i)}
+                            className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-100"
+                            title="Dividir escena en dos"
+                          >
+                            <FiScissors size={14} />
+                          </button>
                           <label className="cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-indigo-50 transition-all">
                             <input 
                               type="file" 
