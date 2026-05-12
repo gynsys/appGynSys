@@ -311,6 +311,7 @@ export default function SocialGenerator() {
         audioRef={audioRef} previewAudioRef={previewAudioRef}
         isExporting={isExporting} exportProgress={exportProgress}
         handleExportVideo={handleExportVideo} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+        enterMobileFullscreen={enterMobileFullscreen}
       />
     );
   }
