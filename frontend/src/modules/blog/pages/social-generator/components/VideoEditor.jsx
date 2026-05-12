@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FiZap, FiPlay, FiVolume2, FiVolumeX, FiImage, FiTrash2, 
-  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader
+  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet
 } from 'react-icons/fi';
 
 export const VideoEditor = ({ 
