@@ -232,7 +232,7 @@ export const VideoEditor = ({
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tamaño del Mensaje</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{videoStyles.fontSize}px</span>
                 </div>
-                <input type="range" min="24" max="72" value={videoStyles.fontSize} onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})} className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full appearance-none" />
+                <input type="range" min="24" max="72" value={videoStyles.fontSize} onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
               </div>
             </div>
           </div>
@@ -256,6 +256,33 @@ export const VideoEditor = ({
                   {Object.keys(AUDIO_TRACKS || {}).map(id => <option key={id} value={id}>{id}</option>)}
                   <option value="Custom">Mi Audio Subido</option>
                 </select>
+                
+                {selectedAudio === 'Custom' && (
+                  <div className="mt-4 animate-fadeIn">
+                    <label className="flex items-center justify-center gap-3 w-full p-4 bg-indigo-50/50 dark:bg-indigo-900/10 border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-2xl cursor-pointer hover:bg-indigo-100 transition-all">
+                      <FiUpload className="text-indigo-600" />
+                      <span className="text-[10px] font-black uppercase text-indigo-600">Subir MP3 Personalizado</span>
+                      <input 
+                        type="file" 
+                        accept="audio/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => setCustomAudioUrl(ev.target.result);
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                      />
+                    </label>
+                    {customAudioUrl && (
+                      <p className="text-[9px] font-bold text-indigo-500 mt-2 flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
+                        <FiVolume2 size={12} /> Audio personalizado listo
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -278,7 +305,7 @@ export const VideoEditor = ({
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Duración por Escena</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{slideDuration}s</span>
                 </div>
-                <input type="range" min="1.5" max="8" step="0.5" value={slideDuration} onChange={(e) => setSlideDuration(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full appearance-none" />
+                <input type="range" min="1.5" max="8" step="0.5" value={slideDuration} onChange={(e) => setSlideDuration(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
               </div>
             </div>
           </div>
