@@ -374,13 +374,13 @@ export default function SocialGenerator() {
               <div className="flex bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700">
                 <button 
                   onClick={() => setActiveTab('video')} 
-                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'video' || activeTab === 'reel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'video' || activeTab === 'reel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Editor de Video
                 </button>
                 <button 
                   onClick={() => setActiveTab('carousel')} 
-                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Editor de Carrusel
                 </button>
@@ -403,6 +403,16 @@ export default function SocialGenerator() {
                   <FiSave /> Guardar como...
                 </button>
               </div>
+            </div>
+          )}
+
+          {generating && (
+            <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
+              <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mb-6">
+                <FiCpu className="text-indigo-600 animate-spin" size={40} />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Generando con IA</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">Analizando artículo y creando escenas...</p>
             </div>
           )}
 

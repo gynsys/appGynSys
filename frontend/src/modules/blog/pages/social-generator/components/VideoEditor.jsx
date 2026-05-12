@@ -197,10 +197,9 @@ export const VideoEditor = ({
                 <FiType className="text-indigo-600" size={16} />
               </div>
               <h4 className="font-black uppercase text-[11px] tracking-[0.15em] text-gray-900 dark:text-white">Identidad Visual</h4>
-            </div>
-            <div className="space-y-5">
+            </div>            <div className="space-y-5">
               <div>
-                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Tipografía del Reel</label>
+                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Tipografía del Reel</label>
                 <select 
                   value={videoStyles.fontFamily}
                   onChange={(e) => setVideoStyles({...videoStyles, fontFamily: e.target.value})}
@@ -215,13 +214,13 @@ export const VideoEditor = ({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Color Texto</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Color Texto</label>
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
                     <input type="color" value={videoStyles.textColor} onChange={(e) => setVideoStyles({...videoStyles, textColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Color Fondo</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Color Fondo</label>
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
                     <input type="color" value={videoStyles.bgColor || videoStyles.backgroundColor} onChange={(e) => setVideoStyles({...videoStyles, bgColor: e.target.value, backgroundColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
                   </div>
@@ -229,12 +228,13 @@ export const VideoEditor = ({
               </div>
               <div>
                 <div className="flex justify-between items-center mb-2.5">
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tamaño del Mensaje</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Tamaño del Mensaje</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{videoStyles.fontSize}px</span>
                 </div>
                 <input type="range" min="24" max="72" value={videoStyles.fontSize} onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
               </div>
             </div>
+          </div>
           </div>
 
           {/* Audio & Motion */}
@@ -247,7 +247,7 @@ export const VideoEditor = ({
             </div>
             <div className="space-y-5">
               <div>
-                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Banda Sonora</label>
+                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Banda Sonora</label>
                 <select 
                   value={selectedAudio}
                   onChange={(e) => setSelectedAudio(e.target.value)}
@@ -277,8 +277,17 @@ export const VideoEditor = ({
                       />
                     </label>
                     {customAudioUrl && (
-                      <p className="text-[9px] font-bold text-indigo-500 mt-2 flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
-                        <FiVolume2 size={12} /> Audio personalizado listo
+                      <p className="text-[9px] font-bold text-indigo-500 mt-2 flex items-center justify-between gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-xl">
+                        <span className="flex items-center gap-1.5">
+                          <FiVolume2 size={12} /> Audio personalizado listo
+                        </span>
+                        <button 
+                          onClick={() => setCustomAudioUrl(null)}
+                          className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-md transition-all"
+                          title="Eliminar audio"
+                        >
+                          <FiTrash2 size={12} />
+                        </button>
                       </p>
                     )}
                   </div>
@@ -287,7 +296,7 @@ export const VideoEditor = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Transición</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Transición</label>
                   <select value={transitionType} onChange={(e) => setTransitionType(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-xl text-[10px] font-bold p-3 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700">
                     <option value="fade">Fade (Suave)</option>
                     <option value="slide">Slide (Lateral)</option>
@@ -295,7 +304,7 @@ export const VideoEditor = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Velocidad</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Velocidad</label>
                   <input type="number" step="0.1" value={transitionDuration} onChange={(e) => setTransitionDuration(parseFloat(e.target.value))} className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-xl text-[10px] font-bold p-3 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700" />
                 </div>
               </div>

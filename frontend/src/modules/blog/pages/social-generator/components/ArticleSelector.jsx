@@ -23,7 +23,7 @@ export const ArticleSelector = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Step 1: Article Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">1. Crear Nuevo desde Artículo</h2>
+          <h2 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4">1. Crear Nuevo desde Artículo</h2>
           <select
             value={selectedPost?.id || ''}
             onChange={(e) => {
@@ -39,7 +39,7 @@ export const ArticleSelector = ({
 
         {/* Step 2: Saved Projects Access */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="text-xs font-black uppercase tracking-widest text-indigo-400 mb-4">2. Continuar Proyecto Guardado</h2>
+          <h2 className="text-xs font-black uppercase tracking-widest text-indigo-600 mb-4">2. Continuar Proyecto Guardado</h2>
           <div className="relative">
             <button 
               onClick={() => setShowProjects(!showProjects)}
@@ -49,7 +49,7 @@ export const ArticleSelector = ({
                 <FiFolder className="text-indigo-500" />
                 <span className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-tight">Mis Proyectos Guardados</span>
               </div>
-              <FiChevronDown className={`text-indigo-400 transition-transform ${showProjects ? 'rotate-180' : ''}`} />
+              <FiChevronDown className={`text-indigo-600 transition-transform ${showProjects ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Proyectos desplegables aquí para correcto posicionamiento absolute */}

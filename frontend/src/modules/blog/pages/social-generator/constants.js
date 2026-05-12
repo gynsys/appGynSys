@@ -1,10 +1,10 @@
 
 export const AUDIO_TRACKS = {
-  'Soft': 'https://api.gynsys.net/uploads/audio/soft.mp3',
-  'Inspirational': 'https://api.gynsys.net/uploads/audio/inspirational.mp3',
-  'Medical': 'https://api.gynsys.net/uploads/audio/medical.mp3',
-  'Dynamic': 'https://api.gynsys.net/uploads/audio/dynamic.mp3',
-  'Tender Heart': 'https://api.gynsys.net/uploads/audio/tender_heart.mp3'
+  'Soft': '/uploads/audio/soft.mp3',
+  'Inspirational': '/uploads/audio/inspirational.mp3',
+  'Medical': '/uploads/audio/medical.mp3',
+  'Dynamic': '/uploads/audio/dynamic.mp3',
+  'Tender Heart': '/uploads/audio/tender_heart.mp3'
 };
 
 export const DEFAULT_VIDEO_STYLES = {

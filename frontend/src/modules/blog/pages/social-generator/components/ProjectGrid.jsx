@@ -27,12 +27,12 @@ export const ProjectGrid = ({
               className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${activeProjectId === p.id ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
             >
               <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => onLoad(p)}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeProjectId === p.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-400 group-hover:text-indigo-500'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeProjectId === p.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-500 group-hover:text-indigo-500'}`}>
                    {p.content?.video_slides ? <FiVideo size={18} /> : <FiImage size={18} />}
                 </div>
                 <div className="text-left">
                   <p className={`text-sm font-black uppercase tracking-tight ${activeProjectId === p.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-700 dark:text-gray-300'}`}>{p.name}</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
                     {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Reciente'}
                   </p>
                 </div>
