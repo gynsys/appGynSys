@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.blog.models import BlogPost, Comment, BlogPostSEO, SocialCarousel
-from app.blog.schemas import BlogPostCreate, BlogPostUpdate, CommentCreate, SocialCarouselCreate
+from app.blog.schemas import BlogPostCreate, BlogPostUpdate, CommentCreate, SocialCarouselCreate, SocialAudioCreate
 
 def get_carousel(db: Session, carousel_id: int):
     return db.query(SocialCarousel).filter(SocialCarousel.id == carousel_id).first()
