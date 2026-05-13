@@ -70,7 +70,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
       const audio = userAudios.find(a => a.id === audioId);
       if (audio) return getImageUrl(audio.url);
     }
-    return AUDIO_TRACKS[selectedAudio] || AUDIO_TRACKS['Medical'];
+    return getImageUrl(AUDIO_TRACKS[selectedAudio] || AUDIO_TRACKS['Medical']);
   };
 
   // Main Audio Effect
@@ -104,7 +104,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
           const audio = userAudios.find(a => a.id === audioId);
           src = audio ? getImageUrl(audio.url) : '';
         } else {
-          src = AUDIO_TRACKS[prelisteningTrack];
+          src = getImageUrl(AUDIO_TRACKS[prelisteningTrack]);
         }
         
         if (src) {
