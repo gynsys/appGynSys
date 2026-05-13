@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiRefreshCw, FiLayers } from 'react-icons/fi';
+import { FiMaximize2, FiEdit3, FiPlusCircle, FiCopy, FiCheck, FiTrash2, FiRefreshCw, FiLayers, FiImage } from 'react-icons/fi';
 import { SVGIcons } from '../lib/svgIcons';
 
 // Function to get SVG path for each icon type

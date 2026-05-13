@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { 
   FiTrash2, FiX, FiBold, FiItalic, FiType, 
   FiLayers, FiMove, FiMaximize, FiMinimize, 
-  FiCornerUpLeft, FiSquare, FiCircle
+  FiCornerUpLeft, FiSquare, FiCircle, FiImage
 } from 'react-icons/fi';
 
 export const ContextualBar = ({ 
