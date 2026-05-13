@@ -19,8 +19,9 @@ export const DEFAULT_VIDEO_STYLES = {
 };
 
 export const AVAILABLE_FONTS = [
-  'Outfit', 'Montserrat', 'Playfair Display', 'Bebas Neue', 'Impact', 
-  'Arial', 'Times New Roman', 'sans-serif', 'Dancing Script'
+  'Outfit', 'Montserrat', 'Poppins', 'Roboto', 'Open Sans', 'Oswald', 'Anton',
+  'Dancing Script', 'Cookie', 'Playfair Display', 
+  'Arial', 'Times New Roman', 'Helvetica', 'Futura', 'sans-serif'
 ];
 
 export const SLIDE_TRANSITIONS = {

@@ -106,8 +106,8 @@ export const VideoEditor = ({
   if (!scenes || !Array.isArray(scenes)) {
     return (
       <div className="p-20 text-center bg-white dark:bg-gray-800 rounded-[40px] border-2 border-dashed border-gray-100 dark:border-gray-700">
-        <FiVideo className="mx-auto text-gray-200 mb-4" size={48} />
-        <p className="text-gray-400 font-black uppercase tracking-widest text-xs">Esperando secuencia de video...</p>
+        <FiVideo className="mx-auto text-gray-400 mb-4" size={48} />
+        <p className="text-gray-600 font-black uppercase tracking-widest text-xs">Esperando secuencia de video...</p>
       </div>
     );
   }
@@ -213,7 +213,7 @@ export const VideoEditor = ({
             <button 
               onClick={handleExportVideo}
               disabled={isExporting}
-              className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-400' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
+              className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
             >
               {isExporting ? <><FiLoader className="animate-spin" /> Procesando {exportProgress}%</> : <><FiVideo size={18} /> Exportar Reel MP4</>}
             </button>
@@ -234,7 +234,7 @@ export const VideoEditor = ({
               <h4 className="font-black uppercase text-[11px] tracking-[0.15em] text-gray-900 dark:text-white">Identidad Visual</h4>
             </div>            <div className="space-y-5">
               <div>
-                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Tipografía del Reel</label>
+                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Tipografía del Reel</label>
                 <select 
                   value={videoStyles.fontFamily}
                   onChange={(e) => setVideoStyles({...videoStyles, fontFamily: e.target.value})}
@@ -247,20 +247,20 @@ export const VideoEditor = ({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Color Texto</label>
+                  <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Color Texto</label>
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
                     <input type="color" value={videoStyles.textColor} onChange={(e) => setVideoStyles({...videoStyles, textColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Resaltado (**) </label>
+                  <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Resaltado (**) </label>
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
                     <input type="color" value={videoStyles.highlightColor || '#ff0000'} onChange={(e) => setVideoStyles({...videoStyles, highlightColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
                   </div>
                 </div>
               </div>
               <div>
-                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Tipo de Fondo</label>
+                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Tipo de Fondo</label>
                 <div className="flex gap-2 mb-4">
                   <button 
                     onClick={() => setVideoStyles({...videoStyles, backgroundType: 'solid'})}
@@ -321,7 +321,7 @@ export const VideoEditor = ({
             </div>
             <div className="space-y-5">
               <div>
-                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Banda Sonora</label>
+                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Banda Sonora</label>
                 <div className="flex gap-2">
                   <select 
                     value={selectedAudio}
@@ -383,7 +383,7 @@ export const VideoEditor = ({
                       </span>
                       <button 
                         onClick={() => { setCustomAudioUrl(null); setSelectedAudio('Medical'); }}
-                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-md transition-all"
+                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 rounded-md transition-all"
                       >
                         <FiTrash2 size={12} />
                       </button>
@@ -392,7 +392,7 @@ export const VideoEditor = ({
                   {loadingAudios && (
                     <div className="flex items-center gap-2 mt-2 px-2">
                       <FiLoader className="animate-spin text-indigo-400" size={10} />
-                      <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Sincronizando audios...</span>
+                      <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Sincronizando audios...</span>
                     </div>
                   )}
                 </div>
@@ -400,7 +400,7 @@ export const VideoEditor = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Transición</label>
+                  <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Transición</label>
                   <select value={transitionType} onChange={(e) => setTransitionType(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-xl text-[10px] font-bold p-3 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700">
                     <option value="fade">Fade (Suave)</option>
                     <option value="slide">Slide (Lateral)</option>
@@ -408,14 +408,14 @@ export const VideoEditor = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Velocidad</label>
+                  <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block">Velocidad</label>
                   <input type="number" step="0.1" value={transitionDuration} onChange={(e) => setTransitionDuration(parseFloat(e.target.value))} className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-xl text-[10px] font-bold p-3 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700" />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2.5">
-                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Duración por Escena</label>
+                  <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Duración por Escena</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{slideDuration}s</span>
                 </div>
                 <input type="range" min="1.5" max="8" step="0.5" value={slideDuration} onChange={(e) => setSlideDuration(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
@@ -428,8 +428,8 @@ export const VideoEditor = ({
         <div className="flex-1 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-[32px] p-7 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between mb-8">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-400">Guión del Video</h4>
-              <span className="px-3 py-1 bg-gray-50 dark:bg-gray-900 text-[10px] font-black text-gray-400 rounded-full">{scenes.length} Escenas</span>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-500">Guión del Video</h4>
+              <span className="px-3 py-1 bg-gray-50 dark:bg-gray-900 text-[10px] font-black text-gray-500 rounded-full">{scenes.length} Escenas</span>
             </div>
             
             <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-3 custom-scrollbar">
@@ -487,7 +487,7 @@ export const VideoEditor = ({
                       </div>
 
                       <div className="flex justify-between items-center px-1">
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-gray-400'}`}>
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${slideText.split(' ').filter(Boolean).length > 12 ? 'text-red-500' : 'text-gray-500'}`}>
                           {slideText.split(' ').filter(Boolean).length} {'/ 12 PALABRAS'}
                         </p>
                         {slide.image && <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1"><FiImage size={10} /> Imagen Cargada</span>}
