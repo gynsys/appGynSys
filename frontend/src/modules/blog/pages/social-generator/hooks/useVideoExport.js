@@ -134,48 +134,105 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
 
   const drawScene = (ctx, slide, image, styles, canvas) => {
     // Fondo
-    ctx.fillStyle = styles.bgColor || styles.backgroundColor || '#000000';
+    if (styles.backgroundType === 'gradient' && Array.isArray(styles.gradientColors) && styles.gradientColors.length >= 3) {
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, styles.gradientColors[0]);
+      grad.addColorStop(0.5, styles.gradientColors[1]);
+      grad.addColorStop(1, styles.gradientColors[2]);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = styles.bgColor || styles.backgroundColor || '#000000';
+    }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Imagen
     if (image) {
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillStyle = `rgba(0,0,0,${styles.overlayOpacity || 0.4})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Texto
-    ctx.fillStyle = styles.textColor || '#ffffff';
-    ctx.font = `bold ${styles.fontSize || 40}px ${styles.fontFamily || 'sans-serif'}`;
+    // Configuración de Texto Base
+    const fontSize = styles.fontSize || 40;
+    const fontFamily = styles.fontFamily || 'sans-serif';
+    ctx.font = `bold ${fontSize}px ${fontFamily}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
     const slideText = slide.text || slide.content || slide.title || '';
+    
+    // Lógica de Envoltura de Texto (Word Wrap)
     const words = slideText.split(' ').filter(Boolean);
     let line = '';
     let lines = [];
     
     for (let n = 0; n < words.length; n++) {
-      let testLine = line + words[n] + ' ';
+      // Para medir, quitamos los marcadores de resaltado **
+      const testWord = words[n].replace(/\*\*/g, '');
+      const testLine = (line + testWord + ' ');
+      
       if (ctx.measureText(testLine).width > 600 && n > 0) {
-        lines.push(line);
+        lines.push(line.trim());
         line = words[n] + ' ';
-      } else { line = testLine; }
+      } else { 
+        line = line + words[n] + ' '; 
+      }
     }
-    lines.push(line);
+    lines.push(line.trim());
     
-    let y = (canvas.height / 2) - ((lines.length - 1) * (styles.fontSize || 40) * 0.6);
+    // Centrado Vertical
+    let y = (canvas.height / 2) - ((lines.length - 1) * fontSize * 0.6);
+    
+    // Dibujar cada línea con soporte para resaltado
     lines.forEach(l => {
-      ctx.fillText(l, canvas.width / 2, y);
-      y += (styles.fontSize || 40) * 1.2;
+      drawMixedStyleLine(ctx, l, canvas.width / 2, y, styles);
+      y += fontSize * 1.2;
     });
 
     // Texto Secundario (Overlay)
     if (slide.overlayText) {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.font = `500 ${Math.max(16, (styles.fontSize || 40) * 0.5)}px ${styles.fontFamily || 'sans-serif'}`;
+      ctx.font = `500 ${Math.max(16, fontSize * 0.5)}px ${fontFamily}`;
       ctx.fillText(slide.overlayText, canvas.width / 2, y + 20);
     }
+  };
+
+  const drawMixedStyleLine = (ctx, line, x, y, styles) => {
+    const fontSize = styles.fontSize || 40;
+    const fontFamily = styles.fontFamily || 'sans-serif';
+    const highlightColor = styles.highlightColor || '#ff0000';
+    const textColor = styles.textColor || '#ffffff';
+
+    // Dividir por el marcador de resaltado
+    const parts = line.split(/(\*\*.*?\*\*)/g);
+    
+    // Calcular ancho total para centrar
+    const cleanLine = line.replace(/\*\*/g, '');
+    const totalWidth = ctx.measureText(cleanLine).width;
+    let currentX = x - (totalWidth / 2);
+
+    parts.forEach(part => {
+      if (!part) return;
+      
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const cleanPart = part.slice(2, -2);
+        ctx.save();
+        ctx.fillStyle = highlightColor;
+        ctx.font = `italic bold ${fontSize}px ${fontFamily}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(cleanPart, currentX, y);
+        currentX += ctx.measureText(cleanPart).width;
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(part, currentX, y);
+        currentX += ctx.measureText(part).width;
+        ctx.restore();
+      }
+    });
   };
 
   return {

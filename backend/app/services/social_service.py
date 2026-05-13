@@ -46,7 +46,7 @@ def generate_with_groq(prompt: str):
     payload = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
-            {"role": "system", "content": "Eres un experto en diseño de carruseles médicos e Instagram. Debes responder SIEMPRE en formato JSON."},
+            {"role": "system", "content": "Eres un experto en diseño de carruseles médicos e Instagram. Debes responder SIEMPRE en formato JSON. Si generas contenido para Reels, envuelve las 1 o 2 palabras clave de cada frase entre asteriscos (ej: **palabra**) para resaltarlas."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
@@ -89,6 +89,7 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
         3. PSICOLOGÍA: Usa un tono que mezcle autoridad médica con cercanía humana. Empatiza con el problema de la paciente antes de dar la solución.
         4. RITMO: Usa frases cortas, directas y con punch. Elimina el relleno académico.
         5. ESTRUCTURA: Genera exactamente entre 6 y 9 escenas que cuenten una historia o den un consejo práctico.
+        6. RESALTADO: Envuelve las 1 o 2 palabras más importantes de cada frase entre asteriscos (ej: **palabra**) para resaltarlas visualmente.
         
         Responde EXCLUSIVAMENTE con un objeto JSON válido con esta estructura:
         {{

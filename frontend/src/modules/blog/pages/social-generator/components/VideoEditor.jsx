@@ -4,7 +4,7 @@ import {
   FiZap, FiPlay, FiVolume2, FiVolumeX, FiImage, FiTrash2, 
   FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors
 } from 'react-icons/fi';
-import { AUDIO_TRACKS } from '../constants';
+import { AUDIO_TRACKS, AVAILABLE_FONTS } from '../constants';
 import { getImageUrl } from '../../../../../lib/imageUtils';
 
 export const VideoEditor = ({ 
@@ -41,6 +41,38 @@ export const VideoEditor = ({
   handleUploadAudio,
   handleDeleteAudio
 }) => {
+  const parseHighlightedText = (text) => {
+    if (!text) return '';
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <span 
+            key={i} 
+            style={{ 
+              color: videoStyles.highlightColor || '#ff0000',
+              fontStyle: 'italic'
+            }}
+          >
+            {part.slice(2, -2)}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  const getBackgroundStyle = () => {
+    if (videoStyles.backgroundType === 'gradient' && Array.isArray(videoStyles.gradientColors)) {
+      const colors = videoStyles.gradientColors;
+      return { 
+        background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]}, ${colors[2]})` 
+      };
+    }
+    return { 
+      backgroundColor: videoStyles.bgColor || videoStyles.backgroundColor 
+    };
+  };
 
   const handleSplitScene = (index) => {
     const scenes = generatedContent?.video_slides || generatedContent?.slides || [];
@@ -96,9 +128,7 @@ export const VideoEditor = ({
             {/* Video Canvas Rendering */}
             <div 
               className="absolute inset-0 flex items-center justify-center transition-all duration-700 overflow-hidden"
-              style={{ 
-                backgroundColor: !scenes[currentVideoSlide]?.image ? videoStyles.bgColor || videoStyles.backgroundColor : 'transparent' 
-              }}
+              style={!scenes[currentVideoSlide]?.image ? getBackgroundStyle() : { backgroundColor: 'transparent' }}
             >
               {scenes[currentVideoSlide]?.image && (
                 <img 
@@ -116,7 +146,7 @@ export const VideoEditor = ({
                     color: videoStyles.textColor
                   }}
                 >
-                  {scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || ''}
+                  {parseHighlightedText(scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '')}
                 </p>
                 {scenes[currentVideoSlide]?.overlayText && (
                   <p 
@@ -210,11 +240,9 @@ export const VideoEditor = ({
                   onChange={(e) => setVideoStyles({...videoStyles, fontFamily: e.target.value})}
                   className="w-full bg-gray-50 dark:bg-gray-900/50 border-none rounded-2xl text-xs font-bold p-3.5 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700"
                 >
-                  <option value="Montserrat">Montserrat (Moderno)</option>
-                  <option value="Playfair Display">Playfair (Premium)</option>
-                  <option value="Bebas Neue">Bebas Neue (Impacto)</option>
-                  <option value="Outfit">Outfit (Minimalista)</option>
-                  <option value="Impact">Impact (Clásico)</option>
+                  {AVAILABLE_FONTS.map(font => (
+                    <option key={font} value={font}>{font}</option>
+                  ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -225,11 +253,53 @@ export const VideoEditor = ({
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Color Fondo</label>
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Resaltado (**) </label>
+                  <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
+                    <input type="color" value={videoStyles.highlightColor || '#ff0000'} onChange={(e) => setVideoStyles({...videoStyles, highlightColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Tipo de Fondo</label>
+                <div className="flex gap-2 mb-4">
+                  <button 
+                    onClick={() => setVideoStyles({...videoStyles, backgroundType: 'solid'})}
+                    className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${videoStyles.backgroundType !== 'gradient' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}
+                  >
+                    Sólido
+                  </button>
+                  <button 
+                    onClick={() => setVideoStyles({...videoStyles, backgroundType: 'gradient'})}
+                    className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${videoStyles.backgroundType === 'gradient' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}
+                  >
+                    Gradiente
+                  </button>
+                </div>
+
+                {videoStyles.backgroundType === 'gradient' ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {[0, 1, 2].map(i => (
+                      <div key={i}>
+                        <div className="bg-gray-50 dark:bg-gray-900/50 p-1 rounded-xl ring-1 ring-gray-100 dark:ring-gray-700">
+                          <input 
+                            type="color" 
+                            value={videoStyles.gradientColors?.[i] || '#000000'} 
+                            onChange={(e) => {
+                              const newColors = [...(videoStyles.gradientColors || ['#000000', '#000000', '#000000'])];
+                              newColors[i] = e.target.value;
+                              setVideoStyles({...videoStyles, gradientColors: newColors});
+                            }} 
+                            className="w-full h-8 rounded-lg cursor-pointer border-none bg-transparent p-0" 
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-2xl ring-1 ring-gray-100 dark:ring-gray-700">
                     <input type="color" value={videoStyles.bgColor || videoStyles.backgroundColor} onChange={(e) => setVideoStyles({...videoStyles, bgColor: e.target.value, backgroundColor: e.target.value})} className="w-full h-9 rounded-xl cursor-pointer border-none bg-transparent p-0" />
                   </div>
-                </div>
+                )}
               </div>
               <div>
                 <div className="flex justify-between items-center mb-2.5">

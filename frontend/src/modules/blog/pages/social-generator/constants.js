@@ -8,12 +8,20 @@ export const AUDIO_TRACKS = {
 };
 
 export const DEFAULT_VIDEO_STYLES = {
-  fontFamily: 'Manrope',
+  fontFamily: 'Outfit',
   fontSize: 48,
   textColor: '#ffffff',
   backgroundColor: '#4f46e5',
+  highlightColor: '#ff0000',
+  backgroundType: 'solid', // 'solid' or 'gradient'
+  gradientColors: ['#4f46e5', '#3b82f6', '#2dd4bf'],
   overlayOpacity: 0.4
 };
+
+export const AVAILABLE_FONTS = [
+  'Outfit', 'Montserrat', 'Playfair Display', 'Bebas Neue', 'Impact', 
+  'Arial', 'Times New Roman', 'sans-serif', 'Dancing Script'
+];
 
 export const SLIDE_TRANSITIONS = {
   duration: 3000, // 3 seconds per slide default
