@@ -5,7 +5,7 @@ import {
   FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors
 } from 'react-icons/fi';
 import { AUDIO_TRACKS } from '../constants';
-import { getImageUrl } from '../../../../lib/imageUtils';
+import { getImageUrl } from '../../../../../lib/imageUtils';
 
 export const VideoEditor = ({ 
   generatedContent, 
