@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave, FiX } from 'react-icons/fi';
 
 // Config & Services
 import { blogService } from '../../services/blogService';
@@ -486,6 +486,54 @@ export default function SocialGenerator() {
         removeElement={designer.canvas.removeExtraElement}
         deselectElement={designer.canvas.selectElement}
       />
+
+      {/* Edit Content Modal */}
+      {editingIndex !== null && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Editar Diapositiva {editingIndex + 1}</h3>
+              <button onClick={() => setEditingIndex(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                <FiX size={20} className="text-gray-400" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Título</label>
+                <input 
+                  type="text"
+                  value={generatedContent.slides[editingIndex].title}
+                  onChange={(e) => {
+                    const newSlides = [...generatedContent.slides];
+                    newSlides[editingIndex].title = e.target.value;
+                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                  }}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Contenido</label>
+                <textarea 
+                  rows={5}
+                  value={generatedContent.slides[editingIndex].content}
+                  onChange={(e) => {
+                    const newSlides = [...generatedContent.slides];
+                    newSlides[editingIndex].content = e.target.value;
+                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                  }}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm leading-relaxed"
+                />
+              </div>
+              <button 
+                onClick={() => setEditingIndex(null)}
+                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PreviewModal 
         isOpen={previewIndex !== null} currentIndex={previewIndex}
