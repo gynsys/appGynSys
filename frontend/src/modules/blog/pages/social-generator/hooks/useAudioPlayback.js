@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { AUDIO_TRACKS } from '../constants';
 import { blogService } from '../../../services/blogService';
+import { getImageUrl } from '../../../../lib/imageUtils';
 
 export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) => {
   const [selectedAudio, setSelectedAudio] = useState('Medical');
@@ -67,7 +68,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
     if (selectedAudio.startsWith('User-')) {
       const audioId = parseInt(selectedAudio.split('-')[1]);
       const audio = userAudios.find(a => a.id === audioId);
-      if (audio) return audio.url.startsWith('http') ? audio.url : `${import.meta.env.VITE_API_BASE_URL}${audio.url}`;
+      if (audio) return getImageUrl(audio.url);
     }
     return AUDIO_TRACKS[selectedAudio] || AUDIO_TRACKS['Medical'];
   };
@@ -101,7 +102,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
         } else if (prelisteningTrack.startsWith('User-')) {
           const audioId = parseInt(prelisteningTrack.split('-')[1]);
           const audio = userAudios.find(a => a.id === audioId);
-          src = audio ? (audio.url.startsWith('http') ? audio.url : `${import.meta.env.VITE_API_BASE_URL}${audio.url}`) : '';
+          src = audio ? getImageUrl(audio.url) : '';
         } else {
           src = AUDIO_TRACKS[prelisteningTrack];
         }

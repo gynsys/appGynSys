@@ -5,6 +5,7 @@ import {
   FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors
 } from 'react-icons/fi';
 import { AUDIO_TRACKS } from '../constants';
+import { getImageUrl } from '../../../../lib/imageUtils';
 
 export const VideoEditor = ({ 
   generatedContent, 
@@ -260,7 +261,7 @@ export const VideoEditor = ({
                       if (val.startsWith('User-')) {
                         const audioId = parseInt(val.split('-')[1]);
                         const audio = userAudios.find(a => a.id === audioId);
-                        if (audio) setCustomAudioUrl(audio.url);
+                        if (audio) setCustomAudioUrl(getImageUrl(audio.url));
                       }
                     }}
                     className="flex-1 bg-gray-50 dark:bg-gray-900/50 border-none rounded-2xl text-xs font-bold p-3.5 outline-none dark:text-white ring-1 ring-gray-100 dark:ring-gray-700"
