@@ -224,7 +224,7 @@ export const VideoEditor = ({
         </div>
 
         {/* COL 2: STYLE & RHYTHM (Center Panel) */}
-        <div className="flex-1 max-w-[460px] space-y-6">
+        <div className="w-full lg:w-[413px] flex-shrink-0 space-y-6">
           {/* Visual Identity */}
           <div className="bg-white dark:bg-gray-800 rounded-[32px] p-7 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-6">
@@ -425,7 +425,7 @@ export const VideoEditor = ({
         </div>
 
         {/* COL 3: SCENE SEQUENCER (Right Panel) */}
-        <div className="flex-1 space-y-6">
+        <div className="w-full lg:w-[413px] flex-shrink-0 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-[32px] p-7 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between mb-8">
               <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-500">Guión del Video</h4>
