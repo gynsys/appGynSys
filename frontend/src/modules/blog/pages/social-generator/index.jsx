@@ -461,12 +461,16 @@ export default function SocialGenerator() {
                           onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
                         />
                       </div>
+
+                      {/* Pagination pill at the bottom of the canvas area */}
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40">
+                        <SlidePaginator 
+                          current={designer.canvas.currentSlidePage}
+                          total={generatedContent.slides.length}
+                          onChange={designer.canvas.setCurrentSlidePage}
+                        />
+                      </div>
                     </div>
-                    <SlidePaginator 
-                      current={designer.canvas.currentSlidePage}
-                      total={generatedContent.slides.length}
-                      onChange={designer.canvas.setCurrentSlidePage}
-                    />
                   </div>
                 </div>
               )}

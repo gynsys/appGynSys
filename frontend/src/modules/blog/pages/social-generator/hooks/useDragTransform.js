@@ -18,8 +18,8 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
   const rafRef = useRef(null);
 
   const handleDragStart = (e, index, type, id, container, initialPos) => {
-    // Only prevent default on mouse events at the start
-    if (!e.touches) e.preventDefault();
+    const isEditable = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+    if (!e.touches && !isEditable) e.preventDefault();
     e.stopPropagation();
     
     // Handle both mouse and touch events
