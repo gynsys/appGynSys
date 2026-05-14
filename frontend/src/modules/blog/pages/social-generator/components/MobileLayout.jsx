@@ -179,7 +179,7 @@ export const MobileLayout = ({
 
       {/* Tab Switcher for Mobile */}
       {generatedContent && (
-        <div className="px-4 mt-4">
+        <div className="px-4 mt-4 space-y-3">
           <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
             <button 
               onClick={() => setActiveTab('video')} 
@@ -192,6 +192,22 @@ export const MobileLayout = ({
               className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'carousel' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400'}`}
             >
               Carrusel
+            </button>
+          </div>
+
+          <div className="flex gap-2">
+            <button 
+              onClick={handleSaveProject} 
+              style={{ backgroundColor: 'rgb(205, 8, 87)' }}
+              className="flex-1 py-3 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-200/20 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <FiSave /> Guardar
+            </button>
+            <button 
+              onClick={handleSaveProjectAs} 
+              className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2"
+            >
+              <FiSave /> Guardar como...
             </button>
           </div>
         </div>
@@ -236,9 +252,8 @@ export const MobileLayout = ({
                   </div>
                 </div>
                 
-                <div className="flex gap-3 w-full">
-                  <button onClick={() => setPreviewIndex(0)} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg"><FiPlay /> Previa</button>
-                  <button onClick={handleSaveProject} className="flex-1 py-4 bg-white dark:bg-gray-800 text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm border border-indigo-100 flex items-center justify-center gap-2"><FiSave /> Guardar</button>
+                <div className="w-full">
+                  <button onClick={() => setPreviewIndex(0)} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg"><FiPlay /> Previa de Carrusel</button>
                 </div>
               </div>
             )}
