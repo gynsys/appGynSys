@@ -70,7 +70,7 @@ export const MobileLayout = ({
   loadingAudios = false,
   handleUploadAudio,
   handleDeleteAudio,
-  saving,
+  savingType,
   saveProgress
 }) => {
   return (
@@ -207,18 +207,18 @@ export const MobileLayout = ({
           <div className="flex gap-2">
             <button 
               onClick={handleSaveProject} 
-              disabled={saving}
+              disabled={savingType !== null}
               style={{ backgroundColor: 'rgb(205, 8, 87)' }}
               className="relative flex-1 py-3 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-200/20 active:scale-95 flex items-center justify-center gap-2 overflow-hidden disabled:opacity-80"
             >
               {/* Animated progress bar underlay */}
-              {saving && (
+              {savingType === 'save' && (
                 <span 
                   className="absolute inset-0 bg-white/20 transition-all duration-300 origin-left"
                   style={{ transform: `scaleX(${saveProgress / 100})` }}
                 />
               )}
-              {saving ? (
+              {savingType === 'save' ? (
                 <>
                   <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 36 36">
                     <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.8" />
@@ -239,10 +239,34 @@ export const MobileLayout = ({
             </button>
             <button 
               onClick={handleSaveProjectAs} 
-              disabled={saving}
-              className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={savingType !== null}
+              className="relative flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2 disabled:opacity-80 overflow-hidden"
             >
-              <FiSave /> Guardar como...
+              {/* Animated progress bar underlay */}
+              {savingType === 'saveAs' && (
+                <span 
+                  className="absolute inset-0 bg-gray-200 dark:bg-gray-600 transition-all duration-300 origin-left"
+                  style={{ transform: `scaleX(${saveProgress / 100})` }}
+                />
+              )}
+              {savingType === 'saveAs' ? (
+                <>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3.8" />
+                    <circle
+                      cx="18" cy="18" r="15.9"
+                      fill="none" stroke="currentColor" strokeWidth="3.8"
+                      strokeDasharray={`${saveProgress} 100`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 18 18)"
+                      style={{ transition: 'stroke-dasharray 0.3s ease' }}
+                    />
+                  </svg>
+                  <span className="relative z-10">{saveProgress}%</span>
+                </>
+              ) : (
+                <><FiSave className="relative z-10" /> <span className="relative z-10">Guardar como...</span></>
+              )}
             </button>
           </div>
         </div>

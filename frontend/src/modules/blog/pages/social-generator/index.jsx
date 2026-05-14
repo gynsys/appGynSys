@@ -52,7 +52,7 @@ export default function SocialGenerator() {
   const [slideDuration, setSlideDuration] = useState(3);
   const [transitionType, setTransitionType] = useState('fade');
   const [transitionDuration, setTransitionDuration] = useState(0.5);
-  const [saving, setSaving] = useState(false);
+  const [savingType, setSavingType] = useState(null); // 'save' | 'saveAs' | null
   const [saveProgress, setSaveProgress] = useState(0);
   const saveProgressRef = useRef(null);
 
@@ -232,7 +232,7 @@ export default function SocialGenerator() {
   const stopSaveProgress = (success = true) => {
     clearInterval(saveProgressRef.current);
     setSaveProgress(success ? 100 : 0);
-    setTimeout(() => { setSaving(false); setSaveProgress(0); }, 600);
+    setTimeout(() => { setSavingType(null); setSaveProgress(0); }, 600);
   };
 
   const handleSaveProject = async () => {
@@ -240,7 +240,7 @@ export default function SocialGenerator() {
       return handleSaveProjectAs();
     }
 
-    setSaving(true);
+    setSavingType('save');
     startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
@@ -265,7 +265,7 @@ export default function SocialGenerator() {
     const name = prompt('Nombre del nuevo proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
     if (!name) return;
 
-    setSaving(true);
+    setSavingType('saveAs');
     startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
@@ -365,7 +365,7 @@ export default function SocialGenerator() {
         exportStatus={exportStatus}
         userAudios={userAudios} loadingAudios={loadingAudios}
         handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
-        saving={saving} saveProgress={saveProgress}
+        savingType={savingType} saveProgress={saveProgress}
       />
     );
   }
@@ -424,19 +424,19 @@ export default function SocialGenerator() {
               <div className="flex gap-3">
                 <button 
                   onClick={handleSaveProject} 
-                  disabled={saving}
+                  disabled={savingType !== null}
                   style={{ backgroundColor: 'rgb(205, 8, 87)' }}
                   className="relative px-8 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-pink-200 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-80 overflow-hidden"
                 >
                   {/* Animated progress bar underlay */}
-                  {saving && (
+                  {savingType === 'save' && (
                     <span 
                       className="absolute inset-0 bg-white/20 transition-all duration-300 origin-left"
                       style={{ transform: `scaleX(${saveProgress / 100})` }}
                     />
                   )}
                   {/* Circular spinner */}
-                  {saving ? (
+                  {savingType === 'save' ? (
                     <>
                       <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 36 36">
                         <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.8" />
@@ -457,10 +457,35 @@ export default function SocialGenerator() {
                 </button>
                 <button 
                   onClick={handleSaveProjectAs} 
-                  disabled={saving}
-                  className="px-8 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                  disabled={savingType !== null}
+                  className="relative px-8 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-80 overflow-hidden"
                 >
-                  <FiSave /> Guardar como...
+                  {/* Animated progress bar underlay */}
+                  {savingType === 'saveAs' && (
+                    <span 
+                      className="absolute inset-0 bg-gray-200 dark:bg-gray-600 transition-all duration-300 origin-left"
+                      style={{ transform: `scaleX(${saveProgress / 100})` }}
+                    />
+                  )}
+                  {/* Circular spinner */}
+                  {savingType === 'saveAs' ? (
+                    <>
+                      <svg className="w-4 h-4 flex-shrink-0 text-gray-400" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3.8" />
+                        <circle
+                          cx="18" cy="18" r="15.9"
+                          fill="none" stroke="currentColor" strokeWidth="3.8"
+                          strokeDasharray={`${saveProgress} 100`}
+                          strokeLinecap="round"
+                          transform="rotate(-90 18 18)"
+                          style={{ transition: 'stroke-dasharray 0.3s ease' }}
+                        />
+                      </svg>
+                      <span className="relative z-10">{saveProgress}%</span>
+                    </>
+                  ) : (
+                    <><FiSave className="relative z-10" /> <span className="relative z-10">Guardar como...</span></>
+                  )}
                 </button>
               </div>
             </div>
