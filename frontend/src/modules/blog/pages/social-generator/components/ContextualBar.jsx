@@ -64,11 +64,13 @@ export const ContextualBar = ({
               {/* Font size inline */}
               <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-xl px-2 py-1 flex-shrink-0">
                 <button
+                  style={{ touchAction: 'manipulation' }}
                   onClick={() => updateElement(parseInt(slideIdx), elId, { fontSize: Math.max(8, (el.fontSize || 24) - 1) })}
                   className="w-5 h-5 flex items-center justify-center text-gray-500 font-black text-sm"
                 >−</button>
                 <span className="text-xs font-black text-indigo-600 w-6 text-center">{el.fontSize || 24}</span>
                 <button
+                  style={{ touchAction: 'manipulation' }}
                   onClick={() => updateElement(parseInt(slideIdx), elId, { fontSize: Math.min(72, (el.fontSize || 24) + 1) })}
                   className="w-5 h-5 flex items-center justify-center text-gray-500 font-black text-sm"
                 >+</button>
