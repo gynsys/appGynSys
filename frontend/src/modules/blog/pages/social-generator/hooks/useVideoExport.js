@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { blogService } from '../../../services/blogService';
+import { openExternalFile, isCapacitor, downloadFile } from '../../../../../utils/platform';
 
 export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
   const [isExporting, setIsExporting] = useState(false);
@@ -10,38 +12,30 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     if (!readyBlob) return;
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const { blogService } = await import('../../../services/blogService');
-    const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
     // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
     if (isMobile || isCapacitor()) {
       try {
-        showToast('Preparando descarga segura...', 'loading');
+        showToast('Preparando descarga...', 'loading');
         
-        // 1. Subir al servidor temporalmente
         const { file_id, extension } = await blogService.uploadForDownload(readyBlob, readyFilename);
-        
-        // 2. Construir URL de descarga final (GET puro)
-        // Obtenemos la base URL de la env o por defecto
         const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
         const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
         
-        // 3. Abrir en navegador del sistema (Capacitor) o pestaña nueva (Mobile Browser)
-        console.log(`[GynSys] Opening proxy download: ${downloadUrl}`);
-        await openExternalFile(downloadUrl);
+        // window.open se ejecuta inmediatamente, dentro del gesto del usuario
+        window.open(downloadUrl, '_blank');
         
         setReadyBlob(null);
-        showToast('¡Descarga iniciada!', 'success');
+        showToast('¡Descarga iniciada en nueva pestaña!', 'success');
         return;
       } catch (proxyErr) {
         console.error('[GynSys] Proxy Download Error:', proxyErr);
-        showToast('Fallo en descarga segura, intentando local...', 'error');
+        showToast('Error en descarga segura, usando local...', 'error');
       }
     }
 
-    // --- MODO LOCAL (BACKUP / ESCRITORIO) ---
-    const m = await import('../../../../../utils/platform');
-    m.downloadFile(readyBlob, readyFilename);
+    // --- MODO LOCAL (ESCRITORIO) ---
+    downloadFile(readyBlob, readyFilename);
     setReadyBlob(null);
   };
 

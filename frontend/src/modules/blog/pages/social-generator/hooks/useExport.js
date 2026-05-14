@@ -2,6 +2,8 @@
 import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 import { useToastStore } from '../../../../../store/toastStore';
+import { blogService } from '../../../services/blogService';
+import { isCapacitor, downloadFile } from '../../../../../utils/platform';
 
 export const useExport = (selectedPost, designer, generatedContent) => {
   const { showToast } = useToastStore();
@@ -70,19 +72,15 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       const content = await zip.generateAsync({ type: 'blob' });
       const filename = `carrusel-${selectedPost?.slug_url || 'gynsys'}.zip`;
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const { blogService } = await import('../../../services/blogService');
-      const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
       // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
       if (isMobile || isCapacitor()) {
         try {
-          showToast('Preparando descarga segura...', 'loading');
+          showToast('Preparando descarga...', 'loading');
           const { file_id, extension } = await blogService.uploadForDownload(content, filename);
-          
           const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
           const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
-          
-          await openExternalFile(downloadUrl);
+          window.open(downloadUrl, '_blank');
           showToast('¡Descarga iniciada!', 'success');
           return;
         } catch (proxyErr) {
@@ -90,10 +88,9 @@ export const useExport = (selectedPost, designer, generatedContent) => {
         }
       }
 
-      // --- Fallback Robusto (Escritorio) ---
-      const platform = await import('../../../../../utils/platform');
-      platform.downloadFile(content, filename);
-      showToast('¡Proceso completado!', 'success');
+      // --- Fallback (Escritorio) ---
+      downloadFile(content, filename);
+      showToast('¡ZIP descargado!', 'success');
     } catch (error) {
       console.error(error);
       showToast('Error al descargar', 'error');
