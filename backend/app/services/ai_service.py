@@ -12,50 +12,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-def extract_content_from_url(url: str) -> str:
-    """
-    Intenta extraer el título y contenido de una URL o PDF.
-    """
-    try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-        print(f"DEBUG: Intentando extraer contenido de: {url}", flush=True)
-        response = requests.get(url, headers=headers, timeout=15)
-        
-        if response.status_code != 200:
-            return f"[Error: No se pudo acceder al enlace directamente (Status {response.status_code}). Por favor, intenta inferir el tema del URL si es descriptivo o menciona que no pudiste acceder.]"
-        
-        content_type = response.headers.get("Content-Type", "").lower()
-        
-        if "application/pdf" in content_type or url.lower().endswith(".pdf"):
-            if not fitz:
-                return "[Error: Librería fitz (PyMuPDF) no disponible para leer el PDF]"
-            
-            with fitz.open(stream=response.content, filetype="pdf") as doc:
-                text = ""
-                # Leer las primeras 3 páginas para obtener contexto
-                for i in range(min(3, len(doc))):
-                    text += doc[i].get_text()
-                return f"CONTENIDO EXTRAÍDO DEL PDF:\n{text[:6000]}"
-        else:
-            # Extraer título y texto básico de HTML
-            html = response.text
-            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
-            title = title_match.group(1).strip() if title_match else "Sin título"
-            
-            # Limpieza básica de HTML para obtener texto plano
-            body_text = re.sub(r'<(script|style|nav|footer|header)[^>]*>.*?</\1>', '', html, flags=re.DOTALL | re.IGNORECASE)
-            body_text = re.sub(r'<[^>]+>', ' ', body_text)
-            body_text = re.sub(r'\s+', ' ', body_text).strip()
-            
-            return f"CONTENIDO EXTRAÍDO DE LA WEB (Título: {title}):\n{body_text[:4000]}"
-            
-    except Exception as e:
-        logger.error(f"Error extrayendo contenido de URL: {e}")
-        return f"[Error técnico al intentar leer el enlace: {str(e)}]"
-
-def generate_blog_content(topic: str = None, tone: str = "Profesional", target_audience: str = "Pacientes generales", max_words: int = 500, source_link: str = None, source_text: str = None) -> dict:
+def generate_blog_content(topic: str = None, tone: str = "Profesional", target_audience: str = "Pacientes generales", max_words: int = 500, source_text: str = None) -> dict:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
     """
@@ -70,11 +27,8 @@ def generate_blog_content(topic: str = None, tone: str = "Profesional", target_a
         final_context = ""
         if source_text:
             final_context = f"\n- Texto extraído del documento adjunto:\n{source_text}\n\n(IMPORTANTE: Utiliza este texto como tu fuente científica primaria para el artículo)."
-        elif source_link:
-            extracted_text = extract_content_from_url(source_link)
-            final_context = f"\n- Fuente de referencia (URL): {source_link}\n- Texto extraído de la fuente:\n{extracted_text}\n\n(IMPORTANTE: Utiliza el texto extraído arriba como base científica primaria)."
 
-        subject_line = f'Escribe un artículo de blog completo sobre el tema: "{topic}".' if topic else "Escribe un artículo de blog basado estrictamente en la información científica del documento o enlace proporcionado."
+        subject_line = f'Escribe un artículo de blog completo sobre el tema: "{topic}".' if topic else "Escribe un artículo de blog basado estrictamente en la información científica del documento proporcionado."
 
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 

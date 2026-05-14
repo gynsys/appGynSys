@@ -107,7 +107,6 @@ class AIGenerationRequest(BaseModel):
     tone: str
     target_audience: str
     max_words: int = 500
-    source_link: Optional[str] = None
 
 class AIGenerationResponse(BaseModel):
     title: str

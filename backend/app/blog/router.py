@@ -18,7 +18,6 @@ async def generate_blog_ai(
     tone: str = Form("Profesional"),
     target_audience: str = Form("Pacientes generales"),
     max_words: int = Form(500),
-    source_link: Optional[str] = Form(None),
     pdf_file: Optional[UploadFile] = File(None),
     current_user: Doctor = Depends(get_current_user)
 ):
@@ -53,7 +52,6 @@ async def generate_blog_ai(
             tone=tone,
             target_audience=target_audience,
             max_words=max_words,
-            source_link=source_link,
             source_text=extracted_text # Pasar el texto extraído directamente
         )
         return result
