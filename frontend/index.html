@@ -21,6 +21,12 @@
     /* Critical CSS for Background color matching the OS theme */
     :root, html, body {
       background-color: #ffffff;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     @media (prefers-color-scheme: dark) {
