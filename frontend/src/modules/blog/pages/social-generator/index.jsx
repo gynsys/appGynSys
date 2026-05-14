@@ -365,6 +365,7 @@ export default function SocialGenerator() {
         exportStatus={exportStatus}
         userAudios={userAudios} loadingAudios={loadingAudios}
         handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
+        saving={saving} saveProgress={saveProgress}
       />
     );
   }

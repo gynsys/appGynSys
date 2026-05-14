@@ -69,7 +69,9 @@ export const MobileLayout = ({
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
-  handleDeleteAudio
+  handleDeleteAudio,
+  saving,
+  saveProgress
 }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20 w-full overflow-x-hidden">
@@ -205,14 +207,40 @@ export const MobileLayout = ({
           <div className="flex gap-2">
             <button 
               onClick={handleSaveProject} 
+              disabled={saving}
               style={{ backgroundColor: 'rgb(205, 8, 87)' }}
-              className="flex-1 py-3 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-200/20 active:scale-95 flex items-center justify-center gap-2"
+              className="relative flex-1 py-3 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-200/20 active:scale-95 flex items-center justify-center gap-2 overflow-hidden disabled:opacity-80"
             >
-              <FiSave /> Guardar
+              {/* Animated progress bar underlay */}
+              {saving && (
+                <span 
+                  className="absolute inset-0 bg-white/20 transition-all duration-300 origin-left"
+                  style={{ transform: `scaleX(${saveProgress / 100})` }}
+                />
+              )}
+              {saving ? (
+                <>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.8" />
+                    <circle
+                      cx="18" cy="18" r="15.9"
+                      fill="none" stroke="white" strokeWidth="3.8"
+                      strokeDasharray={`${saveProgress} 100`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 18 18)"
+                      style={{ transition: 'stroke-dasharray 0.3s ease' }}
+                    />
+                  </svg>
+                  <span className="relative">{saveProgress}%</span>
+                </>
+              ) : (
+                <><FiSave /> Guardar</>
+              )}
             </button>
             <button 
               onClick={handleSaveProjectAs} 
-              className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2"
+              disabled={saving}
+              className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <FiSave /> Guardar como...
             </button>
