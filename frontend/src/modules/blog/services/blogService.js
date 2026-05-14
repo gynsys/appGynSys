@@ -120,5 +120,14 @@ export const blogService = {
   deleteSocialAudio: async (audioId) => {
     const response = await api.delete(`/blog/social-audios/${audioId}`)
     return response.data
+  },
+
+  uploadForDownload: async (blob, filename) => {
+    const formData = new FormData();
+    formData.append('file', blob, filename);
+    const response = await api.post('/blog/download-proxy', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
   }
 }

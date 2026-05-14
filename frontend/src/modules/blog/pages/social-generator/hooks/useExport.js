@@ -70,26 +70,27 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       const content = await zip.generateAsync({ type: 'blob' });
       const filename = `carrusel-${selectedPost?.slug_url || 'gynsys'}.zip`;
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const { blogService } = await import('../../services/blogService');
+      const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
-      // --- Mejorado para Móvil (Share API) ---
-      if (isMobile && navigator.share) {
+      // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
+      if (isMobile || isCapacitor()) {
         try {
-          const file = new File([content], filename, { type: 'application/zip' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'GynSys Carousel',
-              text: 'Tu carrusel de GynSys está listo.'
-            });
-            showToast('¡Carrusel listo!', 'success');
-            return;
-          }
-        } catch (shareErr) {
-          console.log('[GynSys] Share failed or cancelled', shareErr);
+          showToast('Preparando descarga segura...', 'loading');
+          const { file_id, extension } = await blogService.uploadForDownload(content, filename);
+          
+          const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
+          const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
+          
+          await openExternalFile(downloadUrl);
+          showToast('¡Descarga iniciada!', 'success');
+          return;
+        } catch (proxyErr) {
+          console.error('[GynSys] Proxy Download Error:', proxyErr);
         }
       }
 
-      // --- Fallback Robusto ---
+      // --- Fallback Robusto (Escritorio) ---
       const platform = await import('../../../../../utils/platform');
       platform.downloadFile(content, filename);
       showToast('¡Proceso completado!', 'success');

@@ -10,7 +10,50 @@ from app.blog.models import BlogPost
 from app.api.v1.endpoints.auth import get_current_user
 from app.services import ai_service
 
+import os
+import uuid
+import shutil
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 router = APIRouter()
+
+TEMP_DOWNLOAD_DIR = Path("/tmp/gynsys_downloads")
+TEMP_DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@router.post("/download-proxy")
+async def upload_for_download(
+    file: UploadFile = File(...),
+    current_user: Doctor = Depends(get_current_user)
+):
+    """
+    Recibe un archivo generado en el cliente y lo guarda temporalmente 
+    para permitir una descarga confiable en móviles vía GET.
+    """
+    file_id = str(uuid.uuid4())
+    extension = "mp4" if "video" in file.content_type else "zip"
+    file_path = TEMP_DOWNLOAD_DIR / f"{file_id}.{extension}"
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"file_id": file_id, "extension": extension}
+
+@router.get("/download/{file_id}")
+async def download_proxied_file(file_id: str, ext: str = "mp4"):
+    """
+    Sirve un archivo guardado temporalmente con headers de descarga forzada.
+    """
+    file_path = TEMP_DOWNLOAD_DIR / f"{file_id}.{ext}"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Archivo expirado o no encontrado")
+        
+    filename = f"gynsys_export_{file_id[:8]}.{ext}"
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/octet-stream"
+    )
 
 @router.post("/generate", response_model=schemas.AIGenerationResponse)
 async def generate_blog_ai(

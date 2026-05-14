@@ -10,40 +10,39 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     if (!readyBlob) return;
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    // Diagnóstico temporal para el usuario
-    console.log(`[GynSys] Share Debug - isMobile: ${isMobile}, hasShare: ${!!navigator.share}, hasCanShare: ${!!navigator.canShare}`);
+    const { blogService } = await import('../../services/blogService');
+    const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
-    if (isMobile && navigator.share) {
+    // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
+    if (isMobile || isCapacitor()) {
       try {
-        const file = new File([readyBlob], readyFilename, { type: 'video/mp4' });
+        showToast('Preparando descarga segura...', 'loading');
         
-        // Verificamos si realmente podemos compartir este archivo específico
-        const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+        // 1. Subir al servidor temporalmente
+        const { file_id, extension } = await blogService.uploadForDownload(readyBlob, readyFilename);
         
-        if (canShare) {
-          await navigator.share({
-            files: [file],
-            title: 'GynSys Video',
-            text: 'Tu video de GynSys está listo.'
-          });
-          setReadyBlob(null);
-          showToast('¡Acción completada!', 'success');
-          return;
-        } else {
-          console.warn('[GynSys] navigator.canShare returned false for this file');
-        }
-      } catch (shareErr) {
-        console.error('[GynSys] Share API Error:', shareErr);
-        // No alert here, fallback to download
+        // 2. Construir URL de descarga final (GET puro)
+        // Obtenemos la base URL de la env o por defecto
+        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
+        const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
+        
+        // 3. Abrir en navegador del sistema (Capacitor) o pestaña nueva (Mobile Browser)
+        console.log(`[GynSys] Opening proxy download: ${downloadUrl}`);
+        await openExternalFile(downloadUrl);
+        
+        setReadyBlob(null);
+        showToast('¡Descarga iniciada!', 'success');
+        return;
+      } catch (proxyErr) {
+        console.error('[GynSys] Proxy Download Error:', proxyErr);
+        showToast('Fallo en descarga segura, intentando local...', 'error');
       }
     }
 
-    // Fallback robusto usando nuestra nueva utilidad
-    import('../../../../../utils/platform').then(m => {
-       m.downloadFile(readyBlob, readyFilename);
-       setReadyBlob(null);
-    });
+    // --- MODO LOCAL (BACKUP / ESCRITORIO) ---
+    const m = await import('../../../../../utils/platform');
+    m.downloadFile(readyBlob, readyFilename);
+    setReadyBlob(null);
   };
 
   const handleExportVideo = async () => {
