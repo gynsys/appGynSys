@@ -72,31 +72,27 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
       // --- Mejorado para Móvil (Share API) ---
-      if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([content], filename, { type: 'application/zip' })] })) {
+      if (isMobile && navigator.share) {
         try {
           const file = new File([content], filename, { type: 'application/zip' });
-          await navigator.share({
-            files: [file],
-            title: 'GynSys Carousel',
-            text: 'Tu carrusel de GynSys está listo.'
-          });
-          showToast('¡Carrusel listo!', 'success');
-          return;
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'GynSys Carousel',
+              text: 'Tu carrusel de GynSys está listo.'
+            });
+            showToast('¡Carrusel listo!', 'success');
+            return;
+          }
         } catch (shareErr) {
           console.log('[GynSys] Share failed or cancelled', shareErr);
         }
       }
 
-      // --- Fallback: Descarga estándar ---
-      const url = URL.createObjectURL(content);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      showToast('¡ZIP descargado!', 'success');
+      // --- Fallback Robusto ---
+      const platform = await import('../../../../utils/platform');
+      platform.downloadFile(content, filename);
+      showToast('¡Proceso completado!', 'success');
     } catch (error) {
       console.error(error);
       showToast('Error al descargar', 'error');

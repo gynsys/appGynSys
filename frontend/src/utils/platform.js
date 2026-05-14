@@ -53,21 +53,59 @@ export const openExternalFile = async (url) => {
  * Specifically triggers a file download.
  * On web, it uses a hidden anchor tag to avoid tab flickering.
  * On Capacitor, it uses openExternalFile.
- * @param {string} url 
+ * @param {string|Blob} data - URL or Blob to download
  * @param {string} filename 
  */
-export const downloadFile = (url, filename = 'documento.pdf') => {
-    if (isCapacitor()) {
+export const downloadFile = async (data, filename = 'documento.mp4') => {
+    const isNative = isCapacitor();
+    console.log(`[GynSys] Starting download for ${filename} (isNative: ${isNative})`);
+
+    let url = data;
+    let blob = null;
+
+    if (data instanceof Blob) {
+        blob = data;
+        url = URL.createObjectURL(blob);
+    }
+
+    if (isNative) {
+        // En Capacitor, abrir el blob directamente suele fallar.
+        // Si tenemos un bridge, intentamos abrirlo en el navegador del sistema.
         return openExternalFile(url);
     }
     
+    const isMobileBrowser = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // Fallback para iOS/Android Chrome donde Blobs directos fallan
+    if (isMobileBrowser && blob) {
+        try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const a = document.createElement('a');
+                a.href = reader.result;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => document.body.removeChild(a), 100);
+            };
+            reader.readAsDataURL(blob);
+            return;
+        } catch (e) {
+            console.error('[GynSys] Base64 download failed', e);
+        }
+    }
+
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', filename);
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+        document.body.removeChild(link);
+        if (data instanceof Blob) URL.revokeObjectURL(url);
+    }, 100);
 };
 
 /**

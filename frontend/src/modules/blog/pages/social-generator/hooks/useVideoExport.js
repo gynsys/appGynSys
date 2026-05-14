@@ -11,32 +11,39 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([readyBlob], readyFilename, { type: 'video/mp4' })] })) {
+    // Diagnóstico temporal para el usuario
+    console.log(`[GynSys] Share Debug - isMobile: ${isMobile}, hasShare: ${!!navigator.share}, hasCanShare: ${!!navigator.canShare}`);
+
+    if (isMobile && navigator.share) {
       try {
         const file = new File([readyBlob], readyFilename, { type: 'video/mp4' });
-        await navigator.share({
-          files: [file],
-          title: 'GynSys Video',
-          text: 'Tu video de GynSys está listo.'
-        });
-        setReadyBlob(null);
-        showToast('¡Video compartido!', 'success');
-        return;
+        
+        // Verificamos si realmente podemos compartir este archivo específico
+        const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+        
+        if (canShare) {
+          await navigator.share({
+            files: [file],
+            title: 'GynSys Video',
+            text: 'Tu video de GynSys está listo.'
+          });
+          setReadyBlob(null);
+          showToast('¡Acción completada!', 'success');
+          return;
+        } else {
+          console.warn('[GynSys] navigator.canShare returned false for this file');
+        }
       } catch (shareErr) {
-        console.log('[GynSys] Share failed', shareErr);
+        console.error('[GynSys] Share API Error:', shareErr);
+        // No alert here, fallback to download
       }
     }
 
-    // Fallback: Descarga estándar
-    const url = URL.createObjectURL(readyBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = readyFilename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setReadyBlob(null);
-    showToast('¡Video descargado!', 'success');
+    // Fallback robusto usando nuestra nueva utilidad
+    import('../../../../utils/platform').then(m => {
+       m.downloadFile(readyBlob, readyFilename);
+       setReadyBlob(null);
+    });
   };
 
   const handleExportVideo = async () => {
