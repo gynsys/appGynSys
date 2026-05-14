@@ -103,7 +103,7 @@ class BlogPostSEOResponse(BlogPostSEOBase):
 
 # AI Generation Schemas
 class AIGenerationRequest(BaseModel):
-    topic: str
+    topic: Optional[str] = None
     tone: str
     target_audience: str
     max_words: int = 500

@@ -6,19 +6,9 @@ import re
 
 logger = logging.getLogger(__name__)
 
-def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int, source_link: str = None) -> dict:
+def generate_blog_content(topic: str = None, tone: str = "Profesional", target_audience: str = "Pacientes generales", max_words: int = 500, source_link: str = None) -> dict:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
-    
-    Args:
-        topic: El tema o título del artículo.
-        tone: El tono deseado (ej. Profesional, Empático, Informativo).
-        target_audience: El público objetivo (ej. Pacientes, Colegas).
-        max_words: El número máximo de palabras aproximado.
-        source_link: Opcional. Enlace a un PDF o artículo de investigación como referencia.
-        
-    Returns:
-        dict: Un diccionario con {title, summary, content}.
     """
     if not settings.GEMINI_API_KEY:
         logger.error("GEMINI_API_KEY no está configurada.")
@@ -30,11 +20,13 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         
         source_context = ""
         if source_link:
-            source_context = f"\n- Fuente de referencia: {source_link}\n(Por favor, utiliza la información de este enlace o documento como base científica para el artículo si es posible)."
+            source_context = f"\n- Fuente de referencia: {source_link}\n(Por favor, utiliza la información de este enlace o documento como base científica para el artículo)."
+
+        subject_line = f'Escribe un artículo de blog completo sobre el siguiente tema: "{topic}".' if topic else "Identifica el tema principal del enlace de referencia proporcionado y escribe un artículo de blog completo basado en su contenido científico."
 
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 
-        Escribe un artículo de blog completo sobre el siguiente tema: "{topic}".
+        {subject_line}
         {source_context}
         
         Parámetros obligatorios:

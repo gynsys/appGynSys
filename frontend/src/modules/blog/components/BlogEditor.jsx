@@ -169,8 +169,8 @@ export default function BlogEditor({ post, onSave, onCancel }) {
 
   const handleAiGenerate = async (e) => {
     e.preventDefault()
-    if (!aiForm.topic) {
-      showToast('Por favor ingresa un tema', 'error')
+    if (!aiForm.topic && !aiForm.source_link) {
+      showToast('Por favor ingresa un tema o un enlace de referencia', 'error')
       return
     }
 
