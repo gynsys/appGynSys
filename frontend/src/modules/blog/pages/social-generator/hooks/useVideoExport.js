@@ -10,7 +10,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     if (!readyBlob) return;
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const { blogService } = await import('../../services/blogService');
+    const { blogService } = await import('../../../services/blogService');
     const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
     // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---

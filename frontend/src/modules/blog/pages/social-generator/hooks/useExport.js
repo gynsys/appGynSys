@@ -70,7 +70,7 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       const content = await zip.generateAsync({ type: 'blob' });
       const filename = `carrusel-${selectedPost?.slug_url || 'gynsys'}.zip`;
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const { blogService } = await import('../../services/blogService');
+      const { blogService } = await import('../../../services/blogService');
       const { openExternalFile, isCapacitor } = await import('../../../../../utils/platform');
 
       // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
