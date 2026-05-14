@@ -370,8 +370,7 @@ export const VideoEditor = ({
                 <div className="flex justify-between items-center mb-2.5">
                   <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Tamaño del Mensaje</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{videoStyles.fontSize}px</span>
-                </div>
-                <input type="range" min="24" max="72" value={videoStyles.fontSize} onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
+                <input type="range" min="24" max="72" value={videoStyles.fontSize} onChange={(e) => setVideoStyles({...videoStyles, fontSize: parseInt(e.target.value)})} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none touch-none" style={{ touchAction: 'none' }} />
               </div>
             </div>
           </div>
@@ -483,7 +482,7 @@ export const VideoEditor = ({
                   <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Duración por Escena</label>
                   <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg">{slideDuration}s</span>
                 </div>
-                <input type="range" min="1.5" max="8" step="0.5" value={slideDuration} onChange={(e) => setSlideDuration(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none" />
+                <input type="range" min="1.5" max="8" step="0.5" value={slideDuration} onChange={(e) => setSlideDuration(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none touch-none" style={{ touchAction: 'none' }} />
               </div>
             </div>
           </div>
