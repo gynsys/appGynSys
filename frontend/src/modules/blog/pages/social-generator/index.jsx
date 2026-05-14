@@ -53,6 +53,8 @@ export default function SocialGenerator() {
   const [transitionType, setTransitionType] = useState('fade');
   const [transitionDuration, setTransitionDuration] = useState(0.5);
   const [saving, setSaving] = useState(false);
+  const [saveProgress, setSaveProgress] = useState(0);
+  const saveProgressRef = useRef(null);
 
   // --- Refs ---
   const editorWrapperRef = useRef(null);
@@ -217,27 +219,45 @@ export default function SocialGenerator() {
     }
   };
 
+  const startSaveProgress = () => {
+    setSaveProgress(0);
+    let current = 0;
+    saveProgressRef.current = setInterval(() => {
+      current += Math.random() * 15 + 5; // avance aleatorio entre 5-20%
+      if (current >= 90) { current = 90; clearInterval(saveProgressRef.current); }
+      setSaveProgress(Math.round(current));
+    }, 200);
+  };
+
+  const stopSaveProgress = (success = true) => {
+    clearInterval(saveProgressRef.current);
+    setSaveProgress(success ? 100 : 0);
+    setTimeout(() => { setSaving(false); setSaveProgress(0); }, 600);
+  };
+
   const handleSaveProject = async () => {
     if (!activeProjectId || !activeProjectName) {
       return handleSaveProjectAs();
     }
 
     setSaving(true);
+    startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
       const contentToSave = { ...generatedContent, videoSettings };
       const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
       
       if (ok) {
+        stopSaveProgress(true);
         showToast(`"${activeProjectName}" actualizado con éxito`, 'success');
       } else {
+        stopSaveProgress(false);
         showToast('No se pudo actualizar el proyecto', 'error');
       }
     } catch (error) {
       console.error('[GynSys] Error updating project:', error);
+      stopSaveProgress(false);
       showToast('Error crítico al actualizar el proyecto', 'error');
-    } finally {
-      setTimeout(() => setSaving(false), 300);
     }
   };
 
@@ -246,25 +266,24 @@ export default function SocialGenerator() {
     if (!name) return;
 
     setSaving(true);
+    startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
       const contentToSave = { ...generatedContent, videoSettings };
-      // Pasamos null como ID para forzar la creación de un nuevo proyecto
       const ok = await designer.canvas.saveProject(name, contentToSave, null);
       
       if (ok) {
         setActiveProjectName(name);
-        // El ID se actualizará en la próxima carga de proyectos o mediante el retorno de la API si lo implementamos,
-        // pero por ahora forzamos a que el usuario sepa que es uno nuevo.
+        stopSaveProgress(true);
         showToast(`Nuevo proyecto "${name}" creado con éxito`, 'success');
       } else {
+        stopSaveProgress(false);
         showToast('No se pudo crear el nuevo proyecto', 'error');
       }
     } catch (error) {
       console.error('[GynSys] Error saving new project:', error);
+      stopSaveProgress(false);
       showToast('Error crítico al crear el proyecto', 'error');
-    } finally {
-      setTimeout(() => setSaving(false), 300);
     }
   };
 
@@ -406,10 +425,34 @@ export default function SocialGenerator() {
                   onClick={handleSaveProject} 
                   disabled={saving}
                   style={{ backgroundColor: 'rgb(205, 8, 87)' }}
-                  className="px-8 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-pink-200 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                  className="relative px-8 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-pink-200 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-80 overflow-hidden"
                 >
-                  {saving ? <FiLoader className="animate-spin" /> : <FiSave />} 
-                  {saving ? 'Guardar' : 'Guardar'}
+                  {/* Animated progress bar underlay */}
+                  {saving && (
+                    <span 
+                      className="absolute inset-0 bg-white/20 transition-all duration-300 origin-left"
+                      style={{ transform: `scaleX(${saveProgress / 100})` }}
+                    />
+                  )}
+                  {/* Circular spinner */}
+                  {saving ? (
+                    <>
+                      <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.8" />
+                        <circle
+                          cx="18" cy="18" r="15.9"
+                          fill="none" stroke="white" strokeWidth="3.8"
+                          strokeDasharray={`${saveProgress} 100`}
+                          strokeLinecap="round"
+                          transform="rotate(-90 18 18)"
+                          style={{ transition: 'stroke-dasharray 0.3s ease' }}
+                        />
+                      </svg>
+                      <span className="relative">{saveProgress}%</span>
+                    </>
+                  ) : (
+                    <><FiSave /> Guardar</>
+                  )}
                 </button>
                 <button 
                   onClick={handleSaveProjectAs} 
