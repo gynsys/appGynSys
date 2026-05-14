@@ -52,8 +52,23 @@ export const blogService = {
   },
 
   generateAI: async (aiData) => {
-    const response = await api.post('/blog/generate', aiData)
-    return response.data
+    // If aiData contains a file, use FormData
+    if (aiData.pdf_file) {
+      const formData = new FormData();
+      Object.keys(aiData).forEach(key => {
+        if (aiData[key] !== null && aiData[key] !== undefined) {
+          formData.append(key, aiData[key]);
+        }
+      });
+      const response = await api.post('/blog/generate', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
+    
+    // Otherwise, standard JSON post
+    const response = await api.post('/blog/generate', aiData);
+    return response.data;
   },
   
   generateSocialContent: async (postId, genType) => {

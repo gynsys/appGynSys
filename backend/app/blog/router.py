@@ -1,5 +1,5 @@
 from typing import List, Annotated, Any
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile, Form
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
@@ -13,20 +13,48 @@ from app.services import ai_service
 router = APIRouter()
 
 @router.post("/generate", response_model=schemas.AIGenerationResponse)
-def generate_blog_ai(
-    request_data: schemas.AIGenerationRequest,
+async def generate_blog_ai(
+    topic: Optional[str] = Form(None),
+    tone: str = Form("Profesional"),
+    target_audience: str = Form("Pacientes generales"),
+    max_words: int = Form(500),
+    source_link: Optional[str] = Form(None),
+    pdf_file: Optional[UploadFile] = File(None),
     current_user: Doctor = Depends(get_current_user)
 ):
     """
     Genera contenido para el blog usando IA. Solo accesible para doctores.
+    Soporta opcionalmente un archivo PDF adjunto.
     """
+    extracted_text = None
+    if pdf_file:
+        if not pdf_file.content_type == "application/pdf":
+            raise HTTPException(status_code=400, detail="El archivo debe ser un PDF")
+        
+        try:
+            import fitz
+            content = await pdf_file.read()
+            with fitz.open(stream=content, filetype="pdf") as doc:
+                extracted_text = ""
+                for i in range(min(5, len(doc))): # Leer hasta 5 páginas
+                    extracted_text += doc[i].get_text()
+                extracted_text = extracted_text[:8000] # Limitar a 8k caracteres
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error procesando PDF subido: {e}")
+            # No fallar aquí, intentar seguir sin el texto si es posible o avisar
+            extracted_text = f"[Error leyendo PDF adjunto: {str(e)}]"
+
     try:
+        from app.services import ai_service
         result = ai_service.generate_blog_content(
-            topic=request_data.topic,
-            tone=request_data.tone,
-            target_audience=request_data.target_audience,
-            max_words=request_data.max_words,
-            source_link=request_data.source_link
+            topic=topic,
+            tone=tone,
+            target_audience=target_audience,
+            max_words=max_words,
+            source_link=source_link,
+            source_text=extracted_text # Pasar el texto extraído directamente
         )
         return result
     except ValueError as e:

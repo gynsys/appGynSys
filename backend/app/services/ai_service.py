@@ -55,7 +55,7 @@ def extract_content_from_url(url: str) -> str:
         logger.error(f"Error extrayendo contenido de URL: {e}")
         return f"[Error técnico al intentar leer el enlace: {str(e)}]"
 
-def generate_blog_content(topic: str = None, tone: str = "Profesional", target_audience: str = "Pacientes generales", max_words: int = 500, source_link: str = None) -> dict:
+def generate_blog_content(topic: str = None, tone: str = "Profesional", target_audience: str = "Pacientes generales", max_words: int = 500, source_link: str = None, source_text: str = None) -> dict:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
     """
@@ -67,17 +67,19 @@ def generate_blog_content(topic: str = None, tone: str = "Profesional", target_a
         genai.configure(api_key=settings.GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-flash-latest')
         
-        source_context = ""
-        if source_link:
+        final_context = ""
+        if source_text:
+            final_context = f"\n- Texto extraído del documento adjunto:\n{source_text}\n\n(IMPORTANTE: Utiliza este texto como tu fuente científica primaria para el artículo)."
+        elif source_link:
             extracted_text = extract_content_from_url(source_link)
-            source_context = f"\n- Fuente de referencia (URL): {source_link}\n- Texto extraído de la fuente:\n{extracted_text}\n\n(IMPORTANTE: Utiliza el texto extraído arriba como base científica primaria. Si el texto extraído indica un error de acceso, intenta usar tu conocimiento general si el URL es muy descriptivo o indica el tema, de lo contrario, prioriza el TEMA proporcionado si existe)."
+            final_context = f"\n- Fuente de referencia (URL): {source_link}\n- Texto extraído de la fuente:\n{extracted_text}\n\n(IMPORTANTE: Utiliza el texto extraído arriba como base científica primaria)."
 
-        subject_line = f'Escribe un artículo de blog completo sobre el tema: "{topic}".' if topic else "Escribe un artículo de blog basado estrictamente en la información extraída de la fuente de referencia proporcionada."
+        subject_line = f'Escribe un artículo de blog completo sobre el tema: "{topic}".' if topic else "Escribe un artículo de blog basado estrictamente en la información científica del documento o enlace proporcionado."
 
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 
         {subject_line}
-        {source_context}
+        {final_context}
         
         Parámetros obligatorios:
         - Tono: {tone}

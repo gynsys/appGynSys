@@ -78,6 +78,7 @@ export default function BlogEditor({ post, onSave, onCancel }) {
   const [aiForm, setAiForm] = useState({
     topic: '',
     source_link: '',
+    pdf_file: null,
     tone: 'Profesional',
     target_audience: 'Pacientes generales',
     max_words: 500
@@ -169,8 +170,8 @@ export default function BlogEditor({ post, onSave, onCancel }) {
 
   const handleAiGenerate = async (e) => {
     e.preventDefault()
-    if (!aiForm.topic && !aiForm.source_link) {
-      showToast('Por favor ingresa un tema o un enlace de referencia', 'error')
+    if (!aiForm.topic && !aiForm.source_link && !aiForm.pdf_file) {
+      showToast('Por favor ingresa un tema, un enlace o adjunta un PDF', 'error')
       return
     }
 
@@ -227,7 +228,7 @@ export default function BlogEditor({ post, onSave, onCancel }) {
           </div>
 
           <div className={`space-y-4 ${aiExpanded ? 'block' : 'hidden md:block'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema o Título del Artículo</label>
                 <input
@@ -240,13 +241,23 @@ export default function BlogEditor({ post, onSave, onCancel }) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Enlace de Referencia (Opcional)</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Enlace de Referencia</label>
                 <input
                   type="url"
                   value={aiForm.source_link}
                   onChange={(e) => setAiForm({...aiForm, source_link: e.target.value})}
                   className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
-                  placeholder="Link a un PDF o investigación..."
+                  placeholder="Link a un PDF..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Adjuntar PDF</label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setAiForm({...aiForm, pdf_file: e.target.files[0]})}
+                  className="block w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border rounded-md"
                 />
               </div>
             </div>
