@@ -122,12 +122,18 @@ export const VideoEditor = ({
       <div className="flex flex-col 2xl:flex-row gap-8 items-start">
         
         {/* COL 1: SMART PREVIEW (iPhone Frame) */}
-        <div className="w-full lg:w-[380px] flex-shrink-0 sticky top-24">
-          <div className="relative aspect-[9/19.5] bg-black rounded-[54px] overflow-hidden shadow-[0_0_0_12px_#0f172a,0_30px_60px_-12px_rgba(0,0,0,0.5)] border-[1.5px] border-white/10 group">
+        <div className="w-[calc(100%-32px)] max-w-[380px] mx-auto lg:mx-0 lg:w-[380px] flex-shrink-0 sticky top-24">
+          <div className="relative aspect-[9/19.5] bg-black rounded-[44px] lg:rounded-[54px] overflow-hidden shadow-[0_0_0_8px_#0f172a] lg:shadow-[0_0_0_12px_#0f172a,0_30px_60px_-12px_rgba(0,0,0,0.5)] border-[1.5px] border-white/10 group">
             
             {/* Notch Area */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-[#0f172a] rounded-b-3xl z-40 flex items-center justify-center">
               <div className="w-10 h-1 bg-white/10 rounded-full"></div>
+            </div>
+
+            {/* Timer Badge */}
+            <div className="absolute top-10 right-5 z-40 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10 text-white font-mono text-[10px] font-bold shadow-lg flex items-center gap-1.5 transition-opacity">
+              <div className={`w-1.5 h-1.5 rounded-full bg-red-500 ${isPlaying ? 'animate-pulse' : ''}`}></div>
+              00:{Math.floor(currentVideoSlide * slideDuration).toString().padStart(2, '0')} / 00:{Math.floor(scenes.length * slideDuration).toString().padStart(2, '0')}
             </div>
 
             {/* Video Canvas Rendering */}
