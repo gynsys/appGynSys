@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { FiFolder, FiTrash2, FiVideo, FiImage, FiCpu } from 'react-icons/fi';
+import { FiFolder, FiTrash2, FiVideo, FiImage, FiCpu, FiLoader } from 'react-icons/fi';
 
 export const ProjectGrid = ({ 
   projects, 
   onLoad, 
   onDelete, 
   variant = 'full', 
-  activeProjectId 
+  activeProjectId,
+  loading = false
 }) => {
   const [isDeleting, setIsDeleting] = React.useState(null);
 
@@ -21,6 +22,16 @@ export const ProjectGrid = ({
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className={`text-center py-12 flex items-center justify-center gap-2 text-gray-400 ${variant === 'compact' ? 'px-6' : ''}`}>
+        <FiLoader className="animate-spin" size={14} />
+        <span className="italic text-sm">Cargando proyectos...</span>
+      </div>
+    );
+  }
+
   if (!projects || projects.length === 0) {
     return (
       <div className={`text-center py-12 text-gray-400 italic ${variant === 'compact' ? 'px-6' : ''}`}>

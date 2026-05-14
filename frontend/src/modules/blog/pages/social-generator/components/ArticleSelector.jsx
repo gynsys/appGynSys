@@ -14,6 +14,7 @@ export const ArticleSelector = ({
   handleTestDesign,
   generating,
   projects,
+  loadingProjects = false,
   onLoadProject,
   onDeleteProject,
   activeProjectId
@@ -60,6 +61,7 @@ export const ArticleSelector = ({
                 onDelete={onDeleteProject}
                 activeProjectId={activeProjectId}
                 variant="compact"
+                loading={loadingProjects}
               />
             )}
           </div>

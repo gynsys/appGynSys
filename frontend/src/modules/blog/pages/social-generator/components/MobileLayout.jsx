@@ -65,6 +65,7 @@ export const MobileLayout = ({
   handleAddImageToVideoSlide,
   enterMobileFullscreen,
   exportStatus,
+  loadingProjects = false,
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
@@ -142,7 +143,12 @@ export const MobileLayout = ({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pb-8 no-scrollbar">
-              {designer.canvas.projects.length === 0 ? (
+              {loadingProjects ? (
+                <div className="py-12 text-center flex items-center justify-center gap-2 text-gray-400">
+                  <FiLoader className="animate-spin" size={14} />
+                  <span className="italic text-sm">Cargando proyectos...</span>
+                </div>
+              ) : designer.canvas.projects.length === 0 ? (
                 <div className="py-12 text-center text-gray-400 italic">No tienes proyectos guardados todavía.</div>
               ) : (
                 designer.canvas.projects.map(p => (

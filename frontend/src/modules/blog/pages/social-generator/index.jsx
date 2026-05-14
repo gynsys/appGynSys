@@ -322,6 +322,7 @@ export default function SocialGenerator() {
         showProjects={showProjects} setShowProjects={setShowProjects}
         designer={designer} handleLoadProject={handleLoadProject}
         activeProjectName={activeProjectName} isMobileFullscreen={isMobileFullscreen}
+        loadingProjects={designer.canvas.loadingProjects}
         exitMobileFullscreen={exitMobileFullscreen} scale={scale} doctor={doctor}
         doctorLogoBase64={doctorLogoBase64} transformer={transformer} watermarkImage={watermarkImage}
         handleRemoveSlide={handleRemoveSlide} handleAddImage={handleAddImage}
@@ -366,6 +367,7 @@ export default function SocialGenerator() {
             handleTestDesign={() => { setActiveTab('carousel'); setGeneratedContent({ type: 'carousel', slides: [{ title: 'Prueba', content: 'Contenido' }] }); }}
             generating={generating}
             projects={designer.canvas.projects}
+            loadingProjects={designer.canvas.loadingProjects}
             onLoadProject={(p) => { handleLoadProject(p); setShowProjects(false); }}
             onDeleteProject={designer.canvas.deleteProject}
             activeProjectId={activeProjectId}

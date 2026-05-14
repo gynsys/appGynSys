@@ -42,12 +42,9 @@ export const useSlideDesigner = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Projects Management (Now using Backend + Local Fallback)
-  const [projects, setProjects] = useState(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('gynsys_carousel_projects') : null;
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [loadingProjects, setLoadingProjects] = useState(false);
+  // Projects Management (Backend as source of truth, local as fallback)
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
 
   const fetchProjects = async () => {
     setLoadingProjects(true);
@@ -327,6 +324,7 @@ export const useSlideDesigner = () => {
       applyCustomTemplate,
       deleteTemplate,
       projects,
+      loadingProjects,
       saveProject,
       loadProject,
       deleteProject
