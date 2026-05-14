@@ -68,10 +68,34 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       designer.canvas.setIsExportMode(false);
 
       const content = await zip.generateAsync({ type: 'blob' });
+      const filename = `carrusel-${selectedPost?.slug_url || 'gynsys'}.zip`;
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      // --- Mejorado para Móvil (Share API) ---
+      if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([content], filename, { type: 'application/zip' })] })) {
+        try {
+          const file = new File([content], filename, { type: 'application/zip' });
+          await navigator.share({
+            files: [file],
+            title: 'GynSys Carousel',
+            text: 'Tu carrusel de GynSys está listo.'
+          });
+          showToast('¡Carrusel listo!', 'success');
+          return;
+        } catch (shareErr) {
+          console.log('[GynSys] Share failed or cancelled', shareErr);
+        }
+      }
+
+      // --- Fallback: Descarga estándar ---
+      const url = URL.createObjectURL(content);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(content);
-      link.download = `carrusel-${selectedPost?.slug_url || 'gynsys'}.zip`;
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      
       showToast('¡ZIP descargado!', 'success');
     } catch (error) {
       console.error(error);
