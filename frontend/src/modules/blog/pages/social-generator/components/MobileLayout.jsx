@@ -64,8 +64,7 @@ export const MobileLayout = ({
   handleExportVideo,
   handleAddImageToVideoSlide,
   enterMobileFullscreen,
-  readyBlob,
-  downloadReadyFile,
+  exportStatus,
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
@@ -242,7 +241,7 @@ export const MobileLayout = ({
                 isExporting={isExporting} exportProgress={exportProgress}
                 handleExportVideo={handleExportVideo} doctor={doctor}
                 showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
-                readyBlob={readyBlob} downloadReadyFile={downloadReadyFile}
+                exportStatus={exportStatus}
                 userAudios={userAudios} loadingAudios={loadingAudios}
                 handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
               />

@@ -1,43 +1,12 @@
 import { useState } from 'react';
 import { blogService } from '../../../services/blogService';
-import { openExternalFile, isCapacitor, downloadFile } from '../../../../../utils/platform';
+import { isCapacitor, downloadFile } from '../../../../../utils/platform';
 
 export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
-  const [readyBlob, setReadyBlob] = useState(null);
-  const [readyFilename, setReadyFilename] = useState('');
-
-  const downloadReadyFile = async () => {
-    if (!readyBlob) return;
-    
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    // --- MODO PROXY (100% CONFIABLE EN MÓVIL) ---
-    if (isMobile || isCapacitor()) {
-      try {
-        showToast('Preparando descarga...', 'loading');
-        
-        const { file_id, extension } = await blogService.uploadForDownload(readyBlob, readyFilename);
-        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
-        const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
-        
-        // window.open se ejecuta inmediatamente, dentro del gesto del usuario
-        window.open(downloadUrl, '_blank');
-        
-        setReadyBlob(null);
-        showToast('¡Descarga iniciada en nueva pestaña!', 'success');
-        return;
-      } catch (proxyErr) {
-        console.error('[GynSys] Proxy Download Error:', proxyErr);
-        showToast('Error en descarga segura, usando local...', 'error');
-      }
-    }
-
-    // --- MODO LOCAL (ESCRITORIO) ---
-    downloadFile(readyBlob, readyFilename);
-    setReadyBlob(null);
-  };
+  // 'idle' | 'exporting' | 'downloading' | 'done'
+  const [exportStatus, setExportStatus] = useState('idle');
 
   const handleExportVideo = async () => {
     const scenes = generatedContent?.video_slides || generatedContent?.slides;
@@ -48,7 +17,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     
     setIsExporting(true);
     setExportProgress(0);
-    setReadyBlob(null);
+    setExportStatus('exporting');
     
     try {
       // 1. Pre-cargar todas las imágenes para evitar parpadeos o fallos
@@ -90,16 +59,37 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
       const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
       const chunks = [];
       recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+        
+        setIsExporting(false);
+        setExportStatus('downloading');
         
         const blob = new Blob(chunks, { type: 'video/mp4' });
         const filename = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
-        setReadyBlob(blob);
-        setReadyFilename(filename);
-        setIsExporting(false);
-        showToast('¡Video generado! Toca para descargar.', 'success');
+        try {
+          if (isMobile || isCapacitor()) {
+            // Subir al servidor y usar window.location.href para descarga directa
+            // (location.href no tiene restricción de gesto de usuario ni popup blocker)
+            const { file_id, extension } = await blogService.uploadForDownload(blob, filename);
+            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
+            const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
+            window.location.href = downloadUrl;
+          } else {
+            // Escritorio: descarga directa del blob
+            downloadFile(blob, filename);
+          }
+          setExportStatus('done');
+          setTimeout(() => setExportStatus('idle'), 5000);
+        } catch (err) {
+          console.error('[GynSys] Download error:', err);
+          // Intentar descarga directa como fallback
+          downloadFile(blob, filename);
+          setExportStatus('done');
+          setTimeout(() => setExportStatus('idle'), 5000);
+        }
       };
 
       recorder.start();
@@ -273,6 +263,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
   return {
     handleExportVideo,
     isExporting,
-    exportProgress
+    exportProgress,
+    exportStatus
   };
 };

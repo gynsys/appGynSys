@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FiZap, FiPlay, FiVolume2, FiVolumeX, FiImage, FiTrash2, 
-  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors
+  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors, FiCheck
 } from 'react-icons/fi';
 import { AUDIO_TRACKS, AVAILABLE_FONTS } from '../constants';
 import { getImageUrl } from '../../../../../lib/imageUtils';
@@ -36,8 +36,7 @@ export const VideoEditor = ({
   doctor,
   showToast,
   handleAddImageToVideoSlide,
-  readyBlob,
-  downloadReadyFile,
+  exportStatus = 'idle',
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
@@ -212,19 +211,30 @@ export const VideoEditor = ({
               ))}
             </div>
 
-            <button 
-              onClick={readyBlob ? downloadReadyFile : handleExportVideo}
-              disabled={isExporting}
-              className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-500' : readyBlob ? 'bg-green-600 text-white hover:bg-green-700 shadow-green-200' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
-            >
-              {isExporting ? (
-                <><FiLoader className="animate-spin" /> Procesando {exportProgress}%</>
-              ) : readyBlob ? (
-                <><FiDownload size={18} /> ¡Listo! Descargar Reel</>
-              ) : (
-                <><FiVideo size={18} /> Exportar Reel MP4</>
-              )}
-            </button>
+            {/* Export Button - Status Driven */}
+            {exportStatus === 'downloading' ? (
+              <div className="w-full py-5 rounded-[24px] bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 flex items-center justify-center gap-3">
+                <FiLoader className="animate-spin text-yellow-600" size={18} />
+                <span className="font-black uppercase tracking-[0.2em] text-[10px] text-yellow-700 dark:text-yellow-400">Descargando archivo...</span>
+              </div>
+            ) : exportStatus === 'done' ? (
+              <div className="w-full py-5 rounded-[24px] bg-green-50 dark:bg-green-900/20 border-2 border-green-300 flex items-center justify-center gap-3">
+                <FiCheck className="text-green-600" size={18} />
+                <span className="font-black uppercase tracking-[0.2em] text-[10px] text-green-700 dark:text-green-400">¡Archivo descargado!</span>
+              </div>
+            ) : (
+              <button 
+                onClick={handleExportVideo}
+                disabled={isExporting || exportStatus === 'exporting'}
+                className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
+              >
+                {isExporting ? (
+                  <><FiLoader className="animate-spin" /> Procesando {exportProgress}%</>
+                ) : (
+                  <><FiVideo size={18} /> Exportar Reel MP4</>
+                )}
+              </button>
+            )}
           </div>
 
           <audio ref={audioRef} loop crossOrigin="anonymous" />
