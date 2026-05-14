@@ -90,7 +90,7 @@ export const useExport = (selectedPost, designer, generatedContent) => {
       }
 
       // --- Fallback Robusto ---
-      const platform = await import('../../../../utils/platform');
+      const platform = await import('../../../../../utils/platform');
       platform.downloadFile(content, filename);
       showToast('¡Proceso completado!', 'success');
     } catch (error) {

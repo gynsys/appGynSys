@@ -40,7 +40,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     }
 
     // Fallback robusto usando nuestra nueva utilidad
-    import('../../../../utils/platform').then(m => {
+    import('../../../../../utils/platform').then(m => {
        m.downloadFile(readyBlob, readyFilename);
        setReadyBlob(null);
     });
