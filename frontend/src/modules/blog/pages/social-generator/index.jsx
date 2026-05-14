@@ -376,6 +376,7 @@ export default function SocialGenerator() {
           {/* RESTAURACIÓN DEL LAYOUT ORIGINAL DE TABS */}
           {generatedContent && (
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-700 animate-fadeIn">
+              {/* Left: Tab switcher */}
               <div className="flex bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700">
                 <button 
                   onClick={() => setActiveTab('video')} 
@@ -390,6 +391,16 @@ export default function SocialGenerator() {
                   Editor de Carrusel
                 </button>
               </div>
+
+              {/* Center: Active project name */}
+              {activeProjectName && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl border border-indigo-100 dark:border-indigo-800 max-w-xs">
+                  <FiFolder className="text-indigo-500 flex-shrink-0" size={14} />
+                  <span className="text-[11px] font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-tight truncate">{activeProjectName}</span>
+                </div>
+              )}
+
+              {/* Right: Save buttons */}
               <div className="flex gap-3">
                 <button 
                   onClick={handleSaveProject} 

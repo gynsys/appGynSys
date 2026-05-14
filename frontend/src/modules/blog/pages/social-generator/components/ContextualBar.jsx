@@ -25,12 +25,86 @@ export const ContextualBar = ({
   const isImage = el.type === 'image';
 
   const containerClasses = isMobile 
-    ? "fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[150] p-3 pb-safe shadow-xl animate-slideUp"
+    ? "fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[150] p-3 pb-safe shadow-2xl animate-slideUp overflow-hidden"
     : "fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200 dark:border-gray-700 z-[150] p-4 rounded-[32px] shadow-2xl flex items-center gap-4 animate-slideUp";
+
+  if (isMobile) {
+    return (
+      <div data-contextual-bar="true" className={containerClasses}>
+        {/* Fila 1: Tipo + Color + Bold/Italic */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center flex-shrink-0">
+            {isText ? <FiType size={14} /> : isShape ? <FiSquare size={14} /> : <FiImage size={14} />}
+          </div>
+
+          {/* Color del elemento */}
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm bg-white flex-shrink-0">
+            <input
+              type="color"
+              value={el.color || '#000000'}
+              onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
+              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+            />
+          </div>
+
+          {isText && (
+            <>
+              <button
+                onClick={() => updateElement(parseInt(slideIdx), elId, { bold: !el.bold })}
+                className={`p-2 rounded-xl transition-all flex-shrink-0 ${el.bold ? 'bg-indigo-600 text-white' : 'bg-gray-50 dark:bg-gray-900 text-gray-500'}`}
+              >
+                <FiBold size={14} />
+              </button>
+              <button
+                onClick={() => updateElement(parseInt(slideIdx), elId, { italic: !el.italic })}
+                className={`p-2 rounded-xl transition-all flex-shrink-0 ${el.italic ? 'bg-indigo-600 text-white' : 'bg-gray-50 dark:bg-gray-900 text-gray-500'}`}
+              >
+                <FiItalic size={14} />
+              </button>
+              {/* Font size inline */}
+              <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-xl px-2 py-1 flex-shrink-0">
+                <button
+                  onClick={() => updateElement(parseInt(slideIdx), elId, { fontSize: Math.max(8, (el.fontSize || 24) - 1) })}
+                  className="w-5 h-5 flex items-center justify-center text-gray-500 font-black text-sm"
+                >−</button>
+                <span className="text-xs font-black text-indigo-600 w-6 text-center">{el.fontSize || 24}</span>
+                <button
+                  onClick={() => updateElement(parseInt(slideIdx), elId, { fontSize: Math.min(72, (el.fontSize || 24) + 1) })}
+                  className="w-5 h-5 flex items-center justify-center text-gray-500 font-black text-sm"
+                >+</button>
+              </div>
+            </>
+          )}
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: (el.zIndex || 0) + 1 })}
+              className="p-2 text-gray-400 hover:text-indigo-600 bg-gray-50 rounded-xl"
+              title="Subir capa"
+            >
+              <FiLayers size={14} />
+            </button>
+            <button
+              onClick={() => removeElement(parseInt(slideIdx), elId)}
+              className="p-2 bg-red-50 text-red-500 rounded-xl"
+            >
+              <FiTrash2 size={14} />
+            </button>
+            <button
+              onClick={() => deselectElement(null, null)}
+              className="p-2 bg-gray-100 dark:bg-gray-900 text-gray-400 rounded-xl"
+            >
+              <FiX size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div data-contextual-bar="true" className={containerClasses}>
-      <div className={`flex items-center gap-3 ${isMobile ? 'overflow-x-auto no-scrollbar w-full' : ''}`}>
+      <div className="flex items-center gap-3">
         
         {/* Type Icon */}
         <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center flex-shrink-0">
