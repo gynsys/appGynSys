@@ -25,7 +25,8 @@ def generate_blog_ai(
             topic=request_data.topic,
             tone=request_data.tone,
             target_audience=request_data.target_audience,
-            max_words=request_data.max_words
+            max_words=request_data.max_words,
+            source_link=request_data.source_link
         )
         return result
     except ValueError as e:

@@ -6,7 +6,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
-def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int) -> dict:
+def generate_blog_content(topic: str, tone: str, target_audience: str, max_words: int, source_link: str = None) -> dict:
     """
     Genera contenido para un artículo de blog médico usando Google Gemini 1.5 Flash.
     
@@ -15,6 +15,7 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         tone: El tono deseado (ej. Profesional, Empático, Informativo).
         target_audience: El público objetivo (ej. Pacientes, Colegas).
         max_words: El número máximo de palabras aproximado.
+        source_link: Opcional. Enlace a un PDF o artículo de investigación como referencia.
         
     Returns:
         dict: Un diccionario con {title, summary, content}.
@@ -27,9 +28,14 @@ def generate_blog_content(topic: str, tone: str, target_audience: str, max_words
         genai.configure(api_key=settings.GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-flash-latest')
         
+        source_context = ""
+        if source_link:
+            source_context = f"\n- Fuente de referencia: {source_link}\n(Por favor, utiliza la información de este enlace o documento como base científica para el artículo si es posible)."
+
         prompt = f"""
         Actúa como un experto en redacción médica y ginecología. 
         Escribe un artículo de blog completo sobre el siguiente tema: "{topic}".
+        {source_context}
         
         Parámetros obligatorios:
         - Tono: {tone}

@@ -77,6 +77,7 @@ export default function BlogEditor({ post, onSave, onCancel }) {
   const [aiExpanded, setAiExpanded] = useState(false)
   const [aiForm, setAiForm] = useState({
     topic: '',
+    source_link: '',
     tone: 'Profesional',
     target_audience: 'Pacientes generales',
     max_words: 500
@@ -226,15 +227,28 @@ export default function BlogEditor({ post, onSave, onCancel }) {
           </div>
 
           <div className={`space-y-4 ${aiExpanded ? 'block' : 'hidden md:block'}`}>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema o Título del Artículo</label>
-              <input
-                type="text"
-                value={aiForm.topic}
-                onChange={(e) => setAiForm({...aiForm, topic: e.target.value})}
-                className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
-                placeholder="Ej: Beneficios de la ecografía 4D"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema o Título del Artículo</label>
+                <input
+                  type="text"
+                  value={aiForm.topic}
+                  onChange={(e) => setAiForm({...aiForm, topic: e.target.value})}
+                  className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+                  placeholder="Ej: Beneficios de la ecografía 4D"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Enlace de Referencia (Opcional)</label>
+                <input
+                  type="url"
+                  value={aiForm.source_link}
+                  onChange={(e) => setAiForm({...aiForm, source_link: e.target.value})}
+                  className="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5 border"
+                  placeholder="Link a un PDF o investigación..."
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
