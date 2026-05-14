@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { blogService } from '../../../services/blogService';
-import { isCapacitor, downloadFile } from '../../../../../utils/platform';
+import { isCapacitor, downloadFile, openExternalFile } from '../../../../../utils/platform';
 
 export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
   const [isExporting, setIsExporting] = useState(false);
@@ -70,8 +70,14 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
         try {
-          if (isMobile || isCapacitor()) {
-            // Subir al servidor y usar window.location.href para descarga directa
+          if (isCapacitor()) {
+            // Capacitor: Abrir URL en navegador del sistema (maneja descargas nativamente)
+            const { file_id, extension } = await blogService.uploadForDownload(blob, filename);
+            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
+            const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
+            openExternalFile(downloadUrl);
+          } else if (isMobile) {
+            // Mobile Web: Usar window.location.href para descarga directa
             // (location.href no tiene restricción de gesto de usuario ni popup blocker)
             const { file_id, extension } = await blogService.uploadForDownload(blob, filename);
             const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');

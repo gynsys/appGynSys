@@ -25,7 +25,14 @@ El archivo `index.jsx` contiene la función `handleExportVideo`, que realiza los
 2. Captura el `MediaStream` del canvas a 30 FPS.
 3. Captura el `AudioStream` del elemento `<audio>` activo.
 4. Combina ambos flujos en un nuevo `MediaStream`.
-5. Graba el resultado usando el codec `video/webm;codecs=vp9,opus` y lo empaqueta como `.mp4` para descarga inmediata.
+5. Graba el resultado usando el codec `video/webm;codecs=vp9,opus` y lo empaqueta como `.mp4`.
+
+### Descargas Móviles y Híbridas (Capacitor)
+Debido a estrictas políticas de seguridad en iOS y Android, descargar un objeto `Blob` generado localmente (`URL.createObjectURL`) falla o es bloqueado silenciosamente. Para resolver esto, hemos implementado una **Estrategia Tripartita de Descargas**:
+
+1. **Escritorio (Desktop):** Se usa la etiqueta nativa `<a>` con el atributo `download` para descargar el Blob generado en RAM inmediatamente sin tocar el servidor.
+2. **Web Móvil (iOS/Android Safari/Chrome):** El `Blob` MP4 se sube temporalmente al backend vía un endpoint proxy (`/api/export/proxy-download/`). El backend lo guarda y devuelve una URL prefirmada, hacia donde redirigimos al navegador mediante `window.location.href`. Esto invoca el gestor de descargas nativo del OS.
+3. **App Híbrida (Capacitor):** Las WebViews nativas no saben interpretar `window.location.href` para descargas (muestran pantalla blanca o fallan). La solución es subir el archivo al backend igual que en Web Móvil, pero invocar la URL resultante usando el plugin oficial `@capacitor/browser` (`openExternalFile` / `Browser.open`). Esto saca la URL de la WebView y la abre en el navegador nativo del sistema operativo (Safari o Chrome Custom Tabs), el cual procesa y guarda el MP4 en el dispositivo exitosamente.
 
 ### Atributos de Seguridad
 Para permitir la grabación de recursos externos (imágenes y música), todos los elementos multimedia utilizan `crossOrigin="anonymous"`.
