@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   FiZap, FiPlay, FiVolume2, FiVolumeX, FiImage, FiTrash2, 
-  FiType, FiPause, FiUpload, FiClock, FiInstagram, FiVideo, FiDownload, FiLoader, FiDroplet, FiScissors, FiCheck
+  FiType, FiPause, FiUpload, FiClock, FiVideo, FiLoader, FiDroplet, FiScissors, FiCheck
 } from 'react-icons/fi';
 import { AUDIO_TRACKS, AVAILABLE_FONTS } from '../constants';
 import { getImageUrl } from '../../../../../lib/imageUtils';
@@ -42,6 +42,10 @@ export const VideoEditor = ({
   handleUploadAudio,
   handleDeleteAudio
 }) => {
+  const [editingSlideIdx, setEditingSlideIdx] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const bgColorInputRef = useRef(null);
+  const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const parseHighlightedText = (text) => {
     if (!text) return '';
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -131,6 +135,18 @@ export const VideoEditor = ({
               className="absolute inset-0 flex items-center justify-center transition-all duration-700 overflow-hidden"
               style={!scenes[currentVideoSlide]?.image ? getBackgroundStyle() : { backgroundColor: 'transparent' }}
             >
+              {/* Mobile: hidden color input triggered by tapping background */}
+              {isMobileDevice && !scenes[currentVideoSlide]?.image && (
+                <input
+                  ref={bgColorInputRef}
+                  type="color"
+                  value={videoStyles.bgColor || videoStyles.backgroundColor || '#1e3a5f'}
+                  onChange={(e) => setVideoStyles(prev => ({ ...prev, bgColor: e.target.value, backgroundColor: e.target.value }))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                  title="Toca para cambiar el fondo"
+                />
+              )}
+
               {scenes[currentVideoSlide]?.image && (
                 <img 
                   src={scenes[currentVideoSlide].image} 
@@ -139,16 +155,48 @@ export const VideoEditor = ({
                 />
               )}
               <div className="relative z-10 p-10 text-center w-full space-y-4">
-                <p 
-                  className="font-black leading-[1.1] animate-slideUp drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
-                  style={{ 
-                    fontFamily: videoStyles.fontFamily,
-                    fontSize: `${videoStyles.fontSize}px`,
-                    color: videoStyles.textColor
-                  }}
-                >
-                  {parseHighlightedText(scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '')}
-                </p>
+                {/* Mobile: tap text to edit inline */}
+                {isMobileDevice && editingSlideIdx === currentVideoSlide ? (
+                  <textarea
+                    autoFocus
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onBlur={() => {
+                      const scenes = generatedContent?.video_slides || generatedContent?.slides || [];
+                      const updated = scenes.map((s, i) => {
+                        if (i !== editingSlideIdx) return s;
+                        return s.text !== undefined ? { ...s, text: editingText } : { ...s, content: editingText };
+                      });
+                      const key = generatedContent?.video_slides ? 'video_slides' : 'slides';
+                      setGeneratedContent({ ...generatedContent, [key]: updated });
+                      setEditingSlideIdx(null);
+                    }}
+                    className="w-full bg-transparent text-center font-black leading-[1.1] outline-none resize-none border-b-2 border-white/50"
+                    style={{
+                      fontFamily: videoStyles.fontFamily,
+                      fontSize: `${videoStyles.fontSize}px`,
+                      color: videoStyles.textColor,
+                      minHeight: '80px'
+                    }}
+                  />
+                ) : (
+                  <p 
+                    className="font-black leading-[1.1] animate-slideUp drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                    style={{ 
+                      fontFamily: videoStyles.fontFamily,
+                      fontSize: `${videoStyles.fontSize}px`,
+                      color: videoStyles.textColor
+                    }}
+                    onClick={() => {
+                      if (!isMobileDevice) return;
+                      const txt = scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '';
+                      setEditingText(txt);
+                      setEditingSlideIdx(currentVideoSlide);
+                    }}
+                  >
+                    {parseHighlightedText(scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '')}
+                  </p>
+                )}
                 {scenes[currentVideoSlide]?.overlayText && (
                   <p 
                     className="text-white/80 font-bold tracking-tight animate-fadeIn"
@@ -163,14 +211,7 @@ export const VideoEditor = ({
               </div>
             </div>
 
-            {/* Top Branding Bar */}
-            <div className="absolute top-14 left-8 right-8 flex items-center justify-between z-30">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-white/15 backdrop-blur-xl rounded-full border border-white/25 shadow-sm"></div>
-                <p className="text-white text-[10px] font-black uppercase tracking-[0.15em] drop-shadow-md">Dr. {doctor?.last_name || 'GynSys'}</p>
-              </div>
-              <FiInstagram className="text-white/60 drop-shadow-md" size={16} />
-            </div>
+
             
             {/* Playback Interaction */}
             <div 
