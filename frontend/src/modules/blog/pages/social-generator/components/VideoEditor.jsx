@@ -36,6 +36,8 @@ export const VideoEditor = ({
   doctor,
   showToast,
   handleAddImageToVideoSlide,
+  readyBlob,
+  downloadReadyFile,
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
@@ -211,11 +213,17 @@ export const VideoEditor = ({
             </div>
 
             <button 
-              onClick={handleExportVideo}
+              onClick={readyBlob ? downloadReadyFile : handleExportVideo}
               disabled={isExporting}
-              className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
+              className={`w-full py-5 rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 ${isExporting ? 'bg-gray-100 text-gray-500' : readyBlob ? 'bg-green-600 text-white hover:bg-green-700 shadow-green-200' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
             >
-              {isExporting ? <><FiLoader className="animate-spin" /> Procesando {exportProgress}%</> : <><FiVideo size={18} /> Exportar Reel MP4</>}
+              {isExporting ? (
+                <><FiLoader className="animate-spin" /> Procesando {exportProgress}%</>
+              ) : readyBlob ? (
+                <><FiDownload size={18} /> ¡Listo! Descargar Reel</>
+              ) : (
+                <><FiVideo size={18} /> Exportar Reel MP4</>
+              )}
             </button>
           </div>
 

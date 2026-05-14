@@ -75,7 +75,7 @@ export default function SocialGenerator() {
     getActiveAudioSrc, userAudios, loadingAudios, handleUploadAudio, handleDeleteAudio
   } = useAudioPlayback(activeTab, isPlaying, setIsPlaying, showToast);
 
-  const { isExporting, exportProgress, handleExportVideo } = useVideoExport(
+  const { isExporting, exportProgress, handleExportVideo, readyBlob, downloadReadyFile } = useVideoExport(
     generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast
   );
 
@@ -342,6 +342,7 @@ export default function SocialGenerator() {
         isExporting={isExporting} exportProgress={exportProgress}
         handleExportVideo={handleExportVideo} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
         enterMobileFullscreen={enterMobileFullscreen}
+        readyBlob={readyBlob} downloadReadyFile={downloadReadyFile}
         userAudios={userAudios} loadingAudios={loadingAudios}
         handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
       />
@@ -436,6 +437,7 @@ export default function SocialGenerator() {
                   isExporting={isExporting} exportProgress={exportProgress}
                   handleExportVideo={handleExportVideo} doctor={doctor}
                   showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
+                  readyBlob={readyBlob} downloadReadyFile={downloadReadyFile}
                   userAudios={userAudios} loadingAudios={loadingAudios}
                   handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
                 />

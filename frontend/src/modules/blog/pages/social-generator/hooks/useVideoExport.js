@@ -1,9 +1,43 @@
-
 import { useState } from 'react';
 
 export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [readyBlob, setReadyBlob] = useState(null);
+  const [readyFilename, setReadyFilename] = useState('');
+
+  const downloadReadyFile = async () => {
+    if (!readyBlob) return;
+    
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([readyBlob], readyFilename, { type: 'video/mp4' })] })) {
+      try {
+        const file = new File([readyBlob], readyFilename, { type: 'video/mp4' });
+        await navigator.share({
+          files: [file],
+          title: 'GynSys Video',
+          text: 'Tu video de GynSys está listo.'
+        });
+        setReadyBlob(null);
+        showToast('¡Video compartido!', 'success');
+        return;
+      } catch (shareErr) {
+        console.log('[GynSys] Share failed', shareErr);
+      }
+    }
+
+    // Fallback: Descarga estándar
+    const url = URL.createObjectURL(readyBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = readyFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setReadyBlob(null);
+    showToast('¡Video descargado!', 'success');
+  };
 
   const handleExportVideo = async () => {
     const scenes = generatedContent?.video_slides || generatedContent?.slides;
@@ -14,6 +48,7 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
     
     setIsExporting(true);
     setExportProgress(0);
+    setReadyBlob(null);
     
     try {
       // 1. Pre-cargar todas las imágenes para evitar parpadeos o fallos
@@ -55,42 +90,16 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
       const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
       const chunks = [];
       recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = async () => {
+      recorder.onstop = () => {
         if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
         
         const blob = new Blob(chunks, { type: 'video/mp4' });
         const filename = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
         
-        // --- Mejorado para Móvil (Share API) ---
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        
-        if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'video/mp4' })] })) {
-          try {
-            const file = new File([blob], filename, { type: 'video/mp4' });
-            await navigator.share({
-              files: [file],
-              title: 'GynSys Video',
-              text: 'Tu video de GynSys está listo.'
-            });
-            setIsExporting(false);
-            showToast('¡Video listo para guardar!', 'success');
-            return;
-          } catch (shareErr) {
-            console.log('[GynSys] Share failed or cancelled, falling back to download', shareErr);
-          }
-        }
-
-        // --- Fallback: Descarga estándar ---
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
+        setReadyBlob(blob);
+        setReadyFilename(filename);
         setIsExporting(false);
-        showToast('¡Video exportado con éxito!', 'success');
+        showToast('¡Video generado! Toca para descargar.', 'success');
       };
 
       recorder.start();
