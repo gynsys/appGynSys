@@ -43,7 +43,7 @@ export const ContextualBar = ({
               type="color"
               value={el.color || '#000000'}
               onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
-              className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+              className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
             />
           </div>
 
@@ -121,7 +121,7 @@ export const ContextualBar = ({
             type="color"
             value={el.color || '#000000'}
             onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
-            className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer border-none p-0 bg-transparent"
+            className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
           />
         </div>
 

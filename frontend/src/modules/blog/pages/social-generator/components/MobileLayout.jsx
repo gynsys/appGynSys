@@ -73,8 +73,53 @@ export const MobileLayout = ({
   savingType,
   saveProgress
 }) => {
+
+  React.useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+
+    const handleTouchStart = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = Math.abs(currentX - startX);
+      const diffY = Math.abs(currentY - startY);
+
+      // Interceptar desplazamientos predominantemente horizontales (Pan / Swipe)
+      if (diffX > diffY && diffX > 5) {
+        // Permitir que los inputs de rango funcionen, pero detener el burbujeo
+        // para que WKWebView no capture el gesto de arrastre de pantalla
+        if (e.target.tagName === 'INPUT' && e.target.type === 'range') {
+          e.stopPropagation();
+        } else {
+          // Bloquear el pan/swipe lateral nativo del navegador/SO
+          if (e.cancelable) {
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    // { passive: false } es CRÍTICO para poder llamar a e.preventDefault() en iOS Safari
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20 w-full overflow-x-hidden" style={{ touchAction: 'pan-y' }}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20 w-full" style={{ touchAction: 'pan-y', overflowX: 'clip', overscrollBehaviorX: 'none', maxWidth: '100vw' }}>
       {/* Compact Mobile Header */}
       <div className="p-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between mb-3">
@@ -323,7 +368,7 @@ export const MobileLayout = ({
 
       {/* Mobile Full-Screen Editor */}
       {isMobileFullscreen && (
-        <div className="fixed inset-0 bg-white dark:bg-gray-900 z-[100] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-white dark:bg-gray-900 z-[100] flex flex-col" style={{ touchAction: 'pan-y', overflowX: 'clip', overscrollBehaviorX: 'none' }}>
           <button
             onClick={exitMobileFullscreen}
             className="absolute top-4 right-4 z-[110] p-3 bg-red-500 text-white rounded-full shadow-lg"
