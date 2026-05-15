@@ -35,3 +35,11 @@ La propiedad `touch-action: pan-y` intercepta el evento táctil antes de que se 
 1. El usuario **solo** tiene permitido hacer scroll (pan) en el **eje Y** (arriba/abajo).
 2. Cualquier vector táctil en el eje X (izquierda/derecha) debe ser matemáticamente ignorado para navegación, descartando el "Swipe to go back" o el rebote lateral del documento.
 3. Al no alterar márgenes (`margin`), rellenos (`padding`), flexbox ni anchos (`width`), la vista previa del Reel y del Carrusel mantienen exactamente su geometría píxel-perfecta para la generación del video, asegurando estabilidad visual sin saltos.
+
+## 📁 Archivos Modificados Durante la Resolución
+Para referencia futura, estos son los archivos clave que fueron editados durante este proceso:
+- `frontend/index.html`: Se añadió `touch-action: manipulation` y `overscroll-behavior-x: none` al root.
+- `frontend/src/components/layout/DashboardLayout.jsx`: Se añadió `overflow-x-hidden` a la etiqueta `<main>`.
+- `frontend/src/modules/blog/pages/social-generator/components/VideoEditor.jsx`: Se incluyó `touchAction: 'none'` explícito en los sliders de tamaño de texto y duración de video.
+- `frontend/src/modules/blog/pages/social-generator/components/ContextualBar.jsx`: Se forzó `touchAction: 'manipulation'` en los botones `+` y `-` para evitar el "doble tap to zoom".
+- `frontend/src/modules/blog/pages/social-generator/components/MobileLayout.jsx`: Se inyectó `style={{ touchAction: 'pan-y' }}` en el div contenedor principal.
