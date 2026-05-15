@@ -19,27 +19,19 @@ A diferencia de vistas estándar como "Directorios", que fluyen verticalmente (`
 - **Acción:** Se forzó un `overflow-x-hidden` global en la etiqueta `<main>` dentro del layout principal del sistema (`DashboardLayout.jsx`) para intentar "guillotinar" cualquier pixel que sobresaliera.
 - **Resultado:** Fallido para resolver el problema de gestos. Aunque previno desbordes de renderizado visual, el sistema operativo seguía capturando y ejecutando el vector táctil del "swipe". El lienzo de edición (especialmente el canvas del carrusel) era altamente sensible a cambios estructurales, por lo que remover paddings heredados causaba riesgos de desalinear el renderizado final (proporción 9:16).
 
-## La Solución Definitiva (Hard-Lock a Nivel de OS)
+## La Solución Definitiva (Corte por Hardware + JavaScript)
 
-Para cumplir la regla crítica de **"Restringir el movimiento lateral a toda costa SIN modificar el layout del editor"**, se optó por un bloqueo de hardware/gestos en lugar de un bloqueo de caja (CSS Box-Model).
+El verdadero problema era una combinación de dos factores de renderizado en WKWebView (iOS Safari):
+1. **Desbordamiento Fantasma:** Elementos como el selector nativo de color en `ContextualBar.jsx` usaban clases como `inset-[-50%] w-[200%]`. Esto silenciosamente estiraba la "caja de desplazamiento" del documento a más del 100vw, rompiendo los límites del dispositivo.
+2. **Deficiencia de `overflow: hidden`:** En iOS Safari, `overflow-x: hidden` oculta visualmente los excedentes, pero **no deshabilita** la capacidad del contenedor o documento de rebotar horizontalmente (scroll physics) cuando se arrastra táctilmente.
 
-**Acción Final:**
-Se inyectó la propiedad CSS **`touch-action: pan-y`** directamente en el contenedor raíz del `MobileLayout.jsx`:
-
-```jsx
-<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pb-20 w-full overflow-x-hidden" style={{ touchAction: 'pan-y' }}>
-```
-
-### ¿Por qué esto sí funcionó?
-La propiedad `touch-action: pan-y` intercepta el evento táctil antes de que se propague al motor de renderizado del navegador. Le indica expresamente al sistema operativo (iOS/Android):
-1. El usuario **solo** tiene permitido hacer scroll (pan) en el **eje Y** (arriba/abajo).
-2. Cualquier vector táctil en el eje X (izquierda/derecha) debe ser matemáticamente ignorado para navegación, descartando el "Swipe to go back" o el rebote lateral del documento.
-3. Al no alterar márgenes (`margin`), rellenos (`padding`), flexbox ni anchos (`width`), la vista previa del Reel y del Carrusel mantienen exactamente su geometría píxel-perfecta para la generación del video, asegurando estabilidad visual sin saltos.
+**Acción Final (La Combinación Perfecta):**
+1. Reemplazamos `overflow-x: hidden` por **`overflow-x: clip`** y añadimos `overscroll-behavior-x: none` en los contenedores maestros (`MobileLayout.jsx`). A diferencia de `hidden`, `clip` anula la generación de contenedores de scroll a nivel de render.
+2. Corregimos el `ContextualBar.jsx`, reemplazando el `inset-[-50%]` por `inset-0 w-full h-full scale-150`, manteniendo la visual pero sin corromper el ancho físico global.
+3. Se inyectó un `useEffect` en `MobileLayout.jsx` con el modo `{ passive: false }` para hacer `e.preventDefault()` de manera quirúrgica cuando el arrastre es predominantemente horizontal, a menos que el usuario esté deslizando un input de rango.
 
 ## 📁 Archivos Modificados Durante la Resolución
 Para referencia futura, estos son los archivos clave que fueron editados durante este proceso:
-- `frontend/index.html`: Se añadió `touch-action: manipulation` y `overscroll-behavior-x: none` al root.
-- `frontend/src/components/layout/DashboardLayout.jsx`: Se añadió `overflow-x-hidden` a la etiqueta `<main>`.
-- `frontend/src/modules/blog/pages/social-generator/components/VideoEditor.jsx`: Se incluyó `touchAction: 'none'` explícito en los sliders de tamaño de texto y duración de video.
-- `frontend/src/modules/blog/pages/social-generator/components/ContextualBar.jsx`: Se forzó `touchAction: 'manipulation'` en los botones `+` y `-` para evitar el "doble tap to zoom".
-- `frontend/src/modules/blog/pages/social-generator/components/MobileLayout.jsx`: Se inyectó `style={{ touchAction: 'pan-y' }}` en el div contenedor principal.
+- `frontend/src/modules/blog/pages/social-generator/components/MobileLayout.jsx`: Se inyectó el interceptor táctil de JavaScript, y los contenedores adoptaron `overflow-x: clip`.
+- `frontend/src/modules/blog/pages/social-generator/components/ContextualBar.jsx`: Se eliminó el padding fantasma (`inset-[-50%]`) que forzaba el paneo.
+- `frontend/src/modules/blog/pages/social-generator/components/VideoEditor.jsx`: Controles deslizantes mantuvieron el manejo aislado para no bloquearse por el bloqueo principal.
