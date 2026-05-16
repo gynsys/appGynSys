@@ -176,7 +176,7 @@ export const ContextualBar = ({
          <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-2xl p-1 flex-shrink-0">
             <button 
              onClick={() => {
-               if (isImage) updateImage(selectedId, { zIndex: currentZIndex + 5 });
+               if (isImage) updateImage(selectedId, { zIndex: currentZIndex + 20 });
                else updateElement(parseInt(slideIdx), elId, { zIndex: currentZIndex + 5 });
              }}
              className="p-2 text-gray-400 hover:text-indigo-600"
@@ -186,7 +186,7 @@ export const ContextualBar = ({
             </button>
             <button 
              onClick={() => {
-               if (isImage) updateImage(selectedId, { zIndex: currentZIndex - 5 });
+               if (isImage) updateImage(selectedId, { zIndex: currentZIndex - 20 });
                else updateElement(parseInt(slideIdx), elId, { zIndex: currentZIndex - 5 });
              }}
              className="p-2 text-gray-400 hover:text-indigo-600"
