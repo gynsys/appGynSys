@@ -67,7 +67,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
 
   const getActiveAudioSrc = () => {
     if (selectedAudio === 'Custom' && customAudioUrl) return customAudioUrl;
-    if (selectedAudio.startsWith('User-')) {
+    if (selectedAudio && selectedAudio.startsWith('User-')) {
       const audioId = parseInt(selectedAudio.split('-')[1]);
       const audio = userAudios.find(a => a.id === audioId);
       if (audio) return getImageUrl(audio.url);
