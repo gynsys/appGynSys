@@ -566,11 +566,15 @@ export default function SocialGenerator() {
         </div>
 
       <ContextualBar 
-        selectedId={designer.canvas.selectedExtraId}
+        selectedId={designer.canvas.selectedExtraId || designer.canvas.selectedImageId}
         canvas={designer.canvas}
         updateElement={designer.canvas.updateExtraElement}
         removeElement={designer.canvas.removeExtraElement}
         deselectElement={designer.canvas.selectElement}
+        isImage={!!designer.canvas.selectedImageId}
+        imagePositions={transformer.state.imagePositions}
+        updateImage={transformer.handlers.updateImage}
+        onRemoveImage={handleRemoveImage}
       />
 
       {/* Edit Content Modal */}

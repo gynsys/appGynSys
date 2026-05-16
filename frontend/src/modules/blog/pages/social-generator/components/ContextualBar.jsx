@@ -11,18 +11,30 @@ export const ContextualBar = ({
   updateElement, 
   removeElement, 
   deselectElement,
-  isMobile = false
+  isMobile = false,
+  isImage = false,
+  imagePositions = {},
+  updateImage,
+  onRemoveImage
 }) => {
   if (!selectedId) return null;
 
   const [slideIdx, elId] = selectedId.split('-');
-  const el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+  let el = null;
+  let currentZIndex = 0;
+  let isText = false;
+  let isShape = false;
   
-  if (!el) return null;
-
-  const isText = el.type === 'text' || el.type === 'title';
-  const isShape = el.type === 'shape';
-  const isImage = el.type === 'image';
+  if (isImage) {
+    const pos = imagePositions[selectedId] || { zIndex: 20 };
+    currentZIndex = pos.zIndex || 20;
+  } else {
+    el = canvas.extraElements[slideIdx]?.find(e => e.id === elId);
+    if (!el) return null;
+    currentZIndex = el.zIndex || 0;
+    isText = el.type === 'text' || el.type === 'title';
+    isShape = el.type === 'shape';
+  }
 
   const containerClasses = isMobile 
     ? "fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-[150] p-3 pb-safe shadow-2xl animate-slideUp overflow-hidden"
@@ -154,29 +166,42 @@ export const ContextualBar = ({
         )}
 
         {/* Layers / Z-Index */}
-        <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-2xl p-1 flex-shrink-0">
-           <button 
-            onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: (el.zIndex || 0) + 1 })}
-            className="p-2 text-gray-400 hover:text-indigo-600"
-            title="Traer al frente"
-           >
-              <FiLayers size={16} />
-           </button>
-           <button 
-            onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: (el.zIndex || 0) - 1 })}
-            className="p-2 text-gray-400 hover:text-indigo-600"
-            title="Enviar al fondo"
-           >
-              <FiCornerUpLeft size={16} className="rotate-270" />
-           </button>
-        </div>
+         <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-2xl p-1 flex-shrink-0">
+            <button 
+             onClick={() => {
+               if (isImage) updateImage(selectedId, { zIndex: currentZIndex + 1 });
+               else updateElement(parseInt(slideIdx), elId, { zIndex: currentZIndex + 1 });
+             }}
+             className="p-2 text-gray-400 hover:text-indigo-600"
+             title="Traer al frente"
+            >
+               <FiLayers size={16} />
+            </button>
+            <button 
+             onClick={() => {
+               if (isImage) updateImage(selectedId, { zIndex: currentZIndex - 1 });
+               else updateElement(parseInt(slideIdx), elId, { zIndex: currentZIndex - 1 });
+             }}
+             className="p-2 text-gray-400 hover:text-indigo-600"
+             title="Enviar al fondo"
+            >
+               <FiCornerUpLeft size={16} className="rotate-270" />
+            </button>
+         </div>
 
         <div className="w-px h-8 bg-gray-100 dark:bg-gray-700 flex-shrink-0 mx-1"></div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => removeElement(parseInt(slideIdx), elId)}
+            onClick={() => {
+              if (isImage) {
+                onRemoveImage(parseInt(slideIdx), parseInt(elId));
+                deselectElement(null, null);
+              } else {
+                removeElement(parseInt(slideIdx), elId);
+              }
+            }}
             className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"
           >
             <FiTrash2 size={18} />
