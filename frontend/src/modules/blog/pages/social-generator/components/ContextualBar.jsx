@@ -50,14 +50,16 @@ export const ContextualBar = ({
           </div>
 
           {/* Color del elemento */}
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm bg-white flex-shrink-0">
-            <input
-              type="color"
-              value={el.color || '#000000'}
-              onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
-              className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
-            />
-          </div>
+          {!isImage && (
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm bg-white flex-shrink-0">
+              <input
+                type="color"
+                value={el.color || '#000000'}
+                onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
+                className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
+              />
+            </div>
+          )}
 
           {isText && (
             <>
@@ -92,7 +94,10 @@ export const ContextualBar = ({
 
           <div className="ml-auto flex items-center gap-2">
             <button
-              onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: (el.zIndex || 0) + 1 })}
+              onClick={() => {
+                if (isImage) updateImage(selectedId, { zIndex: currentZIndex + 5 });
+                else updateElement(parseInt(slideIdx), elId, { zIndex: currentZIndex + 5 });
+              }}
               className="p-2 text-gray-400 hover:text-indigo-600 bg-gray-50 rounded-xl"
               title="Subir capa"
             >
@@ -128,14 +133,16 @@ export const ContextualBar = ({
         <div className="w-px h-8 bg-gray-100 dark:bg-gray-700 flex-shrink-0 mx-1"></div>
 
         {/* Common: Color Picker */}
-        <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm bg-white flex-shrink-0">
-          <input
-            type="color"
-            value={el.color || '#000000'}
-            onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
-            className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
-          />
-        </div>
+        {!isImage && (
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm bg-white flex-shrink-0">
+            <input
+              type="color"
+              value={el.color || '#000000'}
+              onChange={(e) => updateElement(parseInt(slideIdx), elId, { color: e.target.value })}
+              className="absolute inset-0 w-full h-full scale-150 cursor-pointer border-none p-0 bg-transparent"
+            />
+          </div>
+        )}
 
         {/* Text Specific Controls */}
         {isText && (
