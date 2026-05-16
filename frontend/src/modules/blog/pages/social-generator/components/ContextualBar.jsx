@@ -92,6 +92,21 @@ export const ContextualBar = ({
             </>
           )}
 
+          {isImage && (
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-xl px-2 py-1 flex-shrink-0">
+              <span className="text-[10px] font-black text-gray-400">Intensidad</span>
+              <input 
+                type="range" 
+                min="0.1" 
+                max="1" 
+                step="0.1"
+                value={imagePositions[selectedId]?.opacity !== undefined ? imagePositions[selectedId].opacity : 1}
+                onChange={(e) => updateImage(selectedId, { opacity: parseFloat(e.target.value) })}
+                className="w-16 cursor-pointer"
+              />
+            </div>
+          )}
+
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => {
@@ -170,6 +185,21 @@ export const ContextualBar = ({
               />
             </div>
           </>
+        )}
+
+        {isImage && (
+          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 rounded-2xl px-3 py-1 flex-shrink-0">
+            <span className="text-[10px] font-black text-gray-400">Intensidad</span>
+            <input 
+              type="range" 
+              min="0.1" 
+              max="1" 
+              step="0.1"
+              value={imagePositions[selectedId]?.opacity !== undefined ? imagePositions[selectedId].opacity : 1}
+              onChange={(e) => updateImage(selectedId, { opacity: parseFloat(e.target.value) })}
+              className="w-20 cursor-pointer"
+            />
+          </div>
         )}
 
         {/* Layers / Z-Index */}

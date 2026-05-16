@@ -233,6 +233,7 @@ export const SlideCanvas = ({
             className={`absolute transition-shadow ${isSelected && selectedImageId === imgId ? 'border-[2px] border-indigo-500 ring-4 ring-indigo-500/20 shadow-xl' : ''}`}
             style={{
               zIndex: pos.zIndex !== undefined ? pos.zIndex : 20,
+              opacity: pos.opacity !== undefined ? pos.opacity : 1,
               left: pos.x + '%',
               top: pos.y + '%',
               width: size + 'px',

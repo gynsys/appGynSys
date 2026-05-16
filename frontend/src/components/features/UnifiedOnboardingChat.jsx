@@ -1265,7 +1265,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         setHistory([
           {
             type: 'bot',
-            text: `<p class="mb-1">${greeting}</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
+            text: `<p class="mb-1">${greeting}</p><p class="mb-1">Para agilizar el tiempo en consulta, vamos a recopilar algunos datos.</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
           }
         ]);
         setStep(STEPS.NAME);
@@ -1278,7 +1278,7 @@ export default function UnifiedOnboardingChat({ doctorId, doctor = {}, onClose, 
         setHistory([
           {
             type: 'bot',
-            text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para asegurar la precisión de tu historia médica,</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
+            text: `<p class="mb-1">Hola, soy el asistente virtual ${finalPrefix}</p><p class="font-bold mb-1">${name}.</p><p class="mb-1">Para agilizar el tiempo en consulta, vamos a recopilar algunos datos.</p><p class="font-bold">por favor escribe tu nombre y apellido completo:</p>`
           }
         ]);
         setStep(STEPS.NAME);
