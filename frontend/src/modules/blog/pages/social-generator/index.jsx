@@ -328,9 +328,10 @@ export default function SocialGenerator() {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onloadend = () => {
         const newSlides = [...generatedContent.video_slides];
-        newSlides[index].image = event.target.result;
+        if (!newSlides[index].customImages) newSlides[index].customImages = [];
+        newSlides[index].customImages.push(reader.result);
         setGeneratedContent({ ...generatedContent, video_slides: newSlides });
       };
       reader.readAsDataURL(file);
@@ -539,24 +540,23 @@ export default function SocialGenerator() {
                           isVideoMode={activeTab === 'video'}
                         />
                       </div>
-                    </div>
-
-                    {/* Pagination and Play Controls (Moved outside the canvas box) */}
-                    <div className="flex flex-col items-center gap-4 mt-4">
-                      <SlidePaginator 
-                        current={designer.canvas.currentSlidePage}
-                        total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
-                        onChange={designer.canvas.setCurrentSlidePage}
-                      />
-                      {activeTab === 'video' && (
-                        <button
-                          onClick={() => setIsPlaying(!isPlaying)}
-                          className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
-                          title={isPlaying ? "Pausar" : "Reproducir"}
-                        >
-                          {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-                        </button>
-                      )}
+                      {/* Pagination and Play Controls (Positioned absolutely below the canvas) */}
+                      <div className="absolute top-[100%] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4 mt-4">
+                        <SlidePaginator 
+                          current={designer.canvas.currentSlidePage}
+                          total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
+                          onChange={designer.canvas.setCurrentSlidePage}
+                        />
+                        {activeTab === 'video' && (
+                          <button
+                            onClick={() => setIsPlaying(!isPlaying)}
+                            className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
+                            title={isPlaying ? "Pausar" : "Reproducir"}
+                          >
+                            {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
