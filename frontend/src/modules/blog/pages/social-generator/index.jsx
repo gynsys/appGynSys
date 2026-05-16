@@ -512,6 +512,9 @@ export default function SocialGenerator() {
                     onDownload={activeTab === 'video' ? handleExportVideo : exporter.downloadCarousel}
                     onSave={handleSaveProject} onConvertToVideo={handleConvertToVideo}
                     isVideoMode={activeTab === 'video'}
+                    selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+                    userAudios={userAudios} loadingAudios={loadingAudios}
+                    handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
                   />
                   <div className="flex-1 space-y-6 flex items-center justify-center">
                     <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative ${activeTab === 'video' ? 'max-w-[480px]' : 'w-full'}`}>
@@ -530,7 +533,7 @@ export default function SocialGenerator() {
                       </div>
 
                       {/* Pagination and Play Controls */}
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4">
                         <SlidePaginator 
                           current={designer.canvas.currentSlidePage}
                           total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
@@ -539,10 +542,10 @@ export default function SocialGenerator() {
                         {activeTab === 'video' && (
                           <button
                             onClick={() => setIsPlaying(!isPlaying)}
-                            className={`p-3 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-lg transform hover:scale-105`}
+                            className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
                             title={isPlaying ? "Pausar" : "Reproducir"}
                           >
-                            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+                            {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
                           </button>
                         )}
                       </div>

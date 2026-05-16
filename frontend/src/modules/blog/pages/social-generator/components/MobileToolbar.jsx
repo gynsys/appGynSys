@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage, FiFolder, FiCopy, FiVideo } from 'react-icons/fi';
+import { FiType, FiBox, FiTrash2, FiLayers, FiDownload, FiSave, FiEye, FiSettings, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiChevronUp, FiImage, FiFolder, FiCopy, FiVideo, FiMusic, FiVolumeX, FiVolume2, FiCheck, FiRefreshCw, FiPlusCircle } from 'react-icons/fi';
 import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
+import { AUDIO_TRACKS } from '../constants';
 
 export const MobileToolbar = ({ 
   canvas, 
@@ -17,7 +18,14 @@ export const MobileToolbar = ({
   currentSlide,
   activeProjectName,
   onConvertToVideo,
-  isVideoMode = false
+  onConvertToVideo,
+  isVideoMode = false,
+  selectedAudio,
+  setSelectedAudio,
+  userAudios,
+  loadingAudios,
+  handleUploadAudio,
+  handleDeleteAudio
 }) => {
   const [activePanel, setActivePanel] = useState(null);
 
@@ -251,6 +259,76 @@ export const MobileToolbar = ({
               </div>
             </div>
           )}
+          {/* ─── AUDIO PANEL ─── */}
+          {activePanel === 'audio' && isVideoMode && (
+            <div className="p-5 max-h-[60vh] overflow-y-auto no-scrollbar">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Música de Fondo</h3>
+                <button onClick={() => setActivePanel(null)} className="p-1 text-gray-400"><FiChevronDown size={18} /></button>
+              </div>
+              
+              <div className="space-y-2">
+                {/* None option */}
+                <button
+                  onClick={() => setSelectedAudio(null)}
+                  className={`w-full text-left px-4 py-3 rounded-2xl text-sm transition-all flex justify-between items-center ${
+                    !selectedAudio ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                  }`}
+                >
+                  <span className="flex items-center gap-2"><FiVolumeX /> Sin Música</span>
+                  {!selectedAudio && <FiCheck className="text-indigo-600" />}
+                </button>
+
+                {/* Default Tracks */}
+                {AUDIO_TRACKS.map(track => (
+                  <button
+                    key={track.id}
+                    onClick={() => setSelectedAudio(track.id)}
+                    className={`w-full text-left px-4 py-3 rounded-2xl text-sm transition-all flex justify-between items-center ${
+                      selectedAudio === track.id ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 truncate"><FiVolume2 className={selectedAudio === track.id ? 'text-indigo-500' : 'text-gray-400'} /> {track.name}</span>
+                    {selectedAudio === track.id && <FiCheck className="text-indigo-600" />}
+                  </button>
+                ))}
+
+                {/* User Audios */}
+                {userAudios?.length > 0 && (
+                  <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700">
+                    <p className="text-[10px] font-black text-gray-400 uppercase mb-3">Tus Audios</p>
+                    {userAudios.map(audio => (
+                      <div key={audio.id} className="flex gap-2 mb-2">
+                        <button
+                          onClick={() => setSelectedAudio(`user_${audio.id}`)}
+                          className={`flex-1 text-left px-4 py-3 rounded-2xl text-sm transition-all flex justify-between items-center ${
+                            selectedAudio === `user_${audio.id}` ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2 truncate max-w-[200px]"><FiVolume2 className={selectedAudio === `user_${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAudio(audio.id)}
+                          className="p-3 bg-red-50 text-red-500 hover:bg-red-100 rounded-2xl transition-all"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload Audio */}
+                <div className="pt-4 mt-2">
+                  <label className={`w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${loadingAudios ? 'bg-gray-50 border-gray-200 text-gray-400' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400'}`}>
+                    {loadingAudios ? <FiRefreshCw className="animate-spin" /> : <FiPlusCircle />}
+                    <span className="text-sm font-bold">{loadingAudios ? 'Subiendo...' : 'Subir Audio (MP3)'}</span>
+                    <input type="file" className="hidden" accept="audio/mpeg,audio/mp3,audio/wav" onChange={handleUploadAudio} disabled={loadingAudios} />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -290,6 +368,15 @@ export const MobileToolbar = ({
               <FiSettings size={18} />
               <span className="text-[7px] font-bold mt-0.5">Diseño</span>
             </button>
+            {isVideoMode && (
+              <button
+                onClick={() => togglePanel('audio')}
+                className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${activePanel === 'audio' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500'}`}
+              >
+                <FiMusic size={18} />
+                <span className="text-[7px] font-bold mt-0.5">Audio</span>
+              </button>
+            )}
           </div>
 
           {/* Center: Selected element actions */}

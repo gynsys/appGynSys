@@ -417,15 +417,16 @@ export const MobileLayout = ({
               >
                 <FiChevronRight size={24} />
               </button>
-              {activeTab === 'video' && (
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className={`p-3 rounded-full transition-all ml-2 ${isPlaying ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'} active:scale-90 shadow-md`}
-                >
-                  {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
-                </button>
-              )}
             </div>
+            
+            {activeTab === 'video' && (
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600' : 'bg-indigo-600 text-white'} active:scale-90 shadow-xl`}
+              >
+                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+              </button>
+            )}
           </div>
 
           {/* Mobile Toolbar */}
@@ -450,6 +451,9 @@ export const MobileLayout = ({
               }}
               onDownload={activeTab === 'video' ? handleExportVideo : exporter?.downloadCarousel || (() => {})}
               isVideoMode={activeTab === 'video'}
+              selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+              userAudios={userAudios} loadingAudios={loadingAudios}
+              handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
               onSave={handleSaveProject}
               onSaveAs={handleSaveProjectAs}
               onSaveTemplate={handleSaveTemplate}

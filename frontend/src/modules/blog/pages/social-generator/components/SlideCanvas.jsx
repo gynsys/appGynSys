@@ -189,7 +189,7 @@ export const SlideCanvas = ({
         className={`absolute z-10 transition-shadow pointer-events-auto w-[calc(100%-4rem)] px-4 ${isSelected && selectedContentIndex === index ? 'border-[1.5px] border-dashed border-indigo-500 rounded-2xl p-4 bg-white/10 backdrop-blur-sm' : ''}`}
         style={{
           left: (contentPositions[index]?.x ?? 50) + '%',
-          top: (contentPositions[index]?.y ?? 60) + '%',
+          top: (contentPositions[index]?.y ?? (isVideoMode ? 50 : 60)) + '%',
           transform: `translate(-50%, -50%) rotate(${contentRotations[index] || 0}deg)`,
           cursor: isSelected ? 'grab' : 'default',
         }}

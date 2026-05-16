@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiType, FiBox, FiPlusCircle, FiSettings, FiLayers, FiMove, FiRotateCw, FiMaximize2, FiDownload, FiSave, FiCopy, FiEye, FiEdit3, FiChevronLeft, FiChevronRight, FiChevronDown, FiSquare, FiCircle, FiCornerUpRight, FiBold, FiItalic, FiFolder, FiCheck, FiX, FiAlertTriangle, FiBell, FiCalendar, FiClock, FiMail, FiPhone, FiUser, FiMapPin, FiHome, FiBriefcase, FiHeart, FiStar, FiTrendingUp, FiActivity, FiZap, FiSun, FiMoon, FiCloud, FiUmbrella, FiTarget, FiCompass, FiNavigation, FiFlag, FiBookmark, FiMessageSquare, FiShare2, FiRefreshCw, FiCpu, FiDatabase, FiWifi, FiBluetooth, FiBattery, FiVolume2, FiVolumeX, FiPlay, FiPause, FiSkipBack, FiSkipForward, FiRepeat, FiVideo, FiTrash2 } from 'react-icons/fi';
 import { SHAPES_CONFIG, REACT_ICONS_CONFIG } from '../lib/svgIcons';
+import { AUDIO_TRACKS } from '../constants';
 
 export const EnhancedSidebar = ({ 
   design, 
@@ -15,7 +16,15 @@ export const EnhancedSidebar = ({
   totalSlides,
   generatedContent,
   onRemoveImage,
-  onConvertToVideo
+  onRemoveImage,
+  onConvertToVideo,
+  isVideoMode,
+  selectedAudio,
+  setSelectedAudio,
+  userAudios,
+  loadingAudios,
+  handleUploadAudio,
+  handleDeleteAudio
 }) => {
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -76,6 +85,18 @@ export const EnhancedSidebar = ({
           >
             Acciones
           </button>
+          {isVideoMode && (
+            <button
+              onClick={() => setActiveTab('audio')}
+              className={`flex-1 px-4 py-3 text-xs font-black transition-all ${
+                activeTab === 'audio' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 border-b-2 border-indigo-600' 
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              Audio
+            </button>
+          )}
         </div>
       )}
 
@@ -647,12 +668,79 @@ export const EnhancedSidebar = ({
                     onClick={onDownload}
                     className="w-full p-3 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
                   >
-                    <FiDownload size={16} />
-                    Descargar ZIP
+                    {isVideoMode ? <FiVideo size={16} /> : <FiDownload size={16} />}
+                    {isVideoMode ? 'Descargar MP4' : 'Descargar ZIP'}
                   </button>
                 </div>
+              </div>
+            )}
 
-                              </div>
+            {/* Audio Tab */}
+            {activeTab === 'audio' && isVideoMode && (
+              <div className="p-4 space-y-6">
+                <div>
+                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Música de Fondo</h3>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    {/* None option */}
+                    <button
+                      onClick={() => setSelectedAudio(null)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all flex justify-between items-center ${
+                        !selectedAudio ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2"><FiVolumeX /> Sin Música</span>
+                      {!selectedAudio && <FiCheck className="text-indigo-600" />}
+                    </button>
+                    {/* Default Tracks */}
+                    {AUDIO_TRACKS.map(track => (
+                      <button
+                        key={track.id}
+                        onClick={() => setSelectedAudio(track.id)}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all flex justify-between items-center ${
+                          selectedAudio === track.id ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 truncate"><FiVolume2 className={selectedAudio === track.id ? 'text-indigo-500' : 'text-gray-400'} /> {track.name}</span>
+                        {selectedAudio === track.id && <FiCheck className="text-indigo-600" />}
+                      </button>
+                    ))}
+                    {/* User Audios */}
+                    {userAudios?.length > 0 && (
+                      <div className="pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
+                        <p className="text-[10px] font-black text-gray-400 uppercase mb-2">Tus Audios</p>
+                        {userAudios.map(audio => (
+                          <div key={audio.id} className="flex gap-1 mb-2">
+                            <button
+                              onClick={() => setSelectedAudio(`user_${audio.id}`)}
+                              className={`flex-1 text-left px-3 py-2 rounded-xl text-sm transition-all flex justify-between items-center ${
+                                selectedAudio === `user_${audio.id}` ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
+                              }`}
+                            >
+                              <span className="flex items-center gap-2 truncate max-w-[140px]"><FiVolume2 className={selectedAudio === `user_${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name}</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAudio(audio.id)}
+                              className="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+                            >
+                              <FiTrash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upload Audio */}
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <label className={`w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-xl cursor-pointer transition-all ${loadingAudios ? 'bg-gray-50 border-gray-200 text-gray-400' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400'}`}>
+                    {loadingAudios ? <FiRefreshCw className="animate-spin" /> : <FiPlusCircle />}
+                    <span className="text-xs font-bold uppercase">{loadingAudios ? 'Subiendo...' : 'Subir Audio (MP3)'}</span>
+                    <input type="file" className="hidden" accept="audio/mpeg,audio/mp3,audio/wav" onChange={handleUploadAudio} disabled={loadingAudios} />
+                  </label>
+                  <p className="text-[9px] text-center text-gray-400 mt-2">Formatos soportados: MP3, WAV. Máx 5MB.</p>
+                </div>
+              </div>
             )}
           </>
         )}
