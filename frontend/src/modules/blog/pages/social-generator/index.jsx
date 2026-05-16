@@ -527,7 +527,7 @@ export default function SocialGenerator() {
                     slideDuration={slideDuration} setSlideDuration={setSlideDuration}
                   />
                   <div className="flex-1 space-y-6 flex items-center justify-center">
-                    <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] ${activeTab === 'video' ? 'p-6 max-w-[340px] min-h-[500px]' : 'p-12 max-w-full min-h-[600px] w-full'} shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden relative`}>
+                    <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] ${activeTab === 'video' ? 'p-4 w-[281px] h-[500px]' : 'p-12 max-w-full min-h-[600px] w-full'} shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden relative`}>
                       <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                         <SlideCanvas 
                           slide={activeTab === 'video' ? generatedContent.video_slides?.[designer.canvas.currentSlidePage] : generatedContent.slides?.[designer.canvas.currentSlidePage]}
@@ -631,6 +631,10 @@ export default function SocialGenerator() {
           <SlideCanvas slide={slide} index={i} isPreview={isPrev} doctor={doctor} doctorLogo={doctorLogoBase64} design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage} handlers={transformer.handlers} />
         )}
       />
+
+      {/* Hidden audio elements for playback */}
+      <audio ref={audioRef} style={{ display: 'none' }} />
+      <audio ref={previewAudioRef} style={{ display: 'none' }} />
     </div>
   );
 }
