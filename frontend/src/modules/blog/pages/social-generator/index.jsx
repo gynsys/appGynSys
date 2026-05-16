@@ -551,10 +551,10 @@ export default function SocialGenerator() {
                         {activeTab === 'video' && (
                           <button
                             onClick={() => setIsPlaying(!isPlaying)}
-                            className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
+                            className={`p-2 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
                             title={isPlaying ? "Pausar" : "Reproducir"}
                           >
-                            {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+                            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
                           </button>
                         )}
                       </div>
