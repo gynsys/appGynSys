@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import { AUDIO_TRACKS, AVAILABLE_FONTS } from '../constants';
 import { getImageUrl } from '../../../../../lib/imageUtils';
+import { SlideCanvas } from './SlideCanvas';
 
 export const VideoEditor = ({ 
   generatedContent, 
@@ -40,7 +41,13 @@ export const VideoEditor = ({
   userAudios = [],
   loadingAudios = false,
   handleUploadAudio,
-  handleDeleteAudio
+  handleDeleteAudio,
+  designer,
+  transformer,
+  watermark,
+  doctorLogo,
+  onEdit,
+  onPreview
 }) => {
   const [editingSlideIdx, setEditingSlideIdx] = useState(null);
   const [editingText, setEditingText] = useState('');
@@ -136,84 +143,29 @@ export const VideoEditor = ({
               00:{Math.floor(currentVideoSlide * slideDuration).toString().padStart(2, '0')} / 00:{Math.floor(scenes.length * slideDuration).toString().padStart(2, '0')}
             </div>
 
-            {/* Video Canvas Rendering */}
+            {/* Video Canvas Rendering via SlideCanvas Engine */}
             <div 
-              className="absolute inset-0 flex items-center justify-center transition-all duration-700 overflow-hidden"
-              style={!scenes[currentVideoSlide]?.image ? getBackgroundStyle() : { backgroundColor: 'transparent' }}
+              className="absolute inset-0 flex items-center justify-center transition-all duration-700 overflow-hidden bg-black"
             >
-              {/* Mobile: hidden color input triggered by tapping background */}
-              {isMobileDevice && !scenes[currentVideoSlide]?.image && (
-                <input
-                  ref={bgColorInputRef}
-                  type="color"
-                  value={videoStyles.bgColor || videoStyles.backgroundColor || '#1e3a5f'}
-                  onChange={(e) => setVideoStyles(prev => ({ ...prev, bgColor: e.target.value, backgroundColor: e.target.value }))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                  title="Toca para cambiar el fondo"
+              <div style={{ transform: 'scale(0.9)', transformOrigin: 'center center' }}>
+                <SlideCanvas
+                  slide={scenes[currentVideoSlide]}
+                  index={currentVideoSlide}
+                  canvas={designer.canvas}
+                  design={designer.design}
+                  transform={transformer?.state}
+                  handlers={transformer?.handlers}
+                  doctor={doctor}
+                  doctorLogo={doctorLogo}
+                  watermark={watermark}
+                  onEdit={onEdit}
+                  onPreview={onPreview}
+                  onCopy={() => {}}
+                  onRemove={() => {}}
+                  onAddImage={() => {}}
+                  onRemoveImage={() => {}}
+                  isVideoMode={true}
                 />
-              )}
-
-              {scenes[currentVideoSlide]?.image && (
-                <img 
-                  src={scenes[currentVideoSlide].image} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105"
-                  alt="Background"
-                />
-              )}
-              <div className="relative z-10 p-10 text-center w-full space-y-4">
-                {/* Mobile: tap text to edit inline */}
-                {isMobileDevice && editingSlideIdx === currentVideoSlide ? (
-                  <textarea
-                    autoFocus
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={() => {
-                      const scenes = generatedContent?.video_slides || generatedContent?.slides || [];
-                      const updated = scenes.map((s, i) => {
-                        if (i !== editingSlideIdx) return s;
-                        return s.text !== undefined ? { ...s, text: editingText } : { ...s, content: editingText };
-                      });
-                      const key = generatedContent?.video_slides ? 'video_slides' : 'slides';
-                      setGeneratedContent({ ...generatedContent, [key]: updated });
-                      setEditingSlideIdx(null);
-                    }}
-                    className="w-full bg-transparent text-center font-black leading-[1.1] outline-none resize-none border-b-2 border-white/50"
-                    style={{
-                      fontFamily: videoStyles.fontFamily,
-                      fontSize: `${videoStyles.fontSize}px`,
-                      color: videoStyles.textColor,
-                      minHeight: '80px'
-                    }}
-                  />
-                ) : (
-                  <p 
-                    className="font-black leading-[1.1] animate-slideUp drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
-                    style={{ 
-                      fontFamily: videoStyles.fontFamily,
-                      fontSize: `${videoStyles.fontSize}px`,
-                      color: videoStyles.textColor
-                    }}
-                    onClick={() => {
-                      if (!isMobileDevice) return;
-                      const txt = scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '';
-                      setEditingText(txt);
-                      setEditingSlideIdx(currentVideoSlide);
-                    }}
-                  >
-                    {parseHighlightedText(scenes[currentVideoSlide]?.text || scenes[currentVideoSlide]?.content || scenes[currentVideoSlide]?.title || '')}
-                  </p>
-                )}
-                {scenes[currentVideoSlide]?.overlayText && (
-                  <p 
-                    className="text-white/80 font-bold tracking-tight animate-fadeIn"
-                    style={{ 
-                      fontFamily: videoStyles.fontFamily,
-                      fontSize: `${Math.max(14, videoStyles.fontSize * 0.4)}px`
-                    }}
-                  >
-                    {scenes[currentVideoSlide].overlayText}
-                  </p>
-                )}
               </div>
             </div>
 

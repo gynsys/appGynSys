@@ -347,6 +347,9 @@ export const MobileLayout = ({
                 exportStatus={exportStatus}
                 userAudios={userAudios} loadingAudios={loadingAudios}
                 handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
+                designer={designer} transformer={transformer}
+                watermark={watermarkImage} doctorLogo={doctorLogoBase64}
+                onEdit={setEditingIndex} onPreview={setPreviewIndex}
               />
             ) : (
               <div className="w-full flex flex-col items-center justify-center space-y-4 pt-6">
