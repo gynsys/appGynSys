@@ -29,7 +29,9 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
     }
   };
 
-  const handleUploadAudio = async (file) => {
+  const handleUploadAudio = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     try {
       showToast('Subiendo audio...', 'info');
       const response = await blogService.uploadSocialAudio(file);

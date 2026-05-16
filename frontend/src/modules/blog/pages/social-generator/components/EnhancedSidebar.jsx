@@ -733,12 +733,12 @@ export const EnhancedSidebar = ({
                         {userAudios.map(audio => (
                           <div key={audio.id} className="flex gap-1 mb-2">
                             <button
-                              onClick={() => setSelectedAudio(`user_${audio.id}`)}
+                              onClick={() => setSelectedAudio(`User-${audio.id}`)}
                               className={`flex-1 text-left px-3 py-2 rounded-xl text-sm transition-all flex justify-between items-center ${
-                                selectedAudio === `user_${audio.id}` ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
+                                selectedAudio === `User-${audio.id}` ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
                               }`}
                             >
-                              <span className="flex items-center gap-2 truncate max-w-[140px]"><FiVolume2 className={selectedAudio === `user_${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name}</span>
+                              <span className="flex items-center gap-2 truncate max-w-[140px]"><FiVolume2 className={selectedAudio === `User-${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name}</span>
                             </button>
                             <button
                               onClick={() => handleDeleteAudio(audio.id)}
