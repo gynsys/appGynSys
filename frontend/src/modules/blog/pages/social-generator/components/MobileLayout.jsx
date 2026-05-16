@@ -454,6 +454,7 @@ export const MobileLayout = ({
               selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
               userAudios={userAudios} loadingAudios={loadingAudios}
               handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
+              slideDuration={slideDuration} setSlideDuration={setSlideDuration}
               onSave={handleSaveProject}
               onSaveAs={handleSaveProjectAs}
               onSaveTemplate={handleSaveTemplate}

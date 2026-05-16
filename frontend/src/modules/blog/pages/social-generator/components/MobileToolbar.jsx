@@ -24,7 +24,9 @@ export const MobileToolbar = ({
   userAudios,
   loadingAudios,
   handleUploadAudio,
-  handleDeleteAudio
+  handleDeleteAudio,
+  slideDuration,
+  setSlideDuration
 }) => {
   const [activePanel, setActivePanel] = useState(null);
 
@@ -262,11 +264,28 @@ export const MobileToolbar = ({
           {activePanel === 'audio' && isVideoMode && (
             <div className="p-5 max-h-[60vh] overflow-y-auto no-scrollbar">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Música de Fondo</h3>
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Música y Tiempo</h3>
                 <button onClick={() => setActivePanel(null)} className="p-1 text-gray-400"><FiChevronDown size={18} /></button>
               </div>
+
+              {/* Duration Control */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Tiempo por Escena</span>
+                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{slideDuration}s</span>
+                </div>
+                <input
+                  type="range"
+                  min="2"
+                  max="10"
+                  step="0.5"
+                  value={slideDuration}
+                  onChange={(e) => setSlideDuration(Number(e.target.value))}
+                  className="w-full accent-indigo-600"
+                />
+              </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
                 {/* None option */}
                 <button
                   onClick={() => setSelectedAudio(null)}
@@ -279,16 +298,16 @@ export const MobileToolbar = ({
                 </button>
 
                 {/* Default Tracks */}
-                {AUDIO_TRACKS.map(track => (
+                {Object.entries(AUDIO_TRACKS).map(([name, path]) => (
                   <button
-                    key={track.id}
-                    onClick={() => setSelectedAudio(track.id)}
+                    key={name}
+                    onClick={() => setSelectedAudio(name)}
                     className={`w-full text-left px-4 py-3 rounded-2xl text-sm transition-all flex justify-between items-center ${
-                      selectedAudio === track.id ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                      selectedAudio === name ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
                     }`}
                   >
-                    <span className="flex items-center gap-2 truncate"><FiVolume2 className={selectedAudio === track.id ? 'text-indigo-500' : 'text-gray-400'} /> {track.name}</span>
-                    {selectedAudio === track.id && <FiCheck className="text-indigo-600" />}
+                    <span className="flex items-center gap-2 truncate"><FiVolume2 className={selectedAudio === name ? 'text-indigo-500' : 'text-gray-400'} /> {name}</span>
+                    {selectedAudio === name && <FiCheck className="text-indigo-600" />}
                   </button>
                 ))}
 
@@ -416,7 +435,7 @@ export const MobileToolbar = ({
             )}
             <button onClick={onDownload} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 text-white shadow-lg transition-all">
               {isVideoMode ? <FiVideo size={16} /> : <FiDownload size={16} />}
-              <span className="text-[6px] font-bold mt-0.5">{isVideoMode ? 'MP4' : 'Bajar'}</span>
+              <span className="text-[6px] font-bold mt-0.5">{isVideoMode ? 'Gen. MP4' : 'Bajar'}</span>
             </button>
           </div>
         </div>

@@ -71,6 +71,13 @@ export default function SocialGenerator() {
     activeTab, generatedContent, false, slideDuration
   );
 
+  // Sync video playback slide with canvas
+  useEffect(() => {
+    if (activeTab === 'video') {
+      designer.canvas.setCurrentSlidePage(currentVideoSlide);
+    }
+  }, [currentVideoSlide, activeTab]);
+
   const { 
     audioRef, previewAudioRef, selectedAudio, setSelectedAudio, 
     customAudioUrl, setCustomAudioUrl, prelisteningTrack, setPrelisteningTrack, 
@@ -356,6 +363,8 @@ export default function SocialGenerator() {
         isPlaying={isPlaying} setIsPlaying={setIsPlaying}
         currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
         selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
+        userAudios={userAudios} loadingAudios={loadingAudios}
+        handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
         prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
         customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
         audioRef={audioRef} previewAudioRef={previewAudioRef}
@@ -515,6 +524,7 @@ export default function SocialGenerator() {
                     selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
                     userAudios={userAudios} loadingAudios={loadingAudios}
                     handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
+                    slideDuration={slideDuration} setSlideDuration={setSlideDuration}
                   />
                   <div className="flex-1 space-y-6 flex items-center justify-center">
                     <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative ${activeTab === 'video' ? 'max-w-[480px]' : 'w-full'}`}>
