@@ -18,7 +18,6 @@ export const MobileToolbar = ({
   currentSlide,
   activeProjectName,
   onConvertToVideo,
-  onConvertToVideo,
   isVideoMode = false,
   selectedAudio,
   setSelectedAudio,
