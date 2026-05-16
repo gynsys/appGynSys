@@ -101,7 +101,7 @@ export const SlideCanvas = ({
       {/* Inner container for slide content */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Logo Section */}
-        {doctorLogo && (
+        {doctorLogo && !isVideoMode && (
         <div 
           className={`absolute z-30 transition-shadow ${isSelected && selectedLogo ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
           style={{
@@ -130,8 +130,9 @@ export const SlideCanvas = ({
       )}
 
       {/* Doctor Name Section */}
-      <div 
-        className={`absolute z-30 transition-shadow ${isSelected && selectedDoctorName ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
+      {!isVideoMode && (
+        <div 
+          className={`absolute z-30 transition-shadow ${isSelected && selectedDoctorName ? 'border-[1.5px] border-dashed border-indigo-500 rounded-xl p-2 bg-white/5' : ''}`}
         style={{
           left: doctorNamePos.x + '%',
           top: doctorNamePos.y + '%',
@@ -151,10 +152,12 @@ export const SlideCanvas = ({
           {doctor?.name || 'Dra. Mariel Herrera'}
         </span>
       </div>
+      )}
 
       {/* Divider Section */}
-      <div 
-        className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2 bg-white/5' : ''}`}
+      {!isVideoMode && (
+        <div 
+          className={`absolute z-30 transition-shadow ${isSelected && canvas.selectedDivider ? 'border-[1.5px] border-dashed border-indigo-500 p-2 bg-white/5' : ''}`}
         style={{
           left: dividerPos.x + '%',
           top: dividerPos.y + '%',
@@ -179,6 +182,7 @@ export const SlideCanvas = ({
           }} 
         />
       </div>
+      )}
 
       {/* Content Section */}
       <div 

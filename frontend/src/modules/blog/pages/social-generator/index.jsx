@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave, FiX } from 'react-icons/fi';
+import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave, FiX, FiPlay, FiPause } from 'react-icons/fi';
 
 // Config & Services
 import { blogService } from '../../services/blogService';
@@ -529,13 +529,22 @@ export default function SocialGenerator() {
                         />
                       </div>
 
-                      {/* Pagination pill at the bottom of the canvas area */}
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40">
+                      {/* Pagination and Play Controls */}
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
                         <SlidePaginator 
                           current={designer.canvas.currentSlidePage}
                           total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
                           onChange={designer.canvas.setCurrentSlidePage}
                         />
+                        {activeTab === 'video' && (
+                          <button
+                            onClick={() => setIsPlaying(!isPlaying)}
+                            className={`p-3 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-lg transform hover:scale-105`}
+                            title={isPlaying ? "Pausar" : "Reproducir"}
+                          >
+                            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

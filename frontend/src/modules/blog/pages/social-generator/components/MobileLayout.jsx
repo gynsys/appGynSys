@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FiCpu, FiFolder, FiLoader, FiInstagram, FiImage, FiZap, FiX, FiTrash2, 
-  FiChevronLeft, FiChevronRight, FiBold, FiItalic, FiType, FiLayers, FiDownload, FiSave, FiCopy, FiMaximize2, FiPlay
+  FiChevronLeft, FiChevronRight, FiBold, FiItalic, FiType, FiLayers, FiDownload, FiSave, FiCopy, FiMaximize2, FiPlay, FiPause
 } from 'react-icons/fi';
 import { SlideCanvas } from './SlideCanvas';
 import { MobileToolbar } from './MobileToolbar';
@@ -417,6 +417,14 @@ export const MobileLayout = ({
               >
                 <FiChevronRight size={24} />
               </button>
+              {activeTab === 'video' && (
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className={`p-3 rounded-full transition-all ml-2 ${isPlaying ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'} active:scale-90 shadow-md`}
+                >
+                  {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+                </button>
+              )}
             </div>
           </div>
 
