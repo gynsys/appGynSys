@@ -16,7 +16,6 @@ export const EnhancedSidebar = ({
   totalSlides,
   generatedContent,
   onRemoveImage,
-  onRemoveImage,
   onConvertToVideo,
   isVideoMode,
   selectedAudio,
