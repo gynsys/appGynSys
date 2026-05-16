@@ -302,7 +302,7 @@ export default function SocialGenerator() {
   };
 
   const handleAddImage = (index, e) => {
-    const file = e.target.files[0];
+    const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -326,7 +326,7 @@ export default function SocialGenerator() {
   };
 
   const handleAddImageToVideoSlide = (index, e) => {
-    const file = e.target.files[0];
+    const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
