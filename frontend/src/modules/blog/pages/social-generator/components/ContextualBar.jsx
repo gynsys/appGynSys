@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   FiTrash2, FiX, FiBold, FiItalic, FiType, 
   FiLayers, FiMove, FiMaximize, FiMinimize, 
-  FiCornerUpLeft, FiSquare, FiCircle, FiImage
+  FiCornerUpLeft, FiSquare, FiCircle, FiImage,
+  FiEye
 } from 'react-icons/fi';
 
 export const ContextualBar = ({ 
@@ -94,7 +95,7 @@ export const ContextualBar = ({
 
           {isImage && (
             <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 rounded-xl px-2 py-1 flex-shrink-0">
-              <span className="text-[10px] font-black text-gray-400">Intensidad</span>
+              <FiEye size={16} className="text-gray-400" />
               <input 
                 type="range" 
                 min="0.1" 
@@ -189,7 +190,7 @@ export const ContextualBar = ({
 
         {isImage && (
           <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 rounded-2xl px-3 py-1 flex-shrink-0">
-            <span className="text-[10px] font-black text-gray-400">Intensidad</span>
+            <FiEye size={18} className="text-gray-400" />
             <input 
               type="range" 
               min="0.1" 

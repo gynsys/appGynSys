@@ -59,7 +59,7 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
         const newY = initialY + (dy / rect.height) * 100 * scale;
 
         if (type === 'image') {
-          setImagePositions(prev => ({ ...prev, [id]: { x: newX, y: newY } }));
+          setImagePositions(prev => ({ ...prev, [id]: { ...(prev[id] || {}), x: newX, y: newY } }));
         } else if (type === 'content') {
           setContentPositions(prev => ({ ...prev, [index]: { x: newX, y: newY } }));
         } else if (type === 'logo') {
