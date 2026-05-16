@@ -335,6 +335,20 @@ export const EnhancedSidebar = ({
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Tipografía</h3>
                   <div className="space-y-3">
                     <div>
+                      <label className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Fuente</label>
+                      <select
+                        value={design.fontFamily || 'Manrope'}
+                        onChange={(e) => design.setFontFamily(e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      >
+                        <option value="Manrope">Manrope</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Playfair Display">Playfair Display</option>
+                      </select>
+                    </div>
+                    <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs text-gray-600 dark:text-gray-400">Título</label>
                         <span className="text-[9px] font-mono text-gray-500">{design.titleFontSize}px</span>
@@ -644,13 +658,15 @@ export const EnhancedSidebar = ({
 
                 {/* Quick Actions */}
                 <div className="space-y-2">
-                  <button
-                    onClick={onConvertToVideo}
-                    className="w-full p-3 bg-amber-500 text-white rounded-xl text-xs font-black hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    <FiVideo size={16} />
-                    ✨ Convertir a Video
-                  </button>
+                  {!isVideoMode && (
+                    <button
+                      onClick={onConvertToVideo}
+                      className="w-full p-3 bg-amber-500 text-white rounded-xl text-xs font-black hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <FiVideo size={16} />
+                      ✨ Convertir a Video
+                    </button>
+                  )}
                   <button
                     onClick={onPreview}
                     className="w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"

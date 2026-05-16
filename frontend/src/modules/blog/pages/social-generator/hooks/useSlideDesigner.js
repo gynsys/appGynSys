@@ -18,6 +18,7 @@ export const useSlideDesigner = () => {
   const [contentColor, setContentColor] = useState(DEFAULT_DESIGN.contentColor);
   const [headerColor, setHeaderColor] = useState(DEFAULT_DESIGN.headerColor);
   const [imageBorderRadius, setImageBorderRadius] = useState('0px');
+  const [fontFamily, setFontFamily] = useState('Manrope');
 
   const [logoPos, setLogoPos] = useState({ x: 25, y: 12 });
   const [doctorNamePos, setDoctorNamePos] = useState({ x: 60, y: 12 });
@@ -304,7 +305,8 @@ export const useSlideDesigner = () => {
       dividerColor, setDividerColor,
       dividerHeight, setDividerHeight,
       dividerWidth, setDividerWidth,
-      imageBorderRadius, setImageBorderRadius
+      imageBorderRadius, setImageBorderRadius,
+      fontFamily, setFontFamily
     },
     canvas: {
       extraElements, setExtraElements,

@@ -636,8 +636,8 @@ export default function SocialGenerator() {
       />
 
       {/* Hidden audio elements for playback */}
-      <audio ref={audioRef} style={{ display: 'none' }} />
-      <audio ref={previewAudioRef} style={{ display: 'none' }} />
+      <audio ref={audioRef} style={{ display: 'none' }} crossOrigin="anonymous" />
+      <audio ref={previewAudioRef} style={{ display: 'none' }} crossOrigin="anonymous" />
     </div>
   );
 }
