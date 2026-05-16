@@ -239,7 +239,7 @@ export const useSlideDesigner = () => {
       color3: '#9333ea',
       useGradient: false,
       gradientDir: 'to bottom right',
-      zIndex: 30,
+      zIndex: (type === 'shape' || type === 'icon') ? 5 : 15,
       bold: true,
       italic: false,
       fontFamily: type === 'text' ? fontFamily : 'Arial'
