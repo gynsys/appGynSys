@@ -317,10 +317,11 @@ export default function SocialGenerator() {
   };
 
   const handleRemoveImage = (slideIndex, imgIndex) => {
-    const newSlides = [...generatedContent.slides];
+    const slidesProp = activeTab === 'video' ? 'video_slides' : 'slides';
+    const newSlides = [...generatedContent[slidesProp]];
     if (newSlides[slideIndex]?.customImages) {
       newSlides[slideIndex].customImages = newSlides[slideIndex].customImages.filter((_, i) => i !== imgIndex);
-      setGeneratedContent({ ...generatedContent, slides: newSlides });
+      setGeneratedContent({ ...generatedContent, [slidesProp]: newSlides });
     }
   };
 
