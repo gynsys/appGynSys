@@ -163,7 +163,7 @@ export const ContextualBar = ({
               <FiLayers size={16} />
            </button>
            <button 
-            onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: Math.max(0, (el.zIndex || 0) - 1) })}
+            onClick={() => updateElement(parseInt(slideIdx), elId, { zIndex: (el.zIndex || 0) - 1 })}
             className="p-2 text-gray-400 hover:text-indigo-600"
             title="Enviar al fondo"
            >

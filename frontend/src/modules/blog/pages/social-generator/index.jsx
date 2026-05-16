@@ -525,8 +525,7 @@ export default function SocialGenerator() {
                     userAudios={userAudios} loadingAudios={loadingAudios}
                     handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
                     slideDuration={slideDuration} setSlideDuration={setSlideDuration}
-                  />
-                  <div className="flex-1 space-y-6 flex items-center justify-center">
+                            <div className="flex-1 space-y-6 flex flex-col items-center justify-start pt-10">
                     <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] ${activeTab === 'video' ? 'p-4 w-[320px] h-[570px] overflow-visible' : 'p-12 max-w-full min-h-[600px] w-full overflow-hidden'} shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center relative`}>
                       <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                         <SlideCanvas 
@@ -537,30 +536,30 @@ export default function SocialGenerator() {
                           transform={transformer.state} handlers={transformer.handlers}
                           watermark={watermarkImage} onEdit={setEditingIndex}
                           onPreview={setPreviewIndex} onRemove={handleRemoveSlide}
-                          onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                          onAddImage={(e) => activeTab === 'video' ? handleAddImageToVideoSlide(designer.canvas.currentSlidePage, e) : handleAddImage(designer.canvas.currentSlidePage, e)}
                           isVideoMode={activeTab === 'video'}
                         />
                       </div>
-
-                      {/* Pagination and Play Controls */}
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4">
-                        <SlidePaginator 
-                          current={designer.canvas.currentSlidePage}
-                          total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
-                          onChange={designer.canvas.setCurrentSlidePage}
-                        />
-                        {activeTab === 'video' && (
-                          <button
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
-                            title={isPlaying ? "Pausar" : "Reproducir"}
-                          >
-                            {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  </div>
+
+                    {/* Pagination and Play Controls (Moved outside the canvas box) */}
+                    <div className="flex flex-col items-center gap-4 mt-4">
+                      <SlidePaginator 
+                        current={designer.canvas.currentSlidePage}
+                        total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
+                        onChange={designer.canvas.setCurrentSlidePage}
+                      />
+                      {activeTab === 'video' && (
+                        <button
+                          onClick={() => setIsPlaying(!isPlaying)}
+                          className={`p-4 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
+                          title={isPlaying ? "Pausar" : "Reproducir"}
+                        >
+                          {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+                        </button>
+                      )}
+                    </div>
+                  </div>     </div>
                 </div>
             </div>
           )}
