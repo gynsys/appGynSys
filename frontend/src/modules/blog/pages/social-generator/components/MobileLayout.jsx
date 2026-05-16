@@ -7,7 +7,6 @@ import {
 import { SlideCanvas } from './SlideCanvas';
 import { MobileToolbar } from './MobileToolbar';
 
-import { VideoEditor } from './VideoEditor';
 
 export const MobileLayout = ({
   posts,
@@ -330,41 +329,22 @@ export const MobileLayout = ({
           </div>
         ) : (
           <div className="w-full flex flex-col space-y-4 animate-fadeIn">
-            {activeTab === 'video' ? (
-              <VideoEditor 
-                generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
-                videoStyles={videoStyles} setVideoStyles={setVideoStyles}
-                slideDuration={slideDuration} setSlideDuration={setSlideDuration}
-                isPlaying={isPlaying} setIsPlaying={setIsPlaying}
-                currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
-                selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
-                prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
-                customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
-                audioRef={audioRef} previewAudioRef={previewAudioRef}
-                isExporting={isExporting} exportProgress={exportProgress}
-                handleExportVideo={handleExportVideo} doctor={doctor}
-                showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
-                exportStatus={exportStatus}
-                userAudios={userAudios} loadingAudios={loadingAudios}
-                handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
-                designer={designer} transformer={transformer}
-                watermark={watermarkImage} doctorLogo={doctorLogoBase64}
-                onEdit={setEditingIndex} onPreview={setPreviewIndex}
-              />
-            ) : (
               <div className="w-full flex flex-col items-center justify-center space-y-4 pt-6">
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 border border-gray-100 dark:border-gray-700">
-                  <div className="w-[300px] h-[300px] bg-gray-50 dark:bg-gray-900 rounded-2xl flex flex-col items-center justify-center text-center p-6" onClick={enterMobileFullscreen}>
+                  <div className="w-[300px] h-[300px] bg-gray-50 dark:bg-gray-900 rounded-2xl flex flex-col items-center justify-center text-center p-6 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" onClick={enterMobileFullscreen}>
                       <FiMaximize2 className="text-indigo-200 mb-3" size={40} />
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Toca para editar carrusel</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        Toca para editar {activeTab === 'video' ? 'Reel' : 'Carrusel'}
+                      </p>
                   </div>
                 </div>
                 
                 <div className="w-full">
-                  <button onClick={() => setPreviewIndex(0)} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg"><FiPlay /> Previa de Carrusel</button>
+                  <button onClick={() => setPreviewIndex(0)} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg">
+                    <FiPlay /> Previa de {activeTab === 'video' ? 'Reel' : 'Carrusel'}
+                  </button>
                 </div>
               </div>
-            )}
           </div>
         )}
       </div>
@@ -386,7 +366,7 @@ export const MobileLayout = ({
             >
               <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                 <SlideCanvas
-                  slide={generatedContent?.slides?.[designer.canvas.currentSlidePage]}
+                  slide={activeTab === 'video' ? generatedContent?.video_slides?.[designer.canvas.currentSlidePage] : generatedContent?.slides?.[designer.canvas.currentSlidePage]}
                   index={designer.canvas.currentSlidePage}
                   doctor={doctor}
                   doctorLogo={doctorLogoBase64}
@@ -398,15 +378,17 @@ export const MobileLayout = ({
                   onEdit={setEditingIndex}
                   onPreview={setPreviewIndex}
                   onCopy={(i) => {
-                    if (!generatedContent?.slides) return;
-                    const newSlides = [...generatedContent.slides];
+                    const key = activeTab === 'video' ? 'video_slides' : 'slides';
+                    if (!generatedContent?.[key]) return;
+                    const newSlides = [...generatedContent[key]];
                     newSlides.splice(i + 1, 0, { ...newSlides[i] });
-                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                    setGeneratedContent({ ...generatedContent, [key]: newSlides });
                     showToast('Diapositiva duplicada', 'success');
                   }}
                   onRemove={handleRemoveSlide}
                   onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
                   onRemoveImage={(imgIndex) => handleRemoveImage(designer.canvas.currentSlidePage, imgIndex)}
+                  isVideoMode={activeTab === 'video'}
                 />
               </div>
             </div>
@@ -425,13 +407,13 @@ export const MobileLayout = ({
               <div className="flex flex-col items-center min-w-[60px]">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Diapositiva</span>
                 <span className="text-sm font-black text-indigo-600 leading-none">
-                  {designer.canvas.currentSlidePage + 1} <span className="text-gray-300 mx-0.5">/</span> {generatedContent?.slides?.length || 0}
+                  {designer.canvas.currentSlidePage + 1} <span className="text-gray-300 mx-0.5">/</span> {activeTab === 'video' ? (generatedContent?.video_slides?.length || 0) : (generatedContent?.slides?.length || 0)}
                 </span>
               </div>
               <button
-                onClick={() => designer.canvas.setCurrentSlidePage(Math.min((generatedContent?.slides?.length || 1) - 1, designer.canvas.currentSlidePage + 1))}
-                disabled={designer.canvas.currentSlidePage === (generatedContent?.slides?.length || 1) - 1}
-                className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === (generatedContent?.slides?.length || 1) - 1 ? 'text-gray-300' : 'text-indigo-600 active:scale-90'}`}
+                onClick={() => designer.canvas.setCurrentSlidePage(Math.min(((activeTab === 'video' ? generatedContent?.video_slides?.length : generatedContent?.slides?.length) || 1) - 1, designer.canvas.currentSlidePage + 1))}
+                disabled={designer.canvas.currentSlidePage === ((activeTab === 'video' ? generatedContent?.video_slides?.length : generatedContent?.slides?.length) || 1) - 1}
+                className={`p-3 rounded-full transition-all ${designer.canvas.currentSlidePage === ((activeTab === 'video' ? generatedContent?.video_slides?.length : generatedContent?.slides?.length) || 1) - 1 ? 'text-gray-300' : 'text-indigo-600 active:scale-90'}`}
               >
                 <FiChevronRight size={24} />
               </button>
@@ -458,7 +440,8 @@ export const MobileLayout = ({
                   designer.canvas.setSelectedImageId(null);
                 }
               }}
-              onDownload={() => {}} // Handle correctly in orchestrator
+              onDownload={activeTab === 'video' ? handleExportVideo : exporter?.downloadCarousel || (() => {})}
+              isVideoMode={activeTab === 'video'}
               onSave={handleSaveProject}
               onSaveAs={handleSaveProjectAs}
               onSaveTemplate={handleSaveTemplate}

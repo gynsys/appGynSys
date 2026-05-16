@@ -27,6 +27,24 @@ const getIconPath = (iconType) => {
   return iconPaths[iconType] || iconPaths.circle;
 };
 
+const parseHighlightedText = (text, highlightColor) => {
+  if (!text) return '';
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <span 
+          key={i} 
+          style={{ color: highlightColor || '#ff0000', fontStyle: 'italic', fontWeight: '900' }}
+        >
+          {part.slice(2, -2)}
+        </span>
+      );
+    }
+    return part;
+  });
+};
+
 export const SlideCanvas = ({
   slide,
   index,
@@ -181,9 +199,13 @@ export const SlideCanvas = ({
         onClick={(e) => { e.stopPropagation(); isSelected && selectElement('content', index); }}
       >
         <div className="text-center relative">
-          <h4 className="font-black mb-3 uppercase leading-tight" style={{ fontSize: titleFontSize + 'px', color: titleColor }}>{slide.title}</h4>
+          <h4 className="font-black mb-3 uppercase leading-tight" style={{ fontSize: titleFontSize + 'px', color: titleColor }}>
+            {parseHighlightedText(slide.title, design.headerColor)}
+          </h4>
           <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
-          <p className="font-bold leading-relaxed whitespace-pre-wrap" style={{ fontSize: fontSize + 'px', color: contentColor }}>{slide.content}</p>
+          <p className="font-bold leading-relaxed whitespace-pre-wrap" style={{ fontSize: fontSize + 'px', color: contentColor }}>
+            {parseHighlightedText(slide.content || slide.text, design.headerColor)}
+          </p>
           {slide.overlayText && (
             <p className="mt-4 font-bold tracking-tight opacity-80 whitespace-pre-wrap" style={{ fontSize: Math.max(14, fontSize * 0.4) + 'px', color: contentColor }}>
               {slide.overlayText}

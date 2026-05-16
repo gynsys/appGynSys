@@ -16,7 +16,8 @@ export const MobileToolbar = ({
   onPreview,
   currentSlide,
   activeProjectName,
-  onConvertToVideo
+  onConvertToVideo,
+  isVideoMode = false
 }) => {
   const [activePanel, setActivePanel] = useState(null);
 
@@ -307,10 +308,12 @@ export const MobileToolbar = ({
 
           {/* Right: Action buttons */}
           <div className="flex items-center gap-1">
-            <button onClick={onConvertToVideo} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-amber-500 text-white shadow-lg transition-all active:scale-95">
-              <FiVideo size={16} />
-              <span className="text-[6px] font-bold mt-0.5">Video</span>
-            </button>
+            {!isVideoMode && (
+              <button onClick={onConvertToVideo} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-amber-500 text-white shadow-lg transition-all active:scale-95">
+                <FiVideo size={16} />
+                <span className="text-[6px] font-bold mt-0.5">Video</span>
+              </button>
+            )}
             <button onClick={onPreview} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 transition-all">
               <FiEye size={16} />
               <span className="text-[6px] font-bold mt-0.5">Ver</span>
@@ -326,8 +329,8 @@ export const MobileToolbar = ({
               </button>
             )}
             <button onClick={onDownload} className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 text-white shadow-lg transition-all">
-              <FiDownload size={16} />
-              <span className="text-[6px] font-bold mt-0.5">Bajar</span>
+              {isVideoMode ? <FiVideo size={16} /> : <FiDownload size={16} />}
+              <span className="text-[6px] font-bold mt-0.5">{isVideoMode ? 'MP4' : 'Bajar'}</span>
             </button>
           </div>
         </div>

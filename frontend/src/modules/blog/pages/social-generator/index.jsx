@@ -24,7 +24,7 @@ import { SlideCanvas } from './components/SlideCanvas';
 import { SlidePaginator } from './components/SlidePaginator';
 import { PreviewModal } from './components/PreviewModal';
 import { EnhancedSidebar } from './components/EnhancedSidebar';
-import { VideoEditor } from './components/VideoEditor';
+
 import { MobileLayout } from './components/MobileLayout';
 import { ArticleSelector } from './components/ArticleSelector';
 import { ProjectGrid } from './components/ProjectGrid';
@@ -503,39 +503,21 @@ export default function SocialGenerator() {
 
           {generatedContent && !generating && (
             <div className="animate-fadeIn">
-              {activeTab === 'video' || activeTab === 'reel' ? (
-                <VideoEditor 
-                  generatedContent={generatedContent} setGeneratedContent={setGeneratedContent}
-                  videoStyles={videoStyles} setVideoStyles={setVideoStyles}
-                  slideDuration={slideDuration} setSlideDuration={setSlideDuration}
-                  transitionType={transitionType} setTransitionType={setTransitionType}
-                  transitionDuration={transitionDuration} setTransitionDuration={setTransitionDuration}
-                  isPlaying={isPlaying} setIsPlaying={setIsPlaying}
-                  currentVideoSlide={currentVideoSlide} setCurrentVideoSlide={setCurrentVideoSlide}
-                  selectedAudio={selectedAudio} setSelectedAudio={setSelectedAudio}
-                  prelisteningTrack={prelisteningTrack} setPrelisteningTrack={setPrelisteningTrack}
-                  customAudioUrl={customAudioUrl} setCustomAudioUrl={setCustomAudioUrl}
-                  audioRef={audioRef} previewAudioRef={previewAudioRef}
-                  isExporting={isExporting} exportProgress={exportProgress}
-                  handleExportVideo={handleExportVideo} doctor={doctor}
-                  showToast={showToast} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
-                  exportStatus={exportStatus}
-                  userAudios={userAudios} loadingAudios={loadingAudios}
-                  handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
-                />
-              ) : (
+
                 <div className="flex gap-6">
                   <EnhancedSidebar 
                     design={designer.design} canvas={designer.canvas} 
                     transform={transformer.state} currentSlide={designer.canvas.currentSlidePage}
-                    onAddElement={designer.canvas.addExtraElement} onDownload={exporter.downloadCarousel}
+                    onAddElement={designer.canvas.addExtraElement} 
+                    onDownload={activeTab === 'video' ? handleExportVideo : exporter.downloadCarousel}
                     onSave={handleSaveProject} onConvertToVideo={handleConvertToVideo}
+                    isVideoMode={activeTab === 'video'}
                   />
-                  <div className="flex-1 space-y-6">
-                    <div ref={editorWrapperRef} className="bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative">
+                  <div className="flex-1 space-y-6 flex items-center justify-center">
+                    <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] p-12 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center min-h-[600px] overflow-hidden relative ${activeTab === 'video' ? 'max-w-[480px]' : 'w-full'}`}>
                       <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                         <SlideCanvas 
-                          slide={generatedContent.slides[designer.canvas.currentSlidePage]}
+                          slide={activeTab === 'video' ? generatedContent.video_slides?.[designer.canvas.currentSlidePage] : generatedContent.slides?.[designer.canvas.currentSlidePage]}
                           index={designer.canvas.currentSlidePage}
                           doctor={doctor} doctorLogo={doctorLogoBase64}
                           design={designer.design} canvas={designer.canvas}
@@ -543,6 +525,7 @@ export default function SocialGenerator() {
                           watermark={watermarkImage} onEdit={setEditingIndex}
                           onPreview={setPreviewIndex} onRemove={handleRemoveSlide}
                           onAddImage={(e) => handleAddImage(designer.canvas.currentSlidePage, e)}
+                          isVideoMode={activeTab === 'video'}
                         />
                       </div>
 
@@ -550,14 +533,13 @@ export default function SocialGenerator() {
                       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40">
                         <SlidePaginator 
                           current={designer.canvas.currentSlidePage}
-                          total={generatedContent.slides.length}
+                          total={activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
                           onChange={designer.canvas.setCurrentSlidePage}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
             </div>
           )}
         </div>
