@@ -30,14 +30,27 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
   };
 
   const handleUploadAudio = async (e) => {
+    console.log("[GynSys] handleUploadAudio triggered");
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log("[GynSys] No file selected");
+      return;
+    }
+    console.log("[GynSys] File selected:", file.name);
     try {
       showToast('Subiendo audio...', 'info');
       const response = await blogService.uploadSocialAudio(file);
+      console.log("[GynSys] Upload response:", response);
       showToast('Audio subido con éxito', 'success');
       
-      const newAudio = response.audio;
+      const newAudio = response.audio || response; // Fallback if direct object returned
+      console.log("[GynSys] New audio object:", newAudio);
+      
+      if (!newAudio || !newAudio.id) {
+        console.error("[GynSys] Invalid response structure:", response);
+        throw new Error("Invalid response structure");
+      }
+      
       setUserAudios(prev => [newAudio, ...prev]);
       
       // Select the new audio automatically
@@ -46,6 +59,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
       
       return newAudio;
     } catch (error) {
+      console.error("[GynSys] Error in handleUploadAudio:", error);
       showToast('Error al subir audio', 'error');
       throw error;
     }
