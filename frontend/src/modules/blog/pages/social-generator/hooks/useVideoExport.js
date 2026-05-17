@@ -43,17 +43,33 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
       const videoStream = canvas.captureStream(30);
       let combinedStream = videoStream;
 
-      if (audioRef.current) {
-        audioRef.current.src = getActiveAudioSrc();
-        audioRef.current.load();
-        await Promise.race([
-          new Promise(resolve => { audioRef.current.oncanplaythrough = resolve; }),
-          new Promise(resolve => setTimeout(resolve, 5000))
-        ]);
-        audioRef.current.currentTime = 0;
-        audioRef.current.play();
-        const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
-        combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+      const audioSrc = getActiveAudioSrc();
+      if (audioRef.current && audioSrc) {
+        try {
+          audioRef.current.src = audioSrc;
+          audioRef.current.load();
+          await Promise.race([
+            new Promise(resolve => { 
+              if (audioRef.current) audioRef.current.oncanplaythrough = resolve; 
+              else resolve();
+            }),
+            new Promise(resolve => setTimeout(resolve, 5000))
+          ]);
+          
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(e => console.log("[GynSys] Video export audio play prevented:", e));
+            }
+            const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
+            combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+          }
+        } catch (audioErr) {
+          console.error("[GynSys] Error setting up audio for export:", audioErr);
+          // Fallback to video only if audio fails
+          combinedStream = videoStream;
+        }
       }
 
       const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
