@@ -25,7 +25,9 @@ export const EnhancedSidebar = ({
   handleUploadAudio,
   handleDeleteAudio,
   slideDuration,
-  setSlideDuration
+  setSlideDuration,
+  isExporting,
+  exportProgress
 }) => {
   const [activeTab, setActiveTab] = useState('elements');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -687,10 +689,19 @@ export const EnhancedSidebar = ({
                   </button>
                   <button
                     onClick={onDownload}
-                    className="w-full p-3 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                    disabled={isExporting}
+                    className="relative w-full p-3 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 overflow-hidden disabled:opacity-80"
                   >
-                    {isVideoMode ? <FiVideo size={16} /> : <FiDownload size={16} />}
-                    {isVideoMode ? 'Generar MP4' : 'Descargar ZIP'}
+                    {isExporting && (
+                      <span 
+                        className="absolute inset-0 bg-white/20 transition-all duration-300 origin-left"
+                        style={{ transform: `scaleX(${exportProgress / 100})` }}
+                      />
+                    )}
+                    <span className="relative flex items-center gap-2">
+                      {isExporting ? <FiRefreshCw className="animate-spin" size={16} /> : (isVideoMode ? <FiVideo size={16} /> : <FiDownload size={16} />)}
+                      {isExporting ? `Generando... ${exportProgress}%` : (isVideoMode ? 'Generar MP4' : 'Descargar ZIP')}
+                    </span>
                   </button>
                 </div>
               </div>
