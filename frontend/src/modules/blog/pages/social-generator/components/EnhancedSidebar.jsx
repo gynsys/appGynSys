@@ -758,7 +758,7 @@ export const EnhancedSidebar = ({
                                 selectedAudio === `User-${audio.id}` ? 'bg-indigo-50 text-indigo-700 font-bold border-2 border-indigo-500' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent'
                               }`}
                             >
-                              <span className="flex items-center gap-2 truncate max-w-[140px]"><FiVolume2 className={selectedAudio === `User-${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name}</span>
+                              <span className="flex items-center gap-2 truncate max-w-[140px]"><FiVolume2 className={selectedAudio === `User-${audio.id}` ? 'text-indigo-500' : 'text-gray-400'} /> {audio.original_name || audio.name || audio.filename || 'Audio sin nombre'}</span>
                             </button>
                             <button
                               onClick={() => handleDeleteAudio(audio.id)}
