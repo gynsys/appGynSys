@@ -78,16 +78,6 @@ export const EnhancedSidebar = ({
           >
             Diseño
           </button>
-          <button
-            onClick={() => setActiveTab('actions')}
-            className={`flex-1 px-4 py-3 text-xs font-black transition-all ${
-              activeTab === 'actions' 
-                ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 border-b-2 border-indigo-600' 
-                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Acciones
-          </button>
           {isVideoMode && (
             <button
               onClick={() => setActiveTab('audio')}
@@ -100,6 +90,16 @@ export const EnhancedSidebar = ({
               Audio
             </button>
           )}
+          <button
+            onClick={() => setActiveTab('actions')}
+            className={`flex-1 px-4 py-3 text-xs font-black transition-all ${
+              activeTab === 'actions' 
+                ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 border-b-2 border-indigo-600' 
+                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            Acciones
+          </button>
         </div>
       )}
 
@@ -662,7 +662,6 @@ export const EnhancedSidebar = ({
                   </div>
                 )}
 
-                {/* Quick Actions */}
                 <div className="space-y-2">
                   {!isVideoMode && (
                     <button
@@ -673,20 +672,6 @@ export const EnhancedSidebar = ({
                       ✨ Convertir a Video
                     </button>
                   )}
-                  <button
-                    onClick={onPreview}
-                    className="w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <FiEye size={16} />
-                    Vista Previa
-                  </button>
-                  <button
-                    onClick={onSave}
-                    className="w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <FiSave size={16} />
-                    Guardar Proyecto
-                  </button>
                   <button
                     onClick={onDownload}
                     disabled={isExporting}
