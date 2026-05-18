@@ -6,6 +6,7 @@ import { doctorService } from '../services/doctorService'
 import { blogService } from '../modules/blog/services/blogService'
 import { appointmentService } from '../services/appointmentService'
 import ScheduleModal from '../components/features/ScheduleModal'
+import GynSysLoader from '../components/common/GynSysLoader'
 import { useToastStore } from '../store/toastStore'
 import { getImageUrl } from '../lib/imageUtils'
 import { useDarkMode } from '../hooks/useDarkMode'
@@ -98,14 +99,7 @@ export default function DashboardOverviewPage() {
   }
 
   if (!isAuthenticated || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-800"
-          style={{ borderTopColor: doctor?.theme_primary_color || '#4F46E5' }}
-        ></div>
-      </div>
-    )
+    return <GynSysLoader color={doctor?.theme_primary_color || '#4F46E5'} />
   }
 
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'

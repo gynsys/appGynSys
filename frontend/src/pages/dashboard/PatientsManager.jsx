@@ -7,6 +7,7 @@ import Modal from '../../components/common/Modal';
 import { FiTrash2, FiFileText, FiUser, FiCalendar, FiEdit, FiSearch, FiImage, FiDownload, FiEye } from 'react-icons/fi';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 import { openExternalFile, downloadFile, isCapacitor } from '../../utils/platform';
+import GynSysLoader from '../../components/common/GynSysLoader';
 
 // Helper for transparency
 const hexToRgba = (hex, alpha) => {
@@ -739,12 +740,7 @@ export default function PatientsManager({ isEmbedded = false }) {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div 
-            className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-800"
-            style={{ borderTopColor: doctor?.theme_primary_color || '#4f46e5' }}
-          ></div>
-        </div>
+        <GynSysLoader fullScreen={false} color={doctor?.theme_primary_color || '#4f46e5'} />
       ) : filteredConsultations.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] shadow-sm p-12 md:p-20 text-center border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700">
           <FiUser className="mx-auto h-16 w-16 text-gray-200 dark:text-gray-700 mb-6" />

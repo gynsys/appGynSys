@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom
 import { FiUsers, FiSearch, FiPlus, FiPhone, FiMail, FiMapPin, FiCreditCard, FiEdit2, FiTrash2, FiSmartphone, FiUserCheck, FiUserPlus, FiAlertTriangle, FiArrowRight } from 'react-icons/fi';
 import { campaignService } from '../../services/campaignService';
 import { useToastStore } from '../../store/toastStore';
+import GynSysLoader from '../../components/common/GynSysLoader';
 import Modal from '../../components/common/Modal';
 
 // Helper for transparency
@@ -251,9 +252,7 @@ export default function DirectoryManager() {
       </div>
 
       {loading ? (
-         <div className="flex justify-center py-20">
-           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-800" style={{ borderTopColor: primaryColor || '#4f46e5' }}></div>
-         </div>
+        <GynSysLoader fullScreen={false} color={primaryColor || '#4f46e5'} />
       ) : filteredContacts.length === 0 ? (
          <div className="bg-white dark:bg-gray-800 sm:rounded-[32px] border-y sm:border-x border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center text-gray-500 font-medium">
             No encontramos ningún contacto con esa información.
@@ -355,7 +354,7 @@ export default function DirectoryManager() {
                             <div className="flex flex-col gap-1">
                                <div className="flex items-center text-xs font-medium text-gray-600 dark:text-gray-300">
                                   <FiMail className="w-3.5 mr-2 opacity-50" /> {contact.email}
-                               </div>
+                                </div>
                                {contact.phone && (
                                   <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
                                      <FiPhone className="w-3.5 mr-2 opacity-50" /> {contact.phone}
