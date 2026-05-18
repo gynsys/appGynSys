@@ -252,7 +252,7 @@ export default function DirectoryManager() {
 
       {loading ? (
          <div className="flex justify-center py-20">
-           <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: primaryColor || '#4f46e5' }}></div>
+           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-800" style={{ borderTopColor: primaryColor || '#4f46e5' }}></div>
          </div>
       ) : filteredContacts.length === 0 ? (
          <div className="bg-white dark:bg-gray-800 sm:rounded-[32px] border-y sm:border-x border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center text-gray-500 font-medium">
