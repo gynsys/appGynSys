@@ -177,6 +177,14 @@ export const useDragTransform = (onUpdateElement, scale = 1, globalSetters = {})
       handleDragStart,
       handleTransformStart,
       updateImage: (id, updates) => setImagePositions(prev => ({ ...prev, [id]: { ...(prev[id] || { x: 50, y: 70 }), ...updates } }))
+    },
+    loadState: (newState) => {
+      setImagePositions(newState.imagePositions || {});
+      setImageSizes(newState.imageSizes || {});
+      setImageRotations(newState.imageRotations || {});
+      setContentPositions(newState.contentPositions || {});
+      setContentRotations(newState.contentRotations || {});
+      setExtraElements(newState.extraElements || {});
     }
   };
 };

@@ -211,6 +211,11 @@ export default function SocialGenerator() {
     const content = designer.canvas.loadProject(project);
     if (content) {
       setGeneratedContent(content);
+      if (content.transformerState) {
+        transformer.loadState(content.transformerState);
+      } else {
+        transformer.loadState({});
+      }
       if (content.videoSettings) {
         if (content.videoSettings.videoStyles) setVideoStyles(content.videoSettings.videoStyles);
         if (content.videoSettings.selectedAudio) setSelectedAudio(content.videoSettings.selectedAudio);
@@ -251,7 +256,7 @@ export default function SocialGenerator() {
     startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-      const contentToSave = { ...generatedContent, videoSettings };
+      const contentToSave = { ...generatedContent, videoSettings, transformerState: transformer.state };
       const ok = await designer.canvas.saveProject(activeProjectName, contentToSave, activeProjectId);
       
       if (ok) {
@@ -276,7 +281,7 @@ export default function SocialGenerator() {
     startSaveProgress();
     try {
       const videoSettings = { videoStyles, selectedAudio, slideDuration, customAudioUrl };
-      const contentToSave = { ...generatedContent, videoSettings };
+      const contentToSave = { ...generatedContent, videoSettings, transformerState: transformer.state };
       const ok = await designer.canvas.saveProject(name, contentToSave, null);
       
       if (ok) {
