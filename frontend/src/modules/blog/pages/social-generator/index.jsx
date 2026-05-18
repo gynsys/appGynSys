@@ -4,7 +4,7 @@ import { FiCpu, FiInstagram, FiLoader, FiFolder, FiZap, FiVideo, FiImage, FiSave
 
 // Config & Services
 import { blogService } from '../../services/blogService';
-import Spinner from '../../../../components/common/Spinner';
+import GynSysLoader from '../../../../components/common/GynSysLoader';
 import { useToastStore } from '../../../../store/toastStore';
 import { getImageUrl } from '../../../../lib/imageUtils';
 import { useAuthStore } from '../../../../store/authStore';
@@ -344,7 +344,7 @@ export default function SocialGenerator() {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <GynSysLoader />;
 
   if (isMobile) {
     return (
