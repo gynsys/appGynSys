@@ -379,8 +379,6 @@ export default function SocialGenerator() {
         handleExportVideo={handleExportVideo} handleAddImageToVideoSlide={handleAddImageToVideoSlide}
         enterMobileFullscreen={enterMobileFullscreen}
         exportStatus={exportStatus}
-        userAudios={userAudios} loadingAudios={loadingAudios}
-        handleUploadAudio={handleUploadAudio} handleDeleteAudio={handleDeleteAudio}
         savingType={savingType} saveProgress={saveProgress}
       />
     );
