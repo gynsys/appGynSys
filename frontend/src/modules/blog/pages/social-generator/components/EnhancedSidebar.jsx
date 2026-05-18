@@ -552,7 +552,7 @@ export const EnhancedSidebar = ({
                                 className="text-left w-full"
                               >
                                 <p className="text-sm font-bold text-gray-900 dark:text-white">{t.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{t.slides.length} diapositivas</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t.slides?.length || 0} diapositivas</p>
                               </button>
                               <button
                                 onClick={() => {
