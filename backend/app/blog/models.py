@@ -52,6 +52,10 @@ class BlogPost(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
+    # Pregenerated social content fields
+    pregenerated_reel = Column(JSON, nullable=True)
+    pregenerated_carousel = Column(JSON, nullable=True)
+    
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
     
     doctor = relationship("Doctor", back_populates="blog_posts")

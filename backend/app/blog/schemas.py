@@ -32,6 +32,9 @@ class BlogPostUpdate(BaseModel):
     menu_icon: Optional[str] = None
     
     seo_config: Optional['BlogPostSEOUpdate'] = None
+    
+    pregenerated_reel: Optional[Any] = None
+    pregenerated_carousel: Optional[Any] = None
 
 class BlogPostResponse(BlogPostBase):
     id: int
@@ -40,6 +43,9 @@ class BlogPostResponse(BlogPostBase):
     updated_at: Optional[datetime] = None
     doctor_id: int
     is_service_content: bool = False
+    
+    pregenerated_reel: Optional[Any] = None
+    pregenerated_carousel: Optional[Any] = None
     
     seo_config: Optional['BlogPostSEOResponse'] = None
 
