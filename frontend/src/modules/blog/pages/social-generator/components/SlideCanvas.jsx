@@ -209,13 +209,13 @@ export const SlideCanvas = ({
       >
         <div className="text-center relative" style={{ fontFamily: design.fontFamily || 'Manrope' }}>
           <h4 className="font-black mb-3 uppercase leading-tight" style={{ fontSize: titleFontSize + 'px', color: titleColor }}>
-            {parseHighlightedText(slide.title, design.headerColor, design.headerFontSize)}
+            {parseHighlightedText(slide?.title || '', design.headerColor, design.headerFontSize)}
           </h4>
           <div className="h-1 w-12 bg-indigo-600/30 mb-3 rounded-full mx-auto"></div>
           <p className="font-bold leading-relaxed whitespace-pre-wrap" style={{ fontSize: fontSize + 'px', color: contentColor }}>
-            {parseHighlightedText(slide.content || slide.text, design.headerColor, design.headerFontSize)}
+            {parseHighlightedText(slide?.content || slide?.text || '', design.headerColor, design.headerFontSize)}
           </p>
-          {slide.overlayText && (
+          {slide?.overlayText && (
             <p className="mt-4 font-bold tracking-tight opacity-80 whitespace-pre-wrap" style={{ fontSize: Math.max(14, fontSize * 0.4) + 'px', color: contentColor }}>
               {slide.overlayText}
             </p>
@@ -224,7 +224,7 @@ export const SlideCanvas = ({
       </div>
       
       {/* Images Layer */}
-      {slide.customImages?.map((img, imgIdx) => {
+      {slide?.customImages?.map((img, imgIdx) => {
         const imgId = `${index}-${imgIdx}`;
         const pos = imagePositions[imgId] || { x: 50, y: 70 };
         const size = imageSizes[imgId] || 100;

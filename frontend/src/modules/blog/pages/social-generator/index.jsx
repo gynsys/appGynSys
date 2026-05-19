@@ -80,6 +80,7 @@ export default function SocialGenerator() {
 
   useEffect(() => {
     setEditingIndex(null);
+    designer.canvas.setCurrentSlidePage(0);
   }, [activeTab]);
 
   const { 
