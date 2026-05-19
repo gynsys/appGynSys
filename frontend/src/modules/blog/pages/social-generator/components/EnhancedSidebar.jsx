@@ -588,7 +588,7 @@ export const EnhancedSidebar = ({
                   onClick={() => {
                     const name = prompt('Nombre de la plantilla:');
                     if (name) {
-                      canvas.saveCustomTemplate(name, generatedContent);
+                      canvas.saveCustomTemplate(name, isVideoMode ? 'video' : 'carousel');
                       setShowTemplates(false);
                     }
                   }}

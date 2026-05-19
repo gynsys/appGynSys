@@ -68,11 +68,12 @@ export const useSlideDesigner = () => {
     fetchProjects();
   }, []);
 
-  const saveCustomTemplate = (name) => {
+  const saveCustomTemplate = (name, type) => {
     if (!name) return;
     const newTemplate = {
       id: Date.now(),
       name,
+      type,
       design: {
         bgColor, bgColor2, bgColor3, useBgGradient,
         fontSize, titleFontSize, headerFontSize,
