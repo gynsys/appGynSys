@@ -1,5 +1,5 @@
 from typing import List, Annotated, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
@@ -120,6 +120,20 @@ def generate_social_ai(
     if not post:
         raise HTTPException(status_code=404, detail="Post no encontrado")
         
+    # Check pregenerated content
+    if gen_type in ['video', 'reel'] and post.pregenerated_reel:
+        import logging
+        logging.getLogger(__name__).info(f"Serving pregenerated Reel for post {post_id}")
+        data = dict(post.pregenerated_reel)
+        data['type'] = gen_type
+        return schemas.SocialContentResponse(**data)
+    elif gen_type == 'carousel' and post.pregenerated_carousel:
+        import logging
+        logging.getLogger(__name__).info(f"Serving pregenerated Carousel for post {post_id}")
+        data = dict(post.pregenerated_carousel)
+        data['type'] = gen_type
+        return schemas.SocialContentResponse(**data)
+        
     try:
         from app.services import social_service
         result = social_service.generate_social_content(
@@ -144,6 +158,30 @@ def generate_social_ai(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error en la generación social: {error_msg}"
         )
+
+@router.post("/{post_id}/sync-social")
+def sync_social_content(
+    post_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: Doctor = Depends(get_current_user)
+) -> Any:
+    """
+    Manually triggers regeneration of pregenerated Reel and Carousel content.
+    """
+    post = db.query(BlogPost).filter(BlogPost.id == post_id, BlogPost.doctor_id == current_user.id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post no encontrado")
+        
+    # Clear existing pregenerations
+    post.pregenerated_reel = None
+    post.pregenerated_carousel = None
+    db.add(post)
+    db.commit()
+    
+    from app.services import social_service
+    background_tasks.add_task(social_service.pregenerate_social_content_async, post.id)
+    return {"status": "success", "message": "Pregeneración social encolada con éxito"}
 
 @router.post("/generate-social-from-content", response_model=schemas.SocialContentResponse)
 def generate_social_from_content_ai(
@@ -341,13 +379,20 @@ def delete_social_carousel(
 @router.post("/", response_model=schemas.BlogPostResponse)
 def create_post(
     post: schemas.BlogPostCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Doctor = Depends(get_current_user)
 ):
     """
     Create a new blog post.
     """
-    return crud.create_post(db=db, post=post, doctor_id=current_user.id)
+    db_post = crud.create_post(db=db, post=post, doctor_id=current_user.id)
+    
+    # Trigger background social content pregeneration
+    from app.services import social_service
+    background_tasks.add_task(social_service.pregenerate_social_content_async, db_post.id)
+    
+    return db_post
 
 @router.get("/{post_id}", response_model=schemas.BlogPostResponse)
 def read_post(
@@ -369,6 +414,7 @@ def read_post(
 def update_post(
     post_id: int,
     post: schemas.BlogPostUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Doctor = Depends(get_current_user)
 ):
@@ -381,7 +427,13 @@ def update_post(
     if db_post.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to edit this post")
     
-    return crud.update_post(db=db, post_id=post_id, post=post)
+    updated_post = crud.update_post(db=db, post_id=post_id, post=post)
+    
+    # Trigger background social content pregeneration on update
+    from app.services import social_service
+    background_tasks.add_task(social_service.pregenerate_social_content_async, updated_post.id)
+    
+    return updated_post
 
 @router.get("/comments/{post_slug}", response_model=List[schemas.CommentResponse])
 def read_comments(

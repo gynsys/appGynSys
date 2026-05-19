@@ -169,3 +169,58 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
             if "429" in error_msg or "quota" in error_msg.lower():
                 raise ValueError("Has alcanzado los límites de uso de Gemini y Groq. Por favor intenta más tarde.")
             raise gemini_err
+
+
+def pregenerate_social_content_async(post_id: int) -> None:
+    """
+    Background task to generate and save social media content (reel and carousel) for a blog post.
+    """
+    from app.db.base import SessionLocal
+    from app.blog.models import BlogPost
+    
+    logger.info(f"[GynSys-Pregeneration] Starting background pre-generation for post {post_id}")
+    
+    db = SessionLocal()
+    try:
+        post = db.query(BlogPost).filter(BlogPost.id == post_id).first()
+        if not post:
+            logger.warning(f"[GynSys-Pregeneration] Post {post_id} not found.")
+            return
+
+        # 1. Pregenerate Reel
+        try:
+            logger.info(f"[GynSys-Pregeneration] Generating Reel for post {post_id}")
+            reel_data = generate_social_content(
+                post_title=post.title,
+                post_content=post.content,
+                generation_type='reel'
+            )
+            if isinstance(reel_data, dict):
+                reel_data['type'] = 'reel'
+            post.pregenerated_reel = reel_data
+            db.commit()
+            logger.info(f"[GynSys-Pregeneration] Reel generated and saved successfully for post {post_id}")
+        except Exception as e:
+            logger.error(f"[GynSys-Pregeneration] Error pregenerating Reel for post {post_id}: {e}", exc_info=True)
+
+        # 2. Pregenerate Carousel
+        try:
+            logger.info(f"[GynSys-Pregeneration] Generating Carousel for post {post_id}")
+            carousel_data = generate_social_content(
+                post_title=post.title,
+                post_content=post.content,
+                generation_type='carousel'
+            )
+            if isinstance(carousel_data, dict):
+                carousel_data['type'] = 'carousel'
+            post.pregenerated_carousel = carousel_data
+            db.commit()
+            logger.info(f"[GynSys-Pregeneration] Carousel generated and saved successfully for post {post_id}")
+        except Exception as e:
+            logger.error(f"[GynSys-Pregeneration] Error pregenerating Carousel for post {post_id}: {e}", exc_info=True)
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"[GynSys-Pregeneration] General error in background task for post {post_id}: {e}", exc_info=True)
+    finally:
+        db.close()
