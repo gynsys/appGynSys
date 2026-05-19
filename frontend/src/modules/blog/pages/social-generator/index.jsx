@@ -24,6 +24,7 @@ import { SlideCanvas } from './components/SlideCanvas';
 import { SlidePaginator } from './components/SlidePaginator';
 import { PreviewModal } from './components/PreviewModal';
 import { EnhancedSidebar } from './components/EnhancedSidebar';
+import Modal from '../../../../components/common/Modal';
 
 import { MobileLayout } from './components/MobileLayout';
 import { ArticleSelector } from './components/ArticleSelector';
@@ -43,6 +44,8 @@ export default function SocialGenerator() {
   const [isMobile, setIsMobile] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(null);
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+  const [saveAsProjectName, setSaveAsProjectName] = useState('');
   const [editingIndex, setEditingIndex] = useState(null);
   const [watermarkImage, setWatermarkImage] = useState(null);
   const [doctorLogoBase64, setDoctorLogoBase64] = useState(null);
@@ -278,10 +281,16 @@ export default function SocialGenerator() {
     }
   };
 
-  const handleSaveProjectAs = async () => {
-    const name = prompt('Nombre del nuevo proyecto:', activeProjectName || selectedPost?.title || 'Mi Carrusel');
-    if (!name) return;
+  const handleSaveProjectAs = () => {
+    setSaveAsProjectName(activeProjectName || selectedPost?.title || 'Mi Carrusel');
+    setIsSaveAsModalOpen(true);
+  };
 
+  const handleSaveProjectAsConfirm = async () => {
+    const name = saveAsProjectName.trim();
+    if (!name) return;
+    
+    setIsSaveAsModalOpen(false);
     setSavingType('saveAs');
     startSaveProgress();
     try {
@@ -298,9 +307,9 @@ export default function SocialGenerator() {
         showToast('No se pudo crear el nuevo proyecto', 'error');
       }
     } catch (error) {
-      console.error('[GynSys] Error saving new project:', error);
+      console.error('[GynSys] Error creating new project:', error);
       stopSaveProgress(false);
-      showToast('Error crítico al crear el proyecto', 'error');
+      showToast('Error crítico al crear el nuevo proyecto', 'error');
     }
   };
 
@@ -668,6 +677,44 @@ export default function SocialGenerator() {
           <SlideCanvas slide={slide} index={i} isPreview={isPrev} doctor={doctor} doctorLogo={doctorLogoBase64} design={designer.design} canvas={designer.canvas} transform={transformer.state} watermark={watermarkImage} handlers={transformer.handlers} />
         )}
       />
+
+      <Modal
+        isOpen={isSaveAsModalOpen}
+        onClose={() => setIsSaveAsModalOpen(false)}
+        title="Guardar Como..."
+        size="alert"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Ingresa un nombre para el nuevo proyecto:
+          </p>
+          <input
+            type="text"
+            autoFocus
+            value={saveAsProjectName}
+            onChange={(e) => setSaveAsProjectName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveProjectAsConfirm();
+            }}
+            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none dark:text-white"
+            placeholder="Nombre del proyecto..."
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setIsSaveAsModalOpen(false)}
+              className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveProjectAsConfirm}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Hidden audio elements for playback */}
       <audio ref={audioRef} style={{ display: 'none' }} crossOrigin="anonymous" />

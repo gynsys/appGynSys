@@ -72,6 +72,8 @@ export const MobileLayout = ({
   savingType,
   saveProgress
 }) => {
+  const [projectToDelete, setProjectToDelete] = React.useState(null);
+
 
   React.useEffect(() => {
     let startX = 0;
@@ -199,29 +201,56 @@ export const MobileLayout = ({
               ) : (
                 designer.canvas.projects.map(p => (
                   <div key={p.id} className="p-5 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-between border border-gray-100 dark:border-gray-700">
-                    <button onClick={() => { handleLoadProject(p); setShowProjects(false); }} className="text-left flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-bold text-gray-900 dark:text-white">{p.name}</p>
-                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
-                          {p.is_backend ? 'Nube' : 'Local'}
-                        </span>
+                    {projectToDelete === p.id ? (
+                      <div className="w-full space-y-3 animate-fadeIn p-2">
+                        <p className="text-xs font-medium text-red-600 dark:text-red-400 text-center">¿Eliminar este proyecto?</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
+                              if (ok) showToast('Proyecto eliminado', 'success');
+                              setProjectToDelete(null);
+                            }}
+                            className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors"
+                          >
+                            Sí, eliminar
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProjectToDelete(null);
+                            }}
+                            className="flex-1 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-xl transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-widest">
-                        {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Reciente'} - {p.content?.slides?.length || 0} slides
-                      </p>
-                    </button>
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        if (window.confirm('¿Eliminar proyecto?')) {
-                          const ok = await designer.canvas.deleteProject(p.id, p.is_backend);
-                          if (ok) showToast('Proyecto eliminado', 'success');
-                        }
-                      }}
-                      className="p-3 text-red-400 hover:bg-red-50 rounded-2xl"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
+                    ) : (
+                      <>
+                        <button onClick={() => { handleLoadProject(p); setShowProjects(false); }} className="text-left flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-bold text-gray-900 dark:text-white">{p.name}</p>
+                            <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-tighter ${p.is_backend ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>
+                              {p.is_backend ? 'Nube' : 'Local'}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                            {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Reciente'} - {p.content?.slides?.length || 0} slides
+                          </p>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProjectToDelete(p.id);
+                          }}
+                          className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-2xl transition-colors"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))
               )}
