@@ -79,7 +79,14 @@ export const ArticleSelector = ({
               <FiInstagram size={24} />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Video</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Video</p>
+                {!!selectedPost?.pregenerated_reel && (
+                  <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider animate-pulse flex items-center gap-0.5">
+                    <FiZap size={10} className="fill-emerald-300" /> Listo
+                  </span>
+                )}
+              </div>
               <p className="text-lg font-black uppercase tracking-tight">GynSys Reel IA</p>
             </div>
           </button>
@@ -94,7 +101,14 @@ export const ArticleSelector = ({
               <FiImage size={24} />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Diseño</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Diseño</p>
+                {!!selectedPost?.pregenerated_carousel && (
+                  <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider animate-pulse flex items-center gap-0.5">
+                    <FiZap size={10} className="fill-emerald-300" /> Listo
+                  </span>
+                )}
+              </div>
               <p className="text-lg font-black uppercase tracking-tight">Carrusel Médico</p>
             </div>
           </button>
