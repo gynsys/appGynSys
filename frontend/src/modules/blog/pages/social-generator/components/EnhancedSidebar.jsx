@@ -37,6 +37,8 @@ export const EnhancedSidebar = ({
   const [showIconElements, setShowIconElements] = useState(false);
   const [showEmojiElements, setShowEmojiElements] = useState(false);
   const [selectedFont, setSelectedFont] = useState('Arial');
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
 
   return (
     <div className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'} flex flex-col h-full`}>
@@ -569,8 +571,10 @@ export const EnhancedSidebar = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  canvas.deleteTemplate(t.id);
-                                  setShowTemplates(false);
+                                  if (window.confirm(`¿Estás seguro de que deseas eliminar la plantilla "${t.name}"?`)) {
+                                    canvas.deleteTemplate(t.id);
+                                    setShowTemplates(false);
+                                  }
                                 }}
                                 className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
                                 title="Eliminar plantilla"
@@ -586,19 +590,57 @@ export const EnhancedSidebar = ({
                 </div>
 
                 {/* Save Template */}
-                <button
-                  onClick={() => {
-                    const name = prompt('Nombre de la plantilla:');
-                    if (name) {
-                      canvas.saveCustomTemplate(name, isVideoMode ? 'video' : 'carousel');
-                      setShowTemplates(false);
-                    }
-                  }}
-                  className="w-full flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-xl transition-all"
-                >
-                  <FiSave className="text-green-600" />
-                  <span className="text-sm font-black text-green-600">Guardar Plantilla</span>
-                </button>
+                {isSavingTemplate ? (
+                  <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl border border-green-200 dark:border-green-800 space-y-2 animate-fadeIn">
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Nombre de la plantilla..."
+                      value={newTemplateName}
+                      onChange={(e) => setNewTemplateName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newTemplateName.trim()) {
+                          canvas.saveCustomTemplate(newTemplateName.trim(), isVideoMode ? 'video' : 'carousel');
+                          setNewTemplateName('');
+                          setIsSavingTemplate(false);
+                          setShowTemplates(true);
+                        } else if (e.key === 'Escape') {
+                          setIsSavingTemplate(false);
+                        }
+                      }}
+                      className="w-full px-3 py-2 text-sm border-2 border-green-200 dark:border-green-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-green-500"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          if (newTemplateName.trim()) {
+                            canvas.saveCustomTemplate(newTemplateName.trim(), isVideoMode ? 'video' : 'carousel');
+                            setNewTemplateName('');
+                            setIsSavingTemplate(false);
+                            setShowTemplates(true);
+                          }
+                        }}
+                        className="flex-1 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        onClick={() => setIsSavingTemplate(false)}
+                        className="flex-1 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsSavingTemplate(true)}
+                    className="w-full flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-xl transition-all"
+                  >
+                    <FiSave className="text-green-600" />
+                    <span className="text-sm font-black text-green-600">Guardar Plantilla</span>
+                  </button>
+                )}
 
                 {/* Layer Controls */}
                 {(selectedElement || canvas.selectedImageId) && (
