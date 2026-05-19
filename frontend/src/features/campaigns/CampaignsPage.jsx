@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 import { ImageUpload } from '../../components/common/ImageUpload';
 import { getImageUrl } from '../../lib/imageUtils';
+import GynSysLoader from '../../components/common/GynSysLoader';
 
 export default function CampaignsPage() {
   const { isDarkTheme, primaryColor = '#4f46e5', doctor } = useOutletContext();
@@ -282,11 +283,7 @@ export default function CampaignsPage() {
     }
   };
 
-  if (isFetching) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
-    </div>
-  );
+  if (isFetching) return <GynSysLoader color={primaryColor} />;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
