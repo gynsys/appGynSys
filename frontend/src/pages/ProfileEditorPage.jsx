@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AdminHeader } from '../components/layout/AdminHeader'
-import Spinner from '../components/common/Spinner'
+import GynSysLoader from '../components/common/GynSysLoader'
 import ProfileTabsLayout from '../components/profile-editor/ProfileTabsLayout'
 import { useProfileData } from '../components/profile-editor/useProfileData'
 import { useTestimonials } from '../components/profile-editor/useTestimonials'
@@ -15,13 +15,10 @@ const ProfileEditorPage = ({ isQuickSetup = false }) => {
   const faqsData = useFAQs()
 
   const { doctor, loading } = profileData
+  const primaryColor = doctor?.theme_primary_color || '#4F46E5'
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    )
+    return <GynSysLoader color={primaryColor} />;
   }
 
   if (!doctor) {
@@ -37,8 +34,6 @@ const ProfileEditorPage = ({ isQuickSetup = false }) => {
       </div>
     )
   }
-
-  const primaryColor = doctor?.theme_primary_color || '#4F46E5'
 
   return (
     <Fragment>

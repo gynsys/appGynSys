@@ -18,6 +18,7 @@ import EndometriosisTestModal from '../components/features/EndometriosisTestModa
 import AppointmentRequestModal from '../components/features/AppointmentRequestModal'
 import CyclePredictorModal from '../components/cycle-predictor/CyclePredictorModal'
 import ServicesSection from '../components/features/ServicesSection'
+import GynSysLoader from '../components/common/GynSysLoader'
 import BlogSection from '../components/features/BlogSection'
 import TestimonialsSection from '../components/features/TestimonialsSection'
 import GallerySection from '../components/features/GallerySection'
@@ -511,27 +512,7 @@ export default function DoctorProfilePage() {
       // Evitamos ReferenceError al no usar variables declaradas más abajo
       return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={{ backgroundColor: doctor?.theme_body_bg_color || 'transparent' }} />
     }
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`}>
-        <style>
-          {`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-            .animate-loading-spinner {
-              animation: spin 1s linear infinite;
-            }
-          `}
-        </style>
-        <div className="text-center flex flex-col items-center gap-4">
-          <div 
-            className="w-12 h-12 border-4 border-gray-200 dark:border-gray-800 rounded-full animate-loading-spinner"
-            style={{ borderTopColor: primaryColor }}
-          />
-          <p className="text-sm font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase">Cargando...</p>
-        </div>
-      </div>
-    )
+    return <GynSysLoader color={primaryColor} />
   }
 
   if (error || !doctor) {

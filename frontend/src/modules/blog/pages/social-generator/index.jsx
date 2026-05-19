@@ -345,12 +345,7 @@ export default function SocialGenerator() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 w-full h-full">
-        <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-gray-800 border-t-indigo-600 dark:border-t-indigo-500 animate-spin"></div>
-        <p className="text-xs font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase">Cargando...</p>
-      </div>
-    );
+    return <GynSysLoader fullScreen={false} color={doctor?.theme_primary_color || '#4F46E5'} />;
   }
 
   if (isMobile) {
