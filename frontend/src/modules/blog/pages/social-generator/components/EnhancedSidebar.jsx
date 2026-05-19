@@ -39,6 +39,7 @@ export const EnhancedSidebar = ({
   const [selectedFont, setSelectedFont] = useState('Arial');
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
+  const [templateToDelete, setTemplateToDelete] = useState(null);
 
   return (
     <div className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'} flex flex-col h-full`}>
@@ -558,29 +559,55 @@ export const EnhancedSidebar = ({
                           }
 
                           return filteredTemplates.map(t => (
-                            <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0 flex items-center justify-between">
-                              <button 
-                                onClick={() => { 
-                                  canvas.applyCustomTemplate(t, totalSlides); 
-                                  setShowTemplates(false); 
-                                }}
-                                className="text-left flex-1 mr-2 overflow-hidden"
-                              >
-                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate" title={t.name}>{t.name}</p>
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm(`¿Estás seguro de que deseas eliminar la plantilla "${t.name}"?`)) {
-                                    canvas.deleteTemplate(t.id);
-                                    setShowTemplates(false);
-                                  }
-                                }}
-                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
-                                title="Eliminar plantilla"
-                              >
-                                <FiTrash2 size={14} />
-                              </button>
+                            <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0">
+                              {templateToDelete === t.id ? (
+                                <div className="space-y-2 animate-fadeIn">
+                                  <p className="text-xs font-medium text-red-600 dark:text-red-400 text-center">¿Eliminar plantilla?</p>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        canvas.deleteTemplate(t.id);
+                                        setTemplateToDelete(null);
+                                      }}
+                                      className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors"
+                                    >
+                                      Sí, eliminar
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setTemplateToDelete(null);
+                                      }}
+                                      className="flex-1 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs font-bold rounded transition-colors"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <button 
+                                    onClick={() => { 
+                                      canvas.applyCustomTemplate(t, totalSlides); 
+                                      setShowTemplates(false); 
+                                    }}
+                                    className="text-left flex-1 mr-2 overflow-hidden"
+                                  >
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate" title={t.name}>{t.name}</p>
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTemplateToDelete(t.id);
+                                    }}
+                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
+                                    title="Eliminar plantilla"
+                                  >
+                                    <FiTrash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           ));
                         })()}
