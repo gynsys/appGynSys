@@ -420,13 +420,31 @@ export default function SocialGenerator() {
               {/* Left: Tab switcher */}
               <div className="flex bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700">
                 <button 
-                  onClick={() => setActiveTab('video')} 
+                  onClick={() => {
+                    if (activeTab !== 'video') {
+                      setActiveTab('video');
+                      if (generatedContent?.type === 'carousel' || !generatedContent?.video_slides) {
+                        setGeneratedContent({ type: 'video', video_slides: [{ title: 'Nuevo Video', content: 'Contenido' }], slides: [] });
+                        setActiveProjectId(null);
+                        setActiveProjectName(null);
+                      }
+                    }
+                  }} 
                   className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'video' || activeTab === 'reel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Editor de Video
                 </button>
                 <button 
-                  onClick={() => setActiveTab('carousel')} 
+                  onClick={() => {
+                    if (activeTab !== 'carousel') {
+                      setActiveTab('carousel');
+                      if (generatedContent?.type === 'video' || generatedContent?.video_slides) {
+                        setGeneratedContent({ type: 'carousel', slides: [{ title: 'Nuevo Carrusel', content: 'Contenido' }] });
+                        setActiveProjectId(null);
+                        setActiveProjectName(null);
+                      }
+                    }
+                  }} 
                   className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Editor de Carrusel
