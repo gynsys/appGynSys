@@ -78,6 +78,10 @@ export default function SocialGenerator() {
     }
   }, [currentVideoSlide, activeTab]);
 
+  useEffect(() => {
+    setEditingIndex(null);
+  }, [activeTab]);
+
   const { 
     audioRef, previewAudioRef, selectedAudio, setSelectedAudio, 
     customAudioUrl, setCustomAudioUrl, prelisteningTrack, setPrelisteningTrack, 
@@ -604,11 +608,13 @@ export default function SocialGenerator() {
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Título</label>
                 <input 
                   type="text"
-                  value={generatedContent.slides[editingIndex].title}
+                  value={generatedContent.slides[editingIndex]?.title || ''}
                   onChange={(e) => {
                     const newSlides = [...generatedContent.slides];
-                    newSlides[editingIndex].title = e.target.value;
-                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                    if (newSlides[editingIndex]) {
+                      newSlides[editingIndex].title = e.target.value;
+                      setGeneratedContent({ ...generatedContent, slides: newSlides });
+                    }
                   }}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold"
                 />
@@ -617,11 +623,13 @@ export default function SocialGenerator() {
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Contenido</label>
                 <textarea 
                   rows={5}
-                  value={generatedContent.slides[editingIndex].content}
+                  value={generatedContent.slides[editingIndex]?.content || ''}
                   onChange={(e) => {
                     const newSlides = [...generatedContent.slides];
-                    newSlides[editingIndex].content = e.target.value;
-                    setGeneratedContent({ ...generatedContent, slides: newSlides });
+                    if (newSlides[editingIndex]) {
+                      newSlides[editingIndex].content = e.target.value;
+                      setGeneratedContent({ ...generatedContent, slides: newSlides });
+                    }
                   }}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm leading-relaxed"
                 />
