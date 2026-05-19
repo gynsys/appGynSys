@@ -147,7 +147,7 @@ export const MobileLayout = ({
           </select>
 
           {generating && (
-            <div className="flex items-center justify-center gap-2 py-3 text-indigo-600">
+            <div className="flex items-center justify-center gap-2 py-3" style={{ color: doctor?.theme_primary_color || '#4F46E5' }}>
               <FiLoader className="animate-spin" />
               <span className="text-xs font-black uppercase tracking-widest">IA procesando...</span>
             </div>

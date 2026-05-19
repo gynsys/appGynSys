@@ -350,7 +350,7 @@ export default function SocialGenerator() {
   };
 
   if (loading) {
-    return <GynSysLoader fullScreen={false} color={doctor?.theme_primary_color || '#4F46E5'} />;
+    return <GynSysLoader fullScreen={false} />;
   }
 
   if (isMobile) {
