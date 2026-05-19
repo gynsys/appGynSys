@@ -541,8 +541,21 @@ export const EnhancedSidebar = ({
                         <span className="text-[10px] font-black uppercase text-gray-400">Seleccionar Estilo</span>
                       </div>
                       <div className="max-h-48 overflow-y-auto">
-                        {canvas.customTemplates?.length > 0 ? (
-                          canvas.customTemplates.map(t => (
+                        {(() => {
+                          const filteredTemplates = canvas.customTemplates?.filter(t => {
+                            const isVideoTemplate = t.type === 'video' || t.video_slides;
+                            return isVideoMode ? isVideoTemplate : !isVideoTemplate;
+                          }) || [];
+
+                          if (filteredTemplates.length === 0) {
+                            return (
+                              <div className="p-4 text-center text-gray-400 text-xs">
+                                No hay plantillas guardadas
+                              </div>
+                            );
+                          }
+
+                          return filteredTemplates.map(t => (
                             <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0">
                               <button 
                                 onClick={() => { 
@@ -552,7 +565,6 @@ export const EnhancedSidebar = ({
                                 className="text-left w-full"
                               >
                                 <p className="text-sm font-bold text-gray-900 dark:text-white">{t.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{t.slides?.length || 0} diapositivas</p>
                               </button>
                               <button
                                 onClick={() => {
@@ -564,12 +576,8 @@ export const EnhancedSidebar = ({
                                 Eliminar
                               </button>
                             </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-gray-400 text-xs">
-                            No hay plantillas guardadas
-                          </div>
-                        )}
+                          ));
+                        })()}
                       </div>
                     </div>
                   )}
