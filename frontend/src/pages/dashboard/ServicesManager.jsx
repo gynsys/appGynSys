@@ -6,7 +6,7 @@ import { servicesService } from '../../services/servicesService'
 import { useToastStore } from '../../store/toastStore'
 import { useAuthStore } from '../../store/authStore'
 import Button from '../../components/common/Button'
-import Spinner from '../../components/common/Spinner'
+import GynSysLoader from '../../components/common/GynSysLoader'
 import Modal from '../../components/common/Modal'
 import DragDropUpload from '../../components/features/DragDropUpload'
 import { getImageUrl } from '../../lib/imageUtils'
@@ -123,7 +123,7 @@ export default function ServicesManager() {
     }
   }
 
-  if (loading) return <Spinner color={primaryColor} />
+  if (loading) return <GynSysLoader color={primaryColor} />
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

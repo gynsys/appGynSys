@@ -5,7 +5,7 @@ import { blogService } from '../services/blogService'
 import { doctorService } from '../../../services/doctorService'
 import BlogEditor from '../components/BlogEditor'
 import Button from '../../../components/common/Button'
-import Spinner from '../../../components/common/Spinner'
+import GynSysLoader from '../../../components/common/GynSysLoader'
 import Modal from '../../../components/common/Modal'
 import { useToastStore } from '../../../store/toastStore'
 import { useAuthStore } from '../../../store/authStore'
@@ -93,7 +93,7 @@ export default function BlogAdminPage() {
     }
   }
 
-  if (loading && !posts.length) return <Spinner color={doctor?.theme_primary_color || '#4F46E5'} />
+  if (loading && !posts.length) return <GynSysLoader color={user?.theme_primary_color || doctor?.theme_primary_color || '#4F46E5'} />
 
   if (isEditing) {
     return (

@@ -3,7 +3,7 @@ import { onlineConsultationService } from '../../services/onlineConsultationServ
 import { useToastStore } from '../../store/toastStore'
 import { useAuthStore } from '../../store/authStore'
 import Button from '../../components/common/Button'
-import Spinner from '../../components/common/Spinner'
+import GynSysLoader from '../../components/common/GynSysLoader'
 import DragDropUpload from '../../components/features/DragDropUpload'
 import { FiDollarSign, FiCreditCard, FiClock, FiCalendar, FiVideo } from 'react-icons/fi'
 
@@ -113,7 +113,7 @@ export default function OnlineConsultationSettings() {
         }
     }
 
-    if (loading) return <Spinner color={primaryColor} />
+    if (loading) return <GynSysLoader color={primaryColor} />
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
