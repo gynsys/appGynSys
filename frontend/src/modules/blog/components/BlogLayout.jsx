@@ -62,7 +62,7 @@ export default function BlogLayout({ children }) {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner /></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner color={doctor?.theme_primary_color || '#4F46E5'} /></div>
   if (!doctor) return <div className="text-center py-10">Doctor no encontrado</div>
 
   const primaryColor = doctor.theme_primary_color || '#4F46E5'

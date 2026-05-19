@@ -151,7 +151,7 @@ export default function BlogPostPage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner /></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner color={doctor?.theme_primary_color || '#4F46E5'} /></div>
   if (!post) return <BlogLayout><div className="text-center py-10">Artículo no encontrado</div></BlogLayout>
 
   const isDarkTheme = doctor?.design_template === 'dark' || doctor?.design_template === 'executive_dark';
@@ -242,7 +242,7 @@ export default function BlogPostPage() {
                   {/* Comments List */}
                   <div className="space-y-8 mb-12">
                     {loadingComments ? (
-                      <div className="text-center py-4"><Spinner size="sm" /></div>
+                      <div className="text-center py-4"><Spinner size="sm" color={doctor?.theme_primary_color || '#4F46E5'} /></div>
                     ) : comments.length > 0 ? (
                       comments.map((comment) => (
                         <div key={comment.id} className="flex space-x-4">

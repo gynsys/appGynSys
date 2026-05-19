@@ -113,7 +113,7 @@ export default function OnlineConsultationSettings() {
         }
     }
 
-    if (loading) return <Spinner />
+    if (loading) return <Spinner color={primaryColor} />
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

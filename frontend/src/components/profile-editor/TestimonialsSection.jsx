@@ -35,7 +35,7 @@ const TestimonialsSection = ({
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Spinner />
+          <Spinner color={primaryColor} />
         </div>
       ) : testimonials.length === 0 ? (
         <div className="border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">

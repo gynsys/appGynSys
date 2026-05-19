@@ -18,6 +18,7 @@ export default function AdminModulesPage() {
   } = useAdminStore()
 
   const { showToast } = useToastStore()
+  const primaryColor = '#4F46E5' // Admin pages use default indigo
 
 
   const [showEditModal, setShowEditModal] = useState(false)
@@ -119,7 +120,7 @@ export default function AdminModulesPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
+            <Spinner size="lg" color={primaryColor} />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -292,7 +293,7 @@ export default function AdminModulesPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Actualizar Módulo'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Módulo'}
             </Button>
           </div>
         </form>

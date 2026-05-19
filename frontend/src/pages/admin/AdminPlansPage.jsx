@@ -18,6 +18,7 @@ export default function AdminPlansPage() {
   } = useAdminStore()
 
   const { showToast } = useToastStore()
+  const primaryColor = '#4F46E5' // Admin pages use default indigo
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -170,7 +171,7 @@ export default function AdminPlansPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-full flex items-center justify-center py-12">
-            <Spinner size="lg" />
+            <Spinner size="lg" color={primaryColor} />
           </div>
         ) : (
           plans.map((plan) => (
@@ -442,7 +443,7 @@ export default function AdminPlansPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Crear Plan'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Crear Plan'}
             </Button>
           </div>
         </form>
@@ -609,7 +610,7 @@ export default function AdminPlansPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Actualizar Plan'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Plan'}
             </Button>
           </div>
         </form>

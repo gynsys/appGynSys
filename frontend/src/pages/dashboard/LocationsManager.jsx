@@ -70,6 +70,7 @@ export default function LocationsManager() {
   })
   const { showToast } = useToastStore()
   const { user } = useAuthStore()
+  const primaryColor = user?.theme_primary_color || '#4F46E5'
 
   useEffect(() => {
     loadLocations()
@@ -161,7 +162,7 @@ export default function LocationsManager() {
     }
   }
 
-  if (loading) return <Spinner />
+  if (loading) return <Spinner color={primaryColor} />
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">

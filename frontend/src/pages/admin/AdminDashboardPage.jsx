@@ -36,10 +36,12 @@ export default function AdminDashboardPage() {
     }
   }, [tenants, plans, modules])
 
+  const primaryColor = '#4F46E5' // Admin pages use default indigo
+
   if (loading && tenants.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner size="lg" />
+        <Spinner size="lg" color={primaryColor} />
       </div>
     )
   }

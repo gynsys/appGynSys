@@ -85,7 +85,7 @@ export default function BlogPublicPage() {
 
           {loading ? (
             <div className="mt-12 flex justify-center">
-              <Spinner />
+              <Spinner color={doctor?.theme_primary_color || '#4F46E5'} />
             </div>
           ) : (
             <>

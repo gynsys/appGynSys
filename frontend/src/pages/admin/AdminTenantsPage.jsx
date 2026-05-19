@@ -23,6 +23,7 @@ export default function AdminTenantsPage() {
   } = useAdminStore()
 
   const { showToast } = useToastStore()
+  const primaryColor = '#4F46E5' // Admin pages use default indigo
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -267,7 +268,7 @@ export default function AdminTenantsPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
+            <Spinner size="lg" color={primaryColor} />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -483,7 +484,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Crear Tenant'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Crear Tenant'}
             </Button>
           </div>
         </form>
@@ -598,7 +599,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Actualizar Tenant'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Tenant'}
             </Button>
           </div>
         </form>
@@ -653,7 +654,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button onClick={handleUpdateModules} disabled={loading}>
-              {loading ? <Spinner size="sm" /> : 'Actualizar Extras'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Extras'}
             </Button>
           </div>
         </div>
@@ -698,7 +699,7 @@ export default function AdminTenantsPage() {
               variant="danger"
               disabled={loading}
             >
-              {loading ? <Spinner size="sm" /> : 'Sí, Eliminar Tenant'}
+              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Sí, Eliminar Tenant'}
             </Button>
           </div>
         </div>

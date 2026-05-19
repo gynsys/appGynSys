@@ -1,4 +1,4 @@
-export default function Spinner({ size = 'md', className = '' }) {
+export default function Spinner({ size = 'md', className = '', color = null }) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
@@ -6,10 +6,13 @@ export default function Spinner({ size = 'md', className = '' }) {
     xl: 'h-12 w-12',
   }
 
+  const style = color ? { color } : {}
+
   return (
     <div className={`inline-block ${className}`}>
       <svg
-        className={`animate-spin ${sizeClasses[size]} text-current`}
+        className={`animate-spin ${sizeClasses[size]}`}
+        style={style}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

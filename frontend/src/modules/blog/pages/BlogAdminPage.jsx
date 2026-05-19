@@ -93,7 +93,7 @@ export default function BlogAdminPage() {
     }
   }
 
-  if (loading && !posts.length) return <Spinner />
+  if (loading && !posts.length) return <Spinner color={doctor?.theme_primary_color || '#4F46E5'} />
 
   if (isEditing) {
     return (
