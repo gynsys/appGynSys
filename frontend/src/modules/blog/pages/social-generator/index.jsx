@@ -349,9 +349,7 @@ export default function SocialGenerator() {
     }
   };
 
-  if (loading) {
-    return <GynSysLoader fullScreen={false} />;
-  }
+
 
   if (isMobile) {
     return (
@@ -421,8 +419,15 @@ export default function SocialGenerator() {
               <div className="flex bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700">
                 <button 
                   onClick={() => {
-                    localStorage.setItem('socialGenTab', 'video');
-                    window.location.reload();
+                    if (activeTab !== 'video') {
+                      setActiveTab('video');
+                      localStorage.setItem('socialGenTab', 'video');
+                      setGeneratedContent(null);
+                      setActiveProjectId(null);
+                      setActiveProjectName(null);
+                      setSelectedPost(null);
+                      designer.canvas.setCurrentSlidePage(0);
+                    }
                   }} 
                   className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'video' || activeTab === 'reel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
@@ -430,8 +435,15 @@ export default function SocialGenerator() {
                 </button>
                 <button 
                   onClick={() => {
-                    localStorage.setItem('socialGenTab', 'carousel');
-                    window.location.reload();
+                    if (activeTab !== 'carousel') {
+                      setActiveTab('carousel');
+                      localStorage.setItem('socialGenTab', 'carousel');
+                      setGeneratedContent(null);
+                      setActiveProjectId(null);
+                      setActiveProjectName(null);
+                      setSelectedPost(null);
+                      designer.canvas.setCurrentSlidePage(0);
+                    }
                   }} 
                   className={`px-8 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === 'carousel' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
