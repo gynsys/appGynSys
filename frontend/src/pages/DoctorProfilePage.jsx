@@ -512,7 +512,7 @@ export default function DoctorProfilePage() {
       // Evitamos ReferenceError al no usar variables declaradas más abajo
       return <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-950' : 'bg-white'}`} style={{ backgroundColor: doctor?.theme_body_bg_color || 'transparent' }} />
     }
-    return <GynSysLoader color={primaryColor} />
+    return <GynSysLoader />
   }
 
   if (error || !doctor) {

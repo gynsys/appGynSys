@@ -18,7 +18,7 @@ const ProfileEditorPage = ({ isQuickSetup = false }) => {
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'
 
   if (loading) {
-    return <GynSysLoader color={primaryColor} />;
+    return <GynSysLoader />;
   }
 
   if (!doctor) {

@@ -123,7 +123,7 @@ export default function ServicesManager() {
     }
   }
 
-  if (loading) return <GynSysLoader color={primaryColor} />
+  if (loading) return <GynSysLoader />
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

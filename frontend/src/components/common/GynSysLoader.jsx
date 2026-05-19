@@ -1,7 +1,11 @@
 import React from 'react';
 import { isCapacitor } from '../../utils/platform';
+import { useAuthStore } from '../../store/authStore';
 
-const GynSysLoader = ({ className = "", fullScreen = true, text = "Cargando...", color = "#4F46E5" }) => {
+const GynSysLoader = ({ className = "", fullScreen = true, text = "Cargando...", color }) => {
+    const { user } = useAuthStore();
+    const finalColor = color || user?.theme_primary_color || '#4F46E5';
+
     // En la app nativa (Capacitor), el overlay nativo de Android
     // ya muestra la pantalla de carga. No mostramos nada desde React
     // para evitar la dualidad de indicadores en pantalla completa.
@@ -17,7 +21,7 @@ const GynSysLoader = ({ className = "", fullScreen = true, text = "Cargando...",
         <div className={containerClasses}>
             <div 
                 className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-gray-800 animate-spin"
-                style={{ borderTopColor: color }}
+                style={{ borderTopColor: finalColor }}
             ></div>
             {text && (
                 <p className="text-sm font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase">

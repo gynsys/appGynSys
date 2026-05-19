@@ -93,7 +93,7 @@ export default function BlogAdminPage() {
     }
   }
 
-  if (loading && !posts.length) return <GynSysLoader color={user?.theme_primary_color || doctor?.theme_primary_color || '#4F46E5'} />
+  if (loading && !posts.length) return <GynSysLoader />
 
   if (isEditing) {
     return (

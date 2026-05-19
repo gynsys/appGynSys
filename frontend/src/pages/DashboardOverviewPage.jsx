@@ -99,7 +99,7 @@ export default function DashboardOverviewPage() {
   }
 
   if (!isAuthenticated || loading) {
-    return <GynSysLoader color={doctor?.theme_primary_color || '#4F46E5'} />
+    return <GynSysLoader />
   }
 
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'

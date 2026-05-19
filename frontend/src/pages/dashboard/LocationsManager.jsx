@@ -162,7 +162,7 @@ export default function LocationsManager() {
     }
   }
 
-  if (loading) return <GynSysLoader color={primaryColor} />
+  if (loading) return <GynSysLoader />
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">

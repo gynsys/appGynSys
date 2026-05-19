@@ -283,7 +283,7 @@ export default function CampaignsPage() {
     }
   };
 
-  if (isFetching) return <GynSysLoader color={primaryColor} />;
+  if (isFetching) return <GynSysLoader />;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
