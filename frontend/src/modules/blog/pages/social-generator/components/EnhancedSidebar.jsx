@@ -556,24 +556,26 @@ export const EnhancedSidebar = ({
                           }
 
                           return filteredTemplates.map(t => (
-                            <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0">
+                            <div key={t.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 border-b border-gray-50 dark:border-gray-700/50 last:border-b-0 flex items-center justify-between">
                               <button 
                                 onClick={() => { 
                                   canvas.applyCustomTemplate(t, totalSlides); 
                                   setShowTemplates(false); 
                                 }}
-                                className="text-left w-full"
+                                className="text-left flex-1 mr-2 overflow-hidden"
                               >
-                                <p className="text-sm font-bold text-gray-900 dark:text-white">{t.name}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate" title={t.name}>{t.name}</p>
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   canvas.deleteTemplate(t.id);
                                   setShowTemplates(false);
                                 }}
-                                className="text-xs text-red-500 hover:text-red-700 mt-1"
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
+                                title="Eliminar plantilla"
                               >
-                                Eliminar
+                                <FiTrash2 size={14} />
                               </button>
                             </div>
                           ));
