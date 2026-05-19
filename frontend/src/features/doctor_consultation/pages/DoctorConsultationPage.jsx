@@ -18,6 +18,7 @@ import { scheduledAppointmentService } from '../../../services/scheduledAppointm
 import { authService } from '../../../services/authService';
 import { appointmentService } from '../../../services/appointmentService';
 import { usePreconsultaEngine } from '../../preconsulta/hooks/usePreconsultaEngine';
+import GynSysLoader from '../../../components/common/GynSysLoader';
 import physicalExamFlow from '../data/physical_exam_flow.json';
 import { doctorExamTexts } from '../data/texts';
 import { ButtonSelection } from '../../preconsulta/components/inputs/ButtonSelection';
@@ -1432,10 +1433,7 @@ export const DoctorConsultationPage = () => {
             )}
 
             {modalState === 'sending' && (
-              <div className="py-8 flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mb-4"></div>
-                <p className="text-indigo-600 font-medium animate-pulse">Enviando informe al paciente...</p>
-              </div>
+              <GynSysLoader fullScreen={false} text="Enviando informe al paciente..." color={primaryColor} />
             )}
 
             {modalState === 'success' && (

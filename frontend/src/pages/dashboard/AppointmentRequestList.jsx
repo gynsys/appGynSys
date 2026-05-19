@@ -11,10 +11,12 @@ import {
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import GynSysLoader from '../../components/common/GynSysLoader';
 
 export default function AppointmentRequestList() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const primaryColor = user?.theme_primary_color || '#4F46E5';
   const { success, error: toastError } = useToastStore();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -131,10 +133,7 @@ export default function AppointmentRequestList() {
         </header>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mb-4"></div>
-            <p className="text-gray-500 text-sm">Cargando solicitudes...</p>
-          </div>
+          <GynSysLoader fullScreen={false} text="Cargando solicitudes..." color={primaryColor} />
         ) : requests.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center border border-gray-100 dark:border-gray-700 shadow-sm">
             <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">

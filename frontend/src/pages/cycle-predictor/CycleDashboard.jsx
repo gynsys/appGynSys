@@ -7,6 +7,7 @@ import cycleService from '../../services/cycleService';
 import CycleDashboardTab from '../../components/cycle-predictor/CycleDashboardTab';
 import PregnancyDashboard from '../../components/cycle-predictor/PregnancyDashboard';
 import Button from '../../components/common/Button';
+import GynSysLoader from '../../components/common/GynSysLoader';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 
@@ -70,11 +71,7 @@ export default function CycleDashboard() {
         if (isCapacitor() && isInitialBoot) {
             return <div className="min-h-[60vh] bg-transparent" />;
         }
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-            </div>
-        );
+        return <GynSysLoader color={tenantPrimaryColor} />;
     }
 
     return (

@@ -9,6 +9,7 @@ import { useAuth } from '../../features/auth/useAuth';
 import { getImageUrl } from '../../lib/imageUtils';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../../components/common/Modal';
+import GynSysLoader from '../../components/common/GynSysLoader';
 
 export default function GalleryManager() {
   const dropRef = useRef(null);
@@ -332,10 +333,7 @@ export default function GalleryManager() {
 
       {/* Gallery Grid */}
       {loading ? (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <p className="mt-2">Cargando galería...</p>
-        </div>
+        <GynSysLoader fullScreen={false} text="Cargando galería..." color={primaryColor} />
       ) : images.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="text-6xl mb-4">📸</div>
