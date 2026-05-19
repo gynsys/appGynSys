@@ -224,12 +224,17 @@ async def upload_social_audio(
     Upload an audio file for social media content.
     Saves the file and creates a record in the database.
     """
-    ALLOWED_AUDIO_TYPES = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a"]
+    ALLOWED_AUDIO_TYPES = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a", "audio/x-m4a", "audio/x-mpeg", "audio/x-mp3"]
+    ALLOWED_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".mpeg"]
     
-    if file.content_type not in ALLOWED_AUDIO_TYPES:
+    file_ext = Path(file.filename).suffix.lower() if file.filename else ""
+    is_allowed_mime = file.content_type in ALLOWED_AUDIO_TYPES
+    is_allowed_ext = file_ext in ALLOWED_EXTENSIONS
+    
+    if not (is_allowed_mime or is_allowed_ext):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only MP3, WAV, OGG, and M4A audios are allowed."
+            detail=f"Invalid file type ({file.content_type}). Only MP3, WAV, OGG, and M4A audios are allowed."
         )
     
     # Check file size (10MB for audio)
