@@ -117,6 +117,8 @@ export default function AppointmentRequestList() {
     }).format(new Date(dateString));
   };
 
+  if (loading) return <GynSysLoader />;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <div className="max-w-xl mx-auto px-4 py-6">
@@ -132,9 +134,7 @@ export default function AppointmentRequestList() {
           </span>
         </header>
 
-        {loading ? (
-          <GynSysLoader fullScreen={false} text="Cargando solicitudes..." color={primaryColor} />
-        ) : requests.length === 0 ? (
+        {requests.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center border border-gray-100 dark:border-gray-700 shadow-sm">
             <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <FiCheck className="text-gray-300 w-8 h-8" />

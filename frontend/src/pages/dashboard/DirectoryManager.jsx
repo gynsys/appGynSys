@@ -170,6 +170,8 @@ export default function DirectoryManager() {
     c.ci?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (loading) return <GynSysLoader />;
+
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8 w-full">
       
@@ -251,9 +253,7 @@ export default function DirectoryManager() {
           </div>
       </div>
 
-      {loading ? (
-        <GynSysLoader fullScreen={false} color={primaryColor || '#4f46e5'} />
-      ) : filteredContacts.length === 0 ? (
+      {filteredContacts.length === 0 ? (
          <div className="bg-white dark:bg-gray-800 sm:rounded-[32px] border-y sm:border-x border-gray-100 dark:border-gray-700 shadow-sm p-12 text-center text-gray-500 font-medium">
             No encontramos ningún contacto con esa información.
          </div>

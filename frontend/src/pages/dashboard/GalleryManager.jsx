@@ -225,6 +225,8 @@ export default function GalleryManager() {
     }
   }
 
+  if (loading) return <GynSysLoader />;
+
   return (
     <div className="max-w-6xl mx-auto px-0 sm:px-6 py-6">
       <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white px-4 sm:px-0">Gestor de Galería</h1>
@@ -332,9 +334,7 @@ export default function GalleryManager() {
       </form>
 
       {/* Gallery Grid */}
-      {loading ? (
-        <GynSysLoader fullScreen={false} text="Cargando galería..." color={primaryColor} />
-      ) : images.length === 0 ? (
+      {images.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="text-6xl mb-4">📸</div>
           <p className="text-gray-600 dark:text-gray-400">No hay imágenes en la galería. Sube tu primera imagen arriba.</p>

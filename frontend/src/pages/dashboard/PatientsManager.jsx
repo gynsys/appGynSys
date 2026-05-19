@@ -708,6 +708,8 @@ export default function PatientsManager({ isEmbedded = false }) {
     consultation.patient_ci?.includes(searchTerm)
   );
 
+  if (loading) return <GynSysLoader />;
+
   return (
     <div className={isEmbedded ? "py-4" : "max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8"}>
       {!isEmbedded && (
@@ -739,9 +741,7 @@ export default function PatientsManager({ isEmbedded = false }) {
         </div>
       )}
 
-      {loading ? (
-        <GynSysLoader fullScreen={false} color={doctor?.theme_primary_color || '#4f46e5'} />
-      ) : filteredConsultations.length === 0 ? (
+      {filteredConsultations.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] shadow-sm p-12 md:p-20 text-center border-y border-x-0 sm:border-x border-gray-100 dark:border-gray-700">
           <FiUser className="mx-auto h-16 w-16 text-gray-200 dark:text-gray-700 mb-6" />
           <h3 className="text-xl font-black text-gray-900 dark:text-white">
