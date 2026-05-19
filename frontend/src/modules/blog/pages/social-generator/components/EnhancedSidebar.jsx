@@ -543,7 +543,7 @@ export const EnhancedSidebar = ({
                       <div className="max-h-48 overflow-y-auto">
                         {(() => {
                           const filteredTemplates = canvas.customTemplates?.filter(t => {
-                            const isVideoTemplate = t.type === 'video' || t.video_slides;
+                            const isVideoTemplate = t.type === 'video' || t.video_slides || t.name?.toLowerCase().includes('reel');
                             return isVideoMode ? isVideoTemplate : !isVideoTemplate;
                           }) || [];
 

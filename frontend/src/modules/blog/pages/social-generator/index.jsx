@@ -531,12 +531,8 @@ export default function SocialGenerator() {
           )}
 
           {generating && (
-            <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
-              <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mb-6">
-                <FiCpu className="text-indigo-600 animate-spin" size={40} />
-              </div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Generando con IA</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">Analizando artículo y creando escenas...</p>
+            <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-gray-800 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-700">
+              <GynSysLoader fullScreen={false} text="Cargando..." />
             </div>
           )}
 
