@@ -67,7 +67,7 @@ def generate_with_groq(prompt: str):
         logger.error(f"Error en Groq: {str(e)}")
         raise e
 
-def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel', special_instructions: str = None):
+def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel', special_instructions: str = None, existing_content: dict = None):
     """
     Genera contenido para redes sociales (Reel o Carrusel) usando Gemini con respaldo en Groq.
     """
@@ -80,6 +80,21 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
         INSTRUCCIONES ADICIONALES CRÍTICAS DEL USUARIO:
         {special_instructions}
         Sigue estas instrucciones estrictamente por encima de las reglas estándar.
+        """
+        
+    if existing_content:
+        import json
+        existing_slides_str = json.dumps(existing_content, ensure_ascii=False, indent=2)
+        instructions_prompt += f"""
+        
+        DIAPOSITIVAS ACTUALES EXISTENTES (ÚSALAS COMO BASE):
+        {existing_slides_str}
+        
+        INSTRUCCIONES DE MODIFICACIÓN CRÍTICAS:
+        1. CONSERVA las diapositivas existentes idénticas o casi idénticas para mantener la consistencia del contenido. Solo cámbialas si la instrucción lo pide directamente.
+        2. Si la instrucción del usuario te pide AGREGAR una nueva diapositiva (ej: "agrega otra diapositiva que hable de..."), debes crear esa nueva diapositiva y colocarla justo antes del final del array.
+        3. LA ÚLTIMA DIAPOSITIVA (la del llamado a la acción / CTA de visitar, compartir o seguir) DEBE SEGUIR SIENDO LA ÚLTIMA DIAPOSITIVA. La nueva diapositiva se inserta ANTES de esta diapositiva final.
+        4. Conserva el formato del JSON original exactamente igual.
         """
     
     if generation_type in ['video', 'reel']:

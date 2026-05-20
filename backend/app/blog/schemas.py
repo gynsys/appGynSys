@@ -119,11 +119,16 @@ class AIGenerationResponse(BaseModel):
     summary: str
     generated_content: str
 
+class GenerateSocialRequest(BaseModel):
+    instructions: Optional[str] = None
+    existing_content: Optional[dict] = None
+
 class SocialContentFromContentRequest(BaseModel):
     title: str
     content: str
     gen_type: str # 'video' or 'carousel'
     instructions: Optional[str] = None
+    existing_content: Optional[dict] = None
 
 class SocialContentScene(BaseModel):
     time: str

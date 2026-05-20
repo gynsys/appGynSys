@@ -110,7 +110,7 @@ async def generate_blog_ai(
 def generate_social_ai(
     post_id: int,
     gen_type: str, # 'reel' or 'carousel'
-    instructions: Optional[str] = None,
+    request_data: Optional[schemas.GenerateSocialRequest] = None,
     db: Session = Depends(get_db),
     current_user: Doctor = Depends(get_current_user)
 ):
@@ -120,6 +120,9 @@ def generate_social_ai(
     post = db.query(BlogPost).filter(BlogPost.id == post_id, BlogPost.doctor_id == current_user.id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post no encontrado")
+        
+    instructions = request_data.instructions if request_data else None
+    existing_content = request_data.existing_content if request_data else None
         
     # Check pregenerated content (only if no custom instructions are requested)
     if not instructions:
@@ -142,7 +145,8 @@ def generate_social_ai(
             post_title=post.title,
             post_content=post.content,
             generation_type=gen_type,
-            special_instructions=instructions
+            special_instructions=instructions,
+            existing_content=existing_content
         )
         
         # Inject the type for schema validation
@@ -201,7 +205,8 @@ def generate_social_from_content_ai(
             post_title=request_data.title,
             post_content=request_data.content,
             generation_type=request_data.gen_type,
-            special_instructions=request_data.instructions
+            special_instructions=request_data.instructions,
+            existing_content=request_data.existing_content
         )
         
         if isinstance(result, dict):

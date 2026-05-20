@@ -184,7 +184,7 @@ export default function SocialGenerator() {
     }
     setGenerating(true);
     try {
-      const result = await blogService.generateSocialContent(selectedPost.id, genType, instructions);
+      const result = await blogService.generateSocialContent(selectedPost.id, genType, instructions, generatedContent);
       console.log(`[GynSys] AI Result (${genType}):`, result);
       
       setGeneratedContent(result);
@@ -223,7 +223,8 @@ export default function SocialGenerator() {
         blogContent.title || aiFormOptions.topic || 'Mi Contenido',
         blogContent.generated_content,
         aiFormOptions.format || 'reel',
-        aiFormOptions.instructions || null
+        aiFormOptions.instructions || null,
+        generatedContent
       );
       
       setGeneratedContent(result);
