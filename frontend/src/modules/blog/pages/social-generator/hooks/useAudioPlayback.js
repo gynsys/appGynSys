@@ -4,7 +4,7 @@ import { blogService } from '../../../services/blogService';
 import { getImageUrl } from '../../../../../lib/imageUtils';
 
 export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) => {
-  const [selectedAudio, setSelectedAudio] = useState('Medical');
+  const [selectedAudio, setSelectedAudio] = useState(null);
   const [customAudioUrl, setCustomAudioUrl] = useState(null);
   const [prelisteningTrack, setPrelisteningTrack] = useState(null);
   const [userAudios, setUserAudios] = useState([]);
@@ -70,7 +70,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
       await blogService.deleteSocialAudio(audioId);
       setUserAudios(prev => prev.filter(a => a.id !== audioId));
       if (selectedAudio === `User-${audioId}`) {
-        setSelectedAudio('Medical');
+        setSelectedAudio(null);
         setCustomAudioUrl(null);
       }
       showToast('Audio eliminado', 'success');
@@ -80,6 +80,7 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
   };
 
   const getActiveAudioSrc = () => {
+    if (!selectedAudio) return '';
     if (selectedAudio === 'Custom' && customAudioUrl) return customAudioUrl;
     if (selectedAudio && selectedAudio.startsWith('User-')) {
       const audioId = parseInt(selectedAudio.split('-')[1]);
@@ -92,14 +93,17 @@ export const useAudioPlayback = (activeTab, isPlaying, setIsPlaying, showToast) 
   // Main Audio Effect
   useEffect(() => {
     if (audioRef.current) {
-      if (activeTab === 'video' && isPlaying) {
-        audioRef.current.src = getActiveAudioSrc();
-        audioRef.current.load();
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.log("[GynSys] Autoplay prevented");
-          });
+      if (activeTab === 'video' && isPlaying && selectedAudio) {
+        const src = getActiveAudioSrc();
+        if (src) {
+          audioRef.current.src = src;
+          audioRef.current.load();
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.log("[GynSys] Autoplay prevented");
+            });
+          }
         }
       } else {
         audioRef.current.pause();
