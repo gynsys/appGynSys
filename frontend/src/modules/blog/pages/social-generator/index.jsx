@@ -37,6 +37,13 @@ export default function SocialGenerator() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [activeMode, setActiveMode] = useState('article'); // 'article' | 'ai'
+  const [aiForm, setAiForm] = useState({
+    topic: '',
+    pdf_file: null,
+    tone: 'Profesional',
+    format: 'reel'
+  });
   const [generatedContent, setGeneratedContent] = useState(null);
   const [activeTab, setActiveTab] = useState(localStorage.getItem('socialGenTab') || 'video');
   const [activeProjectName, setActiveProjectName] = useState(null);
@@ -192,6 +199,45 @@ export default function SocialGenerator() {
     } catch (error) {
       console.error('Error generating content:', error);
       showToast('Error al generar contenido con IA', 'error');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleAiGenerateSocial = async (aiFormOptions) => {
+    setGenerating(true);
+    try {
+      showToast('Generando contenido base con IA...', 'info');
+      
+      const blogContent = await blogService.generateAI({
+        topic: aiFormOptions.topic,
+        pdf_file: aiFormOptions.pdf_file,
+        tone: aiFormOptions.tone || 'Profesional',
+        target_audience: 'Pacientes generales',
+        max_words: 500
+      });
+      
+      showToast('Estructurando formato social...', 'info');
+      
+      const result = await blogService.generateSocialFromContent(
+        blogContent.title || aiFormOptions.topic || 'Mi Contenido',
+        blogContent.generated_content,
+        aiFormOptions.format || 'reel'
+      );
+      
+      setGeneratedContent(result);
+      setCurrentVideoSlide(0);
+      
+      if (aiFormOptions.format === 'carousel') {
+        setActiveTab('carousel');
+      } else {
+        setActiveTab('video');
+      }
+      
+      showToast('¡Contenido social creado con éxito!', 'success');
+    } catch (error) {
+      console.error('[GynSys] Error in handleAiGenerateSocial:', error);
+      showToast(error.response?.data?.detail || 'Error al generar contenido con IA', 'error');
     } finally {
       setGenerating(false);
     }
@@ -394,6 +440,11 @@ export default function SocialGenerator() {
         enterMobileFullscreen={enterMobileFullscreen}
         exportStatus={exportStatus}
         savingType={savingType} saveProgress={saveProgress}
+        activeMode={activeMode}
+        setActiveMode={setActiveMode}
+        aiForm={aiForm}
+        setAiForm={setAiForm}
+        handleAiGenerateSocial={handleAiGenerateSocial}
       />
     );
   }
@@ -419,6 +470,11 @@ export default function SocialGenerator() {
             onLoadProject={(p) => { handleLoadProject(p); setShowProjects(false); }}
             onDeleteProject={designer.canvas.deleteProject}
             activeProjectId={activeProjectId}
+            activeMode={activeMode}
+            setActiveMode={setActiveMode}
+            aiForm={aiForm}
+            setAiForm={setAiForm}
+            handleAiGenerateSocial={handleAiGenerateSocial}
           />
 
           {/* RESTAURACIÓN DEL LAYOUT ORIGINAL DE TABS */}

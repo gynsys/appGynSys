@@ -70,7 +70,12 @@ export const MobileLayout = ({
   handleUploadAudio,
   handleDeleteAudio,
   savingType,
-  saveProgress
+  saveProgress,
+  activeMode = 'article',
+  setActiveMode = () => {},
+  aiForm = {},
+  setAiForm = () => {},
+  handleAiGenerateSocial = () => {}
 }) => {
   const [projectToDelete, setProjectToDelete] = React.useState(null);
 
@@ -136,17 +141,81 @@ export const MobileLayout = ({
         </div>
 
         <div className="space-y-3">
-          <select
-            value={selectedPost?.id || ''}
-            onChange={(e) => {
-              setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
-              setGeneratedContent(null);
-            }}
-            className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white py-2 px-3 border text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="" disabled>Elegir artículo...</option>
-            {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
-          </select>
+          <div className="flex border-b border-gray-100 dark:border-gray-700 pb-2 mb-2 gap-4">
+            <button 
+              onClick={() => {
+                setActiveMode('article');
+                setGeneratedContent(null);
+              }}
+              className={`pb-1 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 ${activeMode === 'article' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400'}`}
+            >
+              Artículo
+            </button>
+            <button 
+              onClick={() => {
+                setActiveMode('ai');
+                setSelectedPost(null);
+                setGeneratedContent(null);
+              }}
+              className={`pb-1 text-[11px] font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-1 ${activeMode === 'ai' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400'}`}
+            >
+              PDF / Tema <span className="text-[8px] bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1 py-0.5 rounded font-black">IA</span>
+            </button>
+          </div>
+
+          {activeMode === 'article' ? (
+            <select
+              value={selectedPost?.id || ''}
+              onChange={(e) => {
+                setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
+                setGeneratedContent(null);
+              }}
+              className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white py-2 px-3 border text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="" disabled>Elegir artículo...</option>
+              {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
+            </select>
+          ) : (
+            <div className="space-y-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+              <div>
+                <input
+                  type="text"
+                  value={aiForm?.topic || ''}
+                  onChange={(e) => setAiForm({...aiForm, topic: e.target.value})}
+                  className="block w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white p-2 border text-[11px] focus:ring-1 focus:ring-indigo-500 outline-none"
+                  placeholder="Tema (ecografía, SOP, etc.)"
+                />
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => setAiForm({...aiForm, pdf_file: e.target.files[0]})}
+                    className="block w-full text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-black file:uppercase file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-300 border border-gray-200 dark:border-gray-700 rounded-lg p-1 bg-white dark:bg-gray-800"
+                  />
+                </div>
+                <select
+                  value={aiForm?.format || 'reel'}
+                  onChange={(e) => setAiForm({...aiForm, format: e.target.value})}
+                  className="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-2 py-1 border text-[10px] focus:ring-1 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="reel">Reel 🎬</option>
+                  <option value="carousel">Carrusel 🖼️</option>
+                </select>
+              </div>
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleAiGenerateSocial(aiForm)}
+                  disabled={generating || (!aiForm?.topic && !aiForm?.pdf_file)}
+                  className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white font-black uppercase tracking-wider text-[9px] py-1.5 px-3 rounded-lg transition-all"
+                >
+                  {generating ? 'Generando...' : 'Generar IA ✨'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {generating && (
             <div className="flex items-center justify-center gap-2 py-3" style={{ color: doctor?.theme_primary_color || '#4F46E5' }}>

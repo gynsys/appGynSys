@@ -17,25 +17,128 @@ export const ArticleSelector = ({
   loadingProjects = false,
   onLoadProject,
   onDeleteProject,
-  activeProjectId
+  activeProjectId,
+  activeMode = 'article',
+  setActiveMode = () => {},
+  aiForm = {},
+  setAiForm = () => {},
+  handleAiGenerateSocial = () => {}
 }) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Step 1: Article Selection */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-          <h2 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4">1. Crear Nuevo desde Artículo</h2>
-          <select
-            value={selectedPost?.id || ''}
-            onChange={(e) => {
-              setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
-              setGeneratedContent(null);
-            }}
-            className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-          >
-            <option value="" disabled>Elegir artículo...</option>
-            {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
-          </select>
+        {/* Step 1: Article Selection / AI Generation */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col">
+          <div className="flex border-b border-gray-100 dark:border-gray-700 pb-3 mb-4 gap-4">
+            <button 
+              onClick={() => {
+                setActiveMode('article');
+                setGeneratedContent(null);
+              }}
+              className={`pb-1.5 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${activeMode === 'article' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+            >
+              Desde Artículo
+            </button>
+            <button 
+              onClick={() => {
+                setActiveMode('ai');
+                setSelectedPost(null);
+                setGeneratedContent(null);
+              }}
+              className={`pb-1.5 text-xs font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 ${activeMode === 'ai' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+            >
+              Desde PDF o Tema <span className="text-[9px] bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-black">IA</span>
+            </button>
+          </div>
+
+          {activeMode === 'article' ? (
+            <div>
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">1. Seleccionar Artículo</h2>
+              <select
+                value={selectedPost?.id || ''}
+                onChange={(e) => {
+                  setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
+                  setGeneratedContent(null);
+                }}
+                className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-sm"
+              >
+                <option value="" disabled>Elegir artículo...</option>
+                {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Tema / Título del Contenido</label>
+                  <input
+                    type="text"
+                    value={aiForm?.topic || ''}
+                    onChange={(e) => setAiForm({...aiForm, topic: e.target.value})}
+                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="Ej: Prevención del VPH en jóvenes"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Adjuntar PDF de Referencia</label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => setAiForm({...aiForm, pdf_file: e.target.files[0]})}
+                    className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 border border-gray-200 dark:border-gray-700 rounded-xl p-1 bg-white dark:bg-gray-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Formato Social</label>
+                  <select
+                    value={aiForm?.format || 'reel'}
+                    onChange={(e) => setAiForm({...aiForm, format: e.target.value})}
+                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="reel">Reel / Video IA 🎬</option>
+                    <option value="carousel">Carrusel Médico 🖼️</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Tono del Mensaje</label>
+                  <select
+                    value={aiForm?.tone || 'Profesional'}
+                    onChange={(e) => setAiForm({...aiForm, tone: e.target.value})}
+                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option>Profesional</option>
+                    <option>Empático</option>
+                    <option>Informativo</option>
+                    <option>Directo</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleAiGenerateSocial(aiForm)}
+                  disabled={generating || (!aiForm?.topic && !aiForm?.pdf_file)}
+                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white font-black uppercase tracking-wider text-[10px] py-2.5 px-4 rounded-xl transition-all shadow-md shadow-indigo-100 dark:shadow-none"
+                >
+                  {generating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white/30 border-t-white" />
+                      Generando Contenido...
+                    </>
+                  ) : (
+                    <>
+                      <FiCpu size={14} />
+                      Crear Contenido con IA ✨
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Step 2: Saved Projects Access */}
