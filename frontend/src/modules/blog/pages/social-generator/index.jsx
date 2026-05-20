@@ -624,25 +624,6 @@ export default function SocialGenerator() {
                     exportProgress={exportProgress}
                   />
                   <div className="flex-1 space-y-6 flex flex-col items-center justify-start pt-10">
-                    <div className="flex items-center gap-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 z-40 animate-fadeIn">
-                      <button 
-                        onClick={() => designer.canvas.setCurrentSlidePage(Math.max(0, designer.canvas.currentSlidePage - 1))}
-                        disabled={designer.canvas.currentSlidePage === 0}
-                        className={`p-1.5 rounded-full transition-all ${designer.canvas.currentSlidePage === 0 ? 'text-gray-300 dark:text-gray-600' : 'text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95'}`}
-                      >
-                        <FiChevronLeft size={16} />
-                      </button>
-                      <span className="text-xs font-black text-gray-700 dark:text-gray-300 min-w-[32px] text-center select-none uppercase tracking-wider">
-                        {designer.canvas.currentSlidePage + 1} / {activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
-                      </span>
-                      <button 
-                        onClick={() => designer.canvas.setCurrentSlidePage(Math.min((activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1, designer.canvas.currentSlidePage + 1))}
-                        disabled={designer.canvas.currentSlidePage >= (activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1}
-                        className={`p-1.5 rounded-full transition-all ${designer.canvas.currentSlidePage >= (activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1 ? 'text-gray-300 dark:text-gray-600' : 'text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95'}`}
-                      >
-                        <FiChevronRight size={16} />
-                      </button>
-                    </div>
                     <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] ${activeTab === 'video' ? 'p-4 w-[320px] h-[570px] overflow-visible' : 'p-12 max-w-full min-h-[600px] w-full overflow-hidden'} shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center relative`}>
                       <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                         <SlideCanvas 
@@ -657,19 +638,43 @@ export default function SocialGenerator() {
                           isVideoMode={activeTab === 'video'}
                         />
                       </div>
-                      {/* Pagination and Play Controls (Positioned absolutely below the canvas) */}
-                      <div className="absolute top-[100%] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4 mt-4">
+                      
+                      {/* Sleek Pagination Capsule (floats at absolute bottom of editorWrapperRef, centered with the slide) */}
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-white/95 dark:bg-gray-800/90 backdrop-blur-md rounded-full shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 animate-fadeIn">
+                        <button 
+                          onClick={() => designer.canvas.setCurrentSlidePage(Math.max(0, designer.canvas.currentSlidePage - 1))}
+                          disabled={designer.canvas.currentSlidePage === 0}
+                          className={`p-1.5 rounded-full transition-all ${designer.canvas.currentSlidePage === 0 ? 'text-gray-300 dark:text-gray-600' : 'text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95'}`}
+                        >
+                          <FiChevronLeft size={16} />
+                        </button>
+                        <span className="text-xs font-black text-gray-700 dark:text-gray-300 min-w-[32px] text-center select-none uppercase tracking-wider">
+                          {designer.canvas.currentSlidePage + 1} / {activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)}
+                        </span>
+                        <button 
+                          onClick={() => designer.canvas.setCurrentSlidePage(Math.min((activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1, designer.canvas.currentSlidePage + 1))}
+                          disabled={designer.canvas.currentSlidePage >= (activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1}
+                          className={`p-1.5 rounded-full transition-all ${designer.canvas.currentSlidePage >= (activeTab === 'video' ? (generatedContent.video_slides?.length || 0) : (generatedContent.slides?.length || 0)) - 1 ? 'text-gray-300 dark:text-gray-600' : 'text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95'}`}
+                        >
+                          <FiChevronRight size={16} />
+                        </button>
+
+                        {/* Direct Video Play Control integration inside the same sleek capsule! */}
                         {activeTab === 'video' && (
-                          <button
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className={`p-2 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-xl transform hover:scale-105`}
-                            title={isPlaying ? "Pausar" : "Reproducir"}
-                          >
-                            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
-                          </button>
+                          <>
+                            <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <button
+                              onClick={() => setIsPlaying(!isPlaying)}
+                              className={`p-1.5 rounded-full transition-all ${isPlaying ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400' : 'bg-indigo-600 text-white hover:bg-indigo-700'} shadow-md transform hover:scale-105 active:scale-95`}
+                              title={isPlaying ? "Pausar" : "Reproducir"}
+                            >
+                              {isPlaying ? <FiPause size={12} /> : <FiPlay size={12} />}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>
