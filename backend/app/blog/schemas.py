@@ -123,6 +123,7 @@ class SocialContentFromContentRequest(BaseModel):
     title: str
     content: str
     gen_type: str # 'video' or 'carousel'
+    instructions: Optional[str] = None
 
 class SocialContentScene(BaseModel):
     time: str

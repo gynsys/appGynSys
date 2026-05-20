@@ -110,6 +110,7 @@ async def generate_blog_ai(
 def generate_social_ai(
     post_id: int,
     gen_type: str, # 'reel' or 'carousel'
+    instructions: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: Doctor = Depends(get_current_user)
 ):
@@ -120,26 +121,28 @@ def generate_social_ai(
     if not post:
         raise HTTPException(status_code=404, detail="Post no encontrado")
         
-    # Check pregenerated content
-    if gen_type in ['video', 'reel'] and post.pregenerated_reel:
-        import logging
-        logging.getLogger(__name__).info(f"Serving pregenerated Reel for post {post_id}")
-        data = dict(post.pregenerated_reel)
-        data['type'] = gen_type
-        return schemas.SocialContentResponse(**data)
-    elif gen_type == 'carousel' and post.pregenerated_carousel:
-        import logging
-        logging.getLogger(__name__).info(f"Serving pregenerated Carousel for post {post_id}")
-        data = dict(post.pregenerated_carousel)
-        data['type'] = gen_type
-        return schemas.SocialContentResponse(**data)
+    # Check pregenerated content (only if no custom instructions are requested)
+    if not instructions:
+        if gen_type in ['video', 'reel'] and post.pregenerated_reel:
+            import logging
+            logging.getLogger(__name__).info(f"Serving pregenerated Reel for post {post_id}")
+            data = dict(post.pregenerated_reel)
+            data['type'] = gen_type
+            return schemas.SocialContentResponse(**data)
+        elif gen_type == 'carousel' and post.pregenerated_carousel:
+            import logging
+            logging.getLogger(__name__).info(f"Serving pregenerated Carousel for post {post_id}")
+            data = dict(post.pregenerated_carousel)
+            data['type'] = gen_type
+            return schemas.SocialContentResponse(**data)
         
     try:
         from app.services import social_service
         result = social_service.generate_social_content(
             post_title=post.title,
             post_content=post.content,
-            generation_type=gen_type
+            generation_type=gen_type,
+            special_instructions=instructions
         )
         
         # Inject the type for schema validation
@@ -197,7 +200,8 @@ def generate_social_from_content_ai(
         result = social_service.generate_social_content(
             post_title=request_data.title,
             post_content=request_data.content,
-            generation_type=request_data.gen_type
+            generation_type=request_data.gen_type,
+            special_instructions=request_data.instructions
         )
         
         if isinstance(result, dict):

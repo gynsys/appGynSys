@@ -177,14 +177,14 @@ export default function SocialGenerator() {
     setHistory(prev => [...prev.slice(-19), JSON.parse(JSON.stringify(content))]);
   };
 
-  const handleGenerate = async (genType) => {
+  const handleGenerate = async (genType, instructions = null) => {
     if (!selectedPost) {
       showToast('Selecciona un artículo primero', 'error');
       return;
     }
     setGenerating(true);
     try {
-      const result = await blogService.generateSocialContent(selectedPost.id, genType);
+      const result = await blogService.generateSocialContent(selectedPost.id, genType, instructions);
       console.log(`[GynSys] AI Result (${genType}):`, result);
       
       setGeneratedContent(result);
@@ -222,7 +222,8 @@ export default function SocialGenerator() {
       const result = await blogService.generateSocialFromContent(
         blogContent.title || aiFormOptions.topic || 'Mi Contenido',
         blogContent.generated_content,
-        aiFormOptions.format || 'reel'
+        aiFormOptions.format || 'reel',
+        aiFormOptions.instructions || null
       );
       
       setGeneratedContent(result);

@@ -52,19 +52,34 @@ export const ArticleSelector = ({
           </div>
 
           {activeMode === 'article' ? (
-            <div>
-              <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">1. Seleccionar Artículo</h2>
-              <select
-                value={selectedPost?.id || ''}
-                onChange={(e) => {
-                  setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
-                  setGeneratedContent(null);
-                }}
-                className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-sm"
-              >
-                <option value="" disabled>Elegir artículo...</option>
-                {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
-              </select>
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">1. Seleccionar Artículo</h2>
+                <select
+                  value={selectedPost?.id || ''}
+                  onChange={(e) => {
+                    setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
+                    setGeneratedContent(null);
+                  }}
+                  className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-3 border font-manrope focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-sm"
+                >
+                  <option value="" disabled>Elegir artículo...</option>
+                  {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
+                </select>
+              </div>
+
+              {selectedPost && (
+                <div className="animate-fadeIn">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Instrucciones Especiales / Indicaciones de Ajuste (Opcional)</label>
+                  <input
+                    type="text"
+                    value={aiForm?.instructions || ''}
+                    onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -98,8 +113,8 @@ export const ArticleSelector = ({
                     onChange={(e) => setAiForm({...aiForm, format: e.target.value})}
                     className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
-                    <option value="reel">Reel / Video IA 🎬</option>
-                    <option value="carousel">Carrusel Médico 🖼️</option>
+                    <option value="reel">Reel / Video IA</option>
+                    <option value="carousel">Carrusel Médico</option>
                   </select>
                 </div>
                 <div>
@@ -115,6 +130,17 @@ export const ArticleSelector = ({
                     <option>Directo</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Instrucciones Especiales / Indicaciones de Ajuste (Opcional)</label>
+                <input
+                  type="text"
+                  value={aiForm?.instructions || ''}
+                  onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                  className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
+                />
               </div>
 
               <div className="flex justify-end pt-1">
@@ -175,7 +201,7 @@ export const ArticleSelector = ({
       {selectedPost && !generating && (
         <div className="bg-indigo-600 rounded-[32px] p-1 flex flex-col md:flex-row shadow-xl shadow-indigo-100 dark:shadow-none animate-fadeIn">
           <button 
-            onClick={() => handleGenerate('reel')}
+            onClick={() => handleGenerate('reel', aiForm?.instructions)}
             className="flex-1 flex items-center justify-center gap-3 py-6 px-8 text-white hover:bg-white/10 rounded-[30px] transition-all group"
           >
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -184,7 +210,7 @@ export const ArticleSelector = ({
             <div className="text-left">
               <div className="flex items-center gap-1.5">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Video</p>
-                {!!selectedPost?.pregenerated_reel && (
+                {!!selectedPost?.pregenerated_reel && !aiForm?.instructions && (
                   <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider animate-pulse flex items-center gap-0.5">
                     <FiZap size={10} className="fill-emerald-300" /> Listo
                   </span>
@@ -197,7 +223,7 @@ export const ArticleSelector = ({
           <div className="w-px bg-white/10 hidden md:block"></div>
           
           <button 
-            onClick={() => handleGenerate('carousel')}
+            onClick={() => handleGenerate('carousel', aiForm?.instructions)}
             className="flex-1 flex items-center justify-center gap-3 py-6 px-8 text-white hover:bg-white/10 rounded-[30px] transition-all group"
           >
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -206,7 +232,7 @@ export const ArticleSelector = ({
             <div className="text-left">
               <div className="flex items-center gap-1.5">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Generar Diseño</p>
-                {!!selectedPost?.pregenerated_carousel && (
+                {!!selectedPost?.pregenerated_carousel && !aiForm?.instructions && (
                   <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider animate-pulse flex items-center gap-0.5">
                     <FiZap size={10} className="fill-emerald-300" /> Listo
                   </span>

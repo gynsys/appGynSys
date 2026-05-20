@@ -71,9 +71,10 @@ export const blogService = {
     return response.data;
   },
   
-  generateSocialContent: async (postId, genType) => {
-    const response = await api.post(`/blog/${postId}/generate-social?gen_type=${genType}`)
-    return response.data
+  generateSocialContent: async (postId, genType, instructions = null) => {
+    const url = `/blog/${postId}/generate-social?gen_type=${genType}${instructions ? `&instructions=${encodeURIComponent(instructions)}` : ''}`;
+    const response = await api.post(url);
+    return response.data;
   },
 
   syncSocialContent: async (postId) => {
@@ -81,8 +82,8 @@ export const blogService = {
     return response.data
   },
 
-  generateSocialFromContent: async (title, content, genType) => {
-    const response = await api.post('/blog/generate-social-from-content', { title, content, gen_type: genType })
+  generateSocialFromContent: async (title, content, genType, instructions = null) => {
+    const response = await api.post('/blog/generate-social-from-content', { title, content, gen_type: genType, instructions })
     return response.data
   },
 

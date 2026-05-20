@@ -164,17 +164,30 @@ export const MobileLayout = ({
           </div>
 
           {activeMode === 'article' ? (
-            <select
-              value={selectedPost?.id || ''}
-              onChange={(e) => {
-                setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
-                setGeneratedContent(null);
-              }}
-              className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white py-2 px-3 border text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              <option value="" disabled>Elegir artículo...</option>
-              {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
-            </select>
+            <div className="space-y-2">
+              <select
+                value={selectedPost?.id || ''}
+                onChange={(e) => {
+                  setSelectedPost(posts.find(p => p.id === parseInt(e.target.value)));
+                  setGeneratedContent(null);
+                }}
+                className="block w-full rounded-xl border-gray-200 dark:bg-gray-900 dark:text-white py-2 px-3 border text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="" disabled>Elegir artículo...</option>
+                {posts.map(post => <option key={post.id} value={post.id}>{post.title}</option>)}
+              </select>
+              {selectedPost && (
+                <div className="animate-fadeIn">
+                  <input
+                    type="text"
+                    value={aiForm?.instructions || ''}
+                    onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2 border text-[11px] focus:ring-1 focus:ring-indigo-500 outline-none"
+                    placeholder="Instrucciones especiales (Opcional)"
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="space-y-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
               <div>
@@ -200,9 +213,18 @@ export const MobileLayout = ({
                   onChange={(e) => setAiForm({...aiForm, format: e.target.value})}
                   className="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-2 py-1 border text-[10px] focus:ring-1 focus:ring-indigo-500 outline-none"
                 >
-                  <option value="reel">Reel 🎬</option>
-                  <option value="carousel">Carrusel 🖼️</option>
+                  <option value="reel">Reel</option>
+                  <option value="carousel">Carrusel</option>
                 </select>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={aiForm?.instructions || ''}
+                  onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                  className="block w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white p-2 border text-[11px] focus:ring-1 focus:ring-indigo-500 outline-none"
+                  placeholder="Instrucciones especiales (Opcional)"
+                />
               </div>
               <div className="flex justify-end pt-1">
                 <button
@@ -227,13 +249,13 @@ export const MobileLayout = ({
           {selectedPost && !generatedContent && !generating && (
             <div className="grid grid-cols-3 gap-2 animate-fadeIn">
               <button 
-                onClick={() => handleGenerate('reel')} 
+                onClick={() => handleGenerate('reel', aiForm?.instructions)} 
                 className="flex items-center justify-center gap-1.5 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-tighter"
               >
                 <FiInstagram size={10} /> Reel
               </button>
               <button 
-                onClick={() => handleGenerate('carousel')} 
+                onClick={() => handleGenerate('carousel', aiForm?.instructions)} 
                 className="flex items-center justify-center gap-1.5 py-2 bg-purple-600 text-white rounded-xl text-[9px] font-black uppercase tracking-tighter"
               >
                 <FiImage size={10} /> Carrusel

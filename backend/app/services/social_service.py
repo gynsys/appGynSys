@@ -67,12 +67,20 @@ def generate_with_groq(prompt: str):
         logger.error(f"Error en Groq: {str(e)}")
         raise e
 
-def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel'):
+def generate_social_content(post_title: str, post_content: str, generation_type: str = 'reel', special_instructions: str = None):
     """
     Genera contenido para redes sociales (Reel o Carrusel) usando Gemini con respaldo en Groq.
     """
     # Limpiar el contenido antes de procesar
     clean_text = clean_content_for_ai(post_content)
+    
+    instructions_prompt = ""
+    if special_instructions:
+        instructions_prompt = f"""
+        INSTRUCCIONES ADICIONALES CRÍTICAS DEL USUARIO:
+        {special_instructions}
+        Sigue estas instrucciones estrictamente por encima de las reglas estándar.
+        """
     
     if generation_type in ['video', 'reel']:
         prompt = f"""
@@ -82,6 +90,8 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
         CONTENIDO ORIGINAL:
         Título: {post_title}
         Contenido: {clean_text}
+        
+        {instructions_prompt}
         
         REGLAS DE ORO PARA EL GUION (REEL):
         1. LÍMITE DE PALABRAS ESTRICTO: Cada diapositiva DEBE tener entre 8 y 12 palabras. Ni más, ni menos.
@@ -109,6 +119,8 @@ def generate_social_content(post_title: str, post_content: str, generation_type:
         ARTÍCULO:
         Título: {post_title}
         Contenido: {clean_text}
+        
+        {instructions_prompt}
         
         REGLAS DE FORMATO CRÍTICAS PARA "content":
         1. LISTAS: Si incluyes una lista de puntos o pasos, CADA ITEM DEBE IR EN UNA LÍNEA NUEVA (usa saltos de línea \\n).
