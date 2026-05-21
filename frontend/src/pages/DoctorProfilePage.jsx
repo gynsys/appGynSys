@@ -463,7 +463,62 @@ export default function DoctorProfilePage() {
         localStorage.setItem('last_doctor_slug', doctor.slug_url)
       }
     }
-    // document.title removed as per user request to avoid PWA title issues
+    
+    // Inyección de SEO (Solo en navegador Web, omitir en PWA/App para evitar problemas de título)
+    if (doctor) {
+      if (!isCapacitor()) {
+        try {
+          const nombre = doctor.nombre_completo;
+          const especialidad = doctor.especialidad || "Ginecología y Obstetricia";
+          const biografia = doctor.biografia || `Perfil profesional de ${nombre}`;
+          
+          document.title = `${nombre} | ${especialidad} | GynSys`;
+          
+          let metaDescription = document.querySelector('meta[name="description"]');
+          if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.setAttribute('name', 'description');
+            document.head.appendChild(metaDescription);
+          }
+          metaDescription.setAttribute('content', `${biografia.substring(0, 155)}...`);
+        } catch (e) {
+          console.error('[GynSys] Error inyectando metadatos SEO:', e);
+        }
+      }
+
+      // Inyectar datos estructurados para Google (JSON-LD Physician Schema)
+      try {
+        const jsonLd = {
+          "@context": "https://schema.org",
+          "@type": "Physician",
+          "name": doctor.nombre_completo,
+          "image": doctor.photo_url ? getImageUrl(doctor.photo_url) : (doctor.logo_url ? getImageUrl(doctor.logo_url) : undefined),
+          "medicalSpecialty": "ObstetricsAndGynecology",
+          "telephone": doctor.whatsapp_phone || doctor.telefono || "N/A",
+          "email": doctor.email || "N/A",
+          "url": `https://gynsys.net/${doctor.slug_url || slug}`,
+          "description": doctor.biografia || `Perfil profesional de ${doctor.nombre_completo}`,
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": doctor.direccion_consultorio || "Dirección de consulta",
+            "addressLocality": doctor.ciudad || "Ciudad",
+            "addressCountry": "CO"
+          }
+        };
+
+        const scriptId = "doctor-json-ld";
+        let script = document.getElementById(scriptId);
+        if (!script) {
+          script = document.createElement("script");
+          script.id = scriptId;
+          script.type = "application/ld+json";
+          document.head.appendChild(script);
+        }
+        script.text = JSON.stringify(jsonLd);
+      } catch (e) {
+        console.error('[GynSys] Error inyectando SEO JSON-LD:', e);
+      }
+    }
 
     // Sync theme-color meta tag and html class with doctor's theme
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
@@ -493,6 +548,11 @@ export default function DoctorProfilePage() {
         // Fallo silencioso: no afecta la UX del usuario
       }
     }
+
+    return () => {
+      const existingScript = document.getElementById("doctor-json-ld");
+      if (existingScript) existingScript.remove();
+    };
   }, [doctor])
   
   const theme = doctor?.design_template || 'glass'
