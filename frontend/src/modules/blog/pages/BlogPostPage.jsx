@@ -152,12 +152,12 @@ export default function BlogPostPage() {
   }
 
   if (loading) return <GynSysLoader text="Cargando artículo..." />
-  if (!post) return <BlogLayout><div className="text-center py-10">Artículo no encontrado</div></BlogLayout>
+  if (!post) return <BlogLayout customDoctor={doctor}><div className="text-center py-10">Artículo no encontrado</div></BlogLayout>
 
   const isDarkTheme = doctor?.design_template === 'dark' || doctor?.design_template === 'executive_dark';
 
   return (
-    <BlogLayout>
+    <BlogLayout customDoctor={doctor}>
       <div className="py-12 px-0 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12">
 

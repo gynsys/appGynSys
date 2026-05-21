@@ -52,7 +52,7 @@ export default function BlogPublicPage() {
   }
 
   return (
-    <BlogLayout>
+    <BlogLayout customDoctor={doctor} customLoading={loading} customLoadingText="Cargando artículos...">
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -83,23 +83,15 @@ export default function BlogPublicPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="mt-12">
-              <GynSysLoader fullScreen={false} text="Cargando artículos..." color={doctor?.theme_primary_color} />
+          <div className="mt-12 grid gap-8 max-w-lg mx-auto lg:grid-cols-3 lg:max-w-none">
+            {filteredPosts.map((post) => (
+              <BlogCard key={post.id} post={post} doctor={doctor} />
+            ))}
+          </div>
+          {posts.length === 0 && (
+            <div className="text-center text-gray-500 mt-10">
+              No hay artículos publicados aún.
             </div>
-          ) : (
-            <>
-              <div className="mt-12 grid gap-8 max-w-lg mx-auto lg:grid-cols-3 lg:max-w-none">
-                {filteredPosts.map((post) => (
-                  <BlogCard key={post.id} post={post} doctor={doctor} />
-                ))}
-              </div>
-              {posts.length === 0 && (
-                <div className="text-center text-gray-500 mt-10">
-                  No hay artículos publicados aún.
-                </div>
-              )}
-            </>
           )}
         </div>
       </div>

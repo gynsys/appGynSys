@@ -12,7 +12,7 @@ import { FiLink } from 'react-icons/fi'
 import { useToastStore } from '../../../store/toastStore'
 import { copyToClipboard } from '../../../utils/platform'
 
-export default function BlogLayout({ children }) {
+export default function BlogLayout({ children, customDoctor = null, customLoading = false, customLoadingText = "Cargando..." }) {
   const { slug } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
@@ -30,10 +30,10 @@ export default function BlogLayout({ children }) {
   )
 
   useEffect(() => {
-    if (slug) {
+    if (slug && !customDoctor) {
       loadDoctor()
     }
-  }, [slug])
+  }, [slug, customDoctor])
 
   useEffect(() => {
     // Scroll Lock logic for App Experience
@@ -59,15 +59,7 @@ export default function BlogLayout({ children }) {
 
       // Sincronizar clase 'dark' en el <html> exactamente igual que DoctorProfilePage
       // para que el blog herede el mismo tema visual sin discrepancias.
-      const template = data?.design_template || 'glass'
-      const isDark = template === 'dark' || template === 'executive_dark'
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-        document.documentElement.classList.remove('light')
-      } else {
-        document.documentElement.classList.remove('dark')
-        document.documentElement.classList.add('light')
-      }
+      applyThemeToDocument(data)
     } catch (error) {
       // Si no se puede cargar el doctor, limpiar el modo oscuro para evitar
       // que quede activo de una página anterior.
@@ -78,20 +70,48 @@ export default function BlogLayout({ children }) {
     }
   }
 
-  if (loading) return <GynSysLoader text="Cargando..." />
-  if (!doctor) return <div className="text-center py-10">Doctor no encontrado</div>
+  const applyThemeToDocument = (docData) => {
+    const template = docData?.design_template || 'glass'
+    const isDark = template === 'dark' || template === 'executive_dark'
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
+  }
 
-  const primaryColor = doctor.theme_primary_color || '#4F46E5'
+  // Apply theme if customDoctor changes
+  useEffect(() => {
+    if (customDoctor) {
+      if (customDoctor.theme_primary_color) {
+        document.documentElement.style.setProperty(
+          '--primary-color',
+          customDoctor.theme_primary_color
+        )
+      }
+      applyThemeToDocument(customDoctor)
+    }
+  }, [customDoctor])
 
-  const theme = doctor.design_template || 'glass'
+  const activeLoading = customLoading || loading
+  const activeDoctor = customDoctor || doctor
+
+  if (activeLoading) return <GynSysLoader text={customLoadingText} />
+  if (!activeDoctor) return <div className="text-center py-10">Doctor no encontrado</div>
+
+  const primaryColor = activeDoctor.theme_primary_color || '#4F46E5'
+
+  const theme = activeDoctor.design_template || 'glass'
   const isDarkTheme = theme === 'dark' || theme === 'executive_dark'
 
   // Replicar exactamente la lógica de DoctorProfilePage para consistencia visual
   // El tema 'minimal' fuerza fondo blanco puro, igual que en el perfil
-  const bodyBgStyle = (doctor.theme_body_bg_color && !isDarkTheme && theme !== 'minimal')
-    ? { background: doctor.theme_body_bg_color }
+  const bodyBgStyle = (activeDoctor.theme_body_bg_color && !isDarkTheme && theme !== 'minimal')
+    ? { background: activeDoctor.theme_body_bg_color }
     : {}
-  const containerBgColor = isDarkTheme ? null : doctor.theme_container_bg_color
+  const containerBgColor = isDarkTheme ? null : activeDoctor.theme_container_bg_color
 
   // Clase de fondo global (idéntica a DoctorProfilePage para coherencia de tema)
   let globalBgClass = ''
@@ -108,9 +128,9 @@ export default function BlogLayout({ children }) {
   // Check enabled modules
   // Handle both array of strings and array of objects (depending on backend response format)
   const hasModule = (code) => {
-    if (!doctor.enabled_modules) return false
-    return doctor.enabled_modules.includes(code) ||
-      doctor.enabled_modules.some(m => m.code === code)
+    if (!activeDoctor.enabled_modules) return false
+    return activeDoctor.enabled_modules.includes(code) ||
+      activeDoctor.enabled_modules.some(m => m.code === code)
   }
 
   const showEndoTest = hasModule('endometriosis_test')
@@ -124,7 +144,7 @@ export default function BlogLayout({ children }) {
       <AppointmentRequestModal
         isOpen={isAppointmentRequestModalOpen}
         onClose={() => setIsAppointmentRequestModalOpen(false)}
-        doctorId={doctor.id}
+        doctorId={activeDoctor.id}
         doctorSlug={slug}
         primaryColor={primaryColor}
       />
@@ -141,7 +161,7 @@ export default function BlogLayout({ children }) {
 
       {/* Blog Navbar */}
       <nav
-        className={`sticky top-0 z-50 ${doctor.container_shadow ? 'shadow-lg' : ''} transition-colors duration-200 ${!containerBgColor ? 'bg-white dark:bg-gray-900 dark:border-gray-800' : ''}`}
+        className={`sticky top-0 z-50 ${activeDoctor.container_shadow ? 'shadow-lg' : ''} transition-colors duration-200 ${!containerBgColor ? 'bg-white dark:bg-gray-900 dark:border-gray-800' : ''}`}
         style={{
           borderBottom: isDarkTheme ? '1px solid #1f2937' : '3px solid white',
           ...(containerBgColor ? { backgroundColor: containerBgColor } : {})
@@ -150,20 +170,20 @@ export default function BlogLayout({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Doctor Name */}
-            <Link to={`/${doctor.slug_url}`} className="flex items-center space-x-4 hover:opacity-90 transition">
-              {doctor.logo_url && (
+            <Link to={`/${activeDoctor.slug_url}`} className="flex items-center space-x-4 hover:opacity-90 transition">
+              {activeDoctor.logo_url && (
                 <img
-                  src={getImageUrl(doctor.logo_url)}
-                  alt={`${doctor.nombre_completo} logo`}
+                  src={getImageUrl(activeDoctor.logo_url)}
+                  alt={`${activeDoctor.nombre_completo} logo`}
                   className="h-12 w-auto object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none'
                   }}
                 />
               )}
-              {doctor.nombre_completo && (
+              {activeDoctor.nombre_completo && (
                 <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-                  {doctor.nombre_completo}
+                  {activeDoctor.nombre_completo}
                 </h1>
               )}
             </Link>
@@ -173,7 +193,7 @@ export default function BlogLayout({ children }) {
 
 
               <Link
-                to={`/${doctor.slug_url}`}
+                to={`/${activeDoctor.slug_url}`}
                 className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,12 +231,12 @@ export default function BlogLayout({ children }) {
 
       {/* Footer */}
       <footer
-        className={`${doctor.container_shadow ? 'shadow-inner' : 'border-t'} transition-colors duration-200 ${!containerBgColor ? 'bg-white dark:bg-gray-800 dark:border-gray-700' : ''}`}
+        className={`${activeDoctor.container_shadow ? 'shadow-inner' : 'border-t'} transition-colors duration-200 ${!containerBgColor ? 'bg-white dark:bg-gray-800 dark:border-gray-700' : ''}`}
         style={containerBgColor ? { backgroundColor: containerBgColor } : {}}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p className="text-center text-gray-600 dark:text-gray-400">
-            © {new Date().getFullYear()} {doctor.nombre_completo}. Todos los derechos reservados.
+            © {new Date().getFullYear()} {activeDoctor.nombre_completo}. Todos los derechos reservados.
           </p>
         </div>
       </footer>
@@ -230,13 +250,13 @@ export default function BlogLayout({ children }) {
           {
             icon: <NavIcons.Home />,
             label: 'Inicio',
-            action: () => navigate(`/${doctor.slug_url}`),
+            action: () => navigate(`/${activeDoctor.slug_url}`),
             isActive: false
           },
           {
             icon: <NavIcons.WhatsApp />,
             label: 'WhatsApp',
-            action: () => doctor.whatsapp_url && window.open(doctor.whatsapp_url, '_blank', 'noopener,noreferrer'),
+            action: () => activeDoctor.whatsapp_url && window.open(activeDoctor.whatsapp_url, '_blank', 'noopener,noreferrer'),
             isActive: false
           },
           isOwner ? {
