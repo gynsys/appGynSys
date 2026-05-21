@@ -64,6 +64,7 @@ export default function SocialGenerator() {
   const [transitionDuration, setTransitionDuration] = useState(0.5);
   const [savingType, setSavingType] = useState(null); // 'save' | 'saveAs' | null
   const [saveProgress, setSaveProgress] = useState(0);
+  const [lastGeneratedBlogContent, setLastGeneratedBlogContent] = useState(null);
   const saveProgressRef = useRef(null);
 
   // --- Refs ---
@@ -207,15 +208,24 @@ export default function SocialGenerator() {
   const handleAiGenerateSocial = async (aiFormOptions) => {
     setGenerating(true);
     try {
-      showToast('Generando contenido base con IA...', 'info');
+      let blogContent = lastGeneratedBlogContent;
       
-      const blogContent = await blogService.generateAI({
-        topic: aiFormOptions.topic,
-        pdf_file: aiFormOptions.pdf_file,
-        tone: aiFormOptions.tone || 'Profesional',
-        target_audience: 'Pacientes generales',
-        max_words: 500
-      });
+      const hasTopicChanged = aiFormOptions.topic !== aiForm?.topic || aiFormOptions.pdf_file !== aiForm?.pdf_file;
+      const isRefinementOnly = aiFormOptions.instructions && !hasTopicChanged && lastGeneratedBlogContent;
+
+      if (!isRefinementOnly) {
+        showToast('Generando contenido base con IA...', 'info');
+        blogContent = await blogService.generateAI({
+          topic: aiFormOptions.topic,
+          pdf_file: aiFormOptions.pdf_file,
+          tone: aiFormOptions.tone || 'Profesional',
+          target_audience: 'Pacientes generales',
+          max_words: 500
+        });
+        setLastGeneratedBlogContent(blogContent);
+      } else {
+        showToast('Aplicando mejoras al contenido social...', 'info');
+      }
       
       showToast('Estructurando formato social...', 'info');
       
