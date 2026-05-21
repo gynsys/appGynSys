@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAdminStore } from '../../store/adminStore'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
-import Spinner from '../../components/common/Spinner'
+import GynSysLoader from '../components/common/GynSysLoader'
 import { useToastStore } from '../../store/toastStore'
 
 export default function AdminTenantsPage() {
@@ -267,9 +267,7 @@ export default function AdminTenantsPage() {
       {/* Tenants Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" color={primaryColor} />
-          </div>
+          <GynSysLoader fullScreen={false} text="Cargando..." />
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

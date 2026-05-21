@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAdminStore } from '../../store/adminStore'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
-import Spinner from '../../components/common/Spinner'
+import GynSysLoader from '../components/common/GynSysLoader'
 import { useToastStore } from '../../store/toastStore'
 import { FiTrash2 } from 'react-icons/fi'
 
@@ -170,9 +170,7 @@ export default function AdminPlansPage() {
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          <div className="col-span-full flex items-center justify-center py-12">
-            <Spinner size="lg" color={primaryColor} />
-          </div>
+          <GynSysLoader fullScreen={false} text="Cargando..." />
         ) : (
           plans.map((plan) => (
             <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

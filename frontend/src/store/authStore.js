@@ -34,6 +34,10 @@ export const useAuthStore = create((set, get) => {
         const data = await authService.login(email, password)
         const user = await authService.getCurrentUser()
         set({ user, isAuthenticated: true, loading: false })
+        // Cachear color primario para que GynSysLoader lo lea sin flash
+        if (user?.theme_primary_color) {
+          localStorage.setItem('gynsys_primary_color', user.theme_primary_color)
+        }
         return data
       } catch (error) {
         set({ loading: false })
@@ -47,6 +51,10 @@ export const useAuthStore = create((set, get) => {
         const data = await authService.loginGoogle(token, false)
         const user = await authService.getCurrentUser()
         set({ user, isAuthenticated: true, loading: false })
+        // Cachear color primario para que GynSysLoader lo lea sin flash
+        if (user?.theme_primary_color) {
+          localStorage.setItem('gynsys_primary_color', user.theme_primary_color)
+        }
         return data
       } catch (error) {
         set({ loading: false })
@@ -160,6 +168,10 @@ export const useAuthStore = create((set, get) => {
           try {
             const user = await authService.getCurrentUser()
             set({ user, isAuthenticated: true })
+            // Cachear color primario para evitar flash en GynSysLoader
+            if (user?.theme_primary_color) {
+              localStorage.setItem('gynsys_primary_color', user.theme_primary_color)
+            }
           } catch (err) {
             localStorage.removeItem('access_token')
             set({ user: null, isAuthenticated: false })
@@ -182,9 +194,8 @@ export const useAuthStore = create((set, get) => {
     },
 
     logout: () => {
-      // General logout (defaults to Doctor to avoid breaking existing code)
-      // but we should favor logoutDoctor/logoutPatient for specific cases
       localStorage.removeItem('access_token')
+      localStorage.removeItem('gynsys_primary_color')
       set({
         user: null,
         isAuthenticated: false,

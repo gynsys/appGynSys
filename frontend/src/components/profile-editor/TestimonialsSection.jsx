@@ -2,7 +2,7 @@ import React from 'react'
 import Button from '../common/Button'
 import Input from '../common/Input'
 import DragDropUpload from '../features/DragDropUpload'
-import Spinner from '../common/Spinner'
+import GynSysLoader from '../common/GynSysLoader'
 
 const TestimonialsSection = ({
   testimonials,
@@ -34,9 +34,7 @@ const TestimonialsSection = ({
       </p>
 
       {loading ? (
-        <div className="flex justify-center py-8">
-          <Spinner color={primaryColor} />
-        </div>
+        <GynSysLoader fullScreen={false} text="Cargando testimonios..." color={primaryColor} />
       ) : testimonials.length === 0 ? (
         <div className="border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">
           No tienes testimonios todavía. Cuando recibas testimonios aprobados aparecerán aquí para que los puedas editar.

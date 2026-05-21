@@ -11,6 +11,7 @@ import {
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import GynSysLoader from '../common/GynSysLoader';
 
 export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }) {
   const { user } = useAuthStore();
@@ -123,10 +124,7 @@ export default function AppointmentRequestsModal({ isOpen, onClose, doctorSlug }
     >
       <div className="max-w-full mx-auto pb-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mb-4"></div>
-            <p className="text-gray-500 text-sm">Cargando solicitudes...</p>
-          </div>
+          <GynSysLoader fullScreen={false} text="Cargando solicitudes..." />
         ) : requests.length === 0 ? (
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-12 text-center border border-gray-100 dark:border-gray-700">
             <div className="w-16 h-16 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">

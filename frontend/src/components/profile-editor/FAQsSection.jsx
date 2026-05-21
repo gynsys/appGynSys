@@ -3,7 +3,7 @@ import Modal from '../common/Modal'
 import { FiTrash2 } from 'react-icons/fi'
 import Button from '../common/Button'
 import Input from '../common/Input'
-import Spinner from '../common/Spinner'
+import GynSysLoader from '../common/GynSysLoader'
 
 const FAQsSection = ({
   faqs,
@@ -93,9 +93,7 @@ const FAQsSection = ({
 
       {/* Existing FAQs */}
       {loading ? (
-        <div className="flex justify-center py-8">
-          <Spinner size="lg" />
-        </div>
+        <GynSysLoader fullScreen={false} text="Cargando..." color={primaryColor} />
       ) : faqs.length === 0 ? (
         <div className="border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">
           No hay preguntas frecuentes. Crea una nueva arriba.

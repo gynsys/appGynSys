@@ -5,7 +5,7 @@ import { FiTrash2 } from 'react-icons/fi'
 import Button from '../common/Button'
 import Input from '../common/Input'
 import DragDropUpload from '../features/DragDropUpload'
-import Spinner from '../common/Spinner'
+import GynSysLoader from '../common/GynSysLoader'
 import galleryService from '/src/services/galleryService.js'
 
 const GallerySection = ({
@@ -182,9 +182,7 @@ const GallerySection = ({
 
       {/* Fixed Gallery Grid - 10 Cards */}
       {loading ? (
-        <div className="flex justify-center py-8">
-          <Spinner size="lg" />
-        </div>
+        <GynSysLoader fullScreen={false} text="Cargando galería..." color={primaryColor} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
           {fixedGallerySlots.map((slot) => {
