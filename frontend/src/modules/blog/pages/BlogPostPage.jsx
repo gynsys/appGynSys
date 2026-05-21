@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom'
 import { blogService } from '../services/blogService'
 import { doctorService } from '../../../services/doctorService'
 import BlogLayout from '../components/BlogLayout'
-import Spinner from '../../../components/common/Spinner'
+import GynSysLoader from '../../../components/common/GynSysLoader'
 import SocialLinks from '../../../components/common/SocialLinks'
 import AppointmentModal from '../../../components/features/AppointmentModal'
 import ContactModal from '../../../components/features/ContactModal'
@@ -151,7 +151,7 @@ export default function BlogPostPage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner color={doctor?.theme_primary_color || '#4F46E5'} /></div>
+  if (loading) return <GynSysLoader text="Cargando artículo..." />
   if (!post) return <BlogLayout><div className="text-center py-10">Artículo no encontrado</div></BlogLayout>
 
   const isDarkTheme = doctor?.design_template === 'dark' || doctor?.design_template === 'executive_dark';
@@ -242,7 +242,7 @@ export default function BlogPostPage() {
                   {/* Comments List */}
                   <div className="space-y-8 mb-12">
                     {loadingComments ? (
-                      <div className="text-center py-4"><Spinner size="sm" color={doctor?.theme_primary_color || '#4F46E5'} /></div>
+                      <GynSysLoader fullScreen={false} text="Cargando comentarios..." color={doctor?.theme_primary_color} />
                     ) : comments.length > 0 ? (
                       comments.map((comment) => (
                         <div key={comment.id} className="flex space-x-4">

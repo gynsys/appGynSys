@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { doctorService } from '../../../services/doctorService'
-import Spinner from '../../../components/common/Spinner'
+import GynSysLoader from '../../../components/common/GynSysLoader'
 import AppointmentRequestModal from '../../../components/features/AppointmentRequestModal'
 import EndometriosisTestModal from '../../../components/features/EndometriosisTestModal'
 import CyclePredictorModal from '../../../components/cycle-predictor/CyclePredictorModal'
@@ -78,7 +78,7 @@ export default function BlogLayout({ children }) {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner color={doctor?.theme_primary_color || '#4F46E5'} /></div>
+  if (loading) return <GynSysLoader text="Cargando..." />
   if (!doctor) return <div className="text-center py-10">Doctor no encontrado</div>
 
   const primaryColor = doctor.theme_primary_color || '#4F46E5'

@@ -5,7 +5,7 @@ import { blogService } from '../services/blogService'
 import { doctorService } from '../../../services/doctorService'
 import BlogCard from '../components/BlogCard'
 import BlogLayout from '../components/BlogLayout'
-import Spinner from '../../../components/common/Spinner'
+import GynSysLoader from '../../../components/common/GynSysLoader'
 
 export default function BlogPublicPage() {
   const { slug } = useParams() // Doctor slug
@@ -84,8 +84,8 @@ export default function BlogPublicPage() {
           </div>
 
           {loading ? (
-            <div className="mt-12 flex justify-center">
-              <Spinner color={doctor?.theme_primary_color || '#4F46E5'} />
+            <div className="mt-12">
+              <GynSysLoader fullScreen={false} text="Cargando artículos..." color={doctor?.theme_primary_color} />
             </div>
           ) : (
             <>

@@ -487,6 +487,7 @@ export default function SocialGenerator() {
             aiForm={aiForm}
             setAiForm={setAiForm}
             handleAiGenerateSocial={handleAiGenerateSocial}
+            primaryColor={doctor?.theme_primary_color || '#4F46E5'}
           />
 
           {/* RESTAURACIÓN DEL LAYOUT ORIGINAL DE TABS */}

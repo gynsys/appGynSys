@@ -22,7 +22,8 @@ export const ArticleSelector = ({
   setActiveMode = () => {},
   aiForm = {},
   setAiForm = () => {},
-  handleAiGenerateSocial = () => {}
+  handleAiGenerateSocial = () => {},
+  primaryColor = '#4F46E5'
 }) => {
   return (
     <div className="space-y-6">
@@ -174,11 +175,15 @@ export const ArticleSelector = ({
                   type="button"
                   onClick={() => handleAiGenerateSocial(aiForm)}
                   disabled={generating || (!aiForm?.topic && !aiForm?.pdf_file)}
-                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white font-black uppercase tracking-wider text-[10px] py-2.5 px-4 rounded-xl transition-all shadow-md shadow-indigo-100 dark:shadow-none"
+                  className="flex items-center gap-1.5 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white font-black uppercase tracking-wider text-[10px] py-2.5 px-4 rounded-xl transition-all shadow-md"
+                  style={!generating && (aiForm?.topic || aiForm?.pdf_file) ? { backgroundColor: primaryColor } : {}}
                 >
                   {generating ? (
                     <>
-                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white/30 border-t-white" />
+                      <div
+                        className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white/30"
+                        style={{ borderTopColor: 'white' }}
+                      />
                       Generando Contenido...
                     </>
                   ) : (
