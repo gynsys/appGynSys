@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAdminStore } from '../../store/adminStore'
-import GynSysLoader from '../components/common/GynSysLoader'
+import GynSysLoader from '../../components/common/GynSysLoader'
 
 export default function AdminDashboardPage() {
   const { tenants, plans, modules, fetchTenants, fetchPlans, fetchModules, loading, error } = useAdminStore()

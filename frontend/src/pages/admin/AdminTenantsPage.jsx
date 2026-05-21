@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAdminStore } from '../../store/adminStore'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
-import GynSysLoader from '../components/common/GynSysLoader'
+import GynSysLoader from '../../components/common/GynSysLoader'
 import { useToastStore } from '../../store/toastStore'
 
 export default function AdminTenantsPage() {
