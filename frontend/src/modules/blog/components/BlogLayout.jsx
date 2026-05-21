@@ -86,9 +86,24 @@ export default function BlogLayout({ children }) {
   const theme = doctor.design_template || 'glass'
   const isDarkTheme = theme === 'dark' || theme === 'executive_dark'
 
-  // Disable explicit background colors in dark mode so classes take over
-  const bodyBgStyle = (doctor.theme_body_bg_color && !isDarkTheme) ? { background: doctor.theme_body_bg_color } : {}
+  // Replicar exactamente la lógica de DoctorProfilePage para consistencia visual
+  // El tema 'minimal' fuerza fondo blanco puro, igual que en el perfil
+  const bodyBgStyle = (doctor.theme_body_bg_color && !isDarkTheme && theme !== 'minimal')
+    ? { background: doctor.theme_body_bg_color }
+    : {}
   const containerBgColor = isDarkTheme ? null : doctor.theme_container_bg_color
+
+  // Clase de fondo global (idéntica a DoctorProfilePage para coherencia de tema)
+  let globalBgClass = ''
+  if (!bodyBgStyle.background) {
+    if (isDarkTheme) {
+      globalBgClass = 'bg-gray-950 text-white'
+    } else if (theme === 'minimal') {
+      globalBgClass = 'bg-white text-gray-900 transition-colors duration-200'
+    } else {
+      globalBgClass = 'bg-gradient-to-br from-gray-50 to-gray-100 transition-colors duration-200'
+    }
+  }
 
   // Check enabled modules
   // Handle both array of strings and array of objects (depending on backend response format)
@@ -102,7 +117,7 @@ export default function BlogLayout({ children }) {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col transition-colors duration-200 ${isDarkTheme ? 'dark bg-gray-950 text-white' : (!doctor.theme_body_bg_color ? 'bg-gray-50' : '')}`}
+      className={`fixed inset-0 flex flex-col transition-colors duration-200 ${isDarkTheme ? 'dark ' : ''}${globalBgClass}`}
       style={bodyBgStyle}
     >
       {/* Modals */}
