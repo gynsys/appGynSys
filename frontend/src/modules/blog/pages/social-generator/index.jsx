@@ -477,6 +477,7 @@ export default function SocialGenerator() {
             setShowProjects={setShowProjects} handleGenerate={handleGenerate}
             handleTestDesign={() => { setActiveTab('carousel'); setGeneratedContent({ type: 'carousel', slides: [{ title: 'Prueba', content: 'Contenido' }] }); }}
             generating={generating}
+            generatedContent={generatedContent}
             projects={designer.canvas.projects}
             loadingProjects={designer.canvas.loadingProjects}
             onLoadProject={(p) => { handleLoadProject(p); setShowProjects(false); }}

@@ -23,7 +23,8 @@ export const ArticleSelector = ({
   aiForm = {},
   setAiForm = () => {},
   handleAiGenerateSocial = () => {},
-  primaryColor = '#4F46E5'
+  primaryColor = '#4F46E5',
+  generatedContent
 }) => {
   return (
     <div className="space-y-6">
@@ -229,7 +230,7 @@ export const ArticleSelector = ({
       </div>
 
       {/* Step 3: Generation Options */}
-      {selectedPost && !generating && (
+      {selectedPost && !generating && !generatedContent && (
         <div className="bg-indigo-600 rounded-[32px] p-1 flex flex-col md:flex-row shadow-xl shadow-indigo-100 dark:shadow-none animate-fadeIn">
           <button 
             onClick={() => handleGenerate('reel', aiForm?.instructions)}
