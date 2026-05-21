@@ -71,13 +71,26 @@ export const ArticleSelector = ({
               {selectedPost && (
                 <div className="animate-fadeIn">
                   <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Instrucciones Especiales / Indicaciones de Ajuste (Opcional)</label>
-                  <input
-                    type="text"
-                    value={aiForm?.instructions || ''}
-                    onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
-                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aiForm?.instructions || ''}
+                      onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                      className="block flex-1 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
+                    />
+                    {aiForm?.instructions && aiForm.instructions.trim().length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleAiGenerateSocial(aiForm)}
+                        disabled={generating}
+                        className="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-gray-200 text-white font-black uppercase tracking-wider text-[10px] py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 whitespace-nowrap"
+                      >
+                        <FiZap size={12} className="animate-pulse" />
+                        Aplicar Ajustes
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -134,13 +147,26 @@ export const ArticleSelector = ({
 
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Instrucciones Especiales / Indicaciones de Ajuste (Opcional)</label>
-                <input
-                  type="text"
-                  value={aiForm?.instructions || ''}
-                  onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
-                  className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
-                  placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiForm?.instructions || ''}
+                    onChange={(e) => setAiForm({...aiForm, instructions: e.target.value})}
+                    className="block flex-1 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-2.5 border text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="Ej: Amplía la explicación de las diapositivas 2 y 4"
+                  />
+                  {aiForm?.instructions && aiForm.instructions.trim().length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleAiGenerateSocial(aiForm)}
+                      disabled={generating}
+                      className="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-gray-200 text-white font-black uppercase tracking-wider text-[10px] py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 whitespace-nowrap"
+                    >
+                      <FiZap size={12} className="animate-pulse" />
+                      Aplicar Ajustes
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end pt-1">
