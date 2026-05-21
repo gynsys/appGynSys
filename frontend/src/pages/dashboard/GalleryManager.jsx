@@ -225,7 +225,7 @@ export default function GalleryManager() {
     }
   }
 
-  if (loading) return <GynSysLoader />;
+  if (loading) return <GynSysLoader fullScreen={false} text="Cargando..." />;
 
   return (
     <div className="max-w-6xl mx-auto px-0 sm:px-6 py-6">

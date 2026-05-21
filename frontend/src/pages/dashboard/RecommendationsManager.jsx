@@ -164,7 +164,7 @@ export default function RecommendationsManager() {
         }
     }
 
-    if (loading) return <GynSysLoader />
+    if (loading) return <GynSysLoader fullScreen={false} text="Cargando..." />
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

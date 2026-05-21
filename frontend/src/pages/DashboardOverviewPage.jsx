@@ -99,7 +99,7 @@ export default function DashboardOverviewPage() {
   }
 
   if (!isAuthenticated || loading) {
-    return <GynSysLoader />
+    return <GynSysLoader fullScreen={false} text="Cargando panel..." />
   }
 
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'

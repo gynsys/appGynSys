@@ -170,7 +170,7 @@ export default function DirectoryManager() {
     c.ci?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <GynSysLoader />;
+  if (loading) return <GynSysLoader fullScreen={false} text="Cargando..." />;
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8 w-full">

@@ -708,7 +708,7 @@ export default function PatientsManager({ isEmbedded = false }) {
     consultation.patient_ci?.includes(searchTerm)
   );
 
-  if (loading) return <GynSysLoader />;
+  if (loading) return <GynSysLoader fullScreen={false} text="Cargando..." />;
 
   return (
     <div className={isEmbedded ? "py-4" : "max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8"}>
