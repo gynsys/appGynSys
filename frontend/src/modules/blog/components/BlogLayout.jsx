@@ -16,7 +16,7 @@ export default function BlogLayout({ children, customDoctor = null, customLoadin
   const { slug } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!customDoctor)
   const [isAppointmentRequestModalOpen, setIsAppointmentRequestModalOpen] = useState(false)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
@@ -32,6 +32,8 @@ export default function BlogLayout({ children, customDoctor = null, customLoadin
   useEffect(() => {
     if (slug && !customDoctor) {
       loadDoctor()
+    } else if (customDoctor) {
+      setLoading(false)
     }
   }, [slug, customDoctor])
 
