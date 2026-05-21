@@ -1,21 +1,22 @@
 /**
  * Netlify Edge Function: doctor-seo-prerender
  *
- * Intercepta las rutas públicas de los médicos (/:slug) antes de
- * que Netlify sirva el index.html estático. Consulta los datos del
- * médico desde la API del backend, e inyecta dinámicamente las
- * etiquetas Open Graph, Twitter Cards y el título del documento
- * en el HTML resultante.
+ * Intercepta las rutas públicas antes de que Netlify sirva el index.html
+ * estático y pre-inyecta etiquetas Open Graph, Twitter Cards y JSON-LD
+ * para que WhatsApp, Facebook, Instagram, Telegram y los crawlers de
+ * Google reciban un HTML completo con metadatos SEO correctos sin que
+ * la aplicación React necesite ejecutarse.
  *
- * De esta forma, los bots de WhatsApp, Facebook, Instagram, Telegram,
- * Twitter/X y los rastreadores de Google reciben un HTML completo con
- * metadatos SEO correctos, SIN que la aplicación React necesite ejecutarse.
+ * Rutas cubiertas:
+ *   /:slug                    → Perfil público del médico
+ *   /:slug/blog               → Listado de artículos del médico
+ *   /:slug/blog/:postSlug     → Artículo individual del blog
  */
 
 const API_BASE = "https://api.gynsys.net/api/v1";
 
 // Slugs reservados del sistema que NO son perfiles de médicos
-const RESERVED_PATHS = new Set([
+const RESERVED_FIRST_SEGMENTS = new Set([
   "dashboard",
   "login",
   "register",
@@ -34,123 +35,201 @@ const RESERVED_PATHS = new Set([
 ]);
 
 /**
- * Escapa caracteres especiales de HTML para evitar XSS en los atributos meta.
- * @param {string} str - Cadena a escapar.
- * @returns {string} Cadena segura para insertar en HTML.
+ * Escapa caracteres especiales de HTML para evitar XSS en los atributos.
+ * @param {string} str
+ * @returns {string}
  */
 function escapeHtml(str) {
   if (!str) return "";
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
 
-export default async function handler(request, context) {
-  const url = new URL(request.url);
-  const pathSegments = url.pathname.split("/").filter(Boolean);
+/**
+ * Construye la URL absoluta de una imagen del backend.
+ * @param {string|null} url
+ * @param {string} fallback
+ * @returns {string}
+ */
+function buildImageUrl(url, fallback = "https://gynsys.net/GynSys.png") {
+  if (!url) return fallback;
+  return url.startsWith("http") ? url : `https://api.gynsys.net${url}`;
+}
 
-  // Solo procesar rutas de primer nivel: /slug
-  if (pathSegments.length !== 1) {
-    return context.next();
-  }
+/**
+ * Genera el bloque HTML de etiquetas SEO listas para inyectar.
+ * @param {string} title
+ * @param {string} description
+ * @param {string} imageUrl
+ * @param {string} canonicalUrl
+ * @returns {string}
+ */
+function buildSeoTags({ title, description, imageUrl, canonicalUrl }) {
+  const t = escapeHtml(title);
+  const d = escapeHtml(description);
+  const i = escapeHtml(imageUrl);
+  const u = escapeHtml(canonicalUrl);
 
-  const slug = pathSegments[0];
+  return `
+    <title>${t}</title>
+    <meta name="description" content="${d}" />
+    <link rel="canonical" href="${u}" />
 
-  // Ignorar paths reservados del sistema
-  if (RESERVED_PATHS.has(slug.toLowerCase())) {
-    return context.next();
-  }
-
-  // Ignorar archivos estáticos con extensión (.js, .css, .png, etc.)
-  if (/\.\w{2,5}$/.test(slug)) {
-    return context.next();
-  }
-
-  let doctorData = null;
-
-  try {
-    // Consultar datos del médico en el backend GynSys
-    const apiResponse = await fetch(
-      `${API_BASE}/profiles/${slug}`,
-      {
-        headers: { "Content-Type": "application/json" },
-        // Timeout de 3 segundos para no bloquear la respuesta al usuario
-        signal: AbortSignal.timeout(3000),
-      }
-    );
-
-    if (apiResponse.ok) {
-      doctorData = await apiResponse.json();
-    }
-  } catch (_err) {
-    // Si la API no responde, servir el index.html original sin modificar
-    // para no interrumpir la experiencia del usuario final.
-    return context.next();
-  }
-
-  // Si no encontramos un médico con ese slug, pasar al handler por defecto
-  if (!doctorData) {
-    return context.next();
-  }
-
-  // ── Extraer y preparar los datos del médico ──────────────────────────────
-  const nombre = escapeHtml(
-    doctorData.nombre_completo || "Médico en GynSys"
-  );
-  const especialidad = escapeHtml(
-    doctorData.especialidad || "Ginecología y Obstetricia"
-  );
-  const bioRaw =
-    doctorData.biografia ||
-    `Agenda tu consulta con ${doctorData.nombre_completo} en GynSys.`;
-  const descripcion = escapeHtml(bioRaw.substring(0, 155));
-
-  // Construir URL de imagen prioritizando photo_url > logo_url > default
-  let imagenUrl = "https://gynsys.net/GynSys.png";
-  if (doctorData.photo_url) {
-    imagenUrl = doctorData.photo_url.startsWith("http")
-      ? doctorData.photo_url
-      : `https://api.gynsys.net${doctorData.photo_url}`;
-  } else if (doctorData.logo_url) {
-    imagenUrl = doctorData.logo_url.startsWith("http")
-      ? doctorData.logo_url
-      : `https://api.gynsys.net${doctorData.logo_url}`;
-  }
-
-  const canonicalUrl = `https://gynsys.net/${slug}`;
-  const pageTitle = `${nombre} | ${especialidad} | GynSys`;
-
-  // ── Bloque de etiquetas SEO a inyectar ──────────────────────────────────
-  const seoTags = `
-    <title>${pageTitle}</title>
-    <meta name="description" content="${descripcion}..." />
-    <link rel="canonical" href="${canonicalUrl}" />
-
-    <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+    <!-- Open Graph / WhatsApp / Facebook / LinkedIn / Telegram -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GynSys" />
-    <meta property="og:title" content="${pageTitle}" />
-    <meta property="og:description" content="${descripcion}..." />
-    <meta property="og:image" content="${imagenUrl}" />
+    <meta property="og:title" content="${t}" />
+    <meta property="og:description" content="${d}" />
+    <meta property="og:image" content="${i}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:url" content="${canonicalUrl}" />
+    <meta property="og:url" content="${u}" />
     <meta property="og:locale" content="es_CO" />
 
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${pageTitle}" />
-    <meta name="twitter:description" content="${descripcion}..." />
-    <meta name="twitter:image" content="${imagenUrl}" />
+    <meta name="twitter:title" content="${t}" />
+    <meta name="twitter:description" content="${d}" />
+    <meta name="twitter:image" content="${i}" />
   `.trim();
+}
 
-  // ── Obtener y modificar el index.html base de Netlify ───────────────────
+export default async function handler(request, context) {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+
+  if (pathSegments.length === 0) {
+    return context.next();
+  }
+
+  const firstSegment = pathSegments[0];
+
+  // Ignorar paths reservados del sistema
+  if (RESERVED_FIRST_SEGMENTS.has(firstSegment.toLowerCase())) {
+    return context.next();
+  }
+
+  // Ignorar archivos estáticos con extensión (.js, .css, .png, .webp, etc.)
+  if (/\.\w{2,5}$/.test(firstSegment)) {
+    return context.next();
+  }
+
+  const doctorSlug = firstSegment;
+  const secondSegment = pathSegments[1]; // "blog" o undefined
+  const postSlug = pathSegments[2];      // slug del artículo o undefined
+
+  let seoMeta = null;
+
+  // ── CASO 1: /:slug/blog/:postSlug — Artículo individual ──────────────────
+  if (secondSegment === "blog" && postSlug) {
+    try {
+      const [doctorRes, postRes] = await Promise.all([
+        fetch(`${API_BASE}/profiles/${doctorSlug}`, {
+          signal: AbortSignal.timeout(3000),
+        }),
+        fetch(`${API_BASE}/blog/public/post/${postSlug}`, {
+          signal: AbortSignal.timeout(3000),
+        }),
+      ]);
+
+      if (doctorRes.ok && postRes.ok) {
+        const doctor = await doctorRes.json();
+        const post = await postRes.json();
+
+        const doctorNombre = doctor.nombre_completo || "Médico GynSys";
+        const postTitulo = post.title || "Artículo médico";
+
+        // Extraer texto limpio del contenido HTML para la descripción
+        const rawContent = (post.excerpt || post.content || "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        const descripcion =
+          rawContent.substring(0, 155) ||
+          `Artículo del Blog de ${doctorNombre} en GynSys.`;
+
+        seoMeta = {
+          title: `${postTitulo} | ${doctorNombre} | GynSys`,
+          description: `${descripcion}...`,
+          imageUrl: buildImageUrl(
+            post.cover_image,
+            buildImageUrl(doctor.photo_url || doctor.logo_url)
+          ),
+          canonicalUrl: `https://gynsys.net/${doctorSlug}/blog/${postSlug}`,
+        };
+      }
+    } catch (_err) {
+      return context.next();
+    }
+  }
+
+  // ── CASO 2: /:slug/blog — Listado del blog del médico ────────────────────
+  else if (secondSegment === "blog" && !postSlug) {
+    try {
+      const doctorRes = await fetch(`${API_BASE}/profiles/${doctorSlug}`, {
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (doctorRes.ok) {
+        const doctor = await doctorRes.json();
+        const nombre = doctor.nombre_completo || "Médico GynSys";
+        const especialidad = doctor.especialidad || "Ginecología y Obstetricia";
+
+        seoMeta = {
+          title: `Blog Médico de ${nombre} | ${especialidad} | GynSys`,
+          description: `Artículos de salud femenina y ginecología escritos por ${nombre}. Encuentra información confiable sobre tu bienestar.`,
+          imageUrl: buildImageUrl(doctor.photo_url || doctor.logo_url),
+          canonicalUrl: `https://gynsys.net/${doctorSlug}/blog`,
+        };
+      }
+    } catch (_err) {
+      return context.next();
+    }
+  }
+
+  // ── CASO 3: /:slug — Perfil público del médico ───────────────────────────
+  else if (pathSegments.length === 1) {
+    try {
+      const doctorRes = await fetch(`${API_BASE}/profiles/${doctorSlug}`, {
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (doctorRes.ok) {
+        const doctor = await doctorRes.json();
+        const nombre = doctor.nombre_completo || "Médico GynSys";
+        const especialidad =
+          doctor.especialidad || "Ginecología y Obstetricia";
+        const bioRaw =
+          doctor.biografia ||
+          `Agenda tu consulta con ${nombre} en GynSys.`;
+        const descripcion = bioRaw.substring(0, 155);
+
+        seoMeta = {
+          title: `${nombre} | ${especialidad} | GynSys`,
+          description: `${descripcion}...`,
+          imageUrl: buildImageUrl(doctor.photo_url || doctor.logo_url),
+          canonicalUrl: `https://gynsys.net/${doctorSlug}`,
+        };
+      }
+    } catch (_err) {
+      return context.next();
+    }
+  }
+
+  // Si no pudimos determinar ningún meta SEO, pasar sin modificar
+  if (!seoMeta) {
+    return context.next();
+  }
+
+  // ── Obtener y modificar el index.html base servido por Netlify ──────────
   const response = await context.next();
   const originalHtml = await response.text();
 
-  // Reemplazar el <title></title> vacío por el bloque SEO completo
+  const seoTags = buildSeoTags(seoMeta);
   const modifiedHtml = originalHtml.replace("<title></title>", seoTags);
 
   return new Response(modifiedHtml, {
@@ -158,13 +237,12 @@ export default async function handler(request, context) {
     headers: {
       ...Object.fromEntries(response.headers.entries()),
       "content-type": "text/html; charset=utf-8",
-      // No cachear en CDN para bots — siempre datos frescos
+      // Cachear 5 minutos en CDN — suficiente para bots de previsualización
       "cache-control": "public, max-age=300, s-maxage=300",
     },
   });
 }
 
 export const config = {
-  // Ejecutar en TODAS las rutas. El propio handler filtra las rutas relevantes.
   path: "/*",
 };
