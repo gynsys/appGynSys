@@ -21,8 +21,8 @@ export default function DashboardOverviewPage() {
   const { isAuthenticated, user, logout } = useAuthStore()
   const { refreshUser } = useAuth()
   const { showToast } = useToastStore()
-  const [doctor, setDoctor] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [doctor, setDoctor] = useState(user)
+  const [loading, setLoading] = useState(false)
   const [articleCount, setArticleCount] = useState(0)
   const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
@@ -66,10 +66,9 @@ export default function DashboardOverviewPage() {
       return
     }
 
-    // Fetch current user data to get logo and name
     const fetchData = async () => {
       try {
-        // Appointments are now preloaded in App.jsx via store
+        setLoading(true)
         const [doctorData, dashboardStats] = await Promise.all([
           doctorService.getCurrentUser(),
           dashboardService.getStats()
@@ -98,8 +97,8 @@ export default function DashboardOverviewPage() {
     }
   }
 
-  if (!isAuthenticated || loading) {
-    return <GynSysLoader fullScreen={false} text="Cargando panel..." />
+  if (!isAuthenticated) {
+    return null; // ProtectedRoute will handle redirect
   }
 
   const primaryColor = doctor?.theme_primary_color || '#4F46E5'
