@@ -7,6 +7,14 @@
   VITE_GOOGLE_CLIENT_ID = "836443681186-o642l26c5f47oml9atblo8m73cc0i0hv.apps.googleusercontent.com"
   PNPM_FLAGS = "--no-frozen-lockfile"
 
+# Edge Functions directory (relativo a la raíz del proyecto frontend)
+[functions]
+  directory = "netlify/functions"
+
+[[edge_functions]]
+  function = "doctor-seo-prerender"
+  path = "/*"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -23,3 +31,4 @@
   [headers.values]
     Content-Type = "application/javascript"
     Cache-Control = "public, max-age=0, must-revalidate"
+
