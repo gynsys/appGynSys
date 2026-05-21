@@ -49,14 +49,30 @@ export default function BlogLayout({ children }) {
       const data = await doctorService.getDoctorProfileBySlug(slug)
       setDoctor(data)
 
-      // Set primary color
+      // Set primary color CSS variable
       if (data?.theme_primary_color) {
         document.documentElement.style.setProperty(
           '--primary-color',
           data.theme_primary_color
         )
       }
+
+      // Sincronizar clase 'dark' en el <html> exactamente igual que DoctorProfilePage
+      // para que el blog herede el mismo tema visual sin discrepancias.
+      const template = data?.design_template || 'glass'
+      const isDark = template === 'dark' || template === 'executive_dark'
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+        document.documentElement.classList.remove('light')
+      } else {
+        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.add('light')
+      }
     } catch (error) {
+      // Si no se puede cargar el doctor, limpiar el modo oscuro para evitar
+      // que quede activo de una página anterior.
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
     } finally {
       setLoading(false)
     }
@@ -68,7 +84,7 @@ export default function BlogLayout({ children }) {
   const primaryColor = doctor.theme_primary_color || '#4F46E5'
 
   const theme = doctor.design_template || 'glass'
-  const isDarkTheme = theme === 'dark'
+  const isDarkTheme = theme === 'dark' || theme === 'executive_dark'
 
   // Disable explicit background colors in dark mode so classes take over
   const bodyBgStyle = (doctor.theme_body_bg_color && !isDarkTheme) ? { background: doctor.theme_body_bg_color } : {}
