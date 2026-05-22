@@ -25,6 +25,7 @@ import AdminTenantsPage from './pages/admin/AdminTenantsPage'
 import AdminPlansPage from './pages/admin/AdminPlansPage'
 import AdminModulesPage from './pages/admin/AdminModulesPage'
 import AdminTemplatesPage from './pages/admin/AdminTemplatesPage'
+import AdminLLMProvidersPage from './pages/admin/AdminLLMProvidersPage'
 import BlogAdminPage from './modules/blog/pages/BlogAdminPage'
 import SocialGeneratorPage from './modules/blog/pages/SocialGeneratorPage'
 import BlogPublicPage from './modules/blog/pages/BlogPublicPage'
@@ -322,6 +323,7 @@ function App() {
           <Route path="modules" element={<AdminModulesPage />} />
           <Route path="templates" element={<AdminTemplatesPage />} />
           <Route path="notifications" element={<AdminNotificationManagerPage />} />
+          <Route path="llm-providers" element={<AdminLLMProvidersPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

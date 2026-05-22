@@ -1,7 +1,7 @@
 """
-Admin API endpoints for managing tenants, plans, and modules.
+Admin API endpoints for managing tenants, plans, modules, and LLM providers.
 """
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
@@ -340,3 +340,107 @@ def delete_existing_module(
     if not success:
         raise HTTPException(status_code=404, detail="Module not found")
     return {"message": "Module deleted successfully"}
+
+
+# ────────────────────────────────────────────────────────────────
+# LLM Provider endpoints
+# ────────────────────────────────────────────────────────────────
+
+from app.crud.llm import (
+    get_llm_providers, get_llm_provider,
+    create_llm_provider, update_llm_provider, delete_llm_provider,
+    build_response,
+)
+from app.schemas.llm import LLMProviderCreate, LLMProviderUpdate, LLMProviderResponse, LLMProviderTestResult
+from app.services.llm_router import invalidate_llm_cache, test_provider
+
+
+@router.get("/llm-providers", response_model=List[Dict[str, Any]])
+def list_llm_providers(
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user),
+) -> List[Dict[str, Any]]:
+    """
+    List all configured LLM providers ordered by priority.
+    API keys are returned masked (****XXXX).
+    """
+    providers = get_llm_providers(db)
+    return [build_response(p) for p in providers]
+
+
+@router.post("/llm-providers", response_model=Dict[str, Any], status_code=status.HTTP_201_CREATED)
+def create_new_llm_provider(
+    data: LLMProviderCreate,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user),
+) -> Dict[str, Any]:
+    """
+    Create a new LLM provider. The api_key is encrypted before storage.
+    Cache is invalidated immediately so the new provider is picked up on next call.
+    """
+    provider = create_llm_provider(db, data)
+    invalidate_llm_cache()
+    return build_response(provider)
+
+
+@router.put("/llm-providers/{provider_id}", response_model=Dict[str, Any])
+def update_existing_llm_provider(
+    provider_id: int,
+    data: LLMProviderUpdate,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user),
+) -> Dict[str, Any]:
+    """
+    Update an LLM provider.
+    If api_key is omitted or empty in the body, the existing encrypted key is preserved.
+    Cache is invalidated immediately after update.
+    """
+    provider = update_llm_provider(db, provider_id, data)
+    if not provider:
+        raise HTTPException(status_code=404, detail="LLM provider not found")
+    invalidate_llm_cache()
+    return build_response(provider)
+
+
+@router.delete("/llm-providers/{provider_id}")
+def delete_existing_llm_provider(
+    provider_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user),
+) -> Dict[str, str]:
+    """
+    Delete an LLM provider.
+    Raises 400 if this is the only active provider (prevents leaving system with no AI).
+    """
+    provider = get_llm_provider(db, provider_id)
+    if not provider:
+        raise HTTPException(status_code=404, detail="LLM provider not found")
+
+    # Guard: prevent deleting the last active provider
+    active_count = sum(1 for p in get_llm_providers(db) if p.is_active and p.id != provider_id)
+    if provider.is_active and active_count == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el único proveedor activo. Añade o activa otro proveedor antes.",
+        )
+
+    delete_llm_provider(db, provider_id)
+    invalidate_llm_cache()
+    return {"message": "LLM provider deleted successfully"}
+
+
+@router.post("/llm-providers/{provider_id}/test", response_model=LLMProviderTestResult)
+def test_llm_provider_connection(
+    provider_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Doctor = Depends(get_current_admin_user),
+) -> LLMProviderTestResult:
+    """
+    Make a real API call to verify the provider is working correctly.
+    Returns latency in ms and a short response preview.
+    """
+    provider = get_llm_provider(db, provider_id)
+    if not provider:
+        raise HTTPException(status_code=404, detail="LLM provider not found")
+    result = test_provider(provider)
+    return LLMProviderTestResult(**result)

@@ -12,6 +12,7 @@ from app.db.models.preconsultation import PreconsultationQuestion
 from app.db.models.recommendation import Recommendation
 from app.db.models.online_consultation_settings import OnlineConsultationSettings
 from app.db.models.campaign import DiffusionCampaign
+from app.db.models.llm_provider import LLMProvider
 
 __all__ = [
     "Doctor",
@@ -27,5 +28,6 @@ __all__ = [
     "Recommendation",
     "OnlineConsultationSettings",
     "DiffusionCampaign",
+    "LLMProvider",
 ]
 

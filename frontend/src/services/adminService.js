@@ -89,4 +89,30 @@ export const adminService = {
     const response = await api.delete(`/admin/modules/${moduleId}`)
     return response.data
   },
-}
+
+  // LLM Provider operations
+  async getLLMProviders() {
+    const response = await api.get('/admin/llm-providers')
+    return response.data
+  },
+
+  async createLLMProvider(data) {
+    const response = await api.post('/admin/llm-providers', data)
+    return response.data
+  },
+
+  async updateLLMProvider(providerId, data) {
+    const response = await api.put(`/admin/llm-providers/${providerId}`, data)
+    return response.data
+  },
+
+  async deleteLLMProvider(providerId) {
+    const response = await api.delete(`/admin/llm-providers/${providerId}`)
+    return response.data
+  },
+
+  async testLLMProvider(providerId) {
+    const response = await api.post(`/admin/llm-providers/${providerId}/test`)
+    return response.data
+  },
+}
