@@ -41,8 +41,14 @@ def generate_blog_content(
         else "Escribe un artículo de blog basado estrictamente en la información científica del documento proporcionado."
     )
 
+    audience_instructions = (
+        "Usa terminología clínica avanzada, jerga médica y asume que el lector ya conoce los fundamentos anatómicos." 
+        if "colegas" in target_audience.lower() or "médico" in target_audience.lower() 
+        else "Explica los términos médicos complejos con analogías sencillas, muestra empatía y recuerda al lector consultar a su especialista."
+    )
+
     prompt = f"""
-    Actúa como un experto en redacción médica y ginecología.
+    Actúa como un experto en redacción médica, ginecología y SEO.
     {subject_line}
     {final_context}
 
@@ -51,16 +57,22 @@ def generate_blog_content(
     - Público objetivo: {target_audience}
     - Extensión del contenido: aproximadamente {max_words} palabras.
 
+    DIRECTRICES DE CONTENIDO:
+    1. RIGOR MÉDICO: Usa principios de Medicina Basada en la Evidencia. Mantén alta precisión clínica.
+    2. FORMATO: Usa negritas (<strong>) para conceptos clave y viñetas (<ul><li>) para facilitar la lectura de síntomas, causas o pasos.
+    3. ESTRUCTURA HTML: Usa <h2> para secciones principales y <h3> para subsecciones. El contenido no debe ser un solo bloque de texto.
+    4. ADAPTACIÓN: {audience_instructions}
+
     Debes responder EXCLUSIVAMENTE con un objeto JSON con la siguiente estructura:
     {{
-        "title": "Un título optimizado para SEO basado en el tema",
-        "summary": "Un resumen de 2 líneas para el extracto del blog",
+        "title": "Un título atractivo y optimizado para SEO (máx 60 caracteres)",
+        "summary": "Un resumen persuasivo de 2 a 3 líneas que invite a leer el artículo",
         "content": "El contenido del artículo formateado en HTML puro (usa <h2>, <h3>, <p>, <ul>, <li>, <strong>)"
     }}
 
     IMPORTANTE:
     1. El campo "content" debe usar HTML puro, sin bloques de código ```html.
-    2. No incluyas explicaciones fuera del JSON.
+    2. No incluyas explicaciones, saludos ni texto fuera del JSON.
     3. Asegúrate de que el JSON sea válido.
     """
 
