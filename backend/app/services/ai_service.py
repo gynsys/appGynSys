@@ -32,7 +32,11 @@ def generate_blog_content(
     if source_text:
         final_context = (
             f"\n- Texto extraído del documento adjunto:\n{source_text}\n\n"
-            "(IMPORTANTE: Utiliza este texto como tu fuente científica primaria para el artículo)."
+            "(IMPORTANTE: Utiliza este texto como tu única fuente de información médica. "
+            "Si el texto adjunto no contiene suficiente información para alcanzar la longitud "
+            "solicitada, es preferible que entregues un artículo más corto. Bajo ninguna "
+            "circunstancia agregues información, síntomas o tratamientos médicos que no "
+            "estén explícitamente presentes en el documento adjunto)."
         )
 
     subject_line = (
