@@ -482,7 +482,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Crear Tenant'}
+              {loading ? 'Cargando...' : 'Crear Tenant'}
             </Button>
           </div>
         </form>
@@ -597,7 +597,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Tenant'}
+              {loading ? 'Cargando...' : 'Actualizar Tenant'}
             </Button>
           </div>
         </form>
@@ -652,7 +652,7 @@ export default function AdminTenantsPage() {
               Cancelar
             </Button>
             <Button onClick={handleUpdateModules} disabled={loading}>
-              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Actualizar Extras'}
+              {loading ? 'Cargando...' : 'Actualizar Extras'}
             </Button>
           </div>
         </div>
@@ -697,7 +697,7 @@ export default function AdminTenantsPage() {
               variant="danger"
               disabled={loading}
             >
-              {loading ? <Spinner size="sm" color={primaryColor} /> : 'Sí, Eliminar Tenant'}
+              {loading ? 'Cargando...' : 'Sí, Eliminar Tenant'}
             </Button>
           </div>
         </div>
