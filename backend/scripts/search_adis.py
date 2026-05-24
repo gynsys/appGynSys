@@ -1,5 +1,8 @@
 import sys
 import os
+print("Current working directory:", os.getcwd())
+print("Directory listing:", os.listdir('.'))
+print("sys.path:", sys.path)
 sys.path.insert(0, '/app')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
