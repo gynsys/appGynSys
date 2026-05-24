@@ -77,7 +77,7 @@ export default function ReportEditorPage() {
     admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
     admin_diagnosis: '1. Control Ginecológico de rutina.',
     admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
-    admin_observations: 'Generado a través del Asistente de Informes.',
+    admin_observations: '60kg', // We reuse this field to persist the patient's weight in the database
     medical_report_content: ''
   });
 
@@ -272,6 +272,7 @@ export default function ReportEditorPage() {
     try {
       const payload = {
         ...formData,
+        admin_observations: formData.weight, // We persist the weight inside observations text column!
         doctor_id: doctor?.id || 1,
       };
 
@@ -337,11 +338,16 @@ export default function ReportEditorPage() {
   };
 
   const handleLoadReport = (report) => {
+    // Extract the weight from the observations column (fallback to '60kg')
+    const extractedWeight = report.observations && report.observations.trim().length > 0 && !report.observations.includes('Generado')
+      ? report.observations 
+      : '60kg';
+
     setFormData({
       full_name: report.patient_name || '',
       ci: report.patient_ci || '',
       age: report.patient_age || '',
-      weight: report.weight || '60kg',
+      weight: extractedWeight,
       phone: report.patient_phone || 'N/A',
       address: report.address || 'No especificada',
       occupation: report.occupation || 'No especificada',
@@ -350,7 +356,7 @@ export default function ReportEditorPage() {
       admin_ultrasound: report.ultrasound || 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
       admin_diagnosis: report.diagnosis || '1. Control Ginecológico de rutina.',
       admin_plan: report.plan || '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
-      admin_observations: report.observations || 'Generado a través del Asistente de Informes.',
+      admin_observations: report.observations || extractedWeight,
       medical_report_content: report.medical_report_content || ''
     });
     setSavedConsultationId(report.id);
@@ -375,7 +381,7 @@ export default function ReportEditorPage() {
       admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
       admin_diagnosis: '1. Control Ginecológico de rutina.',
       admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
-      admin_observations: 'Generado a través del Asistente de Informes.',
+      admin_observations: '60kg',
       medical_report_content: ''
     });
     const docName = doctor?.nombre_completo || 'Doctor(a)';
