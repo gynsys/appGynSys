@@ -270,12 +270,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                             onMouseEnter={(e) => e.currentTarget.style.borderColor = primaryColor}
                             onMouseLeave={(e) => e.currentTarget.style.borderColor = isDarkTheme ? '#374151' : '#e5e7eb'}
                         >
-                                    <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
+                                    <div className="aspect-square bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden border-b border-gray-200 dark:border-gray-700">
                                         {isImage(asset.file_type) ? (
                                             <img
                                                 src={getFullUrl(asset.file_path)}
                                                 alt={asset.file_name}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover border border-gray-100 dark:border-gray-800"
                                                 onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                                             />
                                         ) : isVideo(asset.file_type) ? (
@@ -298,12 +298,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                         )}
                                     </div>
 
-                                    {/* Acciones estáticas en la esquina superior derecha, tamaño reducido un ~15% */}
-                                    <div className="absolute top-2 right-2 flex space-x-1 bg-white/80 dark:bg-black/60 shadow-sm backdrop-blur-md rounded-lg p-1 opacity-100">
+                                    {/* Action buttons panel - adjusted placement to top-3 right-3 to prevent rounded corner clipping, and perfectly centered the icons inside the buttons */}
+                                    <div className="absolute top-3 right-3 flex items-center justify-center space-x-1 bg-white/95 dark:bg-black/80 shadow-md backdrop-blur-md rounded-lg p-1 opacity-100 border border-gray-100/50 dark:border-gray-700/50">
                                         {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
                                             <button
                                                 onClick={() => setPreviewAsset(asset)}
-                                                className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
+                                                className="w-7 h-7 flex items-center justify-center bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
                                                 style={{ transition: 'all 0.2s' }}
                                                 onMouseEnter={(e) => {
                                                     e.currentTarget.style.backgroundColor = hexToRgba(primaryColor, 0.1);
@@ -315,12 +315,12 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                                 }}
                                                 title="Ver archivo"
                                             >
-                                                <FiEye className="w-3.5 h-3.5" />
+                                                <FiEye className="w-3.5 h-3.5 flex-shrink-0" />
                                             </button>
                                         )}
                                         <button
                                             onClick={() => openExternalFile(getFullUrl(asset.file_path))}
-                                            className="p-1.5 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
+                                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-md transition-colors"
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = hexToRgba(primaryColor, 0.1);
                                                 e.currentTarget.style.color = primaryColor;
@@ -331,15 +331,15 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                             }}
                                             title="Descargar"
                                         >
-                                            <FiDownload className="w-3.5 h-3.5" />
+                                            <FiDownload className="w-3.5 h-3.5 flex-shrink-0" />
                                         </button>
                                         {!readOnly && (
                                             <button
                                                 onClick={() => handleDelete(asset.id)}
-                                                className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                                className="w-7 h-7 flex items-center justify-center bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
                                                 title="Eliminar"
                                             >
-                                                <FiTrash2 className="w-3.5 h-3.5" />
+                                                <FiTrash2 className="w-3.5 h-3.5 flex-shrink-0" />
                                             </button>
                                         )}
                                     </div>
