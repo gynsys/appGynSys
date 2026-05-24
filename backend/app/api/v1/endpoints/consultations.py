@@ -234,11 +234,13 @@ def get_consultations(
     consultations = (
         db.query(Consultation)
         .filter(Consultation.doctor_id == current_user.id)
-        .order_by(Consultation.created_at.asc()) # merge expects ASC
+        .order_by(Consultation.created_at.desc()) # Retrieve the newest ones first
         .offset(skip)
         .limit(limit)
         .all()
     )
+    # Reverse list back to ascending order as expected by merge_consultations
+    consultations = list(reversed(consultations))
     return ConsultationService.merge_consultations(db, consultations, newest_first=True)
 
 @router.get("/patient/all", response_model=list)
