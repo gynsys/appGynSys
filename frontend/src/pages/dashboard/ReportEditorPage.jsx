@@ -50,7 +50,8 @@ export default function ReportEditorPage() {
     DIAGNOSIS_ITEM: 'DIAGNOSIS_ITEM',
     PLAN_COUNT: 'PLAN_COUNT',
     PLAN_ITEM: 'PLAN_ITEM',
-    COMPLETED: 'COMPLETED'
+    COMPLETED: 'COMPLETED',
+    SKIPPED: 'SKIPPED'
   };
 
   const [currentStep, setCurrentStep] = useState(STEPS.NAME);
@@ -361,8 +362,8 @@ export default function ReportEditorPage() {
       admin_diagnosis: '',
       admin_plan: ''
     }));
-    setCurrentStep(STEPS.COMPLETED);
-    showToast('Asistente saltado. Modo Editor Activo.', 'info');
+    setCurrentStep(STEPS.SKIPPED);
+    showToast('Asistente saltado.', 'info');
   };
 
   const handleFieldChange = (e) => {
@@ -530,7 +531,117 @@ export default function ReportEditorPage() {
         )}
       </div>
 
-      {currentStep !== STEPS.COMPLETED ? (
+      {currentStep === STEPS.SKIPPED ? (
+        /* ================= DEVIATED SKIPPED REPORTS CONTAINER ================= */
+        <div className="max-w-4xl mx-auto w-full space-y-8 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-[32px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-6">
+              <div>
+                <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                  <FiClock className="text-blue-500" /> Informes Médicos Guardados
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Selecciona uno de los informes guardados para editarlo o reenviarlo, o crea un nuevo informe.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  onClick={() => {
+                    setFormData({
+                      full_name: '',
+                      ci: '',
+                      age: '',
+                      weight: '',
+                      phone: 'N/A',
+                      address: 'No especificada',
+                      occupation: 'No especificada',
+                      reason_for_visit: '',
+                      admin_physical_exam: '',
+                      admin_ultrasound: '',
+                      admin_diagnosis: '',
+                      admin_plan: '',
+                      admin_observations: '',
+                      medical_report_content: ''
+                    });
+                    setSavedConsultationId(null);
+                    setCurrentStep(STEPS.COMPLETED);
+                  }}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-md active:scale-95"
+                >
+                  <FiFilePlus size={15} /> Crear Informe en Blanco
+                </button>
+                <button
+                  onClick={() => {
+                    setMessages([
+                      {
+                        id: 1,
+                        sender: 'bot',
+                        text: `¡Hola! Te guiaré a generar un Informe rápido.<br/><strong>¿Nombre y apellido de la paciente?</strong>`
+                      }
+                    ]);
+                    setCurrentStep(STEPS.NAME);
+                  }}
+                  className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-black text-xs uppercase tracking-wider px-5 py-3 rounded-xl transition-all"
+                >
+                  <FiSend size={14} className="rotate-45" /> Volver al Asistente IA
+                </button>
+              </div>
+            </div>
+
+            {loadingHistory ? (
+              <div className="py-16 flex flex-col justify-center items-center gap-3">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-xs font-semibold text-gray-400">Cargando informes...</p>
+              </div>
+            ) : recentReports.length === 0 ? (
+              <div className="text-center py-16 px-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                <FiFileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-300">No se encontraron informes guardados</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Aún no has guardado ningún informe independiente desde el editor. ¡Crea uno nuevo para empezar!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {recentReports.map(report => (
+                  <div 
+                    key={report.id}
+                    className="p-5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/30 dark:hover:bg-gray-700/50 rounded-2xl border border-gray-200/50 dark:border-gray-700 transition-all flex flex-col justify-between gap-4 shadow-sm hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <p className="text-sm font-extrabold text-gray-900 dark:text-white truncate">{report.patient_name || 'Paciente Sin Nombre'}</p>
+                        <span className="text-[9px] bg-blue-100/70 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide">
+                          Guardado
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 mt-3 text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                        <p>CI: <span className="text-gray-800 dark:text-gray-200 font-bold">{formatCi(report.patient_ci) || 'N/A'}</span></p>
+                        <p>Edad: <span className="text-gray-800 dark:text-gray-200 font-bold">{report.patient_age ? `${report.patient_age} años` : 'N/A'}</span></p>
+                        <p className="col-span-2">Fecha: <span className="text-gray-800 dark:text-gray-200 font-bold">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : ''}</span></p>
+                      </div>
+
+                      {report.reason_for_visit && (
+                        <p className="text-[11px] text-gray-400 mt-3 line-clamp-2 bg-white dark:bg-gray-800/40 p-2 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                          <strong>Motivo:</strong> {report.reason_for_visit}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => handleLoadReport(report)}
+                      className="w-full text-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95"
+                    >
+                      Cargar / Editar Informe
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : currentStep !== STEPS.COMPLETED ? (
         /* ================= CHATBOT COLLECTOR FLOW ================= */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
           {/* LEFT: Solid flat background chatbot (Fullscreen overlay on mobile) */}
