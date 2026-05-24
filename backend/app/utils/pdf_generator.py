@@ -347,9 +347,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     ]))
     story.append(header_table)
 
+    line_table = Table([['']], colWidths=[7.5*inch])
+    line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.HexColor("#E2E8F0") if use_color else colors.black)]))
+
     if not use_color:
-        line_table = Table([['']], colWidths=[7.5*inch])
-        line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 1, colors.black)]))
         story.append(line_table)
     story.append(Spacer(1, 0.4*inch))
     
