@@ -332,17 +332,40 @@ export default function ReportEditorPage() {
         }]);
       } else {
         const formattedPlans = newPlans.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
-        setFormData(prev => ({ ...prev, admin_plan: formattedPlans }));
+        
+        // Build final state immediately to auto-save it correctly
+        const ageVal = formData.age;
+        const ageText = ageVal ? `${ageVal} años` : '';
+        const narrative = `Se trata de paciente de ${ageText} de edad, peso: ${formData.weight}, quien acude a consulta para presentar sintomatología clínica consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
+        const ecoSection = formData.admin_ultrasound 
+          ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
+          : '';
+        const diagSection = formData.admin_diagnosis
+          ? `\n\nDIAGNÓSTICOS:\n${formData.admin_diagnosis}`
+          : '';
+        const planSection = formattedPlans
+          ? `\n\nPLAN TERAPÉUTICO:\n${formattedPlans}`
+          : '';
+        const unified = `${narrative}${ecoSection}${diagSection}${planSection}`;
+
+        const finalFormData = {
+          ...formData,
+          admin_plan: formattedPlans,
+          medical_report_content: unified
+        };
+
+        setFormData(finalFormData);
         
         setMessages(prev => [...prev, {
           id: Date.now() + 1,
           sender: 'bot',
-          text: `🎉 ¡Listo! Generando informe y abriendo editor...`
+          text: `🎉 ¡Listo! Guardando informe automáticamente y abriendo editor...`
         }]);
 
-        setTimeout(() => {
+        setTimeout(async () => {
           setCurrentStep(STEPS.COMPLETED);
           showToast('Asistente completado. Modo Editor Activo.', 'success');
+          await handleSaveToGynSys(finalFormData);
         }, 1000);
       }
     }
@@ -354,13 +377,14 @@ export default function ReportEditorPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveToGynSys = async () => {
+  const handleSaveToGynSys = async (overrideData = null) => {
     setSaving(true);
     try {
+      const dataToSave = overrideData || formData;
       const payload = {
-        ...formData,
+        ...dataToSave,
         family_history_mother: 'INDEPENDENT_REPORT',
-        admin_observations: formData.weight, // We persist the weight inside observations text column!
+        admin_observations: dataToSave.weight, // We persist the weight inside observations text column!
         doctor_id: doctor?.id || 1,
       };
 
@@ -545,29 +569,7 @@ export default function ReportEditorPage() {
 
             {/* Chat Message Box */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50">
-              {recentReports.length > 0 && currentStep === STEPS.NAME && (
-                <div className="mb-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4">
-                  <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    📂 Cargar Informe Reciente:
-                  </p>
-                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                    {recentReports.map((report) => (
-                      <button
-                        key={report.id}
-                        type="button"
-                        onClick={() => handleLoadReport(report)}
-                        className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700 text-xs shadow-sm flex justify-between items-center transition-all active:scale-[0.98]"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-gray-800 dark:text-gray-200 truncate">{report.patient_name}</p>
-                          <p className="text-[10px] text-gray-500 truncate">CI: {report.patient_ci} • {new Date(report.created_at).toLocaleDateString()}</p>
-                        </div>
-                        <span className="text-[10px] font-black text-blue-600 uppercase flex-shrink-0 ml-2">Editar</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+
 
               {messages.map((msg) => (
                 <div 
