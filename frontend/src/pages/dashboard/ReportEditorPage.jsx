@@ -36,18 +36,23 @@ export default function ReportEditorPage() {
   const { showToast } = useToastStore();
   const navigate = useNavigate();
 
-  // Chatbot State Machine (Simplified: only Name, CI, Age, Weight, Diagnosis)
+  // Chatbot State Machine (Highly Dynamic and complete)
   const STEPS = {
-    WELCOME: 'WELCOME',
     NAME: 'NAME',
     CI: 'CI',
     AGE: 'AGE',
     WEIGHT: 'WEIGHT',
-    DIAGNOSIS: 'DIAGNOSIS',
+    REASON: 'REASON',
+    PHYSICAL_EXAM: 'PHYSICAL_EXAM',
+    ULTRASOUND: 'ULTRASOUND',
+    DIAGNOSIS_COUNT: 'DIAGNOSIS_COUNT',
+    DIAGNOSIS_ITEM: 'DIAGNOSIS_ITEM',
+    PLAN_COUNT: 'PLAN_COUNT',
+    PLAN_ITEM: 'PLAN_ITEM',
     COMPLETED: 'COMPLETED'
   };
 
-  const [currentStep, setCurrentStep] = useState(STEPS.WELCOME);
+  const [currentStep, setCurrentStep] = useState(STEPS.NAME);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,25 +64,33 @@ export default function ReportEditorPage() {
   const [includeWatermark, setIncludeWatermark] = useState(true);
   const [savedConsultationId, setSavedConsultationId] = useState(null);
 
+  // Dynamic counter states for diagnoses
+  const [diagCountInput, setDiagCountInput] = useState(0);
+  const [collectedDiags, setCollectedDiags] = useState([]);
+  
+  // Dynamic counter states for therapeutic plans
+  const [planCountInput, setPlanCountInput] = useState(0);
+  const [collectedPlans, setCollectedPlans] = useState([]);
+
   // History / Retrieval State
   const [recentReports, setRecentReports] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Document Fields State
+  // Document Fields State (Starts empty, no prefilled placeholder values)
   const [formData, setFormData] = useState({
     full_name: '',
     ci: '',
     age: '',
-    weight: '60kg',
+    weight: '',
     phone: 'N/A',
     address: 'No especificada',
     occupation: 'No especificada',
-    reason_for_visit: 'Consulta Médica Ginecológica',
-    admin_physical_exam: 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
-    admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
-    admin_diagnosis: '1. Control Ginecológico de rutina.',
-    admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
-    admin_observations: '60kg', // We reuse this field to persist the patient's weight in the database
+    reason_for_visit: '',
+    admin_physical_exam: '',
+    admin_ultrasound: '',
+    admin_diagnosis: '',
+    admin_plan: '',
+    admin_observations: '',
     medical_report_content: ''
   });
 
@@ -215,51 +228,140 @@ export default function ReportEditorPage() {
       setCurrentStep(STEPS.WEIGHT);
     }
     else if (currentStep === STEPS.WEIGHT) {
-      setFormData(prev => ({ ...prev, weight: text }));
+      setFormData(prev => ({ ...prev, weight: text, admin_observations: text }));
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `<strong>¿Diagnóstico principal?</strong>:`
+        text: `<strong>¿Motivo de Consulta / Síntesis Clínica?</strong>:`
       }]);
-      setCurrentStep(STEPS.DIAGNOSIS);
+      setCurrentStep(STEPS.REASON);
     }
-    else if (currentStep === STEPS.DIAGNOSIS) {
-      const formattedDiags = formatAsList(text);
-      setFormData(prev => ({ 
-        ...prev, 
-        admin_diagnosis: formattedDiags,
-        admin_ultrasound: `Signos ecográficos sugestivos de: ${text}.`
-      }));
+    else if (currentStep === STEPS.REASON) {
+      setFormData(prev => ({ ...prev, reason_for_visit: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `<strong>¿Hallazgos del Examen Físico?</strong>:`
+      }]);
+      setCurrentStep(STEPS.PHYSICAL_EXAM);
+    }
+    else if (currentStep === STEPS.PHYSICAL_EXAM) {
+      setFormData(prev => ({ ...prev, admin_physical_exam: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `<strong>¿Hallazgos de Ecografía (Ultrasonido)?</strong>:`
+      }]);
+      setCurrentStep(STEPS.ULTRASOUND);
+    }
+    else if (currentStep === STEPS.ULTRASOUND) {
+      setFormData(prev => ({ ...prev, admin_ultrasound: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `<strong>¿Cuántos diagnósticos tiene la paciente?</strong>:`
+      }]);
+      setCurrentStep(STEPS.DIAGNOSIS_COUNT);
+    }
+    else if (currentStep === STEPS.DIAGNOSIS_COUNT) {
+      const count = parseInt(text) || 1;
+      setDiagCountInput(count);
+      setCollectedDiags([]);
       
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `🎉 ¡Listo! Generando informe y abriendo editor...`
+        text: count === 1 
+          ? `<strong>Ingresa el único diagnóstico de la paciente:</strong>`
+          : `<strong>Ingresa el primer diagnóstico:</strong>`
       }]);
+      setCurrentStep(STEPS.DIAGNOSIS_ITEM);
+    }
+    else if (currentStep === STEPS.DIAGNOSIS_ITEM) {
+      const newDiags = [...collectedDiags, text];
+      setCollectedDiags(newDiags);
+      
+      if (newDiags.length < diagCountInput) {
+        const numbersEs = ['primer', 'segundo', 'tercer', 'cuarto', 'quinto', 'sexto', 'séptimo', 'octavo', 'noveno', 'décimo'];
+        const nextIdx = newDiags.length;
+        const ordinal = numbersEs[nextIdx] || `${nextIdx + 1}°`;
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>Ingresa el ${ordinal} diagnóstico:</strong>`
+        }]);
+      } else {
+        const formattedDiags = newDiags.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
+        setFormData(prev => ({ ...prev, admin_diagnosis: formattedDiags }));
+        
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>¿Cuántos items tiene el Plan Terapéutico?</strong>:`
+        }]);
+        setCurrentStep(STEPS.PLAN_COUNT);
+      }
+    }
+    else if (currentStep === STEPS.PLAN_COUNT) {
+      const count = parseInt(text) || 1;
+      setPlanCountInput(count);
+      setCollectedPlans([]);
+      
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: count === 1 
+          ? `<strong>Ingresa el único item del plan terapéutico:</strong>`
+          : `<strong>Ingresa el primer item del plan terapéutico:</strong>`
+      }]);
+      setCurrentStep(STEPS.PLAN_ITEM);
+    }
+    else if (currentStep === STEPS.PLAN_ITEM) {
+      const newPlans = [...collectedPlans, text];
+      setCollectedPlans(newPlans);
+      
+      if (newPlans.length < planCountInput) {
+        const numbersEs = ['primer', 'segundo', 'tercer', 'cuarto', 'quinto', 'sexto', 'séptimo', 'octavo', 'noveno', 'décimo'];
+        const nextIdx = newPlans.length;
+        const ordinal = numbersEs[nextIdx] || `${nextIdx + 1}°`;
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>Ingresa el ${ordinal} item del plan terapéutico:</strong>`
+        }]);
+      } else {
+        const formattedPlans = newPlans.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
+        setFormData(prev => ({ ...prev, admin_plan: formattedPlans }));
+        
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `🎉 ¡Listo! Generando informe y abriendo editor...`
+        }]);
 
-      setTimeout(() => {
-        setCurrentStep(STEPS.COMPLETED);
-        showToast('Asistente completado. Modo Editor Activo.', 'success');
-      }, 1000);
+        setTimeout(() => {
+          setCurrentStep(STEPS.COMPLETED);
+          showToast('Asistente completado. Modo Editor Activo.', 'success');
+        }, 1000);
+      }
     }
   };
 
   const handleSkipAssistant = () => {
-    // Fill basic defaults
     setFormData(prev => ({
       ...prev,
-      full_name: 'Kelyn Rosal',
-      ci: '19.397.706',
-      age: '35',
-      weight: '60kg',
-      reason_for_visit: 'alteración del patrón menstrual dado por aumento de volumen, frecuencia y duración desde el día 29/03/2026.',
-      admin_physical_exam: 'Evaluación física general y ginecológica dentro de límites normales.',
-      admin_ultrasound: 'Signos ecográficos sugestivos de: Endometriosis peritoneal. Endometriosis profunda infiltrativa: torus uterino, tabique rectovaginal. Con probable extensión inguinal. Mioma uterino FIGO 3 y 4.',
-      admin_diagnosis: '1. Sangrado uterino anormal tipo L\n2. Leiomiomatosis uterina\n3. Endometriosis profunda infiltrativa',
-      admin_plan: '1. Iniciar tratamiento con esquema piramidal de anticonceptivos hasta que cese el sangrado.\n2. Realizar resonancia magnética de pelvis con gadolineo\n3. Ácido tranexámico: Tomar 1 tableta cada 8 horas por 3 días\n4. Mantener control y seguimiento del caso'
+      full_name: '',
+      ci: '',
+      age: '',
+      weight: '',
+      reason_for_visit: '',
+      admin_physical_exam: '',
+      admin_ultrasound: '',
+      admin_diagnosis: '',
+      admin_plan: ''
     }));
     setCurrentStep(STEPS.COMPLETED);
-    showToast('Asistente saltado. Plantilla de ejemplo cargada.', 'info');
+    showToast('Asistente saltado. Modo Editor Activo.', 'info');
   };
 
   const handleFieldChange = (e) => {
@@ -339,10 +441,9 @@ export default function ReportEditorPage() {
   };
 
   const handleLoadReport = (report) => {
-    // Extract the weight from the observations column (fallback to '60kg')
     const extractedWeight = report.observations && report.observations.trim().length > 0 && !report.observations.includes('Generado')
       ? report.observations 
-      : '60kg';
+      : '';
 
     setFormData({
       full_name: report.patient_name || '',
@@ -352,11 +453,11 @@ export default function ReportEditorPage() {
       phone: report.patient_phone || 'N/A',
       address: report.address || 'No especificada',
       occupation: report.occupation || 'No especificada',
-      reason_for_visit: report.reason_for_visit || 'Consulta Médica Ginecológica',
-      admin_physical_exam: report.physical_exam || 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
-      admin_ultrasound: report.ultrasound || 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
-      admin_diagnosis: report.diagnosis || '1. Control Ginecológico de rutina.',
-      admin_plan: report.plan || '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
+      reason_for_visit: report.reason_for_visit || '',
+      admin_physical_exam: report.physical_exam || '',
+      admin_ultrasound: report.ultrasound || '',
+      admin_diagnosis: report.diagnosis || '',
+      admin_plan: report.plan || '',
       admin_observations: report.observations || extractedWeight,
       medical_report_content: report.medical_report_content || ''
     });
@@ -367,30 +468,28 @@ export default function ReportEditorPage() {
   };
 
   const handleReset = () => {
-    setCurrentStep(STEPS.WELCOME);
     setSavedConsultationId(null);
     setFormData({
       full_name: '',
       ci: '',
       age: '',
-      weight: '60kg',
+      weight: '',
       phone: 'N/A',
       address: 'No especificada',
       occupation: 'No especificada',
-      reason_for_visit: 'Consulta Médica Ginecológica',
-      admin_physical_exam: 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
-      admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
-      admin_diagnosis: '1. Control Ginecológico de rutina.',
-      admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
-      admin_observations: '60kg',
+      reason_for_visit: '',
+      admin_physical_exam: '',
+      admin_ultrasound: '',
+      admin_diagnosis: '',
+      admin_plan: '',
+      admin_observations: '',
       medical_report_content: ''
     });
-    const docName = doctor?.nombre_completo || 'Doctor(a)';
     setMessages([
       {
         id: Date.now(),
         sender: 'bot',
-        text: `¡Hola! Soy tu Asistente Inteligente de GynSys. Te guiaré paso a paso para recopilar la información clínica básica y generar un hermoso Informe Médico totalmente editable.<br/><br/><strong>Comencemos: ¿Cuál es el nombre y apellido completo de la paciente?</strong>`
+        text: `¡Hola! Te guiaré a generar un Informe rápido.<br/><strong>¿Nombre y apellido de la paciente?</strong>`
       }
     ]);
     setCurrentStep(STEPS.NAME);
@@ -466,6 +565,30 @@ export default function ReportEditorPage() {
 
             {/* Chat Message Box */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50">
+              {recentReports.length > 0 && currentStep === STEPS.NAME && (
+                <div className="mb-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4">
+                  <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    📂 Cargar Informe Reciente:
+                  </p>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {recentReports.map((report) => (
+                      <button
+                        key={report.id}
+                        type="button"
+                        onClick={() => handleLoadReport(report)}
+                        className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700 text-xs shadow-sm flex justify-between items-center transition-all active:scale-[0.98]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-gray-800 dark:text-gray-200 truncate">{report.patient_name}</p>
+                          <p className="text-[10px] text-gray-500 truncate">CI: {report.patient_ci} • {new Date(report.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <span className="text-[10px] font-black text-blue-600 uppercase flex-shrink-0 ml-2">Editar</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {messages.map((msg) => (
                 <div 
                   key={msg.id}
@@ -516,9 +639,9 @@ export default function ReportEditorPage() {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || loading}
-                className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 flex-shrink-0"
+                className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
               >
-                <FiSend size={18} />
+                <FiSend size={18} className="flex-shrink-0" />
               </button>
             </form>
           </div>
