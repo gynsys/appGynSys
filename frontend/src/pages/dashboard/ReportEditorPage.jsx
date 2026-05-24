@@ -5,7 +5,7 @@ import api from '../../lib/axios';
 import { 
   FiUser, FiFileText, FiDownload, FiSave, FiRefreshCw, 
   FiSend, FiCheckCircle, FiChevronRight, FiEdit3, FiArrowLeft,
-  FiPrinter, FiInfo, FiTrash2
+  FiPrinter, FiInfo, FiTrash2, FiClock, FiFilePlus
 } from 'react-icons/fi';
 import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platform';
 import GynSysLoader from '../../components/common/GynSysLoader';
@@ -35,18 +35,14 @@ export default function ReportEditorPage() {
   const { showToast } = useToastStore();
   const navigate = useNavigate();
 
-  // Chatbot State Machine
+  // Chatbot State Machine (Simplified: only Name, CI, Age, Weight, Diagnosis)
   const STEPS = {
     WELCOME: 'WELCOME',
     NAME: 'NAME',
     CI: 'CI',
     AGE: 'AGE',
     WEIGHT: 'WEIGHT',
-    REASON: 'REASON',
-    PHYSICAL: 'PHYSICAL',
-    ULTRASOUND: 'ULTRASOUND',
     DIAGNOSIS: 'DIAGNOSIS',
-    PLAN: 'PLAN',
     COMPLETED: 'COMPLETED'
   };
 
@@ -61,6 +57,10 @@ export default function ReportEditorPage() {
   const [includeColor, setIncludeColor] = useState(true);
   const [includeWatermark, setIncludeWatermark] = useState(true);
   const [savedConsultationId, setSavedConsultationId] = useState(null);
+
+  // History / Retrieval State
+  const [recentReports, setRecentReports] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Document Fields State
   const [formData, setFormData] = useState({
@@ -82,6 +82,24 @@ export default function ReportEditorPage() {
 
   const messagesEndRef = useRef(null);
   const chatInputRef = useRef(null);
+
+  // Fetch recent reports on mount
+  useEffect(() => {
+    fetchRecentReports();
+  }, []);
+
+  const fetchRecentReports = async () => {
+    setLoadingHistory(true);
+    try {
+      const response = await api.get('/consultations/');
+      const sorted = (response.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setRecentReports(sorted.slice(0, 10)); // Keep top 10 reports
+    } catch (error) {
+      console.error('Error fetching recent reports:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   // Automatically format unified content in real-time if any section changes
   useEffect(() => {
@@ -199,59 +217,23 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Entendido. ¿Cuál es la <strong>sintomatología o motivo principal</strong> de la consulta?`
-      }]);
-      setCurrentStep(STEPS.REASON);
-    }
-    else if (currentStep === STEPS.REASON) {
-      setFormData(prev => ({ ...prev, reason_for_visit: text }));
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `Muy bien. ¿Deseas detallar los hallazgos del <strong>Examen Físico</strong>? (o escribe "normal" para usar el texto predeterminado):`
-      }]);
-      setCurrentStep(STEPS.PHYSICAL);
-    }
-    else if (currentStep === STEPS.PHYSICAL) {
-      if (text.toLowerCase() !== 'normal') {
-        setFormData(prev => ({ ...prev, admin_physical_exam: text }));
-      }
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `Entendido. Describe ahora los hallazgos de la <strong>Ecografía Ginecológica</strong> (o escribe "normal" para usar el texto estándar):`
-      }]);
-      setCurrentStep(STEPS.ULTRASOUND);
-    }
-    else if (currentStep === STEPS.ULTRASOUND) {
-      if (text.toLowerCase() !== 'normal') {
-        setFormData(prev => ({ ...prev, admin_ultrasound: text }));
-      }
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `Excelente. Ahora ingresa los **Diagnósticos** (puedes enumerarlos o escribirlos separados por comas):`
+        text: `Perfecto. Por último, ingresa el <strong>diagnóstico clínico principal</strong> de la paciente:`
       }]);
       setCurrentStep(STEPS.DIAGNOSIS);
     }
     else if (currentStep === STEPS.DIAGNOSIS) {
       const formattedDiags = formatAsList(text);
-      setFormData(prev => ({ ...prev, admin_diagnosis: formattedDiags }));
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `Perfecto. Por último, describe el **Plan Terapéutico / Tratamiento** (puedes colocar varios puntos separados por comas o líneas):`
-      }]);
-      setCurrentStep(STEPS.PLAN);
-    }
-    else if (currentStep === STEPS.PLAN) {
-      const formattedPlan = formatAsList(text);
-      setFormData(prev => ({ ...prev, admin_plan: formattedPlan }));
+      setFormData(prev => ({ 
+        ...prev, 
+        admin_diagnosis: formattedDiags,
+        // Set ultrasound standard draft with the diagnosis content to be extremely helpful
+        admin_ultrasound: `Signos ecográficos sugestivos de: ${text}.`
+      }));
       
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `🎉 ¡Magnífico! He recopilado todos los datos. Desbloqueando la <strong>vista previa del informe</strong> y las opciones de edición interactiva.`
+        text: `🎉 ¡Magnífico! He recopilado todos los datos básicos. Desbloqueando la <strong>vista previa del informe</strong> y las opciones de edición interactiva.`
       }]);
 
       setTimeout(() => {
@@ -292,12 +274,22 @@ export default function ReportEditorPage() {
         doctor_id: doctor?.id || 1,
       };
 
-      const response = await api.post('/consultations/', payload);
+      let response;
+      if (savedConsultationId) {
+        response = await api.put(`/consultations/${savedConsultationId}`, payload);
+      } else {
+        response = await api.post('/consultations/', payload);
+      }
+
       const data = response.data;
-      if (data.status === 'success' || data.consultation_id) {
-        const id = data.consultation_id;
+      if (data.status === 'success' || data.consultation_id || savedConsultationId) {
+        const id = data.consultation_id || savedConsultationId;
         setSavedConsultationId(id);
         showToast('Informe guardado en Historias Clínicas exitosamente', 'success');
+        
+        // Refresh recent reports history
+        fetchRecentReports();
+        
         return id;
       } else {
         throw new Error('Unexpected response format');
@@ -341,6 +333,29 @@ export default function ReportEditorPage() {
       console.error('Error generating PDF:', error);
       showToast('Error al descargar el PDF del informe', 'error');
     }
+  };
+
+  const handleLoadReport = (report) => {
+    setFormData({
+      full_name: report.patient_name || '',
+      ci: report.patient_ci || '',
+      age: report.patient_age || '',
+      weight: report.weight || '60kg',
+      phone: report.patient_phone || 'N/A',
+      address: report.address || 'No especificada',
+      occupation: report.occupation || 'No especificada',
+      reason_for_visit: report.reason_for_visit || 'Consulta Médica Ginecológica',
+      admin_physical_exam: report.physical_exam || 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
+      admin_ultrasound: report.ultrasound || 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
+      admin_diagnosis: report.diagnosis || '1. Control Ginecológico de rutina.',
+      admin_plan: report.plan || '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
+      admin_observations: report.observations || 'Generado a través del Asistente de Informes.',
+      medical_report_content: report.medical_report_content || ''
+    });
+    setSavedConsultationId(report.id);
+    setReportDate(report.created_at ? report.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
+    setCurrentStep(STEPS.COMPLETED);
+    showToast(`Informe de ${report.patient_name} cargado con éxito.`, 'success');
   };
 
   const handleReset = () => {
@@ -401,90 +416,132 @@ export default function ReportEditorPage() {
             onClick={handleReset}
             className="flex items-center gap-2 text-xs font-black uppercase bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all"
           >
-            <FiRefreshCw /> Nuevo Informe
+            <FiFilePlus /> Nuevo Informe
           </button>
         )}
       </div>
 
       {currentStep !== STEPS.COMPLETED ? (
         /* ================= CHATBOT COLLECTOR FLOW ================= */
-        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] border-y sm:border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden flex flex-col h-[650px] max-w-3xl mx-auto transition-all">
-          {/* Chat Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10">
-                🤖
-              </div>
-              <div>
-                <h3 className="font-black text-sm tracking-widest uppercase">Asistente Virtual GynSys</h3>
-                <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe médico</p>
-              </div>
-            </div>
-            <button
-              onClick={handleSkipAssistant}
-              className="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg transition-all"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
+          {/* LEFT: Solid flat background chatbot */}
+          <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] border-y sm:border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden flex flex-col h-[600px] transition-all">
+            {/* Chat Header (Solid flat primaryColor - no gradient!) */}
+            <div 
+              style={{ backgroundColor: primaryColor || '#4F46E5' }} 
+              className="p-6 text-white flex items-center justify-between shadow-sm"
             >
-              Saltar Asistente
-            </button>
-          </div>
-
-          {/* Chat Message Box */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50">
-            {messages.map((msg) => (
-              <div 
-                key={msg.id}
-                className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10">
+                  🤖
+                </div>
+                <div>
+                  <h3 className="font-black text-sm tracking-widest uppercase">Asistente Virtual GynSys</h3>
+                  <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe médico</p>
+                </div>
+              </div>
+              <button
+                onClick={handleSkipAssistant}
+                className="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg transition-all"
               >
-                {msg.sender === 'bot' && (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                Saltar Asistente
+              </button>
+            </div>
+
+            {/* Chat Message Box */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+              {messages.map((msg) => (
+                <div 
+                  key={msg.id}
+                  className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+                >
+                  {msg.sender === 'bot' && (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      🩺
+                    </div>
+                  )}
+                  <div 
+                    className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
+                      msg.sender === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-none' 
+                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: msg.text }}
+                  />
+                </div>
+              ))}
+              
+              {loading && (
+                <div className="flex items-end gap-2 max-w-[80%]">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
                     🩺
                   </div>
-                )}
-                <div 
-                  className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
-                    msg.sender === 'user' 
-                      ? 'bg-blue-600 text-white rounded-br-none' 
-                      : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: msg.text }}
-                />
-              </div>
-            ))}
-            
-            {loading && (
-              <div className="flex items-end gap-2 max-w-[80%]">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
-                  🩺
+                  <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
                 </div>
-                <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Chat Input Area */}
+            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+              <input
+                ref={chatInputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Escribe la respuesta aquí..."
+                className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || loading}
+                className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 flex-shrink-0"
+              >
+                <FiSend size={18} />
+              </button>
+            </form>
           </div>
 
-          {/* Chat Input Area */}
-          <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2">
-            <input
-              ref={chatInputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Escribe la respuesta aquí..."
-              className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || loading}
-              className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 flex-shrink-0"
-            >
-              <FiSend size={18} />
-            </button>
-          </form>
+          {/* RIGHT: Retrieval panel (recent reports history list) */}
+          <div className="lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-[32px] border border-gray-100 dark:border-gray-700 shadow-xl h-[600px] flex flex-col">
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+              <FiClock className="text-blue-500" /> Historial de Informes
+            </h3>
+            
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {loadingHistory ? (
+                <div className="py-12 flex justify-center">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : recentReports.length === 0 ? (
+                <p className="text-xs text-slate-400 py-12 text-center font-medium">No se encontraron informes guardados.</p>
+              ) : (
+                recentReports.map(report => (
+                  <div 
+                    key={report.id}
+                    className="p-3 bg-slate-50 hover:bg-slate-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 rounded-xl border border-slate-100 dark:border-gray-600/50 transition-all flex flex-col justify-between gap-2 shadow-sm"
+                  >
+                    <div>
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{report.patient_name || 'Sin nombre'}</p>
+                      <p className="text-[9px] text-slate-400 font-bold mt-0.5">CI: V-{formatCi(report.patient_ci) || 'N/A'}</p>
+                      <p className="text-[9px] text-slate-400 font-semibold">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</p>
+                    </div>
+                    <button
+                      onClick={() => handleLoadReport(report)}
+                      className="w-full text-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-wider rounded-lg transition-all"
+                    >
+                      Cargar / Editar
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         /* ================= PREMIUM EDITABLE LAYOUT ================= */
@@ -514,7 +571,7 @@ export default function ReportEditorPage() {
                 </button>
               </div>
 
-              {/* Styling parameters */}
+              {/* Styling parameters (Matching standard history exactly!) */}
               <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-wider">Fecha de Emisión</span>
@@ -527,7 +584,7 @@ export default function ReportEditorPage() {
                 </div>
 
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir color institucional</span>
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">PDF a color</span>
                   <label className="relative inline-flex inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -540,7 +597,7 @@ export default function ReportEditorPage() {
                 </div>
 
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de agua GynSys</span>
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
                   <label className="relative inline-flex inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -551,6 +608,25 @@ export default function ReportEditorPage() {
                     <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
+              </div>
+            </div>
+
+            {/* Retrieval panel in Edit Mode */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <FiClock className="text-blue-500" /> Cargar Otro Informe Reciente
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
+                {recentReports.map(report => (
+                  <button
+                    key={report.id}
+                    onClick={() => handleLoadReport(report)}
+                    className="p-2 text-left bg-slate-50 hover:bg-slate-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-[9px] font-bold border border-slate-100 dark:border-gray-600/50 truncate flex justify-between items-center transition-all"
+                  >
+                    <span className="truncate mr-2">{report.patient_name}</span>
+                    <span className="text-blue-500 flex-shrink-0">Cargar</span>
+                  </button>
+                ))}
               </div>
             </div>
 
