@@ -17,6 +17,19 @@ const formatCi = (ciString) => {
   return new Intl.NumberFormat('de-DE').format(clean);
 };
 
+// Helper: Auto-formats a comma/newline separated text into an enumerated list
+const formatAsList = (text) => {
+  if (!text) return '';
+  // If it already looks like a formatted list, keep it
+  if (/^\s*\d+\./.test(text)) return text;
+  
+  const items = text.split(/[\n,]+/)
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
+    
+  return items.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
+};
+
 export default function ReportEditorPage() {
   const { doctor, isDarkTheme, primaryColor = '#4F46E5' } = useOutletContext() || {};
   const { showToast } = useToastStore();
@@ -28,7 +41,12 @@ export default function ReportEditorPage() {
     NAME: 'NAME',
     CI: 'CI',
     AGE: 'AGE',
+    WEIGHT: 'WEIGHT',
+    REASON: 'REASON',
+    PHYSICAL: 'PHYSICAL',
+    ULTRASOUND: 'ULTRASOUND',
     DIAGNOSIS: 'DIAGNOSIS',
+    PLAN: 'PLAN',
     COMPLETED: 'COMPLETED'
   };
 
@@ -49,6 +67,7 @@ export default function ReportEditorPage() {
     full_name: '',
     ci: '',
     age: '',
+    weight: '60kg',
     phone: 'N/A',
     address: 'No especificada',
     occupation: 'No especificada',
@@ -75,7 +94,7 @@ export default function ReportEditorPage() {
       const ageVal = formData.age;
       const ageText = ageVal ? `${ageVal} años` : '';
       
-      const narrative = `Se trata de paciente de ${ageText} de edad, quien acude a consulta para ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\n${formData.admin_physical_exam}`;
+      const narrative = `Se trata de paciente de ${ageText} de edad, peso: ${formData.weight}, quien acude a consulta para presentar sintomatología clínica consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
       
       const ecoSection = formData.admin_ultrasound 
         ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
@@ -102,6 +121,7 @@ export default function ReportEditorPage() {
     formData.admin_diagnosis,
     formData.admin_plan,
     formData.age,
+    formData.weight,
     currentStep
   ]);
 
@@ -170,17 +190,63 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Perfecto. Por último, describe brevemente el <strong>diagnóstico principal</strong> o los hallazgos para el informe:`
+        text: `Perfecto. ¿Cuál es el <strong>peso</strong> de la paciente? (ej: 60kg):`
+      }]);
+      setCurrentStep(STEPS.WEIGHT);
+    }
+    else if (currentStep === STEPS.WEIGHT) {
+      setFormData(prev => ({ ...prev, weight: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Entendido. ¿Cuál es la <strong>sintomatología o motivo principal</strong> de la consulta?`
+      }]);
+      setCurrentStep(STEPS.REASON);
+    }
+    else if (currentStep === STEPS.REASON) {
+      setFormData(prev => ({ ...prev, reason_for_visit: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Muy bien. ¿Deseas detallar los hallazgos del <strong>Examen Físico</strong>? (o escribe "normal" para usar el texto predeterminado):`
+      }]);
+      setCurrentStep(STEPS.PHYSICAL);
+    }
+    else if (currentStep === STEPS.PHYSICAL) {
+      if (text.toLowerCase() !== 'normal') {
+        setFormData(prev => ({ ...prev, admin_physical_exam: text }));
+      }
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Entendido. Describe ahora los hallazgos de la <strong>Ecografía Ginecológica</strong> (o escribe "normal" para usar el texto estándar):`
+      }]);
+      setCurrentStep(STEPS.ULTRASOUND);
+    }
+    else if (currentStep === STEPS.ULTRASOUND) {
+      if (text.toLowerCase() !== 'normal') {
+        setFormData(prev => ({ ...prev, admin_ultrasound: text }));
+      }
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Excelente. Ahora ingresa los **Diagnósticos** (puedes enumerarlos o escribirlos separados por comas):`
       }]);
       setCurrentStep(STEPS.DIAGNOSIS);
-    } 
+    }
     else if (currentStep === STEPS.DIAGNOSIS) {
-      setFormData(prev => ({ 
-        ...prev, 
-        admin_diagnosis: `1. ${text}`,
-        // Set ultrasound or custom findings based on diagnosis
-        admin_ultrasound: `Signos ecográficos sugestivos de: ${text}.`
-      }));
+      const formattedDiags = formatAsList(text);
+      setFormData(prev => ({ ...prev, admin_diagnosis: formattedDiags }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Perfecto. Por último, describe el **Plan Terapéutico / Tratamiento** (puedes colocar varios puntos separados por comas o líneas):`
+      }]);
+      setCurrentStep(STEPS.PLAN);
+    }
+    else if (currentStep === STEPS.PLAN) {
+      const formattedPlan = formatAsList(text);
+      setFormData(prev => ({ ...prev, admin_plan: formattedPlan }));
       
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
@@ -202,9 +268,12 @@ export default function ReportEditorPage() {
       full_name: 'Kelyn Rosal',
       ci: '19.397.706',
       age: '35',
-      admin_ultrasound: 'Signos ecográficos sugestivos de: Endometriosis peritoneal profunda infiltrativa.',
-      admin_diagnosis: '1. Sangrado uterino anormal.\n2. Endometriosis profunda infiltrativa.',
-      admin_plan: '1. Iniciar tratamiento con esquema piramidal de anticonceptivos.\n2. Control y seguimiento clínico.'
+      weight: '60kg',
+      reason_for_visit: 'alteración del patrón menstrual dado por aumento de volumen, frecuencia y duración desde el día 29/03/2026.',
+      admin_physical_exam: 'Evaluación física general y ginecológica dentro de límites normales.',
+      admin_ultrasound: 'Signos ecográficos sugestivos de: Endometriosis peritoneal. Endometriosis profunda infiltrativa: torus uterino, tabique rectovaginal. Con probable extensión inguinal. Mioma uterino FIGO 3 y 4.',
+      admin_diagnosis: '1. Sangrado uterino anormal tipo L\n2. Leiomiomatosis uterina\n3. Endometriosis profunda infiltrativa',
+      admin_plan: '1. Iniciar tratamiento con esquema piramidal de anticonceptivos hasta que cese el sangrado.\n2. Realizar resonancia magnética de pelvis con gadolineo\n3. Ácido tranexámico: Tomar 1 tableta cada 8 horas por 3 días\n4. Mantener control y seguimiento del caso'
     }));
     setCurrentStep(STEPS.COMPLETED);
     showToast('Asistente saltado. Plantilla de ejemplo cargada.', 'info');
@@ -281,6 +350,7 @@ export default function ReportEditorPage() {
       full_name: '',
       ci: '',
       age: '',
+      weight: '60kg',
       phone: 'N/A',
       address: 'No especificada',
       occupation: 'No especificada',
@@ -489,7 +559,7 @@ export default function ReportEditorPage() {
               <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 pb-2">Datos Clínicos del Reporte</h3>
               
               {/* Patient Details Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Nombre de la Paciente</label>
                   <input
@@ -510,7 +580,17 @@ export default function ReportEditorPage() {
                     className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-medium"
                   />
                 </div>
-                <div className="sm:col-span-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Peso</label>
+                  <input
+                    type="text"
+                    name="weight"
+                    value={formData.weight}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-medium"
+                  />
+                </div>
+                <div className="sm:col-span-4">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cédula de Identidad</label>
                   <input
                     type="text"
@@ -585,7 +665,7 @@ export default function ReportEditorPage() {
 
           {/* RIGHT: Letter printable virtual paper (75% column width) */}
           <div className="lg:col-span-7 flex justify-center">
-            <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white border border-slate-200 shadow-2xl text-slate-800 p-8 sm:p-12 flex flex-col justify-between font-sans leading-relaxed select-none overflow-hidden relative">
+            <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white border border-slate-200 shadow-2xl text-slate-900 p-8 sm:p-12 flex flex-col justify-between font-sans leading-relaxed select-none overflow-hidden relative">
               
               {/* Optional watermarked background */}
               {includeWatermark && (
@@ -629,30 +709,29 @@ export default function ReportEditorPage() {
                   </h3>
                 </div>
 
-                {/* 3. Patient Details Card */}
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/50 text-[10px] text-slate-700 grid grid-cols-2 gap-y-2 gap-x-4">
+                {/* 3. Patient Details Card - MATCHING MODEL IN ALL-BLACK TEXT */}
+                <div className="border-b-2 pb-3 border-slate-800 text-[10px] text-slate-950 grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-6 font-sans">
                   <div>
-                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Nombre y Apellidos:</span>
-                    <span className="font-extrabold text-slate-900">{formData.full_name || 'Kelyn Rosal'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Nombre y Apellidos:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.full_name || 'Kelyn Rosal'}</span>
                   </div>
                   <div>
-                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Cédula de Identidad:</span>
-                    <span className="font-extrabold text-slate-900">V-{formatCi(formData.ci) || '19.397.706'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Edad:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.age ? `${formData.age} años` : '35 años'}</span>
                   </div>
                   <div>
-                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Edad:</span>
-                    <span className="font-extrabold text-slate-900">{formData.age ? `${formData.age} años` : '35 años'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">CI:</span> <span className="text-slate-950 font-medium block sm:inline">V-{formatCi(formData.ci) || '19.397.706'}</span>
                   </div>
                   <div>
-                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Fecha de Emisión:</span>
-                    <span className="font-extrabold text-slate-900">
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Fecha:</span> <span className="text-slate-950 font-medium block sm:inline">
                       {new Date(reportDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-4">
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Peso:</span> <span className="text-slate-950 font-medium">{formData.weight || '60kg'}</span>
                   </div>
                 </div>
 
                 {/* 4. Main Medical Text (Unified view) */}
-                <div className="text-[10px] text-slate-800 space-y-4 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto pr-2">
+                <div className="text-[10px] text-slate-950 space-y-4 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto pr-2">
                   
                   {/* Párrafo Narrativo Clínico */}
                   <p>
@@ -667,21 +746,21 @@ export default function ReportEditorPage() {
 
                   {/* Ecografía Section */}
                   {formData.admin_ultrasound && (
-                    <div className="space-y-1 mt-2">
-                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
-                        <span>✦</span> ECOGRAFÍA GINECOLÓGICA
+                    <div className="space-y-1 mt-3">
+                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
+                        ECOGRAFÍA GINECOLÓGICA:
                       </p>
-                      <p className="italic text-slate-700">{formData.admin_ultrasound}</p>
+                      <p className="text-slate-950 pl-1">{formData.admin_ultrasound}</p>
                     </div>
                   )}
 
                   {/* Diagnosis Section */}
                   {formData.admin_diagnosis && (
-                    <div className="space-y-1 mt-2">
-                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
-                        <span>✦</span> DIAGNÓSTICOS
+                    <div className="space-y-1 mt-3">
+                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
+                        DIAGNÓSTICOS:
                       </p>
-                      <div className="whitespace-pre-line font-mono text-slate-700 pl-2">
+                      <div className="whitespace-pre-line text-slate-950 pl-1 font-serif">
                         {formData.admin_diagnosis}
                       </div>
                     </div>
@@ -689,11 +768,11 @@ export default function ReportEditorPage() {
 
                   {/* Plan Section */}
                   {formData.admin_plan && (
-                    <div className="space-y-1 mt-2">
-                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
-                        <span>✦</span> PLAN TERAPEUTICO
+                    <div className="space-y-1 mt-3">
+                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
+                        PLAN TERAPEUTICO:
                       </p>
-                      <div className="whitespace-pre-line font-mono text-slate-700 pl-2">
+                      <div className="whitespace-pre-line text-slate-950 pl-1 font-serif">
                         {formData.admin_plan}
                       </div>
                     </div>
