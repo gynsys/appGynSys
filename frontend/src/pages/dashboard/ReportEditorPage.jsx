@@ -431,27 +431,35 @@ export default function ReportEditorPage() {
       {currentStep !== STEPS.COMPLETED ? (
         /* ================= CHATBOT COLLECTOR FLOW ================= */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
-          {/* LEFT: Solid flat background chatbot */}
-          <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] border-y sm:border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden flex flex-col h-[600px] transition-all">
+          {/* LEFT: Solid flat background chatbot (Fullscreen overlay on mobile) */}
+          <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col w-full h-full lg:static lg:h-[600px] lg:col-span-8 lg:bg-white lg:dark:bg-gray-800 lg:rounded-[32px] lg:border lg:border-gray-100 lg:dark:border-gray-700 lg:shadow-xl lg:overflow-hidden lg:flex transition-all">
             {/* Chat Header (Solid flat primaryColor - no gradient!) */}
             <div 
               style={{ backgroundColor: primaryColor || '#4F46E5' }} 
-              className="p-6 text-white flex items-center justify-between shadow-sm"
+              className="p-5 text-white flex items-center justify-between shadow-sm lg:rounded-t-[32px]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10">
+                {/* Back button on mobile */}
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="lg:hidden p-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center"
+                >
+                  <FiArrowLeft size={18} />
+                </button>
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10 flex-shrink-0">
                   🤖
                 </div>
                 <div>
-                  <h3 className="font-black text-sm tracking-widest uppercase">Asistente Virtual GynSys</h3>
-                  <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe médico</p>
+                  <h3 className="font-black text-sm tracking-widest uppercase">Asistente GynSys</h3>
+                  <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe</p>
                 </div>
               </div>
               <button
                 onClick={handleSkipAssistant}
                 className="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg transition-all"
               >
-                Saltar Asistente
+                Saltar
               </button>
             </div>
 
@@ -494,14 +502,14 @@ export default function ReportEditorPage() {
             </div>
 
             {/* Chat Input Area */}
-            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
               <input
                 ref={chatInputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Escribe la respuesta aquí..."
-                className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+                className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
                 autoFocus
               />
               <button
@@ -514,8 +522,8 @@ export default function ReportEditorPage() {
             </form>
           </div>
 
-          {/* RIGHT: Retrieval panel (recent reports history list) */}
-          <div className="lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-[32px] border border-gray-100 dark:border-gray-700 shadow-xl h-[600px] flex flex-col">
+          {/* RIGHT: Retrieval panel (recent reports history list) - Hidden on Mobile to allow full chatbot view */}
+          <div className="hidden lg:flex lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-[32px] border border-gray-100 dark:border-gray-700 shadow-xl h-[600px] flex flex-col">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
               <FiClock className="text-blue-500" /> Historial de Informes
             </h3>
