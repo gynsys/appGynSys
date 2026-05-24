@@ -93,7 +93,8 @@ export default function ReportEditorPage() {
     setLoadingHistory(true);
     try {
       const response = await api.get('/consultations/');
-      const sorted = (response.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const filtered = (response.data || []).filter(report => report.family_history_mother === 'INDEPENDENT_REPORT');
+      const sorted = filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setRecentReports(sorted.slice(0, 10)); // Keep top 10 reports
     } catch (error) {
       console.error('Error fetching recent reports:', error);
@@ -156,7 +157,7 @@ export default function ReportEditorPage() {
       {
         id: 1,
         sender: 'bot',
-        text: `¡Hola! Soy tu Asistente Inteligente de GynSys. Te guiaré paso a paso para recopilar la información clínica básica y generar un hermoso Informe Médico totalmente editable.<br/><br/><strong>Comencemos: ¿Cuál es el nombre y apellido completo de la paciente?</strong>`
+        text: `¡Hola! Te guiaré a generar un Informe rápido.<br/><strong>¿Nombre y apellido de la paciente?</strong>`
       }
     ]);
     setCurrentStep(STEPS.NAME);
@@ -191,7 +192,7 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Excelente. Ahora por favor ingresa el número de <strong>Cédula de Identidad</strong> de <strong>${text}</strong> (puedes escribir solo números):`
+        text: `<strong>¿Cédula de Identidad (CI)?</strong>:`
       }]);
       setCurrentStep(STEPS.CI);
     } 
@@ -200,7 +201,7 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Entendido. ¿Qué <strong>edad</strong> tiene la paciente?`
+        text: `<strong>¿Edad?</strong> (años):`
       }]);
       setCurrentStep(STEPS.AGE);
     } 
@@ -209,7 +210,7 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Perfecto. ¿Cuál es el <strong>peso</strong> de la paciente? (ej: 60kg):`
+        text: `<strong>¿Peso?</strong> (ej: 60kg):`
       }]);
       setCurrentStep(STEPS.WEIGHT);
     }
@@ -218,7 +219,7 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Perfecto. Por último, ingresa el <strong>diagnóstico clínico principal</strong> de la paciente:`
+        text: `<strong>¿Diagnóstico principal?</strong>:`
       }]);
       setCurrentStep(STEPS.DIAGNOSIS);
     }
@@ -227,14 +228,13 @@ export default function ReportEditorPage() {
       setFormData(prev => ({ 
         ...prev, 
         admin_diagnosis: formattedDiags,
-        // Set ultrasound standard draft with the diagnosis content to be extremely helpful
         admin_ultrasound: `Signos ecográficos sugestivos de: ${text}.`
       }));
       
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `🎉 ¡Magnífico! He recopilado todos los datos básicos. Desbloqueando la <strong>vista previa del informe</strong> y las opciones de edición interactiva.`
+        text: `🎉 ¡Listo! Generando informe y abriendo editor...`
       }]);
 
       setTimeout(() => {
@@ -272,6 +272,7 @@ export default function ReportEditorPage() {
     try {
       const payload = {
         ...formData,
+        family_history_mother: 'INDEPENDENT_REPORT',
         admin_observations: formData.weight, // We persist the weight inside observations text column!
         doctor_id: doctor?.id || 1,
       };
@@ -432,7 +433,7 @@ export default function ReportEditorPage() {
         /* ================= CHATBOT COLLECTOR FLOW ================= */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
           {/* LEFT: Solid flat background chatbot (Fullscreen overlay on mobile) */}
-          <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col w-full h-full lg:static lg:h-[600px] lg:col-span-8 lg:bg-white lg:dark:bg-gray-800 lg:rounded-[32px] lg:border lg:border-gray-100 lg:dark:border-gray-700 lg:shadow-xl lg:overflow-hidden lg:flex transition-all">
+          <div className="fixed inset-0 z-[9999] bg-white dark:bg-gray-900 flex flex-col w-full h-[100dvh] lg:static lg:h-[600px] lg:col-span-8 lg:bg-white lg:dark:bg-gray-800 lg:rounded-[32px] lg:border lg:border-gray-100 lg:dark:border-gray-700 lg:shadow-xl lg:overflow-hidden lg:flex transition-all">
             {/* Chat Header (Solid flat primaryColor - no gradient!) */}
             <div 
               style={{ backgroundColor: primaryColor || '#4F46E5' }} 
@@ -464,7 +465,7 @@ export default function ReportEditorPage() {
             </div>
 
             {/* Chat Message Box */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50">
               {messages.map((msg) => (
                 <div 
                   key={msg.id}
@@ -502,7 +503,7 @@ export default function ReportEditorPage() {
             </div>
 
             {/* Chat Input Area */}
-            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
+            <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
               <input
                 ref={chatInputRef}
                 type="text"

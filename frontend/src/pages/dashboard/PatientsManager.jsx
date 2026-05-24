@@ -374,6 +374,10 @@ export default function PatientsManager({ isEmbedded = false }) {
       const data = response.data;
       const grouped = {};
       data.forEach(consultation => {
+        // Exclude independent quick reports from the main patient histories list
+        if (consultation.family_history_mother === 'INDEPENDENT_REPORT') {
+          return;
+        }
         const ci = consultation.patient_ci;
         if (!grouped[ci] || new Date(consultation.created_at) > new Date(grouped[ci].created_at)) {
           grouped[ci] = consultation;
