@@ -366,7 +366,6 @@ class ConsultationService:
             def g(obj, key):
                 return getattr(obj, key, None) or (obj.get(key) if isinstance(obj, dict) else None)
 
-            # Extract full data for both merging and narrative building
             c_data = {
                 "id": g(c, "id"),
                 "created_at": g(c, "created_at"),
@@ -383,6 +382,9 @@ class ConsultationService:
                 "plan": g(c, "plan"),
                 "observations": g(c, "observations"),
                 "medical_report_content": g(c, "medical_report_content"),
+                "address": g(c, "address"),
+                "occupation": g(c, "occupation"),
+                "family_history_mother": g(c, "family_history_mother"),
             }
 
             # FALLBACK NARRATIVE (Only current consultation fields, no backgrounds as requested)
