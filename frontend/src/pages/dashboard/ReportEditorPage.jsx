@@ -818,7 +818,7 @@ export default function ReportEditorPage() {
                   
                   {/* Párrafo Narrativo Clínico */}
                   <p>
-                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : '35 años'}</strong> de edad,
+                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : '35 años'}</strong> de edad, peso: <strong>{formData.weight || '60kg'}</strong>,
                     quien acude a consulta por presentar sintomatología clínica consistente en: {formData.reason_for_visit.toLowerCase() || 'evaluación médica rutinaria'}.
                     Se realiza exploración física detallada y ultrasonido ginecológico constatando los siguientes hallazgos:
                   </p>
