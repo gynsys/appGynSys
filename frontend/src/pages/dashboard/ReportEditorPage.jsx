@@ -5,11 +5,12 @@ import api from '../../lib/axios';
 import { 
   FiUser, FiFileText, FiDownload, FiSave, FiRefreshCw, 
   FiSend, FiCheckCircle, FiChevronRight, FiEdit3, FiArrowLeft,
-  FiPrinter, FiInfo, FiTrash2, FiClock, FiFilePlus
+  FiPrinter, FiInfo, FiTrash2, FiClock, FiFilePlus, FiImage
 } from 'react-icons/fi';
 import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platform';
 import GynSysLoader from '../../components/common/GynSysLoader';
 import { getImageUrl } from '../../lib/imageUtils';
+import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
 
 // Helper: Venezuelan CI formatter
 const formatCi = (ciString) => {
@@ -425,6 +426,7 @@ export default function ReportEditorPage() {
       if (!includeWatermark) params.append('include_watermark', 'false');
       params.append('report_at', reportDate);
       params.append('download', 'true');
+      params.append('include_images', 'true');
 
       const url = `${API_BASE}/consultations/${activeId}/pdf?${params.toString()}`;
       
@@ -876,6 +878,39 @@ export default function ReportEditorPage() {
               </div>
 
             </div>
+
+            {/* Anexar Imágenes Section */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 pb-2 flex justify-between items-center">
+                <span className="flex items-center gap-2">
+                  <FiImage className="text-blue-500" /> Anexar Imágenes al Informe
+                </span>
+                <span className="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 px-2 py-0.5 rounded-full font-bold uppercase">Anexo</span>
+              </h3>
+              
+              {savedConsultationId ? (
+                <>
+                  <p className="text-[11px] text-gray-500 leading-relaxed">
+                    Sube imágenes para anexarlas automáticamente en la segunda página del informe PDF. El diseño se adaptará al número de imágenes (1, 2, 3 o 4 imágenes).
+                  </p>
+                  <ConsultationAssetManager 
+                    consultationId={savedConsultationId}
+                    readOnly={false}
+                    primaryColor={primaryColor}
+                    isDarkTheme={isDarkTheme}
+                  />
+                </>
+              ) : (
+                <div className="text-center py-6 px-4 bg-gray-50 dark:bg-gray-800/30 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+                  <FiImage className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-gray-700 dark:text-gray-300">Guarda el informe primero</p>
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Debes hacer clic en el botón <strong>"Guardar en GynSys"</strong> para poder subir imágenes anexas a este informe.
+                  </p>
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* RIGHT: Letter printable virtual paper (75% column width) */}

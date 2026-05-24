@@ -564,59 +564,145 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
         story.append(Paragraph(f"<b>Paciente:</b> {report_context.get('full_name')} | <b>C.I.:</b> {report_context.get('ci')}", styleN))
         story.append(Spacer(1, 0.25*inch))
         
-        # Grid of 4 images
+        # Dynamic Grid based on the exact number of uploaded images
         assets = [a for a in report_data.get('assets', []) if "image" in (a.get('file_type') or "").lower()][:4]
+        num_images = len(assets)
         
-        grid_data = []
-        # We need a 2x2 grid
-        for i in range(0, 4, 2):
-            row = []
-            for j in range(2):
-                idx = i + j
-                if idx < len(assets):
-                    asset = assets[idx]
-                    path = get_local_path_from_url(asset.get('file_path'))
-                    if path and os.path.exists(path):
-                        img_reader = ImageReader(path)
-                        iw, ih = img_reader.getSize()
-                        aspect = ih / float(iw)
-                        
-                        # Max dimensions for the block
-                        max_w = 3.2*inch
-                        max_h = 3.2*inch
-                        
-                        if aspect > 1: # Vertical
-                            h = max_h
-                            w = h / aspect
-                        else: # Horizontal
-                            w = max_w
-                            h = w * aspect
-                            
-                        block_img = Image(path, width=w, height=h)
-                        row.append(block_img)
+        if num_images == 1:
+            # 1 single large image
+            path = get_local_path_from_url(assets[0].get('file_path'))
+            if path and os.path.exists(path):
+                img_reader = ImageReader(path)
+                iw, ih = img_reader.getSize()
+                aspect = ih / float(iw)
+                max_w = 7.0 * inch
+                max_h = 6.0 * inch
+                if aspect > (max_h / max_w):
+                    h = max_h
+                    w = h / aspect
+                else:
+                    w = max_w
+                    h = w * aspect
+                
+                block_img = Image(path, width=w, height=h)
+                block_img.hAlign = 'CENTER'
+                
+                img_table = Table([[block_img]], colWidths=[7.0*inch], rowHeights=[6.2*inch])
+                img_table.setStyle(TableStyle([
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)),
+                    ('TOPPADDING', (0,0), (-1,-1), 10),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+                ]))
+                story.append(img_table)
+                
+        elif num_images == 2:
+            # 2 stacked vertically, dividing the page in two
+            grid_data = []
+            for asset in assets:
+                path = get_local_path_from_url(asset.get('file_path'))
+                if path and os.path.exists(path):
+                    img_reader = ImageReader(path)
+                    iw, ih = img_reader.getSize()
+                    aspect = ih / float(iw)
+                    max_w = 7.0 * inch
+                    max_h = 2.9 * inch
+                    if aspect > (max_h / max_w):
+                        h = max_h
+                        w = h / aspect
+                    else:
+                        w = max_w
+                        h = w * aspect
+                    block_img = Image(path, width=w, height=h)
+                    grid_data.append([block_img])
+                else:
+                    grid_data.append([""])
+            
+            img_table = Table(grid_data, colWidths=[7.0*inch], rowHeights=[3.1*inch, 3.1*inch])
+            img_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)),
+                ('TOPPADDING', (0,0), (-1,-1), 10),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ]))
+            story.append(img_table)
+            
+        elif num_images == 3:
+            # 3 stacked vertically, dividing the page in three
+            grid_data = []
+            for asset in assets:
+                path = get_local_path_from_url(asset.get('file_path'))
+                if path and os.path.exists(path):
+                    img_reader = ImageReader(path)
+                    iw, ih = img_reader.getSize()
+                    aspect = ih / float(iw)
+                    max_w = 7.0 * inch
+                    max_h = 1.9 * inch
+                    if aspect > (max_h / max_w):
+                        h = max_h
+                        w = h / aspect
+                    else:
+                        w = max_w
+                        h = w * aspect
+                    block_img = Image(path, width=w, height=h)
+                    grid_data.append([block_img])
+                else:
+                    grid_data.append([""])
+            
+            img_table = Table(grid_data, colWidths=[7.0*inch], rowHeights=[2.05*inch, 2.05*inch, 2.05*inch])
+            img_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ]))
+            story.append(img_table)
+            
+        else:
+            # 4 images or empty fallback in 2x2 grid
+            grid_data = []
+            for i in range(0, 4, 2):
+                row = []
+                for j in range(2):
+                    idx = i + j
+                    if idx < len(assets):
+                        asset = assets[idx]
+                        path = get_local_path_from_url(asset.get('file_path'))
+                        if path and os.path.exists(path):
+                            img_reader = ImageReader(path)
+                            iw, ih = img_reader.getSize()
+                            aspect = ih / float(iw)
+                            max_w = 3.2 * inch
+                            max_h = 3.0 * inch
+                            if aspect > (max_h / max_w):
+                                h = max_h
+                                w = h / aspect
+                            else:
+                                w = max_w
+                                h = w * aspect
+                            block_img = Image(path, width=w, height=h)
+                            row.append(block_img)
+                        else:
+                            row.append("")
                     else:
                         row.append("")
-                else:
-                    row.append("")
-            grid_data.append(row)
-            
-        # If we have less than 4, ensure grid is consistent
-        while len(grid_data) < 2:
-            grid_data.append(["", ""])
-            
-        img_table = Table(grid_data, colWidths=[3.5*inch, 3.5*inch], rowHeights=[3.5*inch, 3.5*inch])
-        
-        # Custom Dash Style
-        img_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            # Gray dashed border for each cell
-            ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)), # 2 on, 2 off dash
-            ('TOPPADDING', (0,0), (-1,-1), 10),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
-        ]))
-        
-        story.append(img_table)
+                grid_data.append(row)
+                
+            while len(grid_data) < 2:
+                grid_data.append(["", ""])
+                
+            img_table = Table(grid_data, colWidths=[3.5*inch, 3.5*inch], rowHeights=[3.1*inch, 3.1*inch])
+            img_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('GRID', (0,0), (-1,-1), 1, colors.gray, None, (2,2)),
+                ('TOPPADDING', (0,0), (-1,-1), 10),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ]))
+            story.append(img_table)
 
     try:
         doc.build(story, onFirstPage=draw_page_background, onLaterPages=draw_page_background)
