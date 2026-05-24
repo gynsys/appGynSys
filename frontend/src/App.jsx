@@ -57,6 +57,7 @@ import QuickSetupPage from './pages/dashboard/QuickSetupPage'
 // Removed OnboardingPage import
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
+import ReportEditorPage from './pages/dashboard/ReportEditorPage'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { WizardLayout } from './components/layout/WizardLayout'
@@ -303,8 +304,9 @@ function App() {
           <Route path="requests" element={<AppointmentRequestList />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="directory" element={<DirectoryManager />} />
-          <Route path="online-consultations" element={<OnlineConsultationSettings />} />
+           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
           <Route path="campaigns" element={<CampaignsPage />} />
+          <Route path="tools/report-editor" element={<ReportEditorPage />} />
         </Route>
 
 

@@ -1,0 +1,739 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useToastStore } from '../../store/toastStore';
+import api from '../../lib/axios';
+import { 
+  FiUser, FiFileText, FiDownload, FiSave, FiRefreshCw, 
+  FiSend, FiCheckCircle, FiChevronRight, FiEdit3, FiArrowLeft,
+  FiPrinter, FiInfo, FiTrash2
+} from 'react-icons/fi';
+import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platform';
+import GynSysLoader from '../../components/common/GynSysLoader';
+
+// Helper: Venezuelan CI formatter
+const formatCi = (ciString) => {
+  if (!ciString) return '';
+  const clean = ciString.replace(/\D/g, '');
+  return new Intl.NumberFormat('de-DE').format(clean);
+};
+
+export default function ReportEditorPage() {
+  const { doctor, isDarkTheme, primaryColor = '#4F46E5' } = useOutletContext() || {};
+  const { showToast } = useToastStore();
+  const navigate = useNavigate();
+
+  // Chatbot State Machine
+  const STEPS = {
+    WELCOME: 'WELCOME',
+    NAME: 'NAME',
+    CI: 'CI',
+    AGE: 'AGE',
+    DIAGNOSIS: 'DIAGNOSIS',
+    COMPLETED: 'COMPLETED'
+  };
+
+  const [currentStep, setCurrentStep] = useState(STEPS.WELCOME);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  
+  // Custom Date (for preview and generation)
+  const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
+  const [includeColor, setIncludeColor] = useState(true);
+  const [includeWatermark, setIncludeWatermark] = useState(true);
+  const [savedConsultationId, setSavedConsultationId] = useState(null);
+
+  // Document Fields State
+  const [formData, setFormData] = useState({
+    full_name: '',
+    ci: '',
+    age: '',
+    phone: 'N/A',
+    address: 'No especificada',
+    occupation: 'No especificada',
+    reason_for_visit: 'Consulta Médica Ginecológica',
+    admin_physical_exam: 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
+    admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
+    admin_diagnosis: '1. Control Ginecológico de rutina.',
+    admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
+    admin_observations: 'Generado a través del Asistente de Informes.',
+    medical_report_content: ''
+  });
+
+  const messagesEndRef = useRef(null);
+  const chatInputRef = useRef(null);
+
+  // Automatically format unified content in real-time if any section changes
+  useEffect(() => {
+    if (currentStep === STEPS.COMPLETED) {
+      // Build unified text mimicking the KELYN medical report format:
+      // 1. Narrative
+      // 2. Ecografía
+      // 3. Diagnósticos
+      // 4. Plan Terapéutico
+      const ageVal = formData.age;
+      const ageText = ageVal ? `${ageVal} años` : '';
+      
+      const narrative = `Se trata de paciente de ${ageText} de edad, quien acude a consulta para ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\n${formData.admin_physical_exam}`;
+      
+      const ecoSection = formData.admin_ultrasound 
+        ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
+        : '';
+        
+      const diagSection = formData.admin_diagnosis
+        ? `\n\nDIAGNÓSTICOS:\n${formData.admin_diagnosis}`
+        : '';
+        
+      const planSection = formData.admin_plan
+        ? `\n\nPLAN TERAPÉUTICO:\n${formData.admin_plan}`
+        : '';
+        
+      const unified = `${narrative}${ecoSection}${diagSection}${planSection}`;
+      setFormData(prev => ({
+        ...prev,
+        medical_report_content: unified
+      }));
+    }
+  }, [
+    formData.reason_for_visit,
+    formData.admin_physical_exam,
+    formData.admin_ultrasound,
+    formData.admin_diagnosis,
+    formData.admin_plan,
+    formData.age,
+    currentStep
+  ]);
+
+  // Scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Initialize Chat Flow
+  useEffect(() => {
+    const docName = doctor?.nombre_completo || 'Doctor(a)';
+    setMessages([
+      {
+        id: 1,
+        sender: 'bot',
+        text: `¡Hola! Soy tu Asistente Inteligente de GynSys. Te guiaré paso a paso para recopilar la información clínica básica y generar un hermoso Informe Médico totalmente editable.<br/><br/><strong>Comencemos: ¿Cuál es el nombre y apellido completo de la paciente?</strong>`
+      }
+    ]);
+    setCurrentStep(STEPS.NAME);
+  }, [doctor]);
+
+  const handleSendMessage = (e) => {
+    if (e) e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const userText = inputValue.trim();
+    setInputValue('');
+
+    // Add user response to messages
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      sender: 'user',
+      text: userText
+    }]);
+
+    setLoading(true);
+
+    setTimeout(() => {
+      processStepResponse(userText);
+    }, 600);
+  };
+
+  const processStepResponse = (text) => {
+    setLoading(false);
+    
+    if (currentStep === STEPS.NAME) {
+      setFormData(prev => ({ ...prev, full_name: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Excelente. Ahora por favor ingresa el número de <strong>Cédula de Identidad</strong> de <strong>${text}</strong> (puedes escribir solo números):`
+      }]);
+      setCurrentStep(STEPS.CI);
+    } 
+    else if (currentStep === STEPS.CI) {
+      setFormData(prev => ({ ...prev, ci: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Entendido. ¿Qué <strong>edad</strong> tiene la paciente?`
+      }]);
+      setCurrentStep(STEPS.AGE);
+    } 
+    else if (currentStep === STEPS.AGE) {
+      setFormData(prev => ({ ...prev, age: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Perfecto. Por último, describe brevemente el <strong>diagnóstico principal</strong> o los hallazgos para el informe:`
+      }]);
+      setCurrentStep(STEPS.DIAGNOSIS);
+    } 
+    else if (currentStep === STEPS.DIAGNOSIS) {
+      setFormData(prev => ({ 
+        ...prev, 
+        admin_diagnosis: `1. ${text}`,
+        // Set ultrasound or custom findings based on diagnosis
+        admin_ultrasound: `Signos ecográficos sugestivos de: ${text}.`
+      }));
+      
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `🎉 ¡Magnífico! He recopilado todos los datos. Desbloqueando la <strong>vista previa del informe</strong> y las opciones de edición interactiva.`
+      }]);
+
+      setTimeout(() => {
+        setCurrentStep(STEPS.COMPLETED);
+        showToast('Asistente completado. Modo Editor Activo.', 'success');
+      }, 1000);
+    }
+  };
+
+  const handleSkipAssistant = () => {
+    // Fill basic defaults
+    setFormData(prev => ({
+      ...prev,
+      full_name: 'Kelyn Rosal',
+      ci: '19.397.706',
+      age: '35',
+      admin_ultrasound: 'Signos ecográficos sugestivos de: Endometriosis peritoneal profunda infiltrativa.',
+      admin_diagnosis: '1. Sangrado uterino anormal.\n2. Endometriosis profunda infiltrativa.',
+      admin_plan: '1. Iniciar tratamiento con esquema piramidal de anticonceptivos.\n2. Control y seguimiento clínico.'
+    }));
+    setCurrentStep(STEPS.COMPLETED);
+    showToast('Asistente saltado. Plantilla de ejemplo cargada.', 'info');
+  };
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveToGynSys = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        ...formData,
+        doctor_id: doctor?.id || 1,
+      };
+
+      const response = await api.post('/consultations/', payload);
+      const data = response.data;
+      if (data.status === 'success' || data.consultation_id) {
+        const id = data.consultation_id;
+        setSavedConsultationId(id);
+        showToast('Informe guardado en Historias Clínicas exitosamente', 'success');
+        return id;
+      } else {
+        throw new Error('Unexpected response format');
+      }
+    } catch (error) {
+      console.error('Error saving consultation:', error);
+      showToast('Error al guardar el informe en Historias Clínicas', 'error');
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    let activeId = savedConsultationId;
+    
+    // Auto-save first if not saved yet
+    if (!activeId) {
+      showToast('Guardando informe antes de generar el PDF...', 'info');
+      activeId = await handleSaveToGynSys();
+      if (!activeId) return; // Abort if save failed
+    }
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (includeColor) params.append('use_color', 'true');
+      if (!includeWatermark) params.append('include_watermark', 'false');
+      params.append('report_at', reportDate);
+      params.append('download', 'true');
+
+      const url = `${API_BASE}/consultations/${activeId}/pdf?${params.toString()}`;
+      
+      if (isCapacitor()) {
+        openExternalFile(url);
+      } else {
+        downloadFile(url, `Informe_Medico_${formData.full_name.replace(/\s+/g, '_')}.pdf`);
+      }
+      showToast('PDF generado exitosamente', 'success');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('Error al descargar el PDF del informe', 'error');
+    }
+  };
+
+  const handleReset = () => {
+    setCurrentStep(STEPS.WELCOME);
+    setSavedConsultationId(null);
+    setFormData({
+      full_name: '',
+      ci: '',
+      age: '',
+      phone: 'N/A',
+      address: 'No especificada',
+      occupation: 'No especificada',
+      reason_for_visit: 'Consulta Médica Ginecológica',
+      admin_physical_exam: 'Evaluación ginecológica y física general de rutina dentro de los límites normales.',
+      admin_ultrasound: 'Útero en anteversión de dimensiones y ecoestructura conservada. Endometrio trilaminar, homogéneo, de espesor normal para fase del ciclo. Ovarios de características ecográficas normales.',
+      admin_diagnosis: '1. Control Ginecológico de rutina.',
+      admin_plan: '1. Mantener control ginecológico anual.\n2. Hábitos de vida saludables y control ginecológico periódico.',
+      admin_observations: 'Generado a través del Asistente de Informes.',
+      medical_report_content: ''
+    });
+    const docName = doctor?.nombre_completo || 'Doctor(a)';
+    setMessages([
+      {
+        id: Date.now(),
+        sender: 'bot',
+        text: `¡Hola! Soy tu Asistente Inteligente de GynSys. Te guiaré paso a paso para recopilar la información clínica básica y generar un hermoso Informe Médico totalmente editable.<br/><br/><strong>Comencemos: ¿Cuál es el nombre y apellido completo de la paciente?</strong>`
+      }
+    ]);
+    setCurrentStep(STEPS.NAME);
+  };
+
+  // Get PDF config header elements
+  const pdfConfig = doctor?.pdf_config || {};
+  const docSpecialty = pdfConfig.specialty || doctor?.especialidad || 'Especialista en Ginecología y Obstetricia';
+  const docPhones = pdfConfig.phones || '04244281876-04127738918';
+  const docLocation = pdfConfig.location || 'Caracas-Guarenas Guatire';
+  const mpps = pdfConfig.mpps_number || '140.795';
+  const cmdm = pdfConfig.cmdm_number || '38.789';
+  const docCi = pdfConfig.doctor_id || '23.812.988';
+  const footerCity = pdfConfig.footer_city || 'Guarenas';
+
+  return (
+    <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
+      {/* Title */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+            <FiFileText className="text-blue-500" /> Editor de Informes Médicos
+          </h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 font-medium">
+            Conversa con la IA, completa los datos de la paciente y personaliza tu PDF de forma interactiva.
+          </p>
+        </div>
+        
+        {currentStep === STEPS.COMPLETED && (
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-2 text-xs font-black uppercase bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all"
+          >
+            <FiRefreshCw /> Nuevo Informe
+          </button>
+        )}
+      </div>
+
+      {currentStep !== STEPS.COMPLETED ? (
+        /* ================= CHATBOT COLLECTOR FLOW ================= */
+        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-[32px] border-y sm:border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden flex flex-col h-[650px] max-w-3xl mx-auto transition-all">
+          {/* Chat Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10">
+                🤖
+              </div>
+              <div>
+                <h3 className="font-black text-sm tracking-widest uppercase">Asistente Virtual GynSys</h3>
+                <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe médico</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSkipAssistant}
+              className="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg transition-all"
+            >
+              Saltar Asistente
+            </button>
+          </div>
+
+          {/* Chat Message Box */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+            {messages.map((msg) => (
+              <div 
+                key={msg.id}
+                className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+              >
+                {msg.sender === 'bot' && (
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    🩺
+                  </div>
+                )}
+                <div 
+                  className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
+                    msg.sender === 'user' 
+                      ? 'bg-blue-600 text-white rounded-br-none' 
+                      : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: msg.text }}
+                />
+              </div>
+            ))}
+            
+            {loading && (
+              <div className="flex items-end gap-2 max-w-[80%]">
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
+                  🩺
+                </div>
+                <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Chat Input Area */}
+          <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+            <input
+              ref={chatInputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Escribe la respuesta aquí..."
+              className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || loading}
+              className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 flex-shrink-0"
+            >
+              <FiSend size={18} />
+            </button>
+          </form>
+        </div>
+      ) : (
+        /* ================= PREMIUM EDITABLE LAYOUT ================= */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT: Live Form Editor (45% column width on large screens) */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* Action Bar */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Acciones del Informe</h3>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleSaveToGynSys}
+                  disabled={saving}
+                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all"
+                >
+                  <FiSave size={16} />
+                  {saving ? 'Guardando...' : 'Guardar en GynSys'}
+                </button>
+                
+                <button
+                  onClick={handleDownloadPdf}
+                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-md shadow-blue-100 dark:shadow-none"
+                >
+                  <FiDownload size={16} /> Descargar PDF
+                </button>
+              </div>
+
+              {/* Styling parameters */}
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-wider">Fecha de Emisión</span>
+                  <input
+                    type="date"
+                    value={reportDate}
+                    onChange={(e) => setReportDate(e.target.value)}
+                    className="w-full text-xs font-bold bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Incluir color institucional</span>
+                  <label className="relative inline-flex inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={includeColor} 
+                      onChange={(e) => setIncludeColor(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de agua GynSys</span>
+                  <label className="relative inline-flex inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={includeWatermark} 
+                      onChange={(e) => setIncludeWatermark(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Editable Fields Form */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
+              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 pb-2">Datos Clínicos del Reporte</h3>
+              
+              {/* Patient Details Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Nombre de la Paciente</label>
+                  <input
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Edad</label>
+                  <input
+                    type="text"
+                    name="age"
+                    value={formData.age}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-medium"
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cédula de Identidad</label>
+                  <input
+                    type="text"
+                    name="ci"
+                    value={formData.ci}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Clinical Description sections */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Motivo / Síntesis Clínica</label>
+                  <textarea
+                    name="reason_for_visit"
+                    rows="2"
+                    value={formData.reason_for_visit}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Examen Físico</label>
+                  <textarea
+                    name="admin_physical_exam"
+                    rows="2"
+                    value={formData.admin_physical_exam}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Hallazgos Ecográficos</label>
+                  <textarea
+                    name="admin_ultrasound"
+                    rows="3"
+                    value={formData.admin_ultrasound}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Diagnósticos</label>
+                  <textarea
+                    name="admin_diagnosis"
+                    rows="3"
+                    value={formData.admin_diagnosis}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Plan Terapéutico / Tratamiento</label>
+                  <textarea
+                    name="admin_plan"
+                    rows="3"
+                    value={formData.admin_plan}
+                    onChange={handleFieldChange}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-mono"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* RIGHT: Letter printable virtual paper (75% column width) */}
+          <div className="lg:col-span-7 flex justify-center">
+            <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white border border-slate-200 shadow-2xl text-slate-800 p-8 sm:p-12 flex flex-col justify-between font-sans leading-relaxed select-none overflow-hidden relative">
+              
+              {/* Optional watermarked background */}
+              {includeWatermark && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none select-none">
+                  <img src="/GynSys.png" alt="Watermark" className="w-[50%] h-auto object-contain rotate-12" />
+                </div>
+              )}
+
+              {/* REPORT STRUCTURE WRAPPER */}
+              <div className="space-y-6">
+                
+                {/* 1. Header (Branding block) */}
+                <div className="flex justify-between items-start border-b pb-4 border-slate-100">
+                  <div className="flex items-center gap-4">
+                    {pdfConfig.logo_header_1 ? (
+                      <img src={pdfConfig.logo_header_1} alt="Logo" className="w-16 h-16 object-contain" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-600 text-xl border border-blue-100">
+                        🩺
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="font-extrabold text-sm text-slate-900" style={includeColor ? { color: primaryColor } : {}}>
+                        {pdfConfig.doctor_name || doctor?.nombre_completo || 'Dra. Mariel Herrera'}
+                      </h2>
+                      <p className="text-[10px] text-slate-500 font-bold max-w-xs">{docSpecialty}</p>
+                      <p className="text-[9px] text-slate-400 mt-1">{docLocation}</p>
+                      <p className="text-[9px] text-slate-400">Telfs: {docPhones}</p>
+                    </div>
+                  </div>
+                  
+                  {pdfConfig.logo_header_2 && (
+                    <img src={pdfConfig.logo_header_2} alt="QR Code" className="w-16 h-16 object-contain" />
+                  )}
+                </div>
+
+                {/* 2. Document Title */}
+                <div className="text-center py-2">
+                  <h3 className="font-black text-xs uppercase tracking-widest text-slate-800 border-b border-slate-800 inline-block px-4 pb-0.5">
+                    {pdfConfig.report_title || 'INFORME MÉDICO'}
+                  </h3>
+                </div>
+
+                {/* 3. Patient Details Card */}
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/50 text-[10px] text-slate-700 grid grid-cols-2 gap-y-2 gap-x-4">
+                  <div>
+                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Nombre y Apellidos:</span>
+                    <span className="font-extrabold text-slate-900">{formData.full_name || 'Kelyn Rosal'}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Cédula de Identidad:</span>
+                    <span className="font-extrabold text-slate-900">V-{formatCi(formData.ci) || '19.397.706'}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Edad:</span>
+                    <span className="font-extrabold text-slate-900">{formData.age ? `${formData.age} años` : '35 años'}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-400 uppercase text-[8px] block">Fecha de Emisión:</span>
+                    <span className="font-extrabold text-slate-900">
+                      {new Date(reportDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4. Main Medical Text (Unified view) */}
+                <div className="text-[10px] text-slate-800 space-y-4 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto pr-2">
+                  
+                  {/* Párrafo Narrativo Clínico */}
+                  <p>
+                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : '35 años'}</strong> de edad,
+                    quien acude a consulta por presentar sintomatología clínica consistente en: {formData.reason_for_visit.toLowerCase() || 'evaluación médica rutinaria'}.
+                    Se realiza exploración física detallada y ultrasonido ginecológico constatando los siguientes hallazgos:
+                  </p>
+                  
+                  <p>
+                    <strong>Examen Físico:</strong> {formData.admin_physical_exam}
+                  </p>
+
+                  {/* Ecografía Section */}
+                  {formData.admin_ultrasound && (
+                    <div className="space-y-1 mt-2">
+                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
+                        <span>✦</span> ECOGRAFÍA GINECOLÓGICA
+                      </p>
+                      <p className="italic text-slate-700">{formData.admin_ultrasound}</p>
+                    </div>
+                  )}
+
+                  {/* Diagnosis Section */}
+                  {formData.admin_diagnosis && (
+                    <div className="space-y-1 mt-2">
+                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
+                        <span>✦</span> DIAGNÓSTICOS
+                      </p>
+                      <div className="whitespace-pre-line font-mono text-slate-700 pl-2">
+                        {formData.admin_diagnosis}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Plan Section */}
+                  {formData.admin_plan && (
+                    <div className="space-y-1 mt-2">
+                      <p className="font-extrabold text-slate-900 uppercase tracking-tighter text-[9px] border-b pb-0.5 border-slate-100 flex items-center gap-1.5" style={includeColor ? { color: primaryColor } : {}}>
+                        <span>✦</span> PLAN TERAPEUTICO
+                      </p>
+                      <div className="whitespace-pre-line font-mono text-slate-700 pl-2">
+                        {formData.admin_plan}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
+              {/* 5. Printable Footer & Signature block */}
+              <div className="space-y-4 border-t pt-4 border-slate-100">
+                <div className="flex flex-col items-center text-center">
+                  
+                  {/* Digital Signature Image */}
+                  {pdfConfig.logo_signature ? (
+                    <img src={pdfConfig.logo_signature} alt="Firma del Médico" className="h-10 object-contain mb-1" />
+                  ) : (
+                    <div className="h-10 w-24 border-b border-dashed border-slate-300 mb-1"></div>
+                  )}
+                  
+                  <p className="font-extrabold text-[9px] text-slate-900">
+                    {pdfConfig.doctor_name || doctor?.nombre_completo || 'Dra. Mariel Herrera'}
+                  </p>
+                  <p className="text-[7.5px] text-slate-500 font-bold uppercase tracking-tight">Ginecólogo Obstetra</p>
+                  <p className="text-[7px] text-slate-400 mt-0.5">
+                    CI: {docCi} &nbsp;|&nbsp; MPPS: {mpps} &nbsp;|&nbsp; CMDM: {cmdm}
+                  </p>
+                </div>
+                
+                {/* Print location and page index */}
+                <div className="flex justify-between items-center text-[7px] text-slate-400 px-1">
+                  <span>{footerCity}, {new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
+                  <span className="font-bold tracking-widest text-[7.5px]" style={includeColor ? { color: primaryColor } : {}}>www.gynsys.net</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

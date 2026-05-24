@@ -43,6 +43,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
       ]
     },
     {
+      title: 'Herramientas',
+      items: [
+        { icon: FiClipboard, label: 'Editor de Informes', path: '/dashboard/tools/report-editor' },
+      ]
+    },
+    {
       title: 'Configuraciones',
       items: [
         { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
