@@ -534,11 +534,11 @@ export default function ReportEditorPage() {
         /* ================= CHATBOT COLLECTOR FLOW ================= */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
           {/* LEFT: Solid flat background chatbot (Fullscreen overlay on mobile) */}
-          <div className="fixed inset-0 z-[9999] bg-white dark:bg-gray-900 flex flex-col w-full h-[100dvh] lg:static lg:h-[600px] lg:col-span-8 lg:bg-white lg:dark:bg-gray-800 lg:rounded-[32px] lg:border lg:border-gray-100 lg:dark:border-gray-700 lg:shadow-xl lg:overflow-hidden lg:flex transition-all">
+          <div className="fixed inset-0 z-[9999] bg-white dark:bg-gray-900 flex flex-col w-full h-[100dvh] lg:static lg:h-[600px] lg:col-span-8 lg:bg-white lg:dark:bg-gray-800 lg:border lg:border-gray-100 lg:dark:border-gray-700 lg:shadow-xl lg:overflow-hidden lg:flex transition-all">
             {/* Chat Header (Solid flat primaryColor - no gradient!) */}
             <div 
               style={{ backgroundColor: primaryColor || '#4F46E5' }} 
-              className="p-5 text-white flex items-center justify-between shadow-sm lg:rounded-t-[32px]"
+              className="p-5 text-white flex items-center justify-between shadow-sm"
             >
               <div className="flex items-center gap-3">
                 {/* Back button on mobile */}
@@ -962,13 +962,13 @@ export default function ReportEditorPage() {
                 {/* 3. Patient Details Card - MATCHING MODEL IN ALL-BLACK TEXT */}
                 <div className="border-b-2 pb-3 border-slate-800 text-[10px] text-slate-950 grid grid-cols-2 sm:grid-cols-4 gap-y-2 gap-x-6 font-sans">
                   <div>
-                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Nombre y Apellidos:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.full_name || 'Kelyn Rosal'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Nombre y Apellidos:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.full_name || ''}</span>
                   </div>
                   <div>
-                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Edad:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.age ? `${formData.age} años` : '35 años'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Edad:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.age ? `${formData.age} años` : ''}</span>
                   </div>
                   <div>
-                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">CI:</span> <span className="text-slate-950 font-medium block sm:inline">V-{formatCi(formData.ci) || '19.397.706'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">CI:</span> <span className="text-slate-950 font-medium block sm:inline">{formData.ci ? `V-${formatCi(formData.ci)}` : ''}</span>
                   </div>
                   <div>
                     <span className="font-extrabold text-slate-950 uppercase text-[9px]">Fecha:</span> <span className="text-slate-950 font-medium block sm:inline">
@@ -976,7 +976,7 @@ export default function ReportEditorPage() {
                     </span>
                   </div>
                   <div className="col-span-2 sm:col-span-4">
-                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Peso:</span> <span className="text-slate-950 font-medium">{formData.weight || '60kg'}</span>
+                    <span className="font-extrabold text-slate-950 uppercase text-[9px]">Peso:</span> <span className="text-slate-950 font-medium">{formData.weight ? `${formData.weight} kg` : ''}</span>
                   </div>
                 </div>
 
@@ -985,8 +985,8 @@ export default function ReportEditorPage() {
                   
                   {/* Párrafo Narrativo Clínico */}
                   <p>
-                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : '35 años'}</strong> de edad, peso: <strong>{formData.weight || '60kg'}</strong>,
-                    quien acude a consulta por presentar sintomatología clínica consistente en: {formData.reason_for_visit.toLowerCase() || 'evaluación médica rutinaria'}.
+                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : ''}</strong> de edad{formData.weight ? `, peso: ` : ''}<strong>{formData.weight ? `${formData.weight} kg` : ''}</strong>,
+                    quien acude a consulta por presentar sintomatología clínica consistente en: {formData.reason_for_visit ? formData.reason_for_visit.toLowerCase() : ''}.
                     Se realiza exploración física detallada y ultrasonido ginecológico constatando los siguientes hallazgos:
                   </p>
                   
