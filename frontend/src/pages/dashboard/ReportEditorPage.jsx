@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platform';
 import GynSysLoader from '../../components/common/GynSysLoader';
+import { getImageUrl } from '../../lib/imageUtils';
 
 // Helper: Venezuelan CI formatter
 const formatCi = (ciString) => {
@@ -757,7 +758,7 @@ export default function ReportEditorPage() {
                 <div className="flex justify-between items-start border-b pb-4 border-slate-100">
                   <div className="flex items-center gap-4">
                     {pdfConfig.logo_header_1 ? (
-                      <img src={pdfConfig.logo_header_1} alt="Logo" className="w-16 h-16 object-contain" />
+                      <img src={getImageUrl(pdfConfig.logo_header_1)} alt="Logo" className="w-16 h-16 object-contain" />
                     ) : (
                       <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-600 text-xl border border-blue-100">
                         🩺
@@ -774,7 +775,7 @@ export default function ReportEditorPage() {
                   </div>
                   
                   {pdfConfig.logo_header_2 && (
-                    <img src={pdfConfig.logo_header_2} alt="QR Code" className="w-16 h-16 object-contain" />
+                    <img src={getImageUrl(pdfConfig.logo_header_2)} alt="QR Code" className="w-16 h-16 object-contain" />
                   )}
                 </div>
 
@@ -864,7 +865,7 @@ export default function ReportEditorPage() {
                   
                   {/* Digital Signature Image */}
                   {pdfConfig.logo_signature ? (
-                    <img src={pdfConfig.logo_signature} alt="Firma del Médico" className="h-10 object-contain mb-1" />
+                    <img src={getImageUrl(pdfConfig.logo_signature)} alt="Firma del Médico" className="h-10 object-contain mb-1" />
                   ) : (
                     <div className="h-10 w-24 border-b border-dashed border-slate-300 mb-1"></div>
                   )}
