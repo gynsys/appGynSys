@@ -523,9 +523,15 @@ export default function ReportEditorPage() {
         <div className="flex items-center gap-4">
           {/* Back button to dashboard */}
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              if (currentStep === STEPS.COMPLETED) {
+                handleReset();
+              } else {
+                navigate(-1);
+              }
+            }}
             className="p-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl border border-gray-150 dark:border-gray-700 shadow-sm transition-all flex items-center justify-center hover:scale-105 active:scale-95 flex-shrink-0"
-            title="Volver al panel"
+            title="Volver"
           >
             <FiArrowLeft size={18} className="stroke-[2.5]" />
           </button>
