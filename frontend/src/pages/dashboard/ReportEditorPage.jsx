@@ -62,7 +62,6 @@ export default function ReportEditorPage() {
   // Custom Date (for preview and generation)
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
   const [includeColor, setIncludeColor] = useState(true);
-  const [includeWatermark, setIncludeWatermark] = useState(true);
   const [savedConsultationId, setSavedConsultationId] = useState(null);
 
   // Dynamic counter states for diagnoses
@@ -432,7 +431,7 @@ export default function ReportEditorPage() {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const params = new URLSearchParams();
       if (includeColor) params.append('use_color', 'true');
-      if (!includeWatermark) params.append('include_watermark', 'false');
+      params.append('include_watermark', 'false');
       params.append('report_at', reportDate);
       params.append('download', 'true');
       params.append('include_images', 'true');
@@ -796,19 +795,6 @@ export default function ReportEditorPage() {
                     <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
-
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Marca de Agua</span>
-                  <label className="relative inline-flex inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={includeWatermark} 
-                      onChange={(e) => setIncludeWatermark(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
               </div>
             </div>
 
@@ -976,13 +962,6 @@ export default function ReportEditorPage() {
           {/* RIGHT: Letter printable virtual paper (75% column width) */}
           <div className="lg:col-span-7 flex justify-center">
             <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white border border-slate-200 shadow-2xl text-slate-900 p-8 sm:p-12 flex flex-col justify-between font-sans leading-relaxed select-none overflow-hidden relative">
-              
-              {/* Optional watermarked background */}
-              {includeWatermark && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none select-none">
-                  <img src="/GynSys.png" alt="Watermark" className="w-[50%] h-auto object-contain rotate-12" />
-                </div>
-              )}
 
               {/* REPORT STRUCTURE WRAPPER */}
               <div className="space-y-6">
