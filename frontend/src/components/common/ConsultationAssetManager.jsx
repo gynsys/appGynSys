@@ -32,6 +32,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [previewAsset, setPreviewAsset] = useState(null);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef(null);
     const hasFetchedForId = useRef(null);
@@ -136,9 +137,11 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
         }
     };
 
-    const handleDelete = async (assetId) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este archivo?')) return;
+    const handleDelete = (assetId) => {
+        setDeleteTargetId(assetId);
+    };
 
+    const performDelete = async (assetId) => {
         if (String(assetId).startsWith('temp_')) {
             // Offline buffer mode
             const filteredAssets = assets.filter(a => a.id !== assetId);
@@ -415,6 +418,46 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
 
                     <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm z-10 bg-black/40 py-1">
                         {previewAsset.file_name}
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {deleteTargetId && createPortal(
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-[32px] p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-750 transform scale-100 transition-all duration-300">
+                        <div className="flex flex-col items-center text-center">
+                            {/* Warning Icon */}
+                            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500 mb-4">
+                                <FiTrash2 className="w-6 h-6" />
+                            </div>
+                            
+                            <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                                ¿Eliminar archivo?
+                            </h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
+                                Esta acción es irreversible y removerá el anexo del informe médico de forma permanente.
+                            </p>
+                            
+                            <div className="flex items-center gap-3 w-full mt-6">
+                                <button
+                                    onClick={() => setDeleteTargetId(null)}
+                                    className="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:bg-gray-200 dark:hover:bg-gray-600"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const id = deleteTargetId;
+                                        setDeleteTargetId(null);
+                                        performDelete(id);
+                                    }}
+                                    className="flex-1 py-2.5 px-4 bg-red-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:bg-red-600 shadow-md shadow-red-500/20"
+                                >
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>,
                 document.body

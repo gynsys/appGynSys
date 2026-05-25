@@ -76,6 +76,7 @@ export default function ReportEditorPage() {
   // History / Retrieval State
   const [recentReports, setRecentReports] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showHistoryOnMobile, setShowHistoryOnMobile] = useState(false);
 
   // Document Fields State (Starts empty, no prefilled placeholder values)
   const [formData, setFormData] = useState({
@@ -552,80 +553,142 @@ export default function ReportEditorPage() {
                 {/* Back button on mobile */}
                 <button
                   type="button"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => {
+                    if (showHistoryOnMobile) {
+                      setShowHistoryOnMobile(false);
+                    } else {
+                      navigate('/dashboard');
+                    }
+                  }}
                   className="lg:hidden p-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center"
                 >
                   <FiArrowLeft size={18} />
                 </button>
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg border border-white/10 flex-shrink-0">
-                  🤖
+                  {showHistoryOnMobile ? '📂' : '🤖'}
                 </div>
                 <div>
-                  <h3 className="font-black text-sm tracking-widest uppercase">Asistente GynSys</h3>
-                  <p className="text-[10px] text-blue-100 font-medium">Recopilando datos para el informe</p>
+                  <h3 className="font-black text-sm tracking-widest uppercase">
+                    {showHistoryOnMobile ? 'Historial de Informes' : 'Asistente GynSys'}
+                  </h3>
+                  <p className="text-[10px] text-blue-100 font-medium">
+                    {showHistoryOnMobile ? 'Selecciona un informe guardado' : 'Recopilando datos para el informe'}
+                  </p>
                 </div>
               </div>
+
+              {/* Toggle history button on mobile */}
+              {!showHistoryOnMobile && (
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryOnMobile(true)}
+                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider text-white"
+                >
+                  <FiClock size={14} />
+                  <span>Historial</span>
+                </button>
+              )}
             </div>
 
-            {/* Chat Message Box */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50">
-
-
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id}
-                  className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
-                >
-                  {msg.sender === 'bot' && (
-                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                      🩺
+            {showHistoryOnMobile ? (
+              /* Mobile History Retrieval List */
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-gray-50 dark:bg-gray-900/50">
+                {loadingHistory ? (
+                  <div className="py-24 flex justify-center">
+                    <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : recentReports.length === 0 ? (
+                  <div className="py-24 text-center">
+                    <FiClock className="w-12 h-12 text-slate-300 dark:text-slate-650 mx-auto mb-3" />
+                    <p className="text-xs text-slate-400 font-medium">No se encontraron informes guardados.</p>
+                  </div>
+                ) : (
+                  recentReports.map(report => (
+                    <div 
+                      key={report.id}
+                      className="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 transition-all flex items-center justify-between gap-4 shadow-sm"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{report.patient_name || 'Sin nombre'}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-md">CI: V-{formatCi(report.patient_ci) || 'N/A'}</span>
+                          <span className="text-[10px] text-slate-400 font-medium">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowHistoryOnMobile(false);
+                          handleLoadReport(report);
+                        }}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm shadow-blue-500/10 active:scale-95 flex-shrink-0"
+                      >
+                        Cargar
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Chat Message Box */}
+                <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50">
+                  {messages.map((msg) => (
+                    <div 
+                      key={msg.id}
+                      className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+                    >
+                      {msg.sender === 'bot' && (
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                          🩺
+                        </div>
+                      )}
+                      <div 
+                        className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
+                          msg.sender === 'user' 
+                            ? 'bg-blue-600 text-white rounded-br-none' 
+                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
+                        }`}
+                        dangerouslySetInnerHTML={{ __html: msg.text }}
+                      />
+                    </div>
+                  ))}
+                  
+                  {loading && (
+                    <div className="flex items-end gap-2 max-w-[80%]">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
+                        🩺
+                      </div>
+                      <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
                     </div>
                   )}
-                  <div 
-                    className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
-                      msg.sender === 'user' 
-                        ? 'bg-blue-600 text-white rounded-br-none' 
-                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: msg.text }}
-                  />
+                  <div ref={messagesEndRef} />
                 </div>
-              ))}
-              
-              {loading && (
-                <div className="flex items-end gap-2 max-w-[80%]">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
-                    🩺
-                  </div>
-                  <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
 
-            {/* Chat Input Area */}
-            <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
-              <input
-                ref={chatInputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Escribe la respuesta aquí..."
-                className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
-                autoFocus
-              />
-              <button
-                type="submit"
-                disabled={!inputValue.trim() || loading}
-                className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
-              >
-                <FiSend size={18} className="flex-shrink-0" />
-              </button>
-            </form>
+                {/* Chat Input Area */}
+                <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
+                  <input
+                    ref={chatInputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Escribe la respuesta aquí..."
+                    className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputValue.trim() || loading}
+                    className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
+                  >
+                    <FiSend size={18} className="flex-shrink-0" />
+                  </button>
+                </form>
+              </>
+            )}
           </div>
 
           {/* RIGHT: Retrieval panel (recent reports history list) - Hidden on Mobile to allow full chatbot view */}
