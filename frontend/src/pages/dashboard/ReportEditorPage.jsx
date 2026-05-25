@@ -520,13 +520,24 @@ export default function ReportEditorPage() {
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
       {/* Title */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-            <FiFileText className="text-blue-500" /> Editor de Informes Médicos
-          </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 font-medium">
-            Conversa con la IA, completa los datos de la paciente y personaliza tu PDF de forma interactiva.
-          </p>
+        <div className="flex items-center gap-4">
+          {/* Back button to dashboard */}
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl border border-gray-150 dark:border-gray-700 shadow-sm transition-all flex items-center justify-center hover:scale-105 active:scale-95 flex-shrink-0"
+            title="Volver al panel"
+          >
+            <FiArrowLeft size={18} className="stroke-[2.5]" />
+          </button>
+
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <FiFileText className="text-blue-500" /> Editor de Informes Médicos
+            </h1>
+            <p className="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+              Conversa con la IA, completa los datos de la paciente y personaliza tu PDF de forma interactiva.
+            </p>
+          </div>
         </div>
         
         {currentStep === STEPS.COMPLETED && (
