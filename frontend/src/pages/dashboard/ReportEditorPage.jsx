@@ -44,6 +44,9 @@ export default function ReportEditorPage() {
     CI: 'CI',
     AGE: 'AGE',
     WEIGHT: 'WEIGHT',
+    HO: 'HO',
+    ENTRY_CHOICE: 'ENTRY_CHOICE',
+    FREE_TEXT: 'FREE_TEXT',
     REASON: 'REASON',
     PHYSICAL_EXAM: 'PHYSICAL_EXAM',
     ULTRASOUND: 'ULTRASOUND',
@@ -85,6 +88,7 @@ export default function ReportEditorPage() {
     ci: '',
     age: '',
     weight: '',
+    ho: '',
     phone: 'N/A',
     address: 'No especificada',
     occupation: 'No especificada',
@@ -140,7 +144,8 @@ export default function ReportEditorPage() {
 
   // Automatically format unified content in real-time if any section changes
   useEffect(() => {
-    if (currentStep === STEPS.COMPLETED) {
+    // Only compile structured content if we are in guided mode (i.e. did not type free text)
+    if (currentStep === STEPS.COMPLETED && formData.reason_for_visit) {
       // Build unified text mimicking the KELYN medical report format:
       // 1. Narrative
       // 2. Ecografía
@@ -148,8 +153,12 @@ export default function ReportEditorPage() {
       // 4. Plan Terapéutico
       const ageVal = formData.age;
       const ageText = ageVal ? `${ageVal} años` : '';
+      const hoVal = formData.ho;
+      const hoText = hoVal && hoVal.trim().toLowerCase() !== 'ninguno' && hoVal.trim().toLowerCase() !== 'n/a'
+        ? `, HO: ${hoVal}`
+        : '';
       
-      const narrative = `Se trata de paciente de ${ageText} de edad, peso: ${formData.weight}, quien acude a consulta para presentar sintomatología clínica consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
+      const narrative = `Se trata de paciente de ${ageText} de edad${hoText}, quien acude a consulta en vista de presentar cuadro clínico consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
       
       const ecoSection = formData.admin_ultrasound 
         ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
@@ -177,6 +186,7 @@ export default function ReportEditorPage() {
     formData.admin_plan,
     formData.age,
     formData.weight,
+    formData.ho,
     currentStep
   ]);
 
@@ -254,9 +264,55 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `<strong>¿Motivo de Consulta / Síntesis Clínica?</strong>:`
+        text: `<strong>¿Antecedentes Obstétricos (HO)?</strong> (ej: <i>IG IA</i>, o escriba 'Ninguno' / 'N/A'):`
       }]);
-      setCurrentStep(STEPS.REASON);
+      setCurrentStep(STEPS.HO);
+    }
+    else if (currentStep === STEPS.HO) {
+      setFormData(prev => ({ ...prev, ho: text }));
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `<strong>¿Cómo desea ingresar la información clínica del reporte?</strong><br/><br/>👉 Seleccione <strong>Entrada Libre</strong> para escribir o pegar cualquier carta, informe libre o documento de seguros.<br/>👉 Seleccione <strong>Entrada Guiada</strong> para realizar el flujo paso a paso estructurado.`
+      }]);
+      setCurrentStep(STEPS.ENTRY_CHOICE);
+    }
+    else if (currentStep === STEPS.ENTRY_CHOICE) {
+      const lower = text.toLowerCase();
+      if (lower.includes('1') || lower.includes('libre')) {
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>[Modo Entrada Libre Activo]</strong><br/>Por favor, escriba o pegue el contenido completo de su informe, carta médica o documento aquí:`
+        }]);
+        setCurrentStep(STEPS.FREE_TEXT);
+      } else {
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>[Modo Entrada Guiada Activo]</strong><br/>¿Cuál es el <strong>Motivo de Consulta / Síntesis Clínica</strong>?:`
+        }]);
+        setCurrentStep(STEPS.REASON);
+      }
+    }
+    else if (currentStep === STEPS.FREE_TEXT) {
+      const finalFormData = {
+        ...formData,
+        medical_report_content: text
+      };
+      setFormData(finalFormData);
+      
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `🎉 ¡Listo! Guardando informe libre automáticamente y abriendo editor...`
+      }]);
+
+      setTimeout(async () => {
+        setCurrentStep(STEPS.COMPLETED);
+        showToast('Asistente completado. Modo Editor Activo.', 'success');
+        await handleSaveToGynSys(finalFormData);
+      }, 1000);
     }
     else if (currentStep === STEPS.REASON) {
       setFormData(prev => ({ ...prev, reason_for_visit: text }));
@@ -357,7 +413,11 @@ export default function ReportEditorPage() {
         // Build final state immediately to auto-save it correctly
         const ageVal = formData.age;
         const ageText = ageVal ? `${ageVal} años` : '';
-        const narrative = `Se trata de paciente de ${ageText} de edad, peso: ${formData.weight}, quien acude a consulta para presentar sintomatología clínica consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
+        const hoVal = formData.ho;
+        const hoText = hoVal && hoVal.trim().toLowerCase() !== 'ninguno' && hoVal.trim().toLowerCase() !== 'n/a'
+          ? `, HO: ${hoVal}`
+          : '';
+        const narrative = `Se trata de paciente de ${ageText} de edad${hoText}, quien acude a consulta en vista de presentar cuadro clínico consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
         const ecoSection = formData.admin_ultrasound 
           ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
           : '';
@@ -505,6 +565,7 @@ export default function ReportEditorPage() {
       ci: '',
       age: '',
       weight: '',
+      ho: '',
       phone: 'N/A',
       address: 'No especificada',
       occupation: 'No especificada',
@@ -769,24 +830,88 @@ export default function ReportEditorPage() {
                 </div>
 
                 {/* Chat Input Area */}
-                <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
-                  <input
-                    ref={chatInputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Escribe la respuesta aquí..."
-                    className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    disabled={!inputValue.trim() || loading}
-                    className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
-                  >
-                    <FiSend size={18} className="flex-shrink-0" />
-                  </button>
-                </form>
+                {currentStep === STEPS.ENTRY_CHOICE ? (
+                  <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-3 pb-safe">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center mb-1">
+                      Elige el método de entrada clínica:
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMessages(prev => [...prev, {
+                            id: Date.now(),
+                            sender: 'user',
+                            text: 'Entrada Libre'
+                          }]);
+                          setLoading(true);
+                          setTimeout(() => {
+                            setLoading(false);
+                            setMessages(prev => [...prev, {
+                              id: Date.now() + 1,
+                              sender: 'bot',
+                              text: `<strong>[Modo Entrada Libre Activo]</strong><br/>Escriba o pegue a continuación el contenido clínico completo para su informe, carta médica o documento libre:`
+                            }]);
+                            setCurrentStep(STEPS.FREE_TEXT);
+                          }, 600);
+                        }}
+                        className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-slate-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 border border-dashed border-gray-250 dark:border-gray-650 rounded-2xl transition-all active:scale-95 group"
+                      >
+                        <span className="text-xl mb-1 group-hover:scale-110 transition-transform">📝</span>
+                        <span className="text-xs font-black uppercase text-slate-900 dark:text-white">Entrada Libre</span>
+                        <span className="text-[9px] text-slate-400 font-medium mt-0.5 text-center leading-tight">Para cualquier carta, seguro o reporte libre</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMessages(prev => [...prev, {
+                            id: Date.now(),
+                            sender: 'user',
+                            text: 'Entrada Guiada'
+                          }]);
+                          setLoading(true);
+                          setTimeout(() => {
+                            setLoading(false);
+                            setMessages(prev => [...prev, {
+                              id: Date.now() + 1,
+                              sender: 'bot',
+                              text: `<strong>[Modo Entrada Guiada Activo]</strong><br/>¿Cuál es el <strong>Motivo de Consulta / Síntesis Clínica</strong>?:`
+                            }]);
+                            setCurrentStep(STEPS.REASON);
+                          }, 600);
+                        }}
+                        className="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl transition-all active:scale-95 group"
+                      >
+                        <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🩺</span>
+                        <span className="text-xs font-black uppercase text-blue-700 dark:text-blue-400">Entrada Guiada</span>
+                        <span className="text-[9px] text-blue-600/70 dark:text-blue-400/70 font-medium mt-0.5 text-center leading-tight">Paso a paso estructurado (Examen, Eco, etc.)</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
+                    <input
+                      ref={chatInputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={
+                        currentStep === STEPS.FREE_TEXT 
+                          ? "Pegue o escriba todo el contenido aquí..." 
+                          : "Escribe la respuesta aquí..."
+                      }
+                      className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || loading}
+                      className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
+                    >
+                      <FiSend size={18} className="flex-shrink-0" />
+                    </button>
+                  </form>
+                )}
               </>
             )}
           </div>
@@ -1097,53 +1222,10 @@ export default function ReportEditorPage() {
                 </div>
 
                 {/* 4. Main Medical Text (Unified view) */}
-                <div className="text-[10px] text-slate-950 space-y-4 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto pr-2">
-                  
-                  {/* Párrafo Narrativo Clínico */}
-                  <p>
-                    Se trata de paciente de <strong>{formData.age ? `${formData.age} años` : ''}</strong> de edad{formData.weight ? `, peso: ` : ''}<strong>{formData.weight ? `${formData.weight} kg` : ''}</strong>,
-                    quien acude a consulta por presentar sintomatología clínica consistente en: {formData.reason_for_visit ? formData.reason_for_visit.toLowerCase() : ''}.
-                    Se realiza exploración física detallada y ultrasonido ginecológico constatando los siguientes hallazgos:
-                  </p>
-                  
-                  <p>
-                    <strong>Examen Físico:</strong> {formData.admin_physical_exam}
-                  </p>
-
-                  {/* Ecografía Section */}
-                  {formData.admin_ultrasound && (
-                    <div className="space-y-1 mt-3">
-                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
-                        ECOGRAFÍA GINECOLÓGICA:
-                      </p>
-                      <p className="text-slate-950 pl-1">{formData.admin_ultrasound}</p>
-                    </div>
+                <div className="text-[10px] text-slate-950 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto whitespace-pre-wrap">
+                  {formData.medical_report_content || (
+                    <span className="text-gray-400 italic">El contenido clínico del informe aparecerá aquí...</span>
                   )}
-
-                  {/* Diagnosis Section */}
-                  {formData.admin_diagnosis && (
-                    <div className="space-y-1 mt-3">
-                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
-                        DIAGNÓSTICOS:
-                      </p>
-                      <div className="whitespace-pre-line text-slate-950 pl-1 font-serif">
-                        {formData.admin_diagnosis}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Plan Section */}
-                  {formData.admin_plan && (
-                    <div className="space-y-1 mt-3">
-                      <p className="font-extrabold text-slate-950 uppercase text-[9px] underline">
-                        PLAN TERAPEUTICO:
-                      </p>
-                      <div className="whitespace-pre-line text-slate-950 pl-1 font-serif">
-                        {formData.admin_plan}
-                      </div>
-                    </div>
-                  )}
-
                 </div>
 
               </div>
