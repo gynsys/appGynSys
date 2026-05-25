@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useToastStore } from '../../store/toastStore';
 import api from '../../lib/axios';
@@ -76,6 +77,7 @@ export default function ReportEditorPage() {
   const [recentReports, setRecentReports] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistoryOnMobile, setShowHistoryOnMobile] = useState(false);
+  const [deleteReportTarget, setDeleteReportTarget] = useState(null);
 
   // Document Fields State (Starts empty, no prefilled placeholder values)
   const [formData, setFormData] = useState({
@@ -114,6 +116,25 @@ export default function ReportEditorPage() {
       console.error('Error fetching recent reports:', error);
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const handleDeleteReport = async (reportId) => {
+    try {
+      await api.delete(`/consultations/${reportId}`);
+      showToast('Informe eliminado exitosamente', 'success');
+      
+      // If currently editing the deleted report, reset view
+      if (savedConsultationId === reportId) {
+        handleReset();
+      }
+      
+      fetchRecentReports();
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      showToast('Error al eliminar el informe', 'error');
+    } finally {
+      setDeleteReportTarget(null);
     }
   };
 
@@ -513,7 +534,58 @@ export default function ReportEditorPage() {
   const mpps = pdfConfig.mpps_number || '140.795';
   const cmdm = pdfConfig.cmdm_number || '38.789';
   const docCi = pdfConfig.doctor_id || '23.812.988';
-  const footerCity = pdfConfig.footer_city || 'Guarenas';
+  // Delete Confirmation Modal Portal
+  const renderDeleteModal = () => {
+    if (!deleteReportTarget) return null;
+
+    return createPortal(
+      <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+        {/* Backdrop overlay */}
+        <div 
+          onClick={() => setDeleteReportTarget(null)}
+          className="absolute inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm transition-all"
+        />
+        
+        {/* Modal Content container */}
+        <div className="relative bg-white dark:bg-gray-800 rounded-[32px] border border-slate-100 dark:border-gray-700 shadow-2xl p-6 sm:p-8 max-w-sm w-full transition-all animate-in fade-in zoom-in-95 duration-200">
+          
+          <div className="flex flex-col items-center text-center">
+            {/* Warning trash icon */}
+            <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500 dark:text-red-400 mb-4 shadow-inner">
+              <FiTrash2 size={24} className="stroke-[2.5]" />
+            </div>
+            
+            <h3 className="text-base font-black uppercase tracking-wider text-slate-900 dark:text-white mb-2">
+              ¿Eliminar Informe?
+            </h3>
+            
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6">
+              Esta acción eliminará de forma permanente el informe médico de <strong className="text-slate-900 dark:text-white font-extrabold">{deleteReportTarget.patient_name}</strong>. Esta acción no se puede deshacer.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => setDeleteReportTarget(null)}
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-650 text-slate-700 dark:text-slate-355 font-black text-xs uppercase tracking-wider rounded-xl transition-all active:scale-95"
+              >
+                Cancelar
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => handleDeleteReport(deleteReportTarget.id)}
+                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-95"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-8">
@@ -622,24 +694,35 @@ export default function ReportEditorPage() {
                   recentReports.map(report => (
                     <div 
                       key={report.id}
-                      className="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 transition-all flex items-center justify-between gap-4 shadow-sm"
+                      className="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 transition-all flex items-center justify-between gap-4 shadow-sm relative group"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{report.patient_name || 'Sin nombre'}</p>
+                        <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate pr-8">{report.patient_name || 'Sin nombre'}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-md">CI: V-{formatCi(report.patient_ci) || 'N/A'}</span>
                           <span className="text-[10px] text-slate-400 font-medium">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => {
-                          setShowHistoryOnMobile(false);
-                          handleLoadReport(report);
-                        }}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm shadow-blue-500/10 active:scale-95 flex-shrink-0"
-                      >
-                        Cargar
-                      </button>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setDeleteReportTarget(report)}
+                          className="p-2.5 text-red-500 hover:text-red-650 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 rounded-xl transition-all active:scale-95"
+                          title="Eliminar informe"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowHistoryOnMobile(false);
+                            handleLoadReport(report);
+                          }}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm shadow-blue-500/10 active:scale-95"
+                        >
+                          Cargar
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -724,16 +807,26 @@ export default function ReportEditorPage() {
                 recentReports.map(report => (
                   <div 
                     key={report.id}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 rounded-xl border border-slate-100 dark:border-gray-600/50 transition-all flex flex-col justify-between gap-2 shadow-sm"
+                    className="p-4 bg-slate-50 hover:bg-slate-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 rounded-2xl border border-slate-100 dark:border-gray-600/50 transition-all flex flex-col gap-3 shadow-sm relative group"
                   >
-                    <div>
-                      <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{report.patient_name || 'Sin nombre'}</p>
-                      <p className="text-[9px] text-slate-400 font-bold mt-0.5">CI: V-{formatCi(report.patient_ci) || 'N/A'}</p>
-                      <p className="text-[9px] text-slate-400 font-semibold">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</p>
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate pr-1">{report.patient_name || 'Sin nombre'}</p>
+                        <p className="text-[9px] text-slate-400 font-bold mt-0.5">CI: V-{formatCi(report.patient_ci) || 'N/A'}</p>
+                        <p className="text-[9px] text-slate-400 font-semibold">{report.created_at ? new Date(report.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteReportTarget(report)}
+                        className="p-1.5 text-red-500 hover:text-red-650 bg-white hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-950/40 border border-slate-100 dark:border-gray-650 rounded-lg transition-all active:scale-95 flex-shrink-0"
+                        title="Eliminar informe"
+                      >
+                        <FiTrash2 size={13} />
+                      </button>
                     </div>
                     <button
                       onClick={() => handleLoadReport(report)}
-                      className="w-full text-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-wider rounded-lg transition-all"
+                      className="w-full text-center py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
                     >
                       Cargar / Editar
                     </button>
@@ -798,24 +891,7 @@ export default function ReportEditorPage() {
               </div>
             </div>
 
-            {/* Retrieval panel in Edit Mode */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <FiClock className="text-blue-500" /> Cargar Otro Informe Reciente
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
-                {recentReports.map(report => (
-                  <button
-                    key={report.id}
-                    onClick={() => handleLoadReport(report)}
-                    className="p-2 text-left bg-slate-50 hover:bg-slate-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-[9px] font-bold border border-slate-100 dark:border-gray-600/50 truncate flex justify-between items-center transition-all"
-                  >
-                    <span className="truncate mr-2">{report.patient_name}</span>
-                    <span className="text-blue-500 flex-shrink-0">Cargar</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Editable Fields Form */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
@@ -1102,6 +1178,8 @@ export default function ReportEditorPage() {
           </div>
         </div>
       )}
+
+      {renderDeleteModal()}
     </div>
   );
 }
