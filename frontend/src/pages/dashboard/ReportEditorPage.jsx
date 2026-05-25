@@ -534,6 +534,7 @@ export default function ReportEditorPage() {
   const mpps = pdfConfig.mpps_number || '140.795';
   const cmdm = pdfConfig.cmdm_number || '38.789';
   const docCi = pdfConfig.doctor_id || '23.812.988';
+  const footerCity = pdfConfig.footer_city || 'Guarenas';
   // Delete Confirmation Modal Portal
   const renderDeleteModal = () => {
     if (!deleteReportTarget) return null;
