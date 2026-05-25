@@ -261,7 +261,7 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                     {loading ? (
                         <div className="text-center py-4 text-sm text-gray-500">Cargando archivos...</div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                             {assets.map((asset) => (
                         <div 
                             key={asset.id} 
@@ -298,8 +298,8 @@ export const ConsultationAssetManager = ({ consultationId, initialAssets = [], o
                                         )}
                                     </div>
 
-                                    {/* Action buttons panel - adjusted placement to top-3 right-3 to prevent rounded corner clipping, and perfectly centered the icons inside the buttons */}
-                                    <div className="absolute top-3 right-3 flex items-center justify-center space-x-1 bg-white/95 dark:bg-black/80 shadow-md backdrop-blur-md rounded-lg p-1 opacity-100 border border-gray-100/50 dark:border-gray-700/50">
+                                    {/* Action buttons panel - vertical layout to prevent clipping on narrow viewports */}
+                                    <div className="absolute top-2 right-2 flex flex-col items-center justify-center space-y-1 bg-white/95 dark:bg-black/85 shadow-md backdrop-blur-md rounded-lg p-1 opacity-100 border border-gray-100/50 dark:border-gray-700/50 z-10">
                                         {(isImage(asset.file_type) || isVideo(asset.file_type) || isPdf(asset.file_type)) && (
                                             <button
                                                 onClick={() => setPreviewAsset(asset)}
