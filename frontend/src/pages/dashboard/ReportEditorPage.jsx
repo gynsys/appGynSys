@@ -44,11 +44,7 @@ export default function ReportEditorPage() {
     CI: 'CI',
     AGE: 'AGE',
     WEIGHT: 'WEIGHT',
-    HO: 'HO',
-    ENTRY_CHOICE: 'ENTRY_CHOICE',
-    FREE_TEXT: 'FREE_TEXT',
-    REASON: 'REASON',
-    PHYSICAL_EXAM: 'PHYSICAL_EXAM',
+    REPORT_BODY: 'REPORT_BODY',
     ULTRASOUND: 'ULTRASOUND',
     DIAGNOSIS_COUNT: 'DIAGNOSIS_COUNT',
     DIAGNOSIS_ITEM: 'DIAGNOSIS_ITEM',
@@ -144,21 +140,10 @@ export default function ReportEditorPage() {
 
   // Automatically format unified content in real-time if any section changes
   useEffect(() => {
-    // Only compile structured content if we are in guided mode (i.e. did not type free text)
+    // Only compile structured content if we are in guided mode
     if (currentStep === STEPS.COMPLETED && formData.reason_for_visit) {
-      // Build unified text mimicking the KELYN medical report format:
-      // 1. Narrative
-      // 2. Ecografía
-      // 3. Diagnósticos
-      // 4. Plan Terapéutico
-      const ageVal = formData.age;
-      const ageText = ageVal ? `${ageVal} años` : '';
-      const hoVal = formData.ho;
-      const hoText = hoVal && hoVal.trim().toLowerCase() !== 'ninguno' && hoVal.trim().toLowerCase() !== 'n/a'
-        ? `, HO: ${hoVal}`
-        : '';
-      
-      const narrative = `Se trata de paciente de ${ageText} de edad${hoText}, quien acude a consulta en vista de presentar cuadro clínico consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
+      // Build unified text matching the doctor's custom structure:
+      const narrative = formData.reason_for_visit;
       
       const ecoSection = formData.admin_ultrasound 
         ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
@@ -180,13 +165,9 @@ export default function ReportEditorPage() {
     }
   }, [
     formData.reason_for_visit,
-    formData.admin_physical_exam,
     formData.admin_ultrasound,
     formData.admin_diagnosis,
     formData.admin_plan,
-    formData.age,
-    formData.weight,
-    formData.ho,
     currentStep
   ]);
 
@@ -264,67 +245,12 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `<strong>¿Antecedentes Obstétricos (HO)?</strong> (ej: <i>IG IA</i>, o escriba 'Ninguno' / 'N/A'):`
+        text: `<strong>¿Cuerpo del Informe?</strong> (Escriba o pegue la descripción clínica principal del informe):`
       }]);
-      setCurrentStep(STEPS.HO);
+      setCurrentStep(STEPS.REPORT_BODY);
     }
-    else if (currentStep === STEPS.HO) {
-      setFormData(prev => ({ ...prev, ho: text }));
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `<strong>¿Cómo desea ingresar la información clínica del reporte?</strong><br/><br/>👉 Seleccione <strong>Entrada Libre</strong> para escribir o pegar cualquier carta, informe libre o documento de seguros.<br/>👉 Seleccione <strong>Entrada Guiada</strong> para realizar el flujo paso a paso estructurado.`
-      }]);
-      setCurrentStep(STEPS.ENTRY_CHOICE);
-    }
-    else if (currentStep === STEPS.ENTRY_CHOICE) {
-      const lower = text.toLowerCase();
-      if (lower.includes('1') || lower.includes('libre')) {
-        setMessages(prev => [...prev, {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: `<strong>[Modo Entrada Libre Activo]</strong><br/>Por favor, escriba o pegue el contenido completo de su informe, carta médica o documento aquí:`
-        }]);
-        setCurrentStep(STEPS.FREE_TEXT);
-      } else {
-        setMessages(prev => [...prev, {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: `<strong>[Modo Entrada Guiada Activo]</strong><br/>¿Cuál es el <strong>Motivo de Consulta / Síntesis Clínica</strong>?:`
-        }]);
-        setCurrentStep(STEPS.REASON);
-      }
-    }
-    else if (currentStep === STEPS.FREE_TEXT) {
-      const finalFormData = {
-        ...formData,
-        medical_report_content: text
-      };
-      setFormData(finalFormData);
-      
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `🎉 ¡Listo! Guardando informe libre automáticamente y abriendo editor...`
-      }]);
-
-      setTimeout(async () => {
-        setCurrentStep(STEPS.COMPLETED);
-        showToast('Asistente completado. Modo Editor Activo.', 'success');
-        await handleSaveToGynSys(finalFormData);
-      }, 1000);
-    }
-    else if (currentStep === STEPS.REASON) {
+    else if (currentStep === STEPS.REPORT_BODY) {
       setFormData(prev => ({ ...prev, reason_for_visit: text }));
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: `<strong>¿Hallazgos del Examen Físico?</strong>:`
-      }]);
-      setCurrentStep(STEPS.PHYSICAL_EXAM);
-    }
-    else if (currentStep === STEPS.PHYSICAL_EXAM) {
-      setFormData(prev => ({ ...prev, admin_physical_exam: text }));
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
@@ -410,14 +336,8 @@ export default function ReportEditorPage() {
       } else {
         const formattedPlans = newPlans.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
         
-        // Build final state immediately to auto-save it correctly
-        const ageVal = formData.age;
-        const ageText = ageVal ? `${ageVal} años` : '';
-        const hoVal = formData.ho;
-        const hoText = hoVal && hoVal.trim().toLowerCase() !== 'ninguno' && hoVal.trim().toLowerCase() !== 'n/a'
-          ? `, HO: ${hoVal}`
-          : '';
-        const narrative = `Se trata de paciente de ${ageText} de edad${hoText}, quien acude a consulta en vista de presentar cuadro clínico consistente en: ${formData.reason_for_visit.toLowerCase()}.\nSe realiza exploración física y ultrasonido ginecológico constatando los siguientes hallazgos:\n\nExamen Físico: ${formData.admin_physical_exam}`;
+        // Build final state immediately to auto-save it correctly using the streamlined Cuerpo del Informe logic
+        const narrative = formData.reason_for_visit;
         const ecoSection = formData.admin_ultrasound 
           ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
           : '';
@@ -830,88 +750,28 @@ export default function ReportEditorPage() {
                 </div>
 
                 {/* Chat Input Area */}
-                {currentStep === STEPS.ENTRY_CHOICE ? (
-                  <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-3 pb-safe">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center mb-1">
-                      Elige el método de entrada clínica:
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMessages(prev => [...prev, {
-                            id: Date.now(),
-                            sender: 'user',
-                            text: 'Entrada Libre'
-                          }]);
-                          setLoading(true);
-                          setTimeout(() => {
-                            setLoading(false);
-                            setMessages(prev => [...prev, {
-                              id: Date.now() + 1,
-                              sender: 'bot',
-                              text: `<strong>[Modo Entrada Libre Activo]</strong><br/>Escriba o pegue a continuación el contenido clínico completo para su informe, carta médica o documento libre:`
-                            }]);
-                            setCurrentStep(STEPS.FREE_TEXT);
-                          }, 600);
-                        }}
-                        className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-slate-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 border border-dashed border-gray-250 dark:border-gray-650 rounded-2xl transition-all active:scale-95 group"
-                      >
-                        <span className="text-xl mb-1 group-hover:scale-110 transition-transform">📝</span>
-                        <span className="text-xs font-black uppercase text-slate-900 dark:text-white">Entrada Libre</span>
-                        <span className="text-[9px] text-slate-400 font-medium mt-0.5 text-center leading-tight">Para cualquier carta, seguro o reporte libre</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMessages(prev => [...prev, {
-                            id: Date.now(),
-                            sender: 'user',
-                            text: 'Entrada Guiada'
-                          }]);
-                          setLoading(true);
-                          setTimeout(() => {
-                            setLoading(false);
-                            setMessages(prev => [...prev, {
-                              id: Date.now() + 1,
-                              sender: 'bot',
-                              text: `<strong>[Modo Entrada Guiada Activo]</strong><br/>¿Cuál es el <strong>Motivo de Consulta / Síntesis Clínica</strong>?:`
-                            }]);
-                            setCurrentStep(STEPS.REASON);
-                          }, 600);
-                        }}
-                        className="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl transition-all active:scale-95 group"
-                      >
-                        <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🩺</span>
-                        <span className="text-xs font-black uppercase text-blue-700 dark:text-blue-400">Entrada Guiada</span>
-                        <span className="text-[9px] text-blue-600/70 dark:text-blue-400/70 font-medium mt-0.5 text-center leading-tight">Paso a paso estructurado (Examen, Eco, etc.)</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
-                    <input
-                      ref={chatInputRef}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder={
-                        currentStep === STEPS.FREE_TEXT 
-                          ? "Pegue o escriba todo el contenido aquí..." 
-                          : "Escribe la respuesta aquí..."
-                      }
-                      className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
-                      autoFocus
-                    />
-                    <button
-                      type="submit"
-                      disabled={!inputValue.trim() || loading}
-                      className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
-                    >
-                      <FiSend size={18} className="flex-shrink-0" />
-                    </button>
-                  </form>
-                )}
+                <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
+                  <input
+                    ref={chatInputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder={
+                      currentStep === STEPS.REPORT_BODY 
+                        ? "Pegue o escriba todo el cuerpo del informe aquí..." 
+                        : "Escribe la respuesta aquí..."
+                    }
+                    className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputValue.trim() || loading}
+                    className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
+                  >
+                    <FiSend size={18} className="flex-shrink-0" />
+                  </button>
+                </form>
               </>
             )}
           </div>
@@ -1070,22 +930,11 @@ export default function ReportEditorPage() {
               {/* Clinical Description sections */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Motivo / Síntesis Clínica</label>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cuerpo del Informe</label>
                   <textarea
                     name="reason_for_visit"
-                    rows="2"
+                    rows="4"
                     value={formData.reason_for_visit}
-                    onChange={handleFieldChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Examen Físico</label>
-                  <textarea
-                    name="admin_physical_exam"
-                    rows="2"
-                    value={formData.admin_physical_exam}
                     onChange={handleFieldChange}
                     className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
                   />
