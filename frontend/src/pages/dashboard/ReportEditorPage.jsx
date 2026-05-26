@@ -146,15 +146,15 @@ export default function ReportEditorPage() {
       const narrative = formData.reason_for_visit;
       
       const ecoSection = formData.admin_ultrasound 
-        ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
+        ? `\n\n<b>ECOGRAFÍA GINECOLÓGICA:</b>\n${formData.admin_ultrasound}`
         : '';
         
       const diagSection = formData.admin_diagnosis
-        ? `\n\nDIAGNÓSTICOS:\n${formData.admin_diagnosis}`
+        ? `\n\n<b>DIAGNÓSTICOS:</b>\n${formData.admin_diagnosis}`
         : '';
         
       const planSection = formData.admin_plan
-        ? `\n\nPLAN TERAPÉUTICO:\n${formData.admin_plan}`
+        ? `\n\n<b>PLAN TERAPÉUTICO:</b>\n${formData.admin_plan}`
         : '';
         
       const unified = `${narrative}${ecoSection}${diagSection}${planSection}`;
@@ -189,24 +189,26 @@ export default function ReportEditorPage() {
     setCurrentStep(STEPS.NAME);
   }, [doctor]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e, directValue = null) => {
     if (e) e.preventDefault();
-    if (!inputValue.trim()) return;
+    const finalVal = directValue !== null ? String(directValue).trim() : inputValue.trim();
+    if (!finalVal) return;
 
-    const userText = inputValue.trim();
-    setInputValue('');
+    if (directValue === null) {
+      setInputValue('');
+    }
 
     // Add user response to messages
     setMessages(prev => [...prev, {
       id: Date.now(),
       sender: 'user',
-      text: userText
+      text: finalVal
     }]);
 
     setLoading(true);
 
     setTimeout(() => {
-      processStepResponse(userText);
+      processStepResponse(finalVal);
     }, 600);
   };
 
@@ -295,7 +297,7 @@ export default function ReportEditorPage() {
           text: `<strong>Ingresa el ${ordinal} diagnóstico:</strong>`
         }]);
       } else {
-        const formattedDiags = newDiags.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
+        const formattedDiags = newDiags.map((item, idx) => `<b>${idx + 1}.</b> ${item}`).join('\n');
         setFormData(prev => ({ ...prev, admin_diagnosis: formattedDiags }));
         
         setMessages(prev => [...prev, {
@@ -334,27 +336,28 @@ export default function ReportEditorPage() {
           text: `<strong>Ingresa el ${ordinal} item del plan terapéutico:</strong>`
         }]);
       } else {
-        const formattedPlans = newPlans.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
+        const formattedPlans = newPlans.map((item, idx) => `<b>${idx + 1}.</b> ${item}`).join('\n');
         
         // Build final state immediately to auto-save it correctly using the streamlined Cuerpo del Informe logic
         const narrative = formData.reason_for_visit;
         const ecoSection = formData.admin_ultrasound 
-          ? `\n\nECOGRAFÍA GINECOLÓGICA:\n${formData.admin_ultrasound}`
+          ? `\n\n<b>ECOGRAFÍA GINECOLÓGICA:</b>\n${formData.admin_ultrasound}`
           : '';
         const diagSection = formData.admin_diagnosis
-          ? `\n\nDIAGNÓSTICOS:\n${formData.admin_diagnosis}`
+          ? `\n\n<b>DIAGNÓSTICOS:</b>\n${formData.admin_diagnosis}`
           : '';
         const planSection = formattedPlans
-          ? `\n\nPLAN TERAPÉUTICO:\n${formattedPlans}`
+          ? `\n\n<b>PLAN TERAPÉUTICO:</b>\n${formattedPlans}`
           : '';
         const unified = `${narrative}${ecoSection}${diagSection}${planSection}`;
-
+ 
         const finalFormData = {
           ...formData,
+          admin_diagnosis: formData.admin_diagnosis,
           admin_plan: formattedPlans,
           medical_report_content: unified
         };
-
+ 
         setFormData(finalFormData);
         
         setMessages(prev => [...prev, {
@@ -362,7 +365,7 @@ export default function ReportEditorPage() {
           sender: 'bot',
           text: `🎉 ¡Listo! Guardando informe automáticamente y abriendo editor...`
         }]);
-
+ 
         setTimeout(async () => {
           setCurrentStep(STEPS.COMPLETED);
           showToast('Asistente completado. Modo Editor Activo.', 'success');
@@ -647,17 +650,28 @@ export default function ReportEditorPage() {
                 </div>
               </div>
 
-              {/* Toggle history button on mobile */}
-              {!showHistoryOnMobile && (
+              <div className="flex items-center gap-2">
+                {/* Toggle history button on mobile */}
+                {!showHistoryOnMobile && (
+                  <button
+                    type="button"
+                    onClick={() => setShowHistoryOnMobile(true)}
+                    className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider text-white"
+                  >
+                    <FiClock size={14} />
+                    <span>Historial</span>
+                  </button>
+                )}
+
+                {/* Cancel/Close Button */}
                 <button
                   type="button"
-                  onClick={() => setShowHistoryOnMobile(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider text-white"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider text-white"
                 >
-                  <FiClock size={14} />
-                  <span>Historial</span>
+                  <span>Salir</span>
                 </button>
-              )}
+              </div>
             </div>
 
             {showHistoryOnMobile ? (
@@ -665,7 +679,7 @@ export default function ReportEditorPage() {
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-gray-50 dark:bg-gray-900/50">
                 {loadingHistory ? (
                   <div className="py-24 flex justify-center">
-                    <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style={{ borderColor: primaryColor, borderTopColor: 'transparent' }}></div>
                   </div>
                 ) : recentReports.length === 0 ? (
                   <div className="py-24 text-center">
@@ -700,7 +714,8 @@ export default function ReportEditorPage() {
                             setShowHistoryOnMobile(false);
                             handleLoadReport(report);
                           }}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm shadow-blue-500/10 active:scale-95"
+                          style={{ backgroundColor: primaryColor }}
+                          className="px-4 py-2 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95"
                         >
                           Cargar
                         </button>
@@ -719,14 +734,18 @@ export default function ReportEditorPage() {
                       className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
                     >
                       {msg.sender === 'bot' && (
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        <div 
+                          style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+                          className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
+                        >
                           🩺
                         </div>
                       )}
                       <div 
+                        style={msg.sender === 'user' ? { backgroundColor: primaryColor } : {}}
                         className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
                           msg.sender === 'user' 
-                            ? 'bg-blue-600 text-white rounded-br-none' 
+                            ? 'text-white rounded-br-none' 
                             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
                         }`}
                         dangerouslySetInnerHTML={{ __html: msg.text }}
@@ -736,7 +755,10 @@ export default function ReportEditorPage() {
                   
                   {loading && (
                     <div className="flex items-end gap-2 max-w-[80%]">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
+                      <div 
+                        style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse"
+                      >
                         🩺
                       </div>
                       <div className="p-4 rounded-[20px] rounded-bl-none bg-white dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
@@ -749,29 +771,59 @@ export default function ReportEditorPage() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Chat Input Area */}
-                <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
-                  <input
-                    ref={chatInputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={
-                      currentStep === STEPS.REPORT_BODY 
-                        ? "Pegue o escriba todo el cuerpo del informe aquí..." 
-                        : "Escribe la respuesta aquí..."
-                    }
-                    className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all shadow-sm"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    disabled={!inputValue.trim() || loading}
-                    className="w-12 h-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
-                  >
-                    <FiSend size={18} className="flex-shrink-0" />
-                  </button>
-                </form>
+                {/* Chat Input Area or Programmatic Count Buttons */}
+                {currentStep === STEPS.DIAGNOSIS_COUNT || currentStep === STEPS.PLAN_COUNT ? (
+                  <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex flex-col items-center gap-3 pb-safe">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      ¿Cuántos items deseas registrar? (1 al 6):
+                    </p>
+                    <div className="flex gap-2.5 justify-center flex-wrap">
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => {
+                            handleSendMessage(null, String(num));
+                          }}
+                          style={{
+                            backgroundColor: primaryColor,
+                            boxShadow: `0 4px 14px -4px ${primaryColor}`
+                          }}
+                          className="w-10 h-10 flex items-center justify-center text-white font-extrabold text-sm rounded-full transition-all hover:scale-110 active:scale-90"
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
+                    <input
+                      ref={chatInputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={
+                        currentStep === STEPS.REPORT_BODY 
+                          ? "Pegue o escriba todo el cuerpo del informe aquí..." 
+                          : "Escribe la respuesta aquí..."
+                      }
+                      className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 dark:text-white transition-all shadow-sm"
+                      style={{ '--tw-ring-color': primaryColor }}
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || loading}
+                      style={{
+                        backgroundColor: inputValue.trim() && !loading ? primaryColor : '#D1D5DB'
+                      }}
+                      className="w-12 h-12 flex-shrink-0 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
+                    >
+                      <FiSend size={18} className="flex-shrink-0" />
+                    </button>
+                  </form>
+                )}
               </>
             )}
           </div>
@@ -779,13 +831,13 @@ export default function ReportEditorPage() {
           {/* RIGHT: Retrieval panel (recent reports history list) - Hidden on Mobile to allow full chatbot view */}
           <div className="hidden lg:flex lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-[32px] border border-gray-100 dark:border-gray-700 shadow-xl h-[600px] flex flex-col">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-              <FiClock className="text-blue-500" /> Historial de Informes
+              <FiClock style={{ color: primaryColor }} /> Historial de Informes
             </h3>
             
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {loadingHistory ? (
                 <div className="py-12 flex justify-center">
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: primaryColor, borderTopColor: 'transparent' }}></div>
                 </div>
               ) : recentReports.length === 0 ? (
                 <p className="text-xs text-slate-400 py-12 text-center font-medium">No se encontraron informes guardados.</p>
@@ -812,7 +864,8 @@ export default function ReportEditorPage() {
                     </div>
                     <button
                       onClick={() => handleLoadReport(report)}
-                      className="w-full text-center py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
+                      style={{ backgroundColor: primaryColor }}
+                      className="w-full text-center py-2 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
                     >
                       Cargar / Editar
                     </button>
@@ -844,7 +897,8 @@ export default function ReportEditorPage() {
                 
                 <button
                   onClick={handleDownloadPdf}
-                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-md shadow-blue-100 dark:shadow-none"
+                  style={{ backgroundColor: primaryColor }}
+                  className="flex items-center justify-center gap-2 text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-md shadow-blue-100 dark:shadow-none"
                 >
                   <FiDownload size={16} /> Descargar PDF
                 </button>
@@ -871,7 +925,10 @@ export default function ReportEditorPage() {
                       onChange={(e) => setIncludeColor(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div 
+                      style={includeColor ? { backgroundColor: primaryColor } : {}} 
+                      className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600"
+                    ></div>
                   </label>
                 </div>
               </div>
@@ -980,9 +1037,14 @@ export default function ReportEditorPage() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 pb-2 flex justify-between items-center">
                 <span className="flex items-center gap-2">
-                  <FiImage className="text-blue-500" /> Anexar Imágenes al Informe
+                  <FiImage style={{ color: primaryColor }} /> Anexar Imágenes al Informe
                 </span>
-                <span className="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 px-2 py-0.5 rounded-full font-bold uppercase">Anexo</span>
+                <span 
+                  style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}
+                  className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
+                >
+                  Anexo
+                </span>
               </h3>
               
               {savedConsultationId ? (
@@ -1071,11 +1133,13 @@ export default function ReportEditorPage() {
                 </div>
 
                 {/* 4. Main Medical Text (Unified view) */}
-                <div className="text-[10px] text-slate-950 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto whitespace-pre-wrap">
-                  {formData.medical_report_content || (
-                    <span className="text-gray-400 italic">El contenido clínico del informe aparecerá aquí...</span>
-                  )}
-                </div>
+                <div 
+                  className="text-[10px] text-slate-950 leading-relaxed font-serif text-justify px-1 pr-2 max-h-[300px] overflow-y-auto whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ 
+                    __html: formData.medical_report_content?.replace(/\n/g, '<br/>') || 
+                      '<span class="text-gray-400 italic">El contenido clínico del informe aparecerá aquí...</span>' 
+                  }}
+                />
 
               </div>
 
