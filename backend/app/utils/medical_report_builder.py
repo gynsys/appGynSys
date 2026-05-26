@@ -32,6 +32,31 @@ def format_family_history(mother_history: str, father_history: str) -> str:
 
     return "<br/>".join(parts) if parts else "Niega antecedentes familiares de importancia."
 
+def format_clinical_list_with_bold(text: str) -> str:
+    if not text:
+        return ""
+    lines = text.split('\n')
+    formatted_lines = []
+    for line in lines:
+        trimmed = line.strip()
+        if not trimmed:
+            formatted_lines.append(line)
+            continue
+        
+        # Check if already has <b> tags at start or in text
+        if trimmed.startswith('<b>') or '<b>' in trimmed:
+            formatted_lines.append(line)
+            continue
+            
+        # Match patterns like "1.", "1)", "•", "-" at the start of the line
+        match = re.match(r'^(\s*)([-•*]|\d+[.)])(\s+)(.*)', line)
+        if match:
+            indent, marker, space, content = match.groups()
+            formatted_lines.append(f"{indent}<b>{marker}</b>{space}{content}")
+        else:
+            formatted_lines.append(line)
+    return '\n'.join(formatted_lines)
+
 def build_narrative_summary(report_data: dict, include_functional_exam: bool = True) -> dict:
     """
     Toma los datos crudos y devuelve un diccionario con los textos formateados,
@@ -156,10 +181,10 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
         diag_items = [d.strip() for d in diagnosis.strip().split('\n') if d.strip()]
         if len(diag_items) > 1 or (diag_items and re.match(r'^\d+\)', diag_items[0])):
              # Extraer la operación fuera del f-string (no se pueden usar backslashes en expresiones de f-strings)
-             diagnosis_formatted = diagnosis.replace('\n', '<br/>')
+             diagnosis_formatted = format_clinical_list_with_bold(diagnosis).replace('\n', '<br/>')
              narrative_parts.append(f"Se establecen los siguientes diagnósticos:<br/>{diagnosis_formatted}")
         else:
-            narrative_parts.append(f"Se establece el diagnóstico de {diagnosis}.")
+            narrative_parts.append(f"Se establece el diagnóstico de {format_clinical_list_with_bold(diagnosis)}.")
 
     plan = report_data.get('admin_plan')
     '''if plan:
@@ -225,7 +250,7 @@ def build_narrative_summary(report_data: dict, include_functional_exam: bool = T
             # Quitamos marcadores manuales si el usuario los puso (como '•', '-', o números)
             cleaned_item = re.sub(r'^[•*-]\s*|^\d+[.)]\s*', '', item)
             # Agregar número con punto y espacio
-            numbered_list_parts.append(f"{i}. {cleaned_item}")
+            numbered_list_parts.append(f"<b>{i}.</b> {cleaned_item}")
         
         # Unir los ítems con saltos de línea
         # Usamos <br/> para separar cada ítem y leftIndent se aplicará en el estilo

@@ -33,6 +33,29 @@ const formatAsList = (text) => {
   return items.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
 };
 
+// Helper: Auto-formats a clinical list (diagnoses/plan) ensuring list numbers/bullets are wrapped in bold
+const formatClinicalListWithBold = (text) => {
+  if (!text) return '';
+  return text.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return line;
+    
+    // Check if it already has bold tags around the beginning
+    if (trimmed.startsWith('<b>') || trimmed.includes('<b>')) {
+      return line;
+    }
+    
+    // Match patterns like "1.", "1)", "•", "-" at the start of the line
+    const match = line.match(/^(\s*)([-•*]|\d+[.)])(\s+)(.*)/);
+    if (match) {
+      const [_, indent, marker, space, content] = match;
+      return `${indent}<b>${marker}</b>${space}${content}`;
+    }
+    
+    return line;
+  }).join('\n');
+};
+
 export default function ReportEditorPage() {
   const { doctor, isDarkTheme, primaryColor = '#4F46E5' } = useOutletContext() || {};
   const { showToast } = useToastStore();
@@ -149,12 +172,14 @@ export default function ReportEditorPage() {
         ? `\n\n<b>ECOGRAFÍA GINECOLÓGICA:</b>\n${formData.admin_ultrasound}`
         : '';
         
-      const diagSection = formData.admin_diagnosis
-        ? `\n\n<b>DIAGNÓSTICOS:</b>\n${formData.admin_diagnosis}`
+      const formattedDiags = formatClinicalListWithBold(formData.admin_diagnosis);
+      const diagSection = formattedDiags
+        ? `\n\n<b>DIAGNÓSTICOS:</b>\n${formattedDiags}`
         : '';
         
-      const planSection = formData.admin_plan
-        ? `\n\n<b>PLAN TERAPÉUTICO:</b>\n${formData.admin_plan}`
+      const formattedPlans = formatClinicalListWithBold(formData.admin_plan);
+      const planSection = formattedPlans
+        ? `\n\n<b>PLAN TERAPÉUTICO:</b>\n${formattedPlans}`
         : '';
         
       const unified = `${narrative}${ecoSection}${diagSection}${planSection}`;
