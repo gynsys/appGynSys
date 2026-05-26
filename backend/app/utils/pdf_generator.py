@@ -21,7 +21,8 @@ from app.core.config import settings
 from app.utils.medical_report_builder import (
     format_simple_antecedente,
     format_family_history,
-    build_narrative_summary
+    build_narrative_summary,
+    format_unified_report_content
 )
 
 logger = logging.getLogger(__name__)
@@ -294,6 +295,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     style_narrative = ParagraphStyle(
         name='Narrative',
         parent=styleN,
+        fontName='Helvetica',
         alignment=TA_JUSTIFY,
         leading=14,         # Reducido de 20 a 14 para ahorrar espacio
         firstLineIndent=0   # Sin sangría inicial para el texto narrativo
@@ -303,12 +305,13 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     style_plan = ParagraphStyle(
         name='Plan',
         parent=styleN,
+        fontName='Helvetica',
         alignment=TA_JUSTIFY,  # Justificado como el texto narrativo
         leading=14,         # Reducido de 16 a 14 para ahorrar espacio
         leftIndent=18,      # Sangría izquierda para los números
         firstLineIndent=0 # Compensar la primera línea para alinear números
     )
-    style_patient_data = ParagraphStyle(name='PatientData', parent=styleN, spaceAfter=2)
+    style_patient_data = ParagraphStyle(name='PatientData', parent=styleN, fontName='Helvetica', spaceAfter=2)
 
     # Header
     doctor_name = pdf_config.get('doctor_name') or (doctor.nombre_completo if doctor else "Médico Especialista")
@@ -322,7 +325,7 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
 
     # Header Table: 3 columns [Logo Left | Info Center | Logo Right]
     # Center text alignment
-    style_center = ParagraphStyle(name='HeaderCenter', parent=styleN, alignment=TA_CENTER)
+    style_center = ParagraphStyle(name='HeaderCenter', parent=styleN, fontName='Helvetica', alignment=TA_CENTER)
     # In color mode, remove left logo and center text for minimalist look
     # (Background image already provides the visual identity)
     if use_color:
@@ -369,8 +372,10 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
     # Unified Report Content Priority
     unified_content = report_data.get('medical_report_content')
     if unified_content:
+        # Formatear negritas de encabezados y listas dinámicamente en el backend
+        formatted_unified = format_unified_report_content(unified_content)
         # Convert newlines to <br/> for ReportLab
-        formatted_content = str(unified_content).replace('\n', '<br/>')
+        formatted_content = str(formatted_unified).replace('\n', '<br/>')
         story.append(safe_p(formatted_content, style_narrative))
     else:
         # Fallback to narrative building if no unified content

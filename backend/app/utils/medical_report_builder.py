@@ -57,6 +57,59 @@ def format_clinical_list_with_bold(text: str) -> str:
             formatted_lines.append(line)
     return '\n'.join(formatted_lines)
 
+def format_unified_report_content(text: str) -> str:
+    if not text:
+        return ""
+    lines = text.split('\n')
+    formatted_lines = []
+    for line in lines:
+        trimmed = line.strip()
+        if not trimmed:
+            formatted_lines.append(line)
+            continue
+        
+        # Match standard clinical section headers and wrap them in bold if they aren't already
+        # (e.g. "DIAGNÓSTICOS:", "ECOGRAFÍA GINECOLÓGICA:", "PLAN TERAPÉUTICO:", etc.)
+        headers = [
+            "ECOGRAFÍA GINECOLÓGICA:", "DIAGNÓSTICOS:", "PLAN TERAPÉUTICO:",
+            "ECOGRAFÍA:", "PLAN:", "DIAGNOSTICO:", "DIAGNOSTICOS:"
+        ]
+        is_header = False
+        for h in headers:
+            if trimmed.upper() == h or trimmed.upper() == h.replace(":", ""):
+                # Wrap the header in bold
+                indent_len = len(line) - len(line.lstrip())
+                indent = line[:indent_len]
+                # If already bolded, keep it
+                if trimmed.startswith('<b>') or '<b>' in trimmed:
+                    formatted_lines.append(line)
+                else:
+                    # Make it uppercase and bold
+                    clean_h = trimmed.upper()
+                    if not clean_h.endswith(':'):
+                        clean_h += ':'
+                    formatted_lines.append(f"{indent}<b>{clean_h}</b>")
+                is_header = True
+                break
+        
+        if is_header:
+            continue
+            
+        # Check if already has <b> tags at start or in text
+        if trimmed.startswith('<b>') or '<b>' in trimmed:
+            formatted_lines.append(line)
+            continue
+            
+        # Match patterns like "1.", "1)", "•", "-" at the start of the line
+        match = re.match(r'^(\s*)([-•*]|\d+[.)])(\s+)(.*)', line)
+        if match:
+            indent, marker, space, content = match.groups()
+            formatted_lines.append(f"{indent}<b>{marker}</b>{space}{content}")
+        else:
+            formatted_lines.append(line)
+    return '\n'.join(formatted_lines)
+
+
 def build_narrative_summary(report_data: dict, include_functional_exam: bool = True) -> dict:
     """
     Toma los datos crudos y devuelve un diccionario con los textos formateados,
