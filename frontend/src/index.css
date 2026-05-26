@@ -140,3 +140,8 @@ body,
 .ql-align-right {
   text-align: right !important;
 }
+
+/* Restore bold weight for b and strong tags disabled by tailwind preflight */
+b, strong {
+  font-weight: bold !important;
+}
