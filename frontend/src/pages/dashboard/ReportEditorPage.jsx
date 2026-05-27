@@ -912,7 +912,7 @@ export default function ReportEditorPage() {
               
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={handleSaveToGynSys}
+                  onClick={() => handleSaveToGynSys()}
                   disabled={saving}
                   className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all"
                 >
