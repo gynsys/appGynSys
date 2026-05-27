@@ -120,6 +120,9 @@ export default function ReportEditorPage() {
     medical_report_content: ''
   });
 
+  // Editable document title (multi-purpose editor)
+  const [reportTitle, setReportTitle] = useState('INFORME MÉDICO');
+
   const messagesEndRef = useRef(null);
   const chatInputRef = useRef(null);
 
@@ -500,6 +503,8 @@ export default function ReportEditorPage() {
       admin_observations: report.observations || extractedWeight,
       medical_report_content: report.medical_report_content || ''
     });
+    // Restore editable title if saved in pdf_config or default
+    setReportTitle(report.report_title || 'INFORME MÉDICO');
     setSavedConsultationId(report.id);
     setReportDate(report.created_at ? report.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
     setCurrentStep(STEPS.COMPLETED);
@@ -508,6 +513,7 @@ export default function ReportEditorPage() {
 
   const handleReset = () => {
     setSavedConsultationId(null);
+    setReportTitle('INFORME MÉDICO');
     setFormData({
       full_name: '',
       ci: '',
@@ -908,7 +914,22 @@ export default function ReportEditorPage() {
             
             {/* Action Bar */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Acciones del Informe</h3>
+              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Acciones del Documento</h3>
+
+              {/* Editable Document Title */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <FiFileText size={11} style={{ color: primaryColor }} /> Título del Documento
+                </label>
+                <input
+                  type="text"
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  placeholder="Ej: INFORME MÉDICO, CONSTANCIA, EPICRISIS..."
+                  className="w-full text-sm font-black bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-gray-800 dark:text-white uppercase tracking-wider focus:outline-none focus:ring-2 transition-all"
+                  style={{ '--tw-ring-color': primaryColor }}
+                />
+              </div>
               
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -929,7 +950,7 @@ export default function ReportEditorPage() {
                 </button>
               </div>
 
-              {/* Styling parameters (Matching standard history exactly!) */}
+              {/* Styling parameters */}
               <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-wider">Fecha de Emisión</span>
@@ -963,7 +984,6 @@ export default function ReportEditorPage() {
 
             {/* Editable Fields Form */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
-              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 pb-2">Datos Clínicos del Reporte</h3>
               
               {/* Patient Details Row */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -1097,8 +1117,8 @@ export default function ReportEditorPage() {
 
           </div>
 
-          {/* RIGHT: Letter printable virtual paper (75% column width) */}
-          <div className="lg:col-span-7 flex justify-center">
+          {/* RIGHT: Letter printable virtual paper (75% column width) — hidden on mobile */}
+          <div className="hidden lg:flex lg:col-span-7 justify-center">
             <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white border border-slate-200 shadow-2xl text-slate-900 p-8 sm:p-12 flex flex-col justify-between font-sans leading-relaxed select-none overflow-hidden relative">
 
               {/* REPORT STRUCTURE WRAPPER */}
@@ -1129,10 +1149,10 @@ export default function ReportEditorPage() {
                   )}
                 </div>
 
-                {/* 2. Document Title */}
+                {/* 2. Document Title — editable via reportTitle state */}
                 <div className="text-center py-2">
                   <h3 className="font-black text-xs uppercase tracking-widest text-slate-800 border-b border-slate-800 inline-block px-4 pb-0.5">
-                    {pdfConfig.report_title || 'INFORME MÉDICO'}
+                    {reportTitle || pdfConfig.report_title || 'INFORME MÉDICO'}
                   </h3>
                 </div>
 
