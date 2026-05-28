@@ -56,6 +56,11 @@ export default function DoctorRegisterForm() {
             return
         }
 
+        if (formData.password.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres')
+            return
+        }
+
         setLoading(true)
 
         try {
@@ -69,7 +74,12 @@ export default function DoctorRegisterForm() {
             setIsSuccess(true)
         } catch (err) {
             const detail = err.response?.data?.detail
-            setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
+            if (Array.isArray(detail)) {
+                // Si es un error 422 (array de errores de Pydantic), toma el primer mensaje
+                setError(detail[0]?.msg || 'Revisa los campos ingresados.')
+            } else {
+                setError(detail || 'Error al registrar. Por favor intenta de nuevo.')
+            }
         } finally {
             setLoading(false)
         }
