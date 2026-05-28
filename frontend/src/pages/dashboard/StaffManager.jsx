@@ -4,7 +4,7 @@ import { useToastStore } from '../../store/toastStore';
 import GynSysLoader from '../../components/common/GynSysLoader';
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
-import api from '../../services/api';
+import api from '../../lib/axios';
 
 export default function StaffManager() {
   const { user } = useAuthStore();
