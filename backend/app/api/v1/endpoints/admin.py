@@ -120,9 +120,14 @@ def update_tenant_status_endpoint(
     if status_update.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
 
-    db_tenant = update_tenant_status(db, tenant_id=tenant_id, status_update=status_update)
+    # Check previous status to send email on transition
+    db_tenant = get_tenant(db, tenant_id=tenant_id)
     if db_tenant is None:
         raise HTTPException(status_code=404, detail="Tenant not found")
+        
+    old_status = db_tenant.status
+
+    db_tenant = update_tenant_status(db, tenant_id=tenant_id, status_update=status_update)
     
     # Auto-whitelist OAuth when tenant is activated or approved
     if status_update.status in ["active", "approved"] and db_tenant.email:
@@ -134,11 +139,27 @@ def update_tenant_status_endpoint(
                 added_by_id=current_admin.id,
                 notes=f"Auto-whitelisted when tenant status changed to '{status_update.status}'"
             )
-            print(f"✅ Auto-whitelisted {db_tenant.email} for OAuth")
+            from app.core.logging import logger
+            logger.info(f"✅ Auto-whitelisted {db_tenant.email} for OAuth")
         except Exception as e:
-            print(f"⚠️  Failed to auto-whitelist {db_tenant.email}: {e}")
+            from app.core.logging import logger
+            logger.error(f"⚠️  Failed to auto-whitelist {db_tenant.email}", exc_info=True)
             # Don't fail the request, just log the error
-    
+
+    # Send approval email if transitioned to approved
+    if old_status != "approved" and status_update.status == "approved" and db_tenant.email:
+        from app.tasks.email_tasks import send_tenant_approval_email
+        from app.core.logging import logger
+        try:
+            send_tenant_approval_email.delay(
+                db_tenant.email,
+                db_tenant.nombre_completo,
+                db_tenant.slug_url
+            )
+            logger.info(f"✅ Queued approval email for {db_tenant.email}")
+        except Exception as e:
+            logger.error(f"⚠️  Failed to queue approval email for {db_tenant.email}", exc_info=True)
+            
     return db_tenant
 
 
