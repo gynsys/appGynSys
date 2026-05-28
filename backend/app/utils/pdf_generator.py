@@ -581,8 +581,8 @@ def generate_summary_report(report_data: dict, doctor_id: int, db: Session = Non
                 img_reader = ImageReader(path)
                 iw, ih = img_reader.getSize()
                 aspect = ih / float(iw)
-                max_w = 7.0 * inch
-                max_h = 6.0 * inch
+                max_w = 4.2 * inch
+                max_h = 3.6 * inch
                 if aspect > (max_h / max_w):
                     h = max_h
                     w = h / aspect
