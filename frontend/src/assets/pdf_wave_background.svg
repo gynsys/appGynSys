@@ -1,145 +1,43 @@
-<!--
-  pdf_wave_background.svg  (v3 — réplica fiel de la imagen)
-  ═══════════════════════════════════════════════════════════
-  Diseño: tres capas de ondas que nacen desde la esquina
-  SUPERIOR-DERECHA y se curvan hacia el interior de la página.
-  Cada capa es más pequeña y más oscura que la anterior.
-  El resto de la página es blanco puro (zona del texto).
-
-  PARA CAMBIAR COLORES (SaaS multi-tenant):
-  ─────────────────────────────────────────
-  Busca y reemplaza los tres valores hex:
-    PRIMARY_DARK   → #004D40   (capa delantera, esquina)
-    PRIMARY_MID    → #00695C   (capa media)
-    PRIMARY_LIGHT  → #006064   (capa trasera, más amplia)
-    ACCENT         → #4DD0E1   (extremo interior claro)
-
-  Ejemplo para un tenant con colores púrpura:
-    PRIMARY_DARK  = #4A148C
-    PRIMARY_MID   = #6A1B9A
-    PRIMARY_LIGHT = #7B1FA2
-    ACCENT        = #CE93D8
--->
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 612 792"
-     width="612" height="792">
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 792" width="612" height="792">
   <defs>
-
-    <!-- ─── Gradientes (origen en esquina sup-der, fade hacia interior) ─── -->
-
-    <!-- Wave 1: la más clara y amplia -->
-    <linearGradient id="g1"
-        x1="612" y1="0" x2="80" y2="280"
-        gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#006064" stop-opacity="0.90"/>
-      <stop offset="75%"  stop-color="#4DD0E1" stop-opacity="0.30"/>
-      <stop offset="100%" stop-color="#80DEEA" stop-opacity="0.05"/>
+    <!-- Wave 1: The lowest layer, spanning widest -->
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#004D40" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#4DD0E1" stop-opacity="0.05"/>
     </linearGradient>
 
-    <!-- Wave 2: media -->
-    <linearGradient id="g2"
-        x1="612" y1="0" x2="105" y2="215"
-        gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#00695C" stop-opacity="0.95"/>
-      <stop offset="70%"  stop-color="#26C6DA" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#4DD0E1" stop-opacity="0.10"/>
+    <!-- Wave 2: Middle layer, intersecting -->
+    <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00695C" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#26C6DA" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#4DD0E1" stop-opacity="0.1"/>
     </linearGradient>
 
-    <!-- Wave 3: delantera, esquina oscura -->
-    <linearGradient id="g3"
-        x1="612" y1="0" x2="318" y2="138"
-        gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#004D40" stop-opacity="1"/>
-      <stop offset="60%"  stop-color="#006064" stop-opacity="0.92"/>
-      <stop offset="100%" stop-color="#00838F" stop-opacity="0.70"/>
+    <!-- Wave 3: Top layer, sharp and elegant -->
+    <linearGradient id="g3" x1="100%" y1="0%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#004D40" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#006064" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#00838F" stop-opacity="0.4"/>
     </linearGradient>
 
-    <!-- Recorte de página -->
     <clipPath id="clip">
       <rect width="612" height="792"/>
     </clipPath>
-
   </defs>
 
-  <!-- ── Fondo blanco ── -->
   <rect width="612" height="792" fill="#FFFFFF"/>
 
+  <g clip-path="url(#clip)">
+    <!-- Wave 1 (Deepest, stretches from left to right bottom-ish) -->
+    <path d="M 0,0 L 612,0 L 612,320 C 500,280 400,380 250,250 C 150,150 50,200 0,180 Z" fill="url(#g1)"/>
+    
+    <!-- Wave 2 (Middle, intertwines by crossing over the y-axis of wave 1) -->
+    <path d="M 0,0 L 612,0 L 612,180 C 480,280 350,120 200,220 C 100,280 50,150 0,150 Z" fill="url(#g2)"/>
+    
+    <!-- Wave 3 (Front layer, dark corner accent that stretches long) -->
+    <path d="M 200,0 L 612,0 L 612,220 C 450,150 400,260 250,180 C 200,150 150,80 100,0 Z" fill="url(#g3)"/>
 
-  <!-- ════════════════════════════════════════════════════════
-       WAVE 1 — La más grande y clara
-       Nace desde la esquina superior-derecha y se expande
-       cubriendo el top completo hasta x≈0 y bajando por la
-       derecha hasta y≈280. Borde inferior: curva suave ondulada.
-  ════════════════════════════════════════════════════════ -->
-  <path
-    d="
-      M 0,0
-      L 612,0
-      L 612,278
-      C 572,262  532,250  492,264
-      C 452,278  412,266  372,253
-      C 332,240  292,229  252,219
-      C 212,209  172,216  132,201
-      C  92,186   46,166    0,108
-      Z
-    "
-    fill="url(#g1)"
-    clip-path="url(#clip)"/>
-
-
-  <!-- ════════════════════════════════════════════════════════
-       WAVE 2 — Tamaño medio, más saturada
-       Arranca desde x≈105 en el borde superior y llega
-       hasta y≈215 en el borde derecho.
-  ════════════════════════════════════════════════════════ -->
-  <path
-    d="
-      M 105,0
-      L 612,0
-      L 612,215
-      C 580,204  550,198  518,209
-      C 486,220  456,218  424,208
-      C 386,197  350,182  316,175
-      C 282,168  250,178  218,166
-      C 184,154  152,138  130,120
-      C 112,106  104, 86  105, 55
-      Z
-    "
-    fill="url(#g2)"
-    clip-path="url(#clip)"/>
-
-
-  <!-- ════════════════════════════════════════════════════════
-       WAVE 3 — Acento oscuro en la esquina superior-derecha
-       La más pequeña y densa, da profundidad al conjunto.
-       Arranca desde x≈315 y llega hasta y≈138 en la derecha.
-  ════════════════════════════════════════════════════════ -->
-  <path
-    d="
-      M 315,0
-      L 612,0
-      L 612,138
-      C 593,130  572,124  550,131
-      C 526,138  503,141  480,132
-      C 454,122  432,107  410,101
-      C 388, 95  367, 99  346, 91
-      C 330, 85  318, 73  315, 50
-      Z
-    "
-    fill="url(#g3)"
-    clip-path="url(#clip)"/>
-
-
-  <!-- ════════════════════════════════════════════════════════
-       ACENTO LATERAL IZQUIERDO
-       Sombra muy sutil en el borde izquierdo — reproduce la
-       leve "mancha" de color visible en la imagen original.
-  ════════════════════════════════════════════════════════ -->
-  <path
-    d="M 0,0 L 0,200 C 4,160 6,120 3,80 Z"
-    fill="#006064"
-    opacity="0.07"
-    clip-path="url(#clip)"/>
-
+    <!-- Additional intertwined ribbon for 'superposition' effect -->
+    <path d="M 612,50 C 500,200 350,50 150,180 C 50,220 0,150 0,150 L 0,0 L 612,0 Z" fill="url(#g2)" opacity="0.5" style="mix-blend-mode: multiply;"/>
+  </g>
 </svg>

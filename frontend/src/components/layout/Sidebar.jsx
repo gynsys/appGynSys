@@ -52,6 +52,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
       title: 'Configuraciones',
       items: [
         { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
+        ...(user?.role === 'clinic' || user?.role === 'admin' ? [{ icon: FiUsers, label: 'Gestión Personal', path: '/dashboard/staff' }] : []),
         { icon: FiVideo, label: 'Consultas Online', path: '/dashboard/online-consultations' },
         { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },
         { icon: FiMapPin, label: 'Ubicaciones', path: '/dashboard/locations' },

@@ -286,7 +286,7 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `¿Desea ingresar información de: <strong>Ecografía, Diagnósticos y Plan Terapéutico</strong>?`
+        text: `¿Desea ingresar la informacion de: <strong>ecografía, diagnósticos y plan terapéutico</strong>?`
       }]);
       setCurrentStep(STEPS.ASK_OPTIONAL);
     }
@@ -812,7 +812,7 @@ export default function ReportEditorPage() {
                       )}
                       <div 
                         style={msg.sender === 'user' ? { backgroundColor: primaryColor } : {}}
-                        className={`min-w-0 flex-1 p-3 sm:p-4 rounded-[20px] text-sm shadow-sm leading-relaxed break-words ${
+                        className={`min-w-0 p-3 sm:p-4 rounded-[20px] text-sm shadow-sm leading-relaxed break-words ${
                           msg.sender === 'user' 
                             ? 'text-white rounded-br-none' 
                             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
@@ -889,32 +889,50 @@ export default function ReportEditorPage() {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2 pb-safe">
-                    <input
-                      ref={chatInputRef}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder={
-                        currentStep === STEPS.REPORT_BODY 
-                          ? "Pegue o escriba todo el cuerpo del informe aquí..." 
-                          : "Escribe la respuesta aquí..."
-                      }
-                      className="w-full min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 dark:text-white transition-all shadow-sm"
-                      style={{ '--tw-ring-color': primaryColor }}
-                      autoFocus
-                    />
-                    <button
-                      type="submit"
-                      disabled={!inputValue.trim() || loading}
-                      style={{
-                        backgroundColor: inputValue.trim() && !loading ? primaryColor : '#D1D5DB'
-                      }}
-                      className="w-12 h-12 flex-shrink-0 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95"
-                    >
-                      <FiSend size={18} className="flex-shrink-0" />
-                    </button>
-                  </form>
+                  <div className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 pb-safe">
+                    <div className="flex gap-2 items-end">
+                      {[STEPS.REPORT_BODY, STEPS.ULTRASOUND, STEPS.DIAGNOSIS_ITEM, STEPS.PLAN_ITEM].includes(currentStep) ? (
+                        <div className="flex-1 w-full min-w-0">
+                          <RichTextEditor
+                            value={inputValue}
+                            onChange={(html) => setInputValue(html)}
+                            placeholder={
+                              currentStep === STEPS.REPORT_BODY 
+                                ? "Pegue o escriba todo el cuerpo del informe aquí..." 
+                                : "Escribe la respuesta aquí..."
+                            }
+                            minRows={2}
+                            primaryColor={primaryColor}
+                          />
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSendMessage} className="flex-1 w-full min-w-0">
+                          <input
+                            ref={chatInputRef}
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            placeholder="Escribe la respuesta aquí..."
+                            className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 dark:text-white transition-all shadow-sm"
+                            style={{ '--tw-ring-color': primaryColor }}
+                            autoFocus
+                          />
+                        </form>
+                      )}
+                      
+                      <button
+                        type="button"
+                        onClick={(e) => handleSendMessage(e)}
+                        disabled={!inputValue.trim() || loading}
+                        style={{
+                          backgroundColor: inputValue.trim() && !loading ? primaryColor : '#D1D5DB'
+                        }}
+                        className="w-12 h-12 flex-shrink-0 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 self-end mb-1"
+                      >
+                        <FiSend size={18} className="flex-shrink-0" />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </>
             )}
