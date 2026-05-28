@@ -68,6 +68,7 @@ export default function ReportEditorPage() {
     AGE: 'AGE',
     WEIGHT: 'WEIGHT',
     REPORT_BODY: 'REPORT_BODY',
+    ASK_OPTIONAL: 'ASK_OPTIONAL',
     ULTRASOUND: 'ULTRASOUND',
     DIAGNOSIS_COUNT: 'DIAGNOSIS_COUNT',
     DIAGNOSIS_ITEM: 'DIAGNOSIS_ITEM',
@@ -284,9 +285,39 @@ export default function ReportEditorPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `<strong>¿Hallazgos de Ecografía (Ultrasonido)?</strong>:`
+        text: `¿Desea ingresar información de: <strong>Ecografía, Diagnósticos y Plan Terapéutico</strong>?`
       }]);
-      setCurrentStep(STEPS.ULTRASOUND);
+      setCurrentStep(STEPS.ASK_OPTIONAL);
+    }
+    else if (currentStep === STEPS.ASK_OPTIONAL) {
+      const answer = text.toLowerCase();
+      const isYes = answer === 'si' || answer === 'sí' || answer === 'yes' || answer === 's';
+      if (isYes) {
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `<strong>¿Hallazgos de Ecografía (Ultrasonido)?</strong>:`
+        }]);
+        setCurrentStep(STEPS.ULTRASOUND);
+      } else {
+        // Skip optional sections — auto-save with only the body
+        const unified = formData.reason_for_visit;
+        const finalFormData = {
+          ...formData,
+          medical_report_content: unified
+        };
+        setFormData(finalFormData);
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `🎉 ¡Listo! Guardando informe automáticamente y abriendo editor...`
+        }]);
+        setTimeout(async () => {
+          setCurrentStep(STEPS.COMPLETED);
+          showToast('Asistente completado. Modo Editor Activo.', 'success');
+          await handleSaveToGynSys(finalFormData);
+        }, 1000);
+      }
     }
     else if (currentStep === STEPS.ULTRASOUND) {
       setFormData(prev => ({ ...prev, admin_ultrasound: text }));
@@ -825,6 +856,29 @@ export default function ReportEditorPage() {
                           {num}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                ) : currentStep === STEPS.ASK_OPTIONAL ? (
+                  <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex flex-col items-center gap-3 pb-safe">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      Selecciona una opción:
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleSendMessage(null, 'Sí')}
+                        style={{ backgroundColor: primaryColor, boxShadow: `0 4px 14px -4px ${primaryColor}` }}
+                        className="flex items-center gap-2 px-6 py-3 text-white font-black text-sm rounded-2xl transition-all hover:scale-105 active:scale-95"
+                      >
+                        ✔ Sí, ingresar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSendMessage(null, 'No')}
+                        className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-black text-sm rounded-2xl transition-all hover:scale-105 active:scale-95"
+                      >
+                        ✕ No, guardar ya
+                      </button>
                     </div>
                   </div>
                 ) : (
