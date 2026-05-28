@@ -996,7 +996,7 @@ export default function ReportEditorPage() {
                 <button
                   onClick={() => handleSaveToGynSys()}
                   disabled={saving}
-                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3 px-4 rounded-xl text-xs font-black uppercase transition-all"
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm py-3 px-4 rounded-xl text-xs font-black uppercase transition-all"
                 >
                   <FiSave size={16} />
                   {saving ? 'Guardando...' : 'Guardar'}
