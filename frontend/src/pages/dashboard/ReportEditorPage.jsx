@@ -12,6 +12,7 @@ import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platfor
 import GynSysLoader from '../../components/common/GynSysLoader';
 import { getImageUrl } from '../../lib/imageUtils';
 import { ConsultationAssetManager } from '../../components/common/ConsultationAssetManager';
+import RichTextEditor from '../../components/RichTextEditor';
 
 // Helper: Venezuelan CI formatter
 const formatCi = (ciString) => {
@@ -438,6 +439,11 @@ export default function ReportEditorPage() {
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handler for RichTextEditor fields (receives HTML string directly)
+  const handleRichFieldChange = (fieldName, htmlContent) => {
+    setFormData(prev => ({ ...prev, [fieldName]: htmlContent }));
   };
 
   const handleSaveToGynSys = async (overrideData = null) => {
@@ -1087,45 +1093,45 @@ export default function ReportEditorPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cuerpo del Informe</label>
-                  <textarea
-                    name="reason_for_visit"
-                    rows="4"
+                  <RichTextEditor
                     value={formData.reason_for_visit}
-                    onChange={handleFieldChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
+                    onChange={(html) => handleRichFieldChange('reason_for_visit', html)}
+                    placeholder="Escriba o pegue la descripción clínica principal del informe..."
+                    minRows={5}
+                    primaryColor={primaryColor}
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Hallazgos Ecográficos</label>
-                  <textarea
-                    name="admin_ultrasound"
-                    rows="3"
+                  <RichTextEditor
                     value={formData.admin_ultrasound}
-                    onChange={handleFieldChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm"
+                    onChange={(html) => handleRichFieldChange('admin_ultrasound', html)}
+                    placeholder="Describa los hallazgos ecográficos..."
+                    minRows={3}
+                    primaryColor={primaryColor}
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Diagnósticos</label>
-                  <textarea
-                    name="admin_diagnosis"
-                    rows="3"
+                  <RichTextEditor
                     value={formData.admin_diagnosis}
-                    onChange={handleFieldChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-mono"
+                    onChange={(html) => handleRichFieldChange('admin_diagnosis', html)}
+                    placeholder="Ingrese los diagnósticos..."
+                    minRows={3}
+                    primaryColor={primaryColor}
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Plan Terapéutico / Tratamiento</label>
-                  <textarea
-                    name="admin_plan"
-                    rows="3"
+                  <RichTextEditor
                     value={formData.admin_plan}
-                    onChange={handleFieldChange}
-                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm font-mono"
+                    onChange={(html) => handleRichFieldChange('admin_plan', html)}
+                    placeholder="Indique el plan terapéutico..."
+                    minRows={3}
+                    primaryColor={primaryColor}
                   />
                 </div>
               </div>
