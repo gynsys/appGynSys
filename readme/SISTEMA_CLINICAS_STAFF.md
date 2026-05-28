@@ -57,3 +57,28 @@ Este documento detalla todas las modificaciones realizadas para introducir los p
 ## 4. Notas de Despliegue y Producción
 - **Alembic**: Es crítico ejecutar `alembic upgrade head` en el servidor de base de datos antes de hacer pull de estos cambios en producción.
 - **Email/SMTP**: Asegurar que las variables de entorno relacionadas con correos electrónicos (SMTP) estén correctamente configuradas en el `.env` del servidor de producción, de lo contrario la creación de Staff arrojará fallas al intentar enviar el email de invitación.
+
+## 5. Troubleshooting (Problemas Resueltos en Producción)
+
+### Error 500 al Cargar Citas (`GET /appointments/?full=false`)
+- **Síntoma**: Después del despliegue, el panel de citas y el endpoint de registro fallaban con código 500.
+- **Causa**: Faltaba correr las migraciones en la base de datos de producción que aplicaban una columna `assigned_staff_id` (que había sido agregada previamente en el modelo pero sin su archivo de migración en Alembic).
+- **Solución**: Se generó la migración manual `20260528_add_assigned_staff_id.py`, se hizo commit, se trajeron los cambios al servidor (`git pull`) y se ejecutó `alembic upgrade head` dentro del contenedor del backend.
+
+### Error 500 al Registrar una Clínica (`POST /auth/register`)
+- **Síntoma**: Al intentar llenar el formulario de registro desde la Landing Page usando el plan institucional, la petición fallaba con un Error 500 Interno.
+- **Causa**: Al revisar los logs de docker (`docker logs appgynsys-backend-1`), se encontró un `psycopg2.errors.ForeignKeyViolation`. El frontend enviaba `plan_id = 3` (asignado en la interfaz al Plan Institucional), pero el registro de `id = 3` no existía en la tabla `plans` de la base de datos en producción.
+- **Solución**: Se ejecutó una consulta directa (vía `psql`) en la base de datos de producción (`gynsys`) para insertar el plan faltante:
+  ```sql
+  INSERT INTO plans (id, name, description, price, features, max_testimonials, max_gallery_images, max_faqs, custom_domain, analytics_dashboard, priority_support, is_active, max_staff_members)
+  VALUES (3, 'Plan Institucional', 'Para clínicas y centros médicos', 150.00, '{}', 20, 50, 20, true, true, true, true, 10);
+  ```
+  ```sql
+  INSERT INTO plans (id, name, description, price, features, max_testimonials, max_gallery_images, max_faqs, custom_domain, analytics_dashboard, priority_support, is_active, max_staff_members)
+  VALUES (3, 'Plan Institucional', 'Para clínicas y centros médicos', 150.00, '{}', 20, 50, 20, true, true, true, true, 10);
+  ```
+
+### App Crashing con Error 422 en el Registro (`Minified React error #31`)
+- **Síntoma**: Al intentar registrarse, el formulario no hacía nada y la página en blanco o la consola del navegador mostraba `Uncaught Error: Minified React error #31`.
+- **Causa**: El usuario ingresaba un dato inválido (por ejemplo, una contraseña de menos de 8 caracteres). El backend (Pydantic) retornaba un Error 422 (`Unprocessable Entity`) con el detalle del error estructurado como un arreglo de objetos JSON `[{"loc": ..., "msg": "..."}]`. El componente React `DoctorRegisterForm.jsx` intentaba inyectar todo ese arreglo dentro de un `<div>{error}</div>`, lo cual causa el crash en React porque los arreglos de objetos no son válidos como nodos (hijos) renderizables.
+- **Solución**: Se añadió una validación preventiva en frontend para la longitud mínima de contraseña (`formData.password.length < 8`), y se mejoró el bloque `catch (err)` para evaluar explícitamente `if (Array.isArray(detail))` y extraer únicamente el mensaje de texto del primer error de validación de Pydantic (`detail[0]?.msg`). Esto evita que la interfaz colapse al mostrar el error en pantalla.
