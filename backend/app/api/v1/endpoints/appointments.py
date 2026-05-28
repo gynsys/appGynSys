@@ -10,7 +10,7 @@ from app.db.base import get_db
 from app.db.models.doctor import Doctor
 from app.db.models.appointment import Appointment
 from app.schemas.appointment import AppointmentInDB, AppointmentUpdate, AppointmentCreate, AppointmentList
-from app.api.v1.endpoints.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_user, get_tenant_id
 from app.cycle_predictor.router import get_current_actor
 from app.db.models.cycle_user import CycleUser
 from app.tasks.email_tasks import send_appointment_notification_email, send_appointment_status_update, send_preconsulta_completed_notification, send_platform_registration_invitation
@@ -269,17 +269,18 @@ async def create_public_appointment(
 async def create_appointment(
     appointment_data: AppointmentCreate,
     current_user: Annotated[Doctor, Depends(get_current_user)],
+    tenant_id: int = Depends(get_tenant_id),
     db: Session = Depends(get_db)
 ):
     """
     Create a new appointment.
-    Only the doctor can create appointments for their own account.
+    Only staff or clinic admin can create appointments for the clinic.
     """
-    # Verify that the appointment is for the current doctor
-    if appointment_data.doctor_id != current_user.id:
+    # Verify that the appointment is for the clinic
+    if appointment_data.doctor_id != tenant_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No puedes crear citas para otro especialista."
+            detail="No puedes crear citas para otro especialista o clínica."
         )
     
     # Check for double booking (exact match of timestamp)
@@ -319,8 +320,10 @@ async def get_appointments(
     If full=False (default): returns lightweight objects for lists/calendar.
     """
     if isinstance(current_actor, Doctor):
+        # Resolve tenant_id for the current actor manually since we can't use Depends easily here
+        tenant_id = getattr(current_actor, 'clinic_id', None) or current_actor.id
         query = db.query(Appointment).filter(
-            Appointment.doctor_id == current_actor.id
+            Appointment.doctor_id == tenant_id
         )
     else:
         query = db.query(Appointment).filter(
@@ -362,6 +365,7 @@ async def get_appointments(
 async def get_appointment(
     appointment_id: int,
     current_user: Annotated[Doctor, Depends(get_current_user)],
+    tenant_id: int = Depends(get_tenant_id),
     db: Session = Depends(get_db)
 ):
     """
@@ -370,7 +374,7 @@ async def get_appointment(
     """
     appointment = db.query(Appointment).filter(
         Appointment.id == appointment_id,
-        Appointment.doctor_id == current_user.id
+        Appointment.doctor_id == tenant_id
     ).first()
     
     if not appointment:
@@ -412,6 +416,7 @@ async def update_appointment(
     appointment_id: int,
     appointment_update: AppointmentUpdate,
     current_user: Annotated[Doctor, Depends(get_current_user)],
+    tenant_id: int = Depends(get_tenant_id),
     db: Session = Depends(get_db)
 ):
     """
@@ -419,7 +424,7 @@ async def update_appointment(
     """
     appointment = db.query(Appointment).filter(
         Appointment.id == appointment_id,
-        Appointment.doctor_id == current_user.id
+        Appointment.doctor_id == tenant_id
     ).first()
     
     if not appointment:
@@ -451,6 +456,7 @@ async def update_appointment(
 async def delete_appointment(
     appointment_id: int,
     current_user: Annotated[Doctor, Depends(get_current_user)],
+    tenant_id: int = Depends(get_tenant_id),
     db: Session = Depends(get_db)
 ):
     """
@@ -458,7 +464,7 @@ async def delete_appointment(
     """
     appointment = db.query(Appointment).filter(
         Appointment.id == appointment_id,
-        Appointment.doctor_id == current_user.id
+        Appointment.doctor_id == tenant_id
     ).first()
     
     if not appointment:

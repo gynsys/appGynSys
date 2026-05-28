@@ -521,6 +521,24 @@ async def get_current_admin_user(
     return current_user
 
 
+def get_tenant_id(current_user: Annotated[Doctor | GuestUser, Depends(get_current_user)]) -> int:
+    """
+    Dependency to resolve the active tenant ID.
+    If the user is a guest, returns their assigned tenant_id.
+    If the user is a staff doctor, returns the clinic_id.
+    If the user is an independent doctor or a clinic, returns their own id.
+    """
+    if getattr(current_user, 'role', '') == "guest":
+        return int(current_user.tenant_id)
+        
+    # User is a Doctor
+    if getattr(current_user, 'clinic_id', None) is not None:
+        return current_user.clinic_id
+        
+    return current_user.id
+
+
+
 @router.post("/password-recovery")
 async def request_password_reset(
     request: PasswordResetRequest,

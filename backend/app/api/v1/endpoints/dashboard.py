@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.base import get_db
-from app.api.v1.endpoints.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_user, get_tenant_id
 from app.db.models.doctor import Doctor
 from app.db.models.endometriosis_result import EndometriosisResult
 from app.db.models.cycle_user import CycleUser
@@ -15,23 +15,26 @@ router = APIRouter()
 @router.get("/stats")
 def get_dashboard_stats(
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
     Get aggregated stats for the Tenant Dashboard.
     """
     # 1. Test Count (Endometriosis Results)
     test_count = db.query(EndometriosisResult).filter(
-        EndometriosisResult.doctor_id == current_user.id
+        EndometriosisResult.doctor_id == tenant_id
     ).count()
 
     # 2. Cycle Users
     cycle_users_count = db.query(CycleUser).filter(
-        CycleUser.doctor_id == current_user.id
+        CycleUser.doctor_id == tenant_id
     ).count()
 
     # 3. Visitor Count
-    visitor_count = current_user.visitor_count
+    # Visitor count is currently tracked on the doctor model directly, we should get the tenant's visitor_count
+    tenant = db.query(Doctor).filter(Doctor.id == tenant_id).first()
+    visitor_count = tenant.visitor_count if tenant else 0
 
     # 4. Appointments this month (Existing metric, confirming logic)
     today = datetime.now()
@@ -42,7 +45,7 @@ def get_dashboard_stats(
         end_of_month = datetime(today.year, today.month + 1, 1)
         
     appointments_month = db.query(Appointment).filter(
-        Appointment.doctor_id == current_user.id,
+        Appointment.doctor_id == tenant_id,
         Appointment.appointment_date >= start_of_month,
         Appointment.appointment_date < end_of_month,
         Appointment.status != 'cancelled'
@@ -50,7 +53,7 @@ def get_dashboard_stats(
 
     # 5. Blog Posts Count
     article_count = db.query(Post).filter(
-        Post.doctor_id == current_user.id
+        Post.doctor_id == tenant_id
     ).count()
 
     return {

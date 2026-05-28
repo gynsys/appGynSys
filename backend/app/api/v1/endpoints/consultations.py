@@ -15,7 +15,7 @@ from app.db.models.consultation import Consultation
 from app.db.models.consultation_asset import ConsultationAsset
 from app.db.models.appointment import Appointment
 from app.core.config import settings
-from app.api.v1.endpoints.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_user, get_tenant_id
 from app.db.models.doctor import Doctor
 from app.services.consultation_service import ConsultationService
 
@@ -82,14 +82,15 @@ async def create_consultation(
     consultation: ConsultationCreate, 
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     try:
-        # Security: Force doctor_id from current session
+        # Security: Force doctor_id from current session/clinic
         db_consultation = ConsultationService.create(
             db=db,
             consultation_in=consultation,
-            doctor_id=current_user.id
+            doctor_id=tenant_id
         )
     except Exception as e:
         logger.error(f"Database error creating consultation: {e}", exc_info=True)
@@ -226,14 +227,15 @@ def get_consultations(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=0),
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
-    Get all consultations for the authenticated doctor.
+    Get all consultations for the authenticated doctor/clinic.
     """
     consultations = (
         db.query(Consultation)
-        .filter(Consultation.doctor_id == current_user.id)
+        .filter(Consultation.doctor_id == tenant_id)
         .order_by(Consultation.created_at.desc()) # Retrieve the newest ones first
         .offset(skip)
         .limit(limit)
@@ -247,7 +249,8 @@ def get_consultations(
 def get_all_consultations_by_patient(
     dni: str,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
     Get ALL consultations for a specific patient (by DNI), ordered newest first.
@@ -255,7 +258,7 @@ def get_all_consultations_by_patient(
     """
     consultations = db.query(Consultation).filter(
         Consultation.patient_ci == dni,
-        Consultation.doctor_id == current_user.id
+        Consultation.doctor_id == tenant_id
     ).order_by(Consultation.created_at.asc()).all()
     
     return ConsultationService.merge_consultations(db, consultations, newest_first=True)
@@ -264,7 +267,8 @@ def get_all_consultations_by_patient(
 def get_raw_consultations_by_patient(
     dni: str,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
     Get ALL RAW consultations for a specific patient (by DNI), ordered newest first.
@@ -272,7 +276,7 @@ def get_raw_consultations_by_patient(
     """
     consultations = db.query(Consultation).filter(
         Consultation.patient_ci == dni,
-        Consultation.doctor_id == current_user.id
+        Consultation.doctor_id == tenant_id
     ).order_by(Consultation.created_at.desc()).all()
     
     return consultations
@@ -282,7 +286,8 @@ def get_raw_consultations_by_patient(
 def get_latest_consultation_by_patient(
     dni: str,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
     Get the most recent consultation for a specific patient (by DNI).
@@ -290,7 +295,7 @@ def get_latest_consultation_by_patient(
     """
     consultation = db.query(Consultation).filter(
         Consultation.patient_ci == dni,
-        Consultation.doctor_id == current_user.id
+        Consultation.doctor_id == tenant_id
     ).order_by(Consultation.created_at.desc()).first()
 
     if not consultation:
@@ -406,11 +411,12 @@ def update_consultation(
     consultation_id: int,
     consultation_update: ConsultationUpdate,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     db_consultation = db.query(Consultation).filter(
         Consultation.id == consultation_id,
-        Consultation.doctor_id == current_user.id
+        Consultation.doctor_id == tenant_id
     ).first()
     if not db_consultation:
         raise HTTPException(status_code=404, detail="Consultation not found or not authorized")
@@ -466,7 +472,8 @@ def clone_consultation(
     consultation_id: int,
     consultation_update: ConsultationUpdate,
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     """
     Clones a consultation and applies updates. Used for 'Save As'.
@@ -475,7 +482,7 @@ def clone_consultation(
         db=db,
         consultation_id=consultation_id,
         consultation_update=consultation_update,
-        doctor_id=current_user.id
+        doctor_id=tenant_id
     )
     
     if not new_consultation:
@@ -492,11 +499,12 @@ def delete_consultation(
     consultation_id: int,
     delete_all: bool = Query(False, description="If true, delete all consultations for this patient CI"),
     db: Session = Depends(get_db),
-    current_user: Doctor = Depends(get_current_user)
+    current_user: Doctor = Depends(get_current_user),
+    tenant_id: int = Depends(get_tenant_id)
 ):
     consultation = db.query(Consultation).filter(
         Consultation.id == consultation_id,
-        Consultation.doctor_id == current_user.id
+        Consultation.doctor_id == tenant_id
     ).first()
     
     if not consultation:
@@ -506,7 +514,7 @@ def delete_consultation(
         # Delete ALL consultations for this patient by this doctor
         db.query(Consultation).filter(
             Consultation.patient_ci == consultation.patient_ci,
-            Consultation.doctor_id == current_user.id
+            Consultation.doctor_id == tenant_id
         ).delete(synchronize_session=False)
     else:
         # Delete only this specific consultation
