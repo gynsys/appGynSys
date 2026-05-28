@@ -6,7 +6,11 @@ import secrets
 
 from app.db.base import get_db
 from app.db.models.doctor import Doctor
+from app.db.models.plan import Plan
 from app.api.v1.endpoints.auth import get_current_user
+from fastapi import BackgroundTasks
+from app.core.email import send_email
+
 from app.core.security import hash_password
 from app.core.limiter import limiter
 
@@ -54,8 +58,10 @@ def create_staff_member(
     request: Request,
     staff_data: StaffCreate,
     current_user: Annotated[Doctor, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
+
     """
     Create a new staff member (doctor) under the current clinic.
     """
@@ -65,6 +71,18 @@ def create_staff_member(
     if current_user.role == "user":
         current_user.role = "clinic"
         db.commit()
+
+    # Get the plan to check limits
+    plan = db.query(Plan).filter(Plan.id == current_user.plan_id).first()
+    max_staff = plan.max_staff_members if plan and plan.max_staff_members is not None else 0
+    
+    current_staff_count = db.query(Doctor).filter(Doctor.clinic_id == current_user.id).count()
+    if current_staff_count >= max_staff:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Has alcanzado el límite de médicos permitidos en tu plan actual ({max_staff}). Contacta a soporte para mejorar tu plan institucional."
+        )
+
 
     # Check if email exists
     existing = db.query(Doctor).filter(Doctor.email == staff_data.email).first()
@@ -95,7 +113,27 @@ def create_staff_member(
     db.commit()
     db.refresh(new_staff)
     
+    # Send email with temporary password
+    subject = "¡Bienvenido a GynSys!"
+    html_content = f"""
+    <h1>Hola, {staff_data.nombre_completo}</h1>
+    <p>Has sido agregado al sistema GynSys por <b>{current_user.nombre_completo}</b>.</p>
+    <p>Tus credenciales de acceso temporal son:</p>
+    <ul>
+        <li><b>Correo:</b> {staff_data.email}</li>
+        <li><b>Contraseña Temporal:</b> {staff_data.password}</li>
+    </ul>
+    <p>Por favor, inicia sesión y cambia tu contraseña lo antes posible por razones de seguridad.</p>
+    <br>
+    <p>Atentamente,<br>El equipo de GynSys</p>
+    """
+    
+    # We use a background task to send the email without delaying the API response
+    background_tasks.add_task(send_email, email_to=staff_data.email, subject=subject, html_content=html_content)
+    
     return new_staff
+
+
 
 
 @router.delete("/{staff_id}", status_code=status.HTTP_204_NO_CONTENT)

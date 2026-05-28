@@ -31,6 +31,8 @@ class TenantBase(BaseModel):
 
 class TenantCreate(TenantBase):
     password: str
+    is_clinic: Optional[bool] = False
+
 
 
 class TenantUpdate(BaseModel):
@@ -53,6 +55,8 @@ class TenantUpdate(BaseModel):
     social_tiktok: Optional[str] = None
     social_x: Optional[str] = None
     social_facebook: Optional[str] = None
+    is_clinic: Optional[bool] = None
+
 
 
 class TenantStatusUpdate(BaseModel):
@@ -82,9 +86,11 @@ class PlanBase(BaseModel):
     max_testimonials: Optional[int] = 10
     max_gallery_images: Optional[int] = 20
     max_faqs: Optional[int] = 15
+    max_staff_members: Optional[int] = 0
     custom_domain: Optional[bool] = False
     analytics_dashboard: Optional[bool] = False
     priority_support: Optional[bool] = False
+
 
 
 class PlanCreate(PlanBase):

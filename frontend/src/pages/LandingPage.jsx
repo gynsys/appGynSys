@@ -41,23 +41,43 @@ export default function LandingPage() {
     }
   ]
 
-  const promotionalPlan = {
-    id: 1,
-    name: "Plan Profesional Integral",
-    price: "9.99",
-    description: "Acceso total a todas las herramientas de GynSys por un costo mensual promocional.",
-    features: [
-      "Página Web con /slug",
-      "Socio Tecnológico: Mi Ciclo (App Pacientes)",
-      "App Móvil PWA (Para el Doctor)",
-      "Gestión de Citas y Pre-consultas",
-      "Blog y Educación para Pacientes",
-      "Control Prenatal y Menstrual",
-      "Soporte Prioritario"
-    ],
-    cta: "Comenzar con Precio Promocional",
-    popular: true
-  }
+  const plans = [
+    {
+      id: 2,
+      name: "Plan Médico",
+      price: "19.99",
+      description: "Para médicos independientes que desean digitalizar toda su práctica.",
+      features: [
+        "Página Web con /slug",
+        "Socio Tecnológico: Mi Ciclo (App Pacientes)",
+        "App Móvil PWA (Para el Doctor)",
+        "Gestión de Citas y Pre-consultas",
+        "Blog y Educación para Pacientes",
+        "Control Prenatal y Menstrual",
+        "Soporte Prioritario"
+      ],
+      cta: "Comenzar como Médico",
+      popular: false
+    },
+    {
+      id: 3,
+      name: "Plan Institucional",
+      price: "49.99",
+      description: "Para clínicas e instituciones que necesitan gestionar a múltiples médicos.",
+      features: [
+        "Todo lo del Plan Médico",
+        "Múltiples cuentas de médicos",
+        "Gestión de Personal y Roles",
+        "Agendamiento Centralizado",
+        "Reportes Institucionales",
+        "Onboarding de Equipo",
+        "Soporte VIP 24/7"
+      ],
+      cta: "Comenzar como Clínica",
+      popular: true
+    }
+  ]
+
 
   return (
     <div className="min-h-screen bg-white selection:bg-indigo-100">
@@ -74,7 +94,8 @@ export default function LandingPage() {
 
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Funcionalidades</a>
-              <a href="#pricing" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Plan Único</a>
+              <a href="#pricing" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Planes</a>
+
               {isAuthenticated && user?.role === 'admin' ? (
                 <Link to="/admin" className="bg-indigo-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
                   Dashboard
@@ -105,10 +126,11 @@ export default function LandingPage() {
             Consigue tu propia App profesional y ofrece a tus pacientes el control prenatal y menstrual con "Mi Ciclo". Todo integrado por un precio increíble.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link to="/register?type=doctor" className="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
-              Suscribirme por $9.99
+            <a href="#pricing" className="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
+              Ver Planes
               <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
+            </a>
+
             <a href="#features" className="w-full sm:w-auto px-10 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-2xl font-black text-lg hover:border-indigo-200 transition-all">
               Explorar App
             </a>
@@ -150,50 +172,54 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section - Single Plan */}
+      {/* Pricing Section */}
       <section id="pricing" className="py-24 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">Todo incluido, un solo precio</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">Olvídate de elegir entre planes complicados. Accede a todo GynSys por una fracción del costo.</p>
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">Elige el plan ideal para ti</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto font-medium">Planes diseñados para adaptarse a tu crecimiento profesional e institucional.</p>
           </div>
 
-          <div className="max-w-lg mx-auto">
-            <div className="relative p-10 rounded-[40px] border bg-indigo-600 text-white border-transparent shadow-2xl shadow-indigo-200 scale-105 z-10">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-1.5 rounded-full text-sm font-black uppercase tracking-widest shadow-lg">
-                Oferta de Lanzamiento
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {plans.map((plan) => (
+              <div key={plan.id} className={`relative p-10 rounded-[40px] border ${plan.popular ? 'bg-indigo-600 text-white border-transparent shadow-2xl shadow-indigo-200 scale-105 z-10' : 'bg-white text-gray-900 border-gray-200 shadow-xl shadow-gray-100'}`}>
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-1.5 rounded-full text-sm font-black uppercase tracking-widest shadow-lg">
+                    Recomendado para Clínicas
+                  </div>
+                )}
+                <div className="mb-8">
+                  <h3 className="text-3xl font-black mb-2">{plan.name}</h3>
+                  <p className={`text-sm font-medium ${plan.popular ? 'text-indigo-100' : 'text-gray-500'}`}>
+                    {plan.description}
+                  </p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-6xl font-black">${plan.price}</span>
+                  <span className={`text-lg font-bold ml-1 ${plan.popular ? 'text-indigo-200' : 'text-gray-400'}`}>/mes</span>
+                </div>
+                <ul className="space-y-4 mb-10">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-center font-bold text-sm">
+                      <div className={`p-1 rounded-full mr-3 ${plan.popular ? 'bg-white/20' : 'bg-indigo-50'}`}>
+                        <Check className={`w-4 h-4 ${plan.popular ? 'text-white' : 'text-indigo-600'}`} />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to={`/register?type=doctor&plan=${plan.id}`}
+                  className={`block w-full text-center py-5 rounded-2xl font-black text-xl shadow-lg transition-all ${plan.popular ? 'bg-white text-indigo-600 hover:bg-gray-50' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                >
+                  {plan.cta}
+                </Link>
               </div>
-              <div className="mb-8">
-                <h3 className="text-3xl font-black mb-2">{promotionalPlan.name}</h3>
-                <p className="text-sm text-indigo-100 font-medium">
-                  {promotionalPlan.description}
-                </p>
-              </div>
-              <div className="mb-8">
-                <span className="text-gray-300 line-through text-2xl mr-2">$49.99</span>
-                <span className="text-6xl font-black">${promotionalPlan.price}</span>
-                <span className="text-lg font-bold ml-1 text-indigo-200">/mes</span>
-              </div>
-              <ul className="space-y-4 mb-10">
-                {promotionalPlan.features.map((feature, j) => (
-                  <li key={j} className="flex items-center font-bold text-sm">
-                    <div className="p-1 rounded-full mr-3 bg-white/20">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                to="/register?type=doctor&plan=2"
-                className="block w-full text-center py-5 bg-white text-indigo-600 rounded-2xl font-black text-xl hover:bg-gray-50 shadow-lg transition-all"
-              >
-                {promotionalPlan.cta}
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
+
 
 
       {/* CTA Final */}
@@ -201,8 +227,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto bg-gradient-to-r from-indigo-700 to-indigo-500 rounded-[50px] p-12 md:p-20 text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-white/10 blur-3xl rounded-full"></div>
           <h2 className="text-4xl md:text-6xl font-black text-white mb-8 relative z-10">
-            ¿Lista para transformar <br />tu consulta por solo $9.99?
+            ¿Lista para transformar <br />tu práctica médica?
           </h2>
+
           <p className="text-xl text-indigo-100 mb-12 max-w-2xl mx-auto font-medium relative z-10">
             Agiliza tu trabajo, profesionaliza tu marca y ofrece el mejor control a tus pacientes con GynSys.
           </p>

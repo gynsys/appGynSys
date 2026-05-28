@@ -14,55 +14,62 @@ export const Sidebar = ({ isOpen, toggleSidebar, primaryColor = '#4F46E5', count
   const location = useLocation();
   const { user } = useAuthStore();
 
-  const menuSections = [
-    {
-      title: 'Gestión Médico',
-      items: [
-        { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
-        { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
-        { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
-        { icon: FiSend, label: 'Difusión', path: '/dashboard/campaigns' },
-        { icon: FiUsers, label: 'Directorio', path: '/dashboard/directory' },
-        { 
-          icon: FiLink, 
-          label: 'Link Onboarding', 
-          className: 'hidden lg:flex',
-          action: () => {
-            const url = `${window.location.origin}/${user?.slug_url}/onboarding`;
-            navigator.clipboard.writeText(url);
-            toast.success('¡Link de Onboarding copiado!');
-          }
-        },
-      ]
-    },
-    {
-      title: 'Marketing IA',
-      items: [
-        { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
-        { icon: FiCpu, label: 'Crear Contenido', path: '/dashboard/social-generator' },
-      ]
-    },
-    {
-      title: 'Herramientas',
-      items: [
-        { icon: FiClipboard, label: 'Editor de Informes', path: '/dashboard/tools/report-editor' },
-      ]
-    },
-    {
-      title: 'Configuraciones',
-      items: [
-        { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
-        ...(user?.role === 'clinic' || user?.role === 'admin' ? [{ icon: FiUsers, label: 'Gestión Personal', path: '/dashboard/staff' }] : []),
-        { icon: FiVideo, label: 'Consultas Online', path: '/dashboard/online-consultations' },
-        { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },
-        { icon: FiMapPin, label: 'Ubicaciones', path: '/dashboard/locations' },
-        { icon: FiBriefcase, label: 'Servicios', path: '/dashboard/services' },
-        { icon: FiStar, label: 'Recomendaciones', path: '/dashboard/recommendations' },
-        { icon: FiSettings, label: 'Config. Preconsulta', path: '/dashboard/preconsulta-config' },
-        { icon: FiSettings, label: 'Config. PDF', path: '/dashboard/pdf-config' },
-      ]
-    }
-  ];
+  const getMenuSections = () => {
+    const isStaff = user?.role === 'staff';
+
+    return [
+      {
+        title: 'Gestión Médico',
+        items: [
+          { icon: FiCalendar, label: 'Gestión Citas', path: '/dashboard/appointments', count: counts.appointments },
+          { icon: FiFolder, label: 'Historias Médicas', path: '/dashboard/patients' },
+          { icon: FiClipboard, label: 'Preconsultas', path: '/dashboard/consultation' },
+          ...(isStaff ? [] : [{ icon: FiSend, label: 'Difusión', path: '/dashboard/campaigns' }]),
+          { icon: FiUsers, label: 'Directorio', path: '/dashboard/directory' },
+          ...(isStaff ? [] : [{ 
+            icon: FiLink, 
+            label: 'Link Onboarding', 
+            className: 'hidden lg:flex',
+            action: () => {
+              const url = `${window.location.origin}/${user?.slug_url}/onboarding`;
+              navigator.clipboard.writeText(url);
+              toast.success('¡Link de Onboarding copiado!');
+            }
+          }]),
+        ]
+      },
+      ...(isStaff ? [] : [{
+        title: 'Marketing IA',
+        items: [
+          { icon: FiEdit3, label: 'Gestión Blog', path: '/dashboard/blog' },
+          { icon: FiCpu, label: 'Crear Contenido', path: '/dashboard/social-generator' },
+        ]
+      }]),
+      {
+        title: 'Herramientas',
+        items: [
+          { icon: FiClipboard, label: 'Editor de Informes', path: '/dashboard/tools/report-editor' },
+        ]
+      },
+      ...(isStaff ? [] : [{
+        title: 'Configuraciones',
+        items: [
+          { icon: FiSettings, label: 'Mi Perfil', path: '/dashboard/profile' },
+          ...(user?.role === 'clinic' || user?.role === 'admin' ? [{ icon: FiUsers, label: 'Gestión Personal', path: '/dashboard/staff' }] : []),
+          { icon: FiVideo, label: 'Consultas Online', path: '/dashboard/online-consultations' },
+          { icon: FiImage, label: 'Gestión Galería', path: '/dashboard/profile/gallery' },
+          { icon: FiMapPin, label: 'Ubicaciones', path: '/dashboard/locations' },
+          { icon: FiBriefcase, label: 'Servicios', path: '/dashboard/services' },
+          { icon: FiStar, label: 'Recomendaciones', path: '/dashboard/recommendations' },
+          { icon: FiSettings, label: 'Config. Preconsulta', path: '/dashboard/preconsulta-config' },
+          { icon: FiSettings, label: 'Config. PDF', path: '/dashboard/pdf-config' },
+        ]
+      }])
+    ];
+  };
+
+  const menuSections = getMenuSections();
+
 
   const handleNavigation = (path) => {
     navigate(path);

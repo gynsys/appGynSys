@@ -58,8 +58,10 @@ import QuickSetupPage from './pages/dashboard/QuickSetupPage'
 
 import OnlineConsultationSettings from './pages/dashboard/OnlineConsultationSettings'
 import ReportEditorPage from './pages/dashboard/ReportEditorPage'
+import StaffManager from './pages/dashboard/StaffManager'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
+
 import { WizardLayout } from './components/layout/WizardLayout'
 import { useState } from 'react'
 import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
@@ -304,8 +306,10 @@ function App() {
           <Route path="requests" element={<AppointmentRequestList />} />
           <Route path="patients" element={<PatientsManager />} />
           <Route path="directory" element={<DirectoryManager />} />
-           <Route path="online-consultations" element={<OnlineConsultationSettings />} />
+          <Route path="staff" element={<StaffManager />} />
+          <Route path="online-consultations" element={<OnlineConsultationSettings />} />
           <Route path="campaigns" element={<CampaignsPage />} />
+
           <Route path="tools/report-editor" element={<ReportEditorPage />} />
         </Route>
 

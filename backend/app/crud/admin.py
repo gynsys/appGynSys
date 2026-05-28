@@ -49,7 +49,9 @@ def create_tenant(db: Session, tenant: TenantCreate) -> Doctor:
         doctor_data['slug_url'] = doctor_data.pop('slug')
     
     # Set defaults
-    doctor_data['role'] = 'user'
+    is_clinic_flag = doctor_data.get('is_clinic', False)
+    doctor_data['role'] = 'clinic' if is_clinic_flag else 'user'
+
     doctor_data['status'] = 'active' # Admin created tenants are active by default
     doctor_data['is_active'] = True
     
@@ -70,8 +72,14 @@ def update_tenant(db: Session, tenant_id: int, tenant_update: TenantUpdate) -> O
             update_data['slug_url'] = update_data.pop('slug')
             
         for field, value in update_data.items():
+            if field == 'is_clinic':
+                if value:
+                    db_tenant.role = 'clinic'
+                elif db_tenant.role == 'clinic':
+                    db_tenant.role = 'user'
             if hasattr(db_tenant, field):
                 setattr(db_tenant, field, value)
+
                 
         db.commit()
         db.refresh(db_tenant)

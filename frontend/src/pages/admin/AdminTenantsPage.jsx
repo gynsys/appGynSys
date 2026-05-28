@@ -46,8 +46,10 @@ export default function AdminTenantsPage() {
     especialidad: '',
     biografia: '',
     plan_id: '',
-    status: 'active'
+    status: 'active',
+    is_clinic: false
   })
+
 
   const [moduleSelections, setModuleSelections] = useState([])
 
@@ -72,8 +74,9 @@ export default function AdminTenantsPage() {
     try {
       await createTenant(formData)
       setShowCreateModal(false)
-      setFormData({ nombre_completo: '', email: '', password: '', slug: '', telefono: '', especialidad: '', biografia: '', plan_id: '', status: 'active' })
+      setFormData({ nombre_completo: '', email: '', password: '', slug: '', telefono: '', especialidad: '', biografia: '', plan_id: '', status: 'active', is_clinic: false })
       showToast('Tenant creado exitosamente', 'success')
+
     } catch (error) {
       showToast(error.message || 'Error al crear tenant', 'error')
     }
@@ -130,9 +133,11 @@ export default function AdminTenantsPage() {
       especialidad: tenant.especialidad || '',
       biografia: tenant.biografia || '',
       plan_id: tenant.plan_id,
-      status: tenant.status
+      status: tenant.status,
+      is_clinic: tenant.role === 'clinic'
     })
     setShowEditModal(true)
+
   }
 
   const openModulesModal = (tenant) => {
@@ -443,28 +448,43 @@ export default function AdminTenantsPage() {
               />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Plan *
-            </label>
-            <select
-              required
-              value={formData.plan_id}
-              onChange={(e) => setFormData(prev => ({ ...prev, plan_id: parseInt(e.target.value) || '' }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Seleccionar plan</option>
-              {plans.map(plan => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.name} - ${plan.price}/mes
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Plan *
+              </label>
+              <select
+                required
+                value={formData.plan_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, plan_id: parseInt(e.target.value) || '' }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Seleccionar plan</option>
+                {plans.map(plan => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name} - ${plan.price}/mes
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center pt-6">
+              <input
+                type="checkbox"
+                id="is_clinic_create"
+                checked={formData.is_clinic}
+                onChange={(e) => setFormData(prev => ({ ...prev, is_clinic: e.target.checked }))}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_clinic_create" className="ml-2 block text-sm font-medium text-gray-900">
+                ¿Es Clínica/Institución?
+              </label>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Biografía
             </label>
+
             <textarea
               value={formData.biografia}
               onChange={(e) => setFormData(prev => ({ ...prev, biografia: e.target.value }))}
@@ -576,10 +596,25 @@ export default function AdminTenantsPage() {
               </select>
             </div>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_clinic_edit"
+                checked={formData.is_clinic}
+                onChange={(e) => setFormData(prev => ({ ...prev, is_clinic: e.target.checked }))}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_clinic_edit" className="ml-2 block text-sm font-medium text-gray-900">
+                ¿Es Clínica/Institución?
+              </label>
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Biografía
             </label>
+
             <textarea
               value={formData.biografia || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, biografia: e.target.value }))}

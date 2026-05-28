@@ -8,7 +8,7 @@ Create Date: 2026-05-28 11:00:00.000000
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+
 
 # revision identifiers, used by Alembic.
 revision: str = 'add_is_clinic_to_doctor'
@@ -18,8 +18,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    from sqlalchemy.engine.reflection import Inspector
-    inspector = Inspector.from_engine(bind)
+    inspector = sa.inspect(bind)
     columns = [col['name'] for col in inspector.get_columns('doctors')]
     if 'is_clinic' not in columns:
         op.add_column('doctors', sa.Column('is_clinic', sa.Boolean(), server_default=sa.text('false'), nullable=True))

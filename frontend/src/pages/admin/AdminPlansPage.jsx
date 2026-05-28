@@ -32,7 +32,9 @@ export default function AdminPlansPage() {
     max_testimonials: 10,
     max_gallery_images: 20,
     max_faqs: 15,
+    max_staff_members: 0,
     custom_domain: false,
+
     analytics_dashboard: false,
     priority_support: false,
     features: '',
@@ -62,7 +64,9 @@ export default function AdminPlansPage() {
         max_testimonials: parseInt(formData.max_testimonials),
         max_gallery_images: parseInt(formData.max_gallery_images),
         max_faqs: parseInt(formData.max_faqs),
+        max_staff_members: parseInt(formData.max_staff_members),
         features: formData.features ? formData.features.split('\n').filter(f => f.trim()) : []
+
       }
       await createPlan(planData)
       setShowCreateModal(false)
@@ -82,7 +86,9 @@ export default function AdminPlansPage() {
         max_testimonials: parseInt(formData.max_testimonials),
         max_gallery_images: parseInt(formData.max_gallery_images),
         max_faqs: parseInt(formData.max_faqs),
+        max_staff_members: parseInt(formData.max_staff_members),
         features: formData.features ? formData.features.split('\n').filter(f => f.trim()) : []
+
       }
       await updatePlan(selectedPlan.id, planData)
       setShowEditModal(false)
@@ -124,7 +130,9 @@ export default function AdminPlansPage() {
       max_testimonials: plan.max_testimonials || 10,
       max_gallery_images: plan.max_gallery_images || 20,
       max_faqs: plan.max_faqs || 15,
+      max_staff_members: plan.max_staff_members || 0,
       custom_domain: plan.custom_domain || false,
+
       analytics_dashboard: plan.analytics_dashboard || false,
       priority_support: plan.priority_support || false,
       features: plan.features ? plan.features.join('\n') : '',
@@ -141,7 +149,9 @@ export default function AdminPlansPage() {
       max_testimonials: 10,
       max_gallery_images: 20,
       max_faqs: 15,
+      max_staff_members: 0,
       custom_domain: false,
+
       analytics_dashboard: false,
       priority_support: false,
       features: '',
@@ -202,7 +212,12 @@ export default function AdminPlansPage() {
                     <span className="text-sm text-gray-600">Máx. FAQs:</span>
                     <span className="text-sm font-semibold">{plan.max_faqs}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Máx. Médicos Staff:</span>
+                    <span className="text-sm font-semibold">{plan.max_staff_members}</span>
+                  </div>
                 </div>
+
 
                 {(plan.custom_domain || plan.analytics_dashboard || plan.priority_support) && (
                   <div className="mb-4">
@@ -380,8 +395,24 @@ export default function AdminPlansPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Máximo Médicos Staff * (0 para plan individual)
+              </label>
+              <input
+                type="number"
+                required
+                value={formData.max_staff_members}
+                onChange={(e) => setFormData(prev => ({ ...prev, max_staff_members: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center">
+
               <input
                 type="checkbox"
                 id="custom_domain"
@@ -547,8 +578,24 @@ export default function AdminPlansPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Máximo Médicos Staff * (0 para plan individual)
+              </label>
+              <input
+                type="number"
+                required
+                value={formData.max_staff_members}
+                onChange={(e) => setFormData(prev => ({ ...prev, max_staff_members: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center">
+
               <input
                 type="checkbox"
                 id="edit_custom_domain"

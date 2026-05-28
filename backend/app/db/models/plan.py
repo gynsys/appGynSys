@@ -25,6 +25,8 @@ class Plan(Base):
     max_testimonials = Column(Integer, default=10)
     max_gallery_images = Column(Integer, default=20)
     max_faqs = Column(Integer, default=15)
+    max_staff_members = Column(Integer, default=0)  # 0 means independent doctor, >0 means institutional clinic
+
 
     # Advanced features
     custom_domain = Column(Boolean, default=False)
