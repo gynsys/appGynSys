@@ -18,14 +18,21 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add new fields to doctors table for multi-tenant clinic logic
-    op.add_column('doctors', sa.Column('role', sa.String(length=50), server_default='user', nullable=True))
-    op.add_column('doctors', sa.Column('clinic_id', sa.Integer(), nullable=True))
-    op.add_column('doctors', sa.Column('permissions', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
-    
-    # Create foreign key constraint from doctors.clinic_id to doctors.id
-    op.create_foreign_key('fk_doctors_clinic_id', 'doctors', 'doctors', ['clinic_id'], ['id'], ondelete='SET NULL')
+    # Use inspector to check if columns exist
+    bind = op.get_bind()
+    from sqlalchemy.engine.reflection import Inspector
+    inspector = Inspector.from_engine(bind)
+    columns = [col['name'] for col in inspector.get_columns('doctors')]
 
+    # Add new fields to doctors table for multi-tenant clinic logic
+    if 'role' not in columns:
+        op.add_column('doctors', sa.Column('role', sa.String(length=50), server_default='user', nullable=True))
+    if 'clinic_id' not in columns:
+        op.add_column('doctors', sa.Column('clinic_id', sa.Integer(), nullable=True))
+        # Create foreign key constraint from doctors.clinic_id to doctors.id
+        op.create_foreign_key('fk_doctors_clinic_id', 'doctors', 'doctors', ['clinic_id'], ['id'], ondelete='SET NULL')
+    if 'permissions' not in columns:
+        op.add_column('doctors', sa.Column('permissions', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
 
 def downgrade() -> None:
     op.drop_constraint('fk_doctors_clinic_id', 'doctors', type_='foreignkey')
