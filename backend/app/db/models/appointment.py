@@ -15,8 +15,11 @@ class Appointment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     
-    # Foreign key to doctor (tenant)
+    # Foreign key to doctor (tenant / clinic)
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False, index=True)
+    
+    # Optional: which specific staff doctor is handling this appointment
+    assigned_staff_id = Column(Integer, ForeignKey("doctors.id"), nullable=True, index=True)
     
     # Patient information
     patient_name = Column(String, nullable=False)
@@ -48,5 +51,6 @@ class Appointment(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationship
-    doctor = relationship("Doctor", back_populates="appointments")
+    doctor = relationship("Doctor", back_populates="appointments", foreign_keys=[doctor_id])
+    assigned_staff = relationship("Doctor", back_populates="assigned_appointments", foreign_keys=[assigned_staff_id])
 

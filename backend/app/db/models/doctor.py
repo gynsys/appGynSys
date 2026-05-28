@@ -60,6 +60,10 @@ class Doctor(Base):
     is_verified = Column(Boolean, default=False)
     status = Column(String, default='pending', nullable=False)  # 'pending', 'approved', 'rejected'
     
+    # Clinic / Multi-tenant Hierarchy
+    is_clinic = Column(Boolean, default=False)  # If True, this account represents a Clinic
+    clinic_id = Column(Integer, ForeignKey('doctors.id'), nullable=True)  # Links a staff doctor to their Clinic
+    
     # Subscription & Payment
     plan_id = Column(Integer, ForeignKey('plans.id'), nullable=True)
     payment_reference = Column(String, nullable=True)
@@ -79,9 +83,14 @@ class Doctor(Base):
     # Relationships
     plan = relationship("Plan", backref="doctors")
     
+    # Self-referential relationship for Clinic <-> Staff
+    clinic = relationship("Doctor", remote_side=[id], back_populates="staff_doctors")
+    staff_doctors = relationship("Doctor", back_populates="clinic", cascade="all, delete-orphan")
+    
     # Relationships with full cascade for tenant deletion
     tenant_modules = relationship("TenantModule", back_populates="tenant", cascade="all, delete-orphan", foreign_keys="[TenantModule.tenant_id]")
-    appointments = relationship("Appointment", back_populates="doctor", cascade="all, delete-orphan")
+    appointments = relationship("Appointment", back_populates="doctor", cascade="all, delete-orphan", foreign_keys="[Appointment.doctor_id]")
+    assigned_appointments = relationship("Appointment", back_populates="assigned_staff", foreign_keys="[Appointment.assigned_staff_id]")
     patients = relationship("Patient", back_populates="doctor", cascade="all, delete-orphan")
 
     # Content # Analytics
