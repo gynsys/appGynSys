@@ -6,7 +6,7 @@ import api from '../../lib/axios';
 import { 
   FiUser, FiFileText, FiDownload, FiSave, FiRefreshCw, 
   FiSend, FiCheckCircle, FiChevronRight, FiEdit3, FiArrowLeft,
-  FiPrinter, FiInfo, FiTrash2, FiClock, FiFilePlus, FiImage
+  FiPrinter, FiInfo, FiTrash2, FiClock, FiFilePlus, FiImage, FiLogOut
 } from 'react-icons/fi';
 import { downloadFile, isCapacitor, openExternalFile } from '../../utils/platform';
 import GynSysLoader from '../../components/common/GynSysLoader';
@@ -731,13 +731,14 @@ export default function ReportEditorPage() {
                   </button>
                 )}
 
-                {/* Cancel/Close Button */}
+                {/* Cancel/Close Button — solo ícono en móvil para ahorrar espacio */}
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider text-white"
+                  title="Salir"
+                  className="flex items-center justify-center w-9 h-9 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl transition-all text-white active:scale-95"
                 >
-                  <span>Salir</span>
+                  <FiLogOut size={16} />
                 </button>
               </div>
             </div>
@@ -799,7 +800,7 @@ export default function ReportEditorPage() {
                   {messages.map((msg) => (
                     <div 
                       key={msg.id}
-                      className={`flex items-end gap-2 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+                      className={`flex items-end gap-2 w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
                     >
                       {msg.sender === 'bot' && (
                         <div 
@@ -811,7 +812,7 @@ export default function ReportEditorPage() {
                       )}
                       <div 
                         style={msg.sender === 'user' ? { backgroundColor: primaryColor } : {}}
-                        className={`p-4 rounded-[20px] text-sm shadow-sm leading-relaxed ${
+                        className={`min-w-0 flex-1 p-3 sm:p-4 rounded-[20px] text-sm shadow-sm leading-relaxed break-words ${
                           msg.sender === 'user' 
                             ? 'text-white rounded-br-none' 
                             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
