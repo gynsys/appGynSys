@@ -805,7 +805,8 @@ export default function DoctorProfilePage() {
                     <div className="hidden md:flex justify-end mt-8">
                       <button
                         onClick={handleOpenTest}
-                        className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 group"
+                        className="px-8 py-3 rounded-xl font-bold text-sm shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-white hover:opacity-90 group"
+                        style={{ backgroundColor: primaryColor }}
                       >
                         <Heart className="mr-2 w-5 h-5 group-hover:animate-pulse" />
                         Realizar Test Endometriosis
