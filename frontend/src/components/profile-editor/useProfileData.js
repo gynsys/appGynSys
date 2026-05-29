@@ -83,7 +83,11 @@ export const useProfileData = () => {
     e.preventDefault()
     setSaving(true)
     try {
-      await doctorService.updateCurrentUser(formData)
+      const dataToSubmit = { ...formData }
+      if (dataToSubmit.contact_email === '') {
+        dataToSubmit.contact_email = null
+      }
+      await doctorService.updateCurrentUser(dataToSubmit)
       toast.success('Perfil actualizado correctamente')
       loadProfile(true) // Silent reload
       loadUser(true)
