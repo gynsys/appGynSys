@@ -50,10 +50,8 @@ export default function OnlineConsultationSection({ doctor, settings, onOpenChat
                         {/* CTA Button - Right */}
                         <button
                             onClick={onOpenChat}
-                            className="flex-shrink-0 group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition-all duration-300 shadow-xl hover:shadow-purple-500/50 hover:scale-105"
-                            style={{
-                                background: `linear-gradient(135deg, ${primaryColor || '#8B5CF6'} 0%, #EC4899 100%)`
-                            }}
+                            className="flex-shrink-0 group relative px-8 py-4 text-white font-bold rounded-xl transition-all duration-300 shadow-xl hover:scale-105 hover:opacity-90"
+                            style={{ backgroundColor: primaryColor }}
                         >
                             <span className="flex items-center gap-2 whitespace-nowrap">
                                 <MdVideoCall className="w-6 h-6" />
