@@ -97,13 +97,15 @@ export const AdminHeader = ({ showDashboardButton = true, onMenuClick, notificat
             </div>
 
 
-            <button
-              onClick={() => navigate(doctor?.slug_url ? `/${doctor.slug_url}` : '/')}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium flex items-center gap-2 transition-colors"
-            >
-              <MdHome className="text-lg" />
-              <span className="hidden md:inline">Inicio</span>
-            </button>
+            {(!doctor?.is_clinic && doctor?.role !== 'staff') && (
+              <button
+                onClick={() => navigate(doctor?.slug_url ? `/${doctor.slug_url}` : '/')}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium flex items-center gap-2 transition-colors"
+              >
+                <MdHome className="text-lg" />
+                <span className="hidden md:inline">Inicio</span>
+              </button>
+            )}
             {showDashboardButton && (
               <button
                 onClick={() => navigate('/dashboard')}

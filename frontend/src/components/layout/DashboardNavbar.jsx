@@ -45,16 +45,18 @@ export default function DashboardNavbar({ doctor, primaryColor = '#4f46e5' }) {
             >
               {darkMode ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
             </button>
-            <button
-              onClick={() => navigate(publicUrl)}
-              className="px-6 py-2 rounded-lg text-white font-medium hover:opacity-90 transition shadow-md"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <div className="flex items-center space-x-2">
-                <FiHome className="w-5 h-5" />
-                <span>Home</span>
-              </div>
-            </button>
+            {(!doctor?.is_clinic && doctor?.role !== 'staff') && (
+              <button
+                onClick={() => navigate(publicUrl)}
+                className="px-6 py-2 rounded-lg text-white font-medium hover:opacity-90 transition shadow-md"
+                style={{ backgroundColor: primaryColor }}
+              >
+                <div className="flex items-center space-x-2">
+                  <FiHome className="w-5 h-5" />
+                  <span>Home</span>
+                </div>
+              </button>
+            )}
 
           </div>
         </div>
