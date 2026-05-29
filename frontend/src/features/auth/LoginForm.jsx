@@ -110,7 +110,8 @@ export default function LoginForm({ redirect = '/dashboard', isModal = false, pr
         } else {
           // If it's a modal login, stay on current page (don't redirect to dashboard)
           // Unless explicitly passed a redirect prop that isn't default
-          if (!isModal) {
+          // OR if the user is a staff doctor or clinic admin, they should ALWAYS go to dashboard
+          if (!isModal || response?.user?.role === 'staff' || response?.user?.is_clinic) {
             navigate(redirect || '/dashboard', { replace: true })
           }
           // If isModal is true, we simply do nothing (onSuccess closes the modal)
