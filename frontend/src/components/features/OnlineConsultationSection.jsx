@@ -27,7 +27,10 @@ export default function OnlineConsultationSection({ doctor, settings, onOpenChat
                     />
                 ) : (
                     // Placeholder gradient if no video
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900/50 to-pink-900/50" />
+                    <div 
+                        className="absolute inset-0 w-full h-full" 
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}aa 0%, ${primaryColor}55 100%)` }}
+                    />
                 )}
 
                 {/* Dark gradient overlay for text readability */}
