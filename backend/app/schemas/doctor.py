@@ -19,6 +19,7 @@ class DoctorBase(BaseModel):
     contact_email: Optional[EmailStr] = None
     schedule: Optional[Dict[str, Any]] = None
     pdf_config: Optional[Dict[str, Any]] = None
+    is_clinic: Optional[bool] = False
     
     # Social Media
     social_youtube: Optional[str] = None

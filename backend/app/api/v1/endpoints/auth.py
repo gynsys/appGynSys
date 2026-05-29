@@ -102,6 +102,13 @@ async def register(
     
     # Create new doctor
     hashed_password = hash_password(doctor_data.password)
+    
+    # Determine if it's a clinic based on plan_id (Plan Institucional = 3)
+    is_clinic = False
+    role = 'user'
+    if doctor_data.plan_id == 3:
+        is_clinic = True
+        role = 'clinic'
     db_doctor = Doctor(
         email=doctor_data.email,
         password_hash=hashed_password,
@@ -113,7 +120,9 @@ async def register(
         is_active=False,  # Inactive until approved
         status='pending',
         plan_id=doctor_data.plan_id,
-        payment_reference=doctor_data.payment_reference
+        payment_reference=doctor_data.payment_reference,
+        is_clinic=is_clinic,
+        role=role
     )
     
     db.add(db_doctor)
