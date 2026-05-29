@@ -24,10 +24,26 @@ export default function AppointmentRequestList() {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [isActionLoading, setIsActionLoading] = useState(false);
-
+  const [staffList, setStaffList] = useState([]);
+  const [selectedStaffId, setSelectedStaffId] = useState('');
+  
   useEffect(() => {
     loadRequests();
-  }, []);
+    if (user?.is_clinic || user?.role === 'admin') {
+      loadStaff();
+    }
+  }, [user]);
+
+  const loadStaff = async () => {
+    try {
+      // Import api locally or use it if available
+      const api = (await import('../../lib/axios')).default;
+      const res = await api.get('/staff/');
+      setStaffList(res.data);
+    } catch (err) {
+      console.error("Error loading staff", err);
+    }
+  };
 
   const loadRequests = async () => {
     try {
@@ -46,11 +62,22 @@ export default function AppointmentRequestList() {
   };
 
   const handleStatusChange = async (id, newStatus) => {
+    if (newStatus === 'confirmed' && (user?.is_clinic || user?.role === 'admin') && !selectedStaffId) {
+      toastError("Por favor, asigna un médico para esta cita.");
+      return;
+    }
+
     try {
       setIsActionLoading(true);
-      await appointmentService.updateAppointment(id, { status: newStatus });
+      const updatePayload = { status: newStatus };
+      if (newStatus === 'confirmed' && selectedStaffId) {
+        updatePayload.assigned_staff_id = parseInt(selectedStaffId, 10);
+      }
+      
+      await appointmentService.updateAppointment(id, updatePayload);
       success(`Cita ${newStatus === 'confirmed' ? 'confirmada' : 'actualizada'}`);
       setSelectedApp(null);
+      setSelectedStaffId('');
       loadRequests();
     } catch (err) {
       toastError("Error al actualizar estado");
@@ -171,7 +198,10 @@ export default function AppointmentRequestList() {
       {/* Summary Drawer/Modal */}
       <Modal
         isOpen={!!selectedApp}
-        onClose={() => setSelectedApp(null)}
+        onClose={() => {
+          setSelectedApp(null);
+          setSelectedStaffId('');
+        }}
         title="Detalles de Solicitud"
         size="md"
       >
@@ -247,13 +277,35 @@ export default function AppointmentRequestList() {
                 </Button>
               </div>
 
-              <Button 
-                onClick={() => handleStatusChange(selectedApp.id, 'confirmed')}
-                className="w-full justify-center gap-2 py-3 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                disabled={isActionLoading}
-              >
-                Confirmar en Sistema
-              </Button>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                {(user?.is_clinic || user?.role === 'admin') && (
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Asignar a Médico del Staff
+                    </label>
+                    <select
+                      value={selectedStaffId}
+                      onChange={(e) => setSelectedStaffId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                    >
+                      <option value="">-- Selecciona un Médico --</option>
+                      {staffList.map(staff => (
+                        <option key={staff.id} value={staff.id}>
+                          Dr(a). {staff.nombre_completo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                <Button 
+                  onClick={() => handleStatusChange(selectedApp.id, 'confirmed')}
+                  className="w-full justify-center gap-2 py-3 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={isActionLoading}
+                >
+                  Confirmar en Sistema
+                </Button>
+              </div>
             </div>
           </div>
         )}

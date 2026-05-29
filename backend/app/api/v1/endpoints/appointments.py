@@ -325,6 +325,9 @@ async def get_appointments(
         query = db.query(Appointment).filter(
             Appointment.doctor_id == tenant_id
         )
+        # If it's a staff member, ONLY show their assigned appointments
+        if getattr(current_actor, 'role', '') == 'staff':
+            query = query.filter(Appointment.assigned_staff_id == current_actor.id)
     else:
         query = db.query(Appointment).filter(
             (Appointment.patient_email == current_actor.email) | 
@@ -382,6 +385,12 @@ async def get_appointment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Appointment not found"
         )
+        
+    if getattr(current_user, 'role', '') == 'staff' and appointment.assigned_staff_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para ver esta cita."
+        )
     
     # --- DYNAMIC SUMMARY INJECTION ---
     # We create a dictionary to inject data, then update the DB object's transient field
@@ -432,6 +441,12 @@ async def update_appointment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Appointment not found"
         )
+        
+    if getattr(current_user, 'role', '') == 'staff' and appointment.assigned_staff_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para actualizar esta cita."
+        )
     
     # Check for status change
     old_status = appointment.status
@@ -471,6 +486,12 @@ async def delete_appointment(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Appointment not found"
+        )
+        
+    if getattr(current_user, 'role', '') == 'staff' and appointment.assigned_staff_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para eliminar esta cita."
         )
     
     db.delete(appointment)

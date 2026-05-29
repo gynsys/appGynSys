@@ -20,6 +20,7 @@ class AppointmentBase(BaseModel):
     reason_for_visit: Optional[str] = None
     location: Optional[str] = None
     notes: Optional[str] = None
+    assigned_staff_id: Optional[int] = None
 
 
 class AppointmentCreate(AppointmentBase):
@@ -42,6 +43,7 @@ class AppointmentUpdate(BaseModel):
     location: Optional[str] = None
     notes: Optional[str] = None
     status: Optional[str] = None
+    assigned_staff_id: Optional[int] = None
 
 
 class AppointmentInDB(AppointmentBase):
