@@ -262,6 +262,29 @@ export const EnhancedSidebar = ({
             {/* Design Tab */}
             {activeTab === 'design' && (
               <div className="p-4 space-y-6">
+                {/* Duration Control (Only in Video Mode) */}
+                {isVideoMode && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Tiempo por Escena</h3>
+                      <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{slideDuration}s</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="2"
+                      max="10"
+                      step="0.5"
+                      value={slideDuration}
+                      onChange={(e) => setSlideDuration(Number(e.target.value))}
+                      className="w-full accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[9px] font-bold text-gray-400 mt-1 uppercase">
+                      <span>Rápido (2s)</span>
+                      <span>Lento (10s)</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Background Colors & Gradients */}
                 <div>
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Fondo</h3>
@@ -774,28 +797,7 @@ export const EnhancedSidebar = ({
             {/* Audio & Settings Tab */}
             {activeTab === 'audio' && isVideoMode && (
               <div className="p-4 space-y-6">
-                {/* Duration Control */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Tiempo por Escena</h3>
-                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{slideDuration}s</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="2"
-                    max="10"
-                    step="0.5"
-                    value={slideDuration}
-                    onChange={(e) => setSlideDuration(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                  <div className="flex justify-between text-[9px] font-bold text-gray-400 mt-1 uppercase">
-                    <span>Rápido (2s)</span>
-                    <span>Lento (10s)</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Música de Fondo</h3>
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                     {/* None option */}
