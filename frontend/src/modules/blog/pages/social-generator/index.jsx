@@ -196,6 +196,8 @@ export default function SocialGenerator() {
       } else {
         setActiveTab('video');
       }
+      setSelectedAudio(null);
+      setCustomAudioUrl(null);
       showToast(`${genType === 'carousel' ? 'Carrusel' : 'Video'} generado con éxito`, 'success');
     } catch (error) {
       console.error('Error generating content:', error);
@@ -245,6 +247,8 @@ export default function SocialGenerator() {
       } else {
         setActiveTab('video');
       }
+      setSelectedAudio(null);
+      setCustomAudioUrl(null);
       
       showToast('¡Contenido social creado con éxito!', 'success');
     } catch (error) {
@@ -265,6 +269,8 @@ export default function SocialGenerator() {
       setGeneratedContent(prev => ({ ...prev, video_slides: result.video_slides, music_suggestion: result.music_suggestion, type: 'video' }));
       setActiveTab('video');
       setCurrentVideoSlide(0);
+      setSelectedAudio(null);
+      setCustomAudioUrl(null);
       showToast('¡Carrusel convertido a video!', 'success');
     } catch (error) {
       showToast('Error al convertir a video', 'error');
