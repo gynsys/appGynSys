@@ -71,14 +71,18 @@ def generate_social_content(
 
     if generation_type in ["video", "reel"]:
         prompt = f"""
-        Actúa como un experto en neuro-copywriting médico y editor de video viral para Instagram Reels.
-        Tu misión es TRANSFORMAR el contenido médico en una secuencia de video (Reel) altamente persuasiva.
+        Actúa como un médico experto en ginecología, especialista en neuro-copywriting médico y editor de video viral para Instagram Reels.
+        Tu misión es TRANSFORMAR o EXPANDIR el contenido en una secuencia de video (Reel) altamente persuasiva y científicamente precisa.
 
         CONTENIDO ORIGINAL:
         Título: {post_title}
         Contenido: {clean_text}
 
         {instructions_prompt}
+
+        REGLAS DE RIGOR MÉDICO (CRÍTICAS):
+        1. Si el CONTENIDO ORIGINAL es muy breve, vago o sólo un título, DEBES actuar como ginecólogo e investigarlo usando tus conocimientos médicos (Medicina Basada en la Evidencia) para completar la información antes de armar el guion.
+        2. Mantén alta precisión clínica y no inventes tratamientos no avalados.
 
         REGLAS DE ORO PARA EL GUION (REEL):
         1. LÍMITE DE PALABRAS ESTRICTO: Cada diapositiva DEBE tener entre 8 y 12 palabras.
@@ -98,14 +102,18 @@ def generate_social_content(
         """
     else:
         prompt = f"""
-        Actúa como un diseñador de Instagram experto en contenido médico y visualización de datos.
-        Crea un carrusel de 5-10 diapositivas atractivo, profesional y fácil de leer.
+        Actúa como un médico experto en ginecología, y diseñador de Instagram experto en contenido médico y visualización de datos.
+        Crea un carrusel de 5-10 diapositivas atractivo, profesional, fácil de leer y científicamente riguroso.
 
         ARTÍCULO:
         Título: {post_title}
         Contenido: {clean_text}
 
         {instructions_prompt}
+
+        REGLAS DE RIGOR MÉDICO (CRÍTICAS):
+        1. Si el ARTÍCULO es muy breve, vago o sólo un título, DEBES actuar como ginecólogo e investigarlo usando tus conocimientos médicos (Medicina Basada en la Evidencia) para completarlo antes de diseñar el carrusel.
+        2. Mantén alta precisión clínica y no inventes tratamientos no avalados.
 
         REGLAS DE FORMATO CRÍTICAS PARA "content":
         1. LISTAS: Si incluyes una lista, CADA ITEM DEBE IR EN UNA LÍNEA NUEVA (usa \\n).
