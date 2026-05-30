@@ -349,7 +349,7 @@ export const EnhancedSidebar = ({
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <label className="text-xs text-gray-600 dark:text-gray-400">Marca</label>
+                      <label className="text-xs text-gray-600 dark:text-gray-400">{isVideoMode ? 'Resaltado' : 'Marca'}</label>
                       <input
                         type="color"
                         value={design.headerColor}
@@ -410,7 +410,7 @@ export const EnhancedSidebar = ({
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs text-gray-600 dark:text-gray-400">Marca</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-400">{isVideoMode ? 'Resaltado' : 'Marca'}</label>
                         <span className="text-[9px] font-mono text-gray-500">{design.headerFontSize}px</span>
                       </div>
                       <input
