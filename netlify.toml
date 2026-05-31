@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "pnpm run build && cd ../arko360 && npm install && npm run build && cp -r dist ../frontend/dist/arko360"
+  command = "pnpm run build && cd ../arko360 && pnpm install && pnpm run build && cd ../frontend && mkdir -p dist/arko360 && cp -r ../arko360/dist/* dist/arko360/"
   publish = "dist"
 
 [[redirects]]
