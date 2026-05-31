@@ -233,14 +233,18 @@ input, textarea, select {
 }
 
 .navbar-logo {
-  height: 80px;
+  height: 104px;
   width: auto;
   object-fit: contain;
   transition: var(--transition);
 }
 
 .navbar.scrolled .navbar-logo {
-  height: 64px;
+  height: 80px;
+}
+
+.navbar-logo-white {
+  filter: brightness(0) invert(1);
 }
 
 .navbar-links {
@@ -248,6 +252,15 @@ input, textarea, select {
   align-items: center;
   gap: 8px;
   list-style: none;
+}
+
+@media (max-width: 768px) {
+  .navbar-logo {
+    height: 70px;
+  }
+  .navbar.scrolled .navbar-logo {
+    height: 54px;
+  }
 }
 
 .navbar-links a {
