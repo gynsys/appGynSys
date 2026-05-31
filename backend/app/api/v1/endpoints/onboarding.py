@@ -208,7 +208,8 @@ def submit_unified_onboarding(
                     "appointment_date": date_str,
                     "appointment_type": target_appointment.appointment_type,
                     "reason": target_appointment.reason_for_visit,
-                    "phone": target_appointment.patient_phone
+                    "phone": target_appointment.patient_phone,
+                    "summary_html": "<p><em>El paciente ha completado su formulario a través del enlace web. Puedes ver sus respuestas detalladas ingresando al sistema.</em></p>"
                 },
                 db=db
             )
