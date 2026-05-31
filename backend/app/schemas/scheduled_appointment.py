@@ -12,7 +12,7 @@ class ScheduledAppointmentBase(BaseModel):
     notes: Optional[str] = None
 
 class ScheduledAppointmentCreate(ScheduledAppointmentBase):
-    doctor_id: int
+    doctor_id: Optional[int] = None
     original_appointment_id: Optional[int] = None
     original_consultation_id: Optional[int] = None
 
