@@ -37,7 +37,7 @@ export default function Navbar() {
               <img
                 src="/arko360/images/logo_aeko360.png"
                 alt="Ingeniería Arko 360"
-                className={`navbar-logo ${!scrolled ? 'navbar-logo-white' : ''}`}
+                className="navbar-logo"
               />
             </a>
 
