@@ -229,42 +229,51 @@ class GeneradorResumenes:
     # -------------------------------------------------------------------------
     def generar_antecedentes(self) -> str:
         """Resume antecedentes personales, familiares, quirúrgicos, suplementos."""
-        secciones = []
+        positivos = []
+        negativos = []
 
         if self.d.get('personal_history_bool'):
             hist = self.d.get('personal_history', [])
             if hist:
-                secciones.append(f"antecedentes de {_normalize_value(hist)}")
+                positivos.append(f"antecedentes de {_normalize_value(hist)}")
             else:
-                secciones.append("con antecedentes personales")
+                positivos.append("antecedentes personales")
         else:
-            secciones.append("sin antecedentes personales")
+            negativos.append("antecedentes personales")
 
         if self.d.get('family_history_mother_bool'):
             hist_m = self.d.get('family_history_mother', [])
             if hist_m:
-                secciones.append(f"antecedentes maternos de {_normalize_value(hist_m)}")
+                positivos.append(f"antecedentes maternos de {_normalize_value(hist_m)}")
+            else:
+                positivos.append("antecedentes maternos")
 
         if self.d.get('family_history_father_bool'):
             hist_p = self.d.get('family_history_father', [])
             if hist_p:
-                secciones.append(f"antecedentes paternos de {_normalize_value(hist_p)}")
+                positivos.append(f"antecedentes paternos de {_normalize_value(hist_p)}")
+            else:
+                positivos.append("antecedentes paternos")
 
         if self.d.get('surgical_history_bool'):
-            secciones.append("cirugías previas")
+            positivos.append("cirugías previas")
 
         if self.d.get('supplements_bool'):
             supl = self.d.get('supplements')
             if supl:
-                secciones.append(f"toma {_normalize_value(supl)}")
+                positivos.append(f"toma {_normalize_value(supl)}")
 
-        if not secciones:
+        partes = []
+        if positivos:
+            partes.append("con " + ", ".join(positivos))
+        if negativos and not positivos:
+            # Si solo hay negativos, y es "antecedentes personales"
+            partes.append("sin antecedentes personales")
+        
+        if not partes:
             return "sin antecedentes médicos de interés."
-
-        if len(secciones) == 1 and secciones[0].startswith("sin "):
-            return secciones[0] + "."
-
-        return "con " + ", ".join(secciones) + "."
+            
+        return ", ".join(partes) + "."
 
     # -------------------------------------------------------------------------
     # Historia gineco-obstétrica

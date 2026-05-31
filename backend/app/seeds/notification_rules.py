@@ -845,7 +845,56 @@ def seed_notification_rules(db: Session, tenant_id: int):
             "trigger_condition": {"role": "doctor", "event": "preconsulta_completed"},
             "priority": 54,
             "title_template": "📝 Preconsulta Completada",
-            "message_template": "<div style=\"font-family: sans-serif; max-width: 650px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb;\">\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <h2 style=\"color: #4F46E5; margin: 0;\">Preconsulta Completada</h2>\n        <p style=\"color: #6b7280; margin: 5px 0;\">{patient_name} ha completado su formulario de preconsulta</p>\n    </div>\n    \n    <div style=\"background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);\">\n        <p style=\"margin-top: 0;\"><strong>Cita:</strong> {appointment_date}</p>\n        \n        <!-- Información Personal -->\n        <div style=\"margin-top: 15px; padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px;\">\n            <h3 style=\"margin-top:0; color: #1e3a8a; font-size: 15px; text-transform: uppercase;\">Información Personal y Médica</h3>\n            <div style=\"color: #374151; font-size: 14px; line-height: 1.5;\">\n                {summary_personal}\n            </div>\n        </div>\n\n        <!-- Historia Gineco-Obstétrica -->\n        <div style=\"margin-top: 15px; padding: 15px; background-color: #fdf2f8; border-left: 4px solid #ec4899; border-radius: 4px;\">\n            <h3 style=\"margin-top:0; color: #831843; font-size: 15px; text-transform: uppercase;\">Historia Gineco-Obstétrica</h3>\n            <div style=\"color: #374151; font-size: 14px; line-height: 1.5;\">\n                {summary_gineco}\n            </div>\n        </div>\n\n        <!-- Examen Funcional -->\n        <div style=\"margin-top: 15px; padding: 15px; background-color: #f3f4f6; border-left: 4px solid #4b5563; border-radius: 4px;\">\n            <h3 style=\"margin-top:0; color: #1f2937; font-size: 15px; text-transform: uppercase;\">Examen Funcional</h3>\n            <div style=\"color: #374151; font-size: 14px; line-height: 1.5;\">\n                {summary_funcional}\n            </div>\n        </div>\n\n        <!-- Hábitos -->\n        <div style=\"margin-top: 15px; padding: 15px; background-color: #ecfdf5; border-left: 4px solid #10b981; border-radius: 4px;\">\n            <h3 style=\"margin-top:0; color: #064e3b; font-size: 15px; text-transform: uppercase;\">Hábitos Psicobiológicos</h3>\n            <div style=\"color: #374151; font-size: 14px; line-height: 1.5;\">\n                {summary_habitos}\n            </div>\n        </div>\n\n    </div>\n\n    <div style=\"text-align: center; margin-top: 30px;\">\n        <a href=\"https://gynsys.net/dashboard/consultation\" \n           style=\"background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;\">\n           Ver Dashboard\n        </a>\n    </div>\n</div>\",
+            "message_template": """<div style="font-family: sans-serif; max-width: 650px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #4F46E5; margin: 0;">Preconsulta Completada</h2>
+        <p style="color: #6b7280; margin: 5px 0;">{patient_name} ha completado su formulario de preconsulta</p>
+    </div>
+    
+    <div style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <p style="margin-top: 0;"><strong>Cita:</strong> {appointment_date}</p>
+        
+        <!-- Información Personal -->
+        <div style="margin-top: 15px; padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px;">
+            <h3 style="margin-top:0; color: #1e3a8a; font-size: 15px; text-transform: uppercase;">Información Personal y Médica</h3>
+            <div style="color: #374151; font-size: 14px; line-height: 1.5;">
+                {summary_personal}
+            </div>
+        </div>
+
+        <!-- Historia Gineco-Obstétrica -->
+        <div style="margin-top: 15px; padding: 15px; background-color: #fdf2f8; border-left: 4px solid #ec4899; border-radius: 4px;">
+            <h3 style="margin-top:0; color: #831843; font-size: 15px; text-transform: uppercase;">Historia Gineco-Obstétrica</h3>
+            <div style="color: #374151; font-size: 14px; line-height: 1.5;">
+                {summary_gineco}
+            </div>
+        </div>
+
+        <!-- Examen Funcional -->
+        <div style="margin-top: 15px; padding: 15px; background-color: #f3f4f6; border-left: 4px solid #4b5563; border-radius: 4px;">
+            <h3 style="margin-top:0; color: #1f2937; font-size: 15px; text-transform: uppercase;">Examen Funcional</h3>
+            <div style="color: #374151; font-size: 14px; line-height: 1.5;">
+                {summary_funcional}
+            </div>
+        </div>
+
+        <!-- Hábitos -->
+        <div style="margin-top: 15px; padding: 15px; background-color: #ecfdf5; border-left: 4px solid #10b981; border-radius: 4px;">
+            <h3 style="margin-top:0; color: #064e3b; font-size: 15px; text-transform: uppercase;">Hábitos Psicobiológicos</h3>
+            <div style="color: #374151; font-size: 14px; line-height: 1.5;">
+                {summary_habitos}
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="https://gynsys.net/dashboard/consultation" 
+           style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+           Ver Dashboard
+        </a>
+    </div>
+</div>""",
             "message_text_template": "{patient_name} ha completado su preconsulta para la cita del {appointment_date}.",
             "channel": "dual",
             "send_time": "08:00"
