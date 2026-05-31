@@ -103,17 +103,9 @@ export const DoctorConsultationPage = () => {
             const status = app.status?.toLowerCase() || '';
             const hasAnswers = !!app.preconsulta_answers;
 
-            // Show if:
-            // 1. Has preconsulta answers (Standard Flow)
-            // 2. OR is 'confirmed' (Recurrent Flow - no answers needed)
-            // 3. OR is 'preconsulta_completed'
-            // AND is NOT finished/completed (Historical)
-
             const isActive = status !== 'completed' && status !== 'finished' && status !== 'cancelled' && status !== 'rejected';
-
-            // Logic to prevent "Zombie" appointments (Old confirmed tests)
-            // For Recurrent Patients (confirmed): Only show if >= Yesterday (Recent/Future)
-            // For New Patients (preconsulta_completed): Show Always (Action needed)
+            
+            if (!isActive) return false;
 
             let isTimely = true;
             if (status === 'confirmed' && app.appointment_date) {
@@ -126,11 +118,7 @@ export const DoctorConsultationPage = () => {
               }
             }
 
-            // User Request Update: We MUST list Recurrent Patients (status 'confirmed') here 
-            // so the doctor can click "Atender".
-            // However, we apply the Date Filter (isTimely) to hide old "zombie" confirmed tests.
-            // 3. OR is 'completed' (for follow-up checks)
-            return hasAnswers || status === 'confirmed' || status === 'completed';
+            return (hasAnswers || status === 'confirmed' || status === 'preconsulta_completed') && isTimely;
           });
           
           withPreconsulta.sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
