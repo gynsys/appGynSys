@@ -598,7 +598,15 @@ async def submit_preconsulta(
                 from app.services.summary_generator import GeneradorResumenes
                 gen = GeneradorResumenes(answers)
                 resumenes = gen.generar_todo(appointment.patient_name)
+                
+                # We still keep summary_html for backwards compatibility
                 summary_html = f"<p>{resumenes['general']}</p><p>{resumenes['antecedentes']}</p><p>{resumenes['gineco']}</p><p>{resumenes['funcional']}</p><p>{resumenes['estilo_vida']}</p>"
+
+                # But we add individual summaries for the new beautiful email template
+                summary_personal = f"<p>{resumenes['general']}</p><p>{resumenes['antecedentes']}</p>"
+                summary_gineco = f"<p>{resumenes['gineco']}</p>" if resumenes.get('gineco') else "Sin datos registrados."
+                summary_funcional = f"<p>{resumenes['funcional']}</p>" if resumenes.get('funcional') else "Sin hallazgos reportados."
+                summary_habitos = f"<p>{resumenes['estilo_vida']}</p>" if resumenes.get('estilo_vida') else "Sin datos registrados."
 
                 # SAVE DYNAMIC DATA ONLY: Human Readable Snapshot
                 # NO GUARDAMOS los resúmenes de texto (summary_...) para que siempre se generen dinámicamente
@@ -611,6 +619,10 @@ async def submit_preconsulta(
                 print(f"Error generating summary context: {e}")
                 # Continue without summary
                 summary_html = None
+                summary_personal = "Error al generar resumen."
+                summary_gineco = "Error al generar resumen."
+                summary_funcional = "Error al generar resumen."
+                summary_habitos = "Error al generar resumen."
 
             # Backfill missing data from Appointment Record (Dashboard Logic)
             merged_data = answers.copy()
@@ -635,7 +647,11 @@ async def submit_preconsulta(
                     "patient_name": appointment.patient_name,
                     "appointment_date": date_str,
                     "patient_data": merged_data,
-                    "summary_html": summary_html
+                    "summary_html": summary_html,
+                    "summary_personal": summary_personal,
+                    "summary_gineco": summary_gineco,
+                    "summary_funcional": summary_funcional,
+                    "summary_habitos": summary_habitos
                 },
                 db=db
             )

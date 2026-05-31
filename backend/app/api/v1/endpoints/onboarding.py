@@ -198,6 +198,24 @@ def submit_unified_onboarding(
             
             date_str = target_appointment.appointment_date.strftime("%d/%m/%Y %H:%M") if target_appointment.appointment_date else "Fecha por definir"
             
+            # Generate deterministic summaries
+            try:
+                from app.services.summary_generator import GeneradorResumenes
+                answers = payload.get("answers", {})
+                if answers:
+                    gen = GeneradorResumenes(answers)
+                    resumenes = gen.generar_todo(target_appointment.patient_name)
+                else:
+                    resumenes = {k: "Sin información registrada." for k in ["general", "antecedentes", "gineco", "funcional", "estilo_vida"]}
+            except Exception as e:
+                logger.error(f"Error generating summaries in onboarding: {e}")
+                resumenes = {k: "Error al generar resumen." for k in ["general", "antecedentes", "gineco", "funcional", "estilo_vida"]}
+
+            summary_personal = f"<p>{resumenes.get('general', '')}</p><p>{resumenes.get('antecedentes', '')}</p>"
+            summary_gineco = f"<p>{resumenes.get('gineco', 'Sin datos.')}</p>"
+            summary_funcional = f"<p>{resumenes.get('funcional', 'Sin hallazgos.')}</p>"
+            summary_habitos = f"<p>{resumenes.get('estilo_vida', 'Sin datos.')}</p>"
+
             trigger_doctor_event(
                 doctor_id=doctor.id,
                 notification_type=notif_type,
@@ -209,7 +227,11 @@ def submit_unified_onboarding(
                     "appointment_type": target_appointment.appointment_type,
                     "reason": target_appointment.reason_for_visit,
                     "phone": target_appointment.patient_phone,
-                    "summary_html": "<p><em>El paciente ha completado su formulario a través del enlace web. Puedes ver sus respuestas detalladas ingresando al sistema.</em></p>"
+                    "summary_html": "<p><em>El paciente ha completado su formulario a través del enlace web. Puedes ver sus respuestas detalladas ingresando al sistema.</em></p>",
+                    "summary_personal": summary_personal,
+                    "summary_gineco": summary_gineco,
+                    "summary_funcional": summary_funcional,
+                    "summary_habitos": summary_habitos
                 },
                 db=db
             )
