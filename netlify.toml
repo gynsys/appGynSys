@@ -1,7 +1,17 @@
 [build]
   base = "frontend"
-  command = "pnpm run build"
+  command = "pnpm run build && cd ../arko360 && npm install && npm run build && cp -r dist ../frontend/dist/arko360"
   publish = "dist"
+
+[[redirects]]
+  from = "/arko360/*"
+  to = "/arko360/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/arko360"
+  to = "/arko360/"
+  status = 301
 
 [[redirects]]
   from = "/*"
