@@ -100,9 +100,7 @@ export default function SocialGenerator() {
     getActiveAudioSrc, userAudios, loadingAudios, handleUploadAudio, handleDeleteAudio
   } = useAudioPlayback(activeTab, isPlaying, setIsPlaying, showToast);
 
-  const { isExporting, exportProgress, handleExportVideo, exportStatus } = useVideoExport(
-    generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast
-  );
+
 
   const { isMobileFullscreen, enterMobileFullscreen, exitMobileFullscreen } = useMobileFullscreen(
     isMobile, generatedContent
@@ -113,6 +111,11 @@ export default function SocialGenerator() {
     setDoctorNamePos: designer.design.setDoctorNamePos,
     setDividerPos: designer.design.setDividerPos
   });
+
+  const { isExporting, exportProgress, handleExportVideo, exportStatus } = useVideoExport(
+    generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast,
+    designer
+  );
 
   const exporter = useExport(selectedPost, designer, generatedContent);
 
@@ -643,7 +646,7 @@ export default function SocialGenerator() {
                   />
                   <div className="flex-1 space-y-6 flex flex-col items-center justify-start pt-10">
                     <div ref={editorWrapperRef} className={`bg-white dark:bg-gray-800 rounded-[40px] ${activeTab === 'video' ? 'p-4 w-[320px] h-[570px] overflow-visible' : 'p-12 max-w-full min-h-[600px] w-full overflow-hidden'} shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center relative`}>
-                      <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+                      <div id="main-slide-canvas" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
                         <SlideCanvas 
                           slide={activeTab === 'video' ? generatedContent.video_slides?.[designer.canvas.currentSlidePage] : generatedContent.slides?.[designer.canvas.currentSlidePage]}
                           index={designer.canvas.currentSlidePage}

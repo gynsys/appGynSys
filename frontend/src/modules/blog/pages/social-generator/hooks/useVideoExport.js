@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import html2canvas from 'html2canvas';
 import { blogService } from '../../../services/blogService';
 import { isCapacitor, downloadFile, openExternalFile } from '../../../../../utils/platform';
 
-export const useVideoExport = (generatedContent, videoStyles, slideDuration, transitionType, transitionDuration, selectedPost, audioRef, getActiveAudioSrc, showToast) => {
+export const useVideoExport = (
+  generatedContent, videoStyles, slideDuration, transitionType, transitionDuration,
+  selectedPost, audioRef, getActiveAudioSrc, showToast,
+  designer
+) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
-  // 'idle' | 'exporting' | 'downloading' | 'done'
   const [exportStatus, setExportStatus] = useState('idle');
 
   const handleExportVideo = async () => {
@@ -14,33 +18,64 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
       showToast('No hay escenas para exportar', 'error');
       return;
     }
-    
+
     setIsExporting(true);
     setExportProgress(0);
     setExportStatus('exporting');
-    
+
     try {
-      // 1. Pre-cargar todas las imágenes para evitar parpadeos o fallos
-      const loadedImages = {};
+      // === PASO 1: Capturar cada slide como imagen usando html2canvas ===
+      const capturedFrames = [];
+
+      // Ocultar controles de UI
+      const actionButtons = document.querySelectorAll('.slide-actions');
+      actionButtons.forEach(btn => (btn.style.display = 'none'));
+
+      const originalPage = designer.canvas.currentSlidePage;
+      designer.canvas.setSelectedExtraId(null);
+      designer.canvas.setSelectedImageId(null);
+      designer.canvas.setSelectedContentIndex(null);
+      designer.canvas.setIsExportMode(true);
+
       for (let i = 0; i < scenes.length; i++) {
-        if (scenes[i].image) {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-            img.src = scenes[i].image;
-          });
-          if (img.complete && img.naturalWidth > 0) loadedImages[i] = img;
+        designer.canvas.setCurrentSlidePage(i);
+        // Esperar que React renderice (imágenes, gradientes SVG)
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        const slideNode = document.getElementById('main-slide-canvas');
+        if (!slideNode) {
+          console.warn('[GynSys] No se encontró #main-slide-canvas para el slide', i);
+          capturedFrames.push(null);
+          continue;
         }
+
+        const capturedCanvas = await html2canvas(slideNode, {
+          useCORS: true,
+          scale: 2,
+          backgroundColor: designer.design.bgColor || '#ffffff',
+          logging: false,
+          allowTaint: true,
+          imageTimeout: 15000,
+          removeContainer: false,
+          foreignObjectRendering: false,
+        });
+
+        capturedFrames.push(capturedCanvas);
+        setExportProgress(Math.round(((i + 1) / scenes.length) * 40)); // Primero 40%
       }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 720;
-      canvas.height = 1280;
-      const ctx = canvas.getContext('2d');
-      
-      const videoStream = canvas.captureStream(30);
+      // Restaurar UI
+      actionButtons.forEach(btn => (btn.style.display = 'flex'));
+      designer.canvas.setCurrentSlidePage(originalPage);
+      designer.canvas.setIsExportMode(false);
+
+      // === PASO 2: Componer el video con las capturas ===
+      const outputCanvas = document.createElement('canvas');
+      outputCanvas.width = 720;
+      outputCanvas.height = 1280;
+      const ctx = outputCanvas.getContext('2d');
+
+      const videoStream = outputCanvas.captureStream(30);
       let combinedStream = videoStream;
 
       const audioSrc = getActiveAudioSrc();
@@ -49,65 +84,70 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
           audioRef.current.src = audioSrc;
           audioRef.current.load();
           await Promise.race([
-            new Promise(resolve => { 
-              if (audioRef.current) audioRef.current.oncanplaythrough = resolve; 
+            new Promise(resolve => {
+              if (audioRef.current) audioRef.current.oncanplaythrough = resolve;
               else resolve();
             }),
-            new Promise(resolve => setTimeout(resolve, 5000))
+            new Promise(resolve => setTimeout(resolve, 5000)),
           ]);
-          
           if (audioRef.current) {
             audioRef.current.currentTime = 0;
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
-              playPromise.catch(e => console.log("[GynSys] Video export audio play prevented:", e));
+              playPromise.catch(e => console.log('[GynSys] Audio play prevented:', e));
             }
-            const audioStream = audioRef.current.captureStream ? audioRef.current.captureStream() : audioRef.current.mozCaptureStream();
-            combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+            const audioStream = audioRef.current.captureStream
+              ? audioRef.current.captureStream()
+              : audioRef.current.mozCaptureStream();
+            combinedStream = new MediaStream([
+              ...videoStream.getVideoTracks(),
+              ...audioStream.getAudioTracks(),
+            ]);
           }
         } catch (audioErr) {
-          console.error("[GynSys] Error setting up audio for export:", audioErr);
-          // Fallback to video only if audio fails
+          console.error('[GynSys] Error setting up audio:', audioErr);
           combinedStream = videoStream;
         }
       }
 
-      const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+      const recorder = new MediaRecorder(combinedStream, {
+        mimeType: 'video/webm;codecs=vp9,opus',
+      });
       const chunks = [];
       recorder.ondataavailable = e => chunks.push(e.data);
+
       recorder.onstop = async () => {
-        if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
-        
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
         setIsExporting(false);
         setExportStatus('downloading');
-        
+
         const blob = new Blob(chunks, { type: 'video/mp4' });
         const filename = `video_gynsys_${selectedPost?.id || 'export'}.mp4`;
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        
+
         try {
           if (isCapacitor()) {
-            // Capacitor: Abrir URL en navegador del sistema (maneja descargas nativamente)
             const { file_id, extension } = await blogService.uploadForDownload(blob, filename);
-            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
-            const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
-            openExternalFile(downloadUrl);
+            const apiBase = (
+              import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1'
+            ).replace(/\/$/, '');
+            openExternalFile(`${apiBase}/blog/download/${file_id}?ext=${extension}`);
           } else if (isMobile) {
-            // Mobile Web: Usar window.location.href para descarga directa
-            // (location.href no tiene restricción de gesto de usuario ni popup blocker)
             const { file_id, extension } = await blogService.uploadForDownload(blob, filename);
-            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1').replace(/\/$/, '');
-            const downloadUrl = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
-            window.location.href = downloadUrl;
+            const apiBase = (
+              import.meta.env.VITE_API_BASE_URL || 'https://api.gynsys.net/api/v1'
+            ).replace(/\/$/, '');
+            window.location.href = `${apiBase}/blog/download/${file_id}?ext=${extension}`;
           } else {
-            // Escritorio: descarga directa del blob
             downloadFile(blob, filename);
           }
           setExportStatus('done');
           setTimeout(() => setExportStatus('idle'), 5000);
         } catch (err) {
           console.error('[GynSys] Download error:', err);
-          // Intentar descarga directa como fallback
           downloadFile(blob, filename);
           setExportStatus('done');
           setTimeout(() => setExportStatus('idle'), 5000);
@@ -115,177 +155,82 @@ export const useVideoExport = (generatedContent, videoStyles, slideDuration, tra
       };
 
       recorder.start();
-      
+
       const fps = 30;
       const framesPerSlide = fps * slideDuration;
-      const transitionFrames = fps * transitionDuration;
+      const transitionFrames = Math.round(fps * transitionDuration);
 
-      for (let i = 0; i < scenes.length; i++) {
+      for (let i = 0; i < capturedFrames.length; i++) {
+        const currentFrame = capturedFrames[i];
+        const prevFrame = i > 0 ? capturedFrames[i - 1] : null;
+
         for (let f = 0; f < framesPerSlide; f++) {
-          let progress = 1; // 0 to 1
-          if (f < transitionFrames && i > 0) {
-            progress = f / transitionFrames; // Transición entrando
-          }
-          
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.save();
+          ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
 
-          // Lógica de Transición
-          if (f < transitionFrames && i > 0) {
-            const prevIndex = i - 1;
+          const inTransition = f < transitionFrames && prevFrame !== null;
+
+          if (inTransition) {
+            const progress = f / transitionFrames; // 0 → 1
             const exitProgress = 1 - progress;
 
-            // Dibujar la escena anterior (Saliendo)
+            // Dibujar frame anterior (saliendo)
             ctx.save();
-            if (transitionType === 'fade') ctx.globalAlpha = exitProgress;
-            else if (transitionType === 'slide') ctx.translate(-progress * canvas.width, 0);
-            else if (transitionType === 'zoom') {
-               ctx.translate(canvas.width/2, canvas.height/2);
-               ctx.scale(1 + progress, 1 + progress);
-               ctx.translate(-canvas.width/2, -canvas.height/2);
-               ctx.globalAlpha = exitProgress;
+            if (transitionType === 'fade') {
+              ctx.globalAlpha = exitProgress;
+            } else if (transitionType === 'slide') {
+              ctx.translate(-progress * outputCanvas.width, 0);
+            } else if (transitionType === 'zoom') {
+              ctx.translate(outputCanvas.width / 2, outputCanvas.height / 2);
+              ctx.scale(1 + progress * 0.2, 1 + progress * 0.2);
+              ctx.translate(-outputCanvas.width / 2, -outputCanvas.height / 2);
+              ctx.globalAlpha = exitProgress;
             }
-            drawScene(ctx, scenes[prevIndex], loadedImages[prevIndex], videoStyles, canvas);
+            if (prevFrame) {
+              ctx.drawImage(prevFrame, 0, 0, outputCanvas.width, outputCanvas.height);
+            }
             ctx.restore();
 
-            // Dibujar la escena actual (Entrando)
+            // Dibujar frame actual (entrando)
             ctx.save();
-            if (transitionType === 'fade') ctx.globalAlpha = progress;
-            else if (transitionType === 'slide') ctx.translate(canvas.width - progress * canvas.width, 0);
-            else if (transitionType === 'zoom') {
-               ctx.translate(canvas.width/2, canvas.height/2);
-               ctx.scale(progress, progress);
-               ctx.translate(-canvas.width/2, -canvas.height/2);
-               ctx.globalAlpha = progress;
+            if (transitionType === 'fade') {
+              ctx.globalAlpha = progress;
+            } else if (transitionType === 'slide') {
+              ctx.translate(outputCanvas.width - progress * outputCanvas.width, 0);
+            } else if (transitionType === 'zoom') {
+              ctx.translate(outputCanvas.width / 2, outputCanvas.height / 2);
+              ctx.scale(progress, progress);
+              ctx.translate(-outputCanvas.width / 2, -outputCanvas.height / 2);
+              ctx.globalAlpha = progress;
             }
-            drawScene(ctx, scenes[i], loadedImages[i], videoStyles, canvas);
+            if (currentFrame) {
+              ctx.drawImage(currentFrame, 0, 0, outputCanvas.width, outputCanvas.height);
+            }
             ctx.restore();
           } else {
-            // Escena estática
-            drawScene(ctx, scenes[i], loadedImages[i], videoStyles, canvas);
+            // Frame estático
+            if (currentFrame) {
+              ctx.drawImage(currentFrame, 0, 0, outputCanvas.width, outputCanvas.height);
+            }
           }
 
-          ctx.restore();
           await new Promise(r => setTimeout(r, 1000 / fps));
         }
-        setExportProgress(Math.round(((i + 1) / scenes.length) * 100));
+
+        setExportProgress(40 + Math.round(((i + 1) / scenes.length) * 60)); // 40-100%
       }
-      
+
       recorder.stop();
     } catch (err) {
-      console.error(err);
+      console.error('[GynSys] Error al exportar video:', err);
       setIsExporting(false);
       showToast('Error al renderizar el video', 'error');
     }
-  };
-
-  const drawScene = (ctx, slide, image, styles, canvas) => {
-    // Fondo
-    if (styles.backgroundType === 'gradient' && Array.isArray(styles.gradientColors) && styles.gradientColors.length >= 3) {
-      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grad.addColorStop(0, styles.gradientColors[0]);
-      grad.addColorStop(0.5, styles.gradientColors[1]);
-      grad.addColorStop(1, styles.gradientColors[2]);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = styles.bgColor || styles.backgroundColor || '#000000';
-    }
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Imagen
-    if (image) {
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = `rgba(0,0,0,${styles.overlayOpacity || 0.4})`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // Configuración de Texto Base
-    const fontSize = styles.fontSize || 40;
-    const fontFamily = styles.fontFamily || 'sans-serif';
-    ctx.font = `bold ${fontSize}px ${fontFamily}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    const slideText = slide.text || slide.content || slide.title || '';
-    
-    // Lógica de Envoltura de Texto (Word Wrap)
-    const words = slideText.split(' ').filter(Boolean);
-    let line = '';
-    let lines = [];
-    
-    for (let n = 0; n < words.length; n++) {
-      // Para medir, quitamos los marcadores de resaltado **
-      const testWord = words[n].replace(/\*\*/g, '');
-      const testLine = (line + testWord + ' ');
-      
-      if (ctx.measureText(testLine).width > 600 && n > 0) {
-        lines.push(line.trim());
-        line = words[n] + ' ';
-      } else { 
-        line = line + words[n] + ' '; 
-      }
-    }
-    lines.push(line.trim());
-    
-    // Centrado Vertical
-    let y = (canvas.height / 2) - ((lines.length - 1) * fontSize * 0.6);
-    
-    // Dibujar cada línea con soporte para resaltado
-    lines.forEach(l => {
-      drawMixedStyleLine(ctx, l, canvas.width / 2, y, styles);
-      y += fontSize * 1.2;
-    });
-
-    // Texto Secundario (Overlay)
-    if (slide.overlayText) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.font = `500 ${Math.max(16, fontSize * 0.5)}px ${fontFamily}`;
-      ctx.fillText(slide.overlayText, canvas.width / 2, y + 20);
-    }
-  };
-
-  const drawMixedStyleLine = (ctx, line, x, y, styles) => {
-    const fontSize = styles.fontSize || 40;
-    const fontFamily = styles.fontFamily || 'sans-serif';
-    const highlightColor = styles.highlightColor || '#ff0000';
-    const textColor = styles.textColor || '#ffffff';
-
-    // Dividir por el marcador de resaltado
-    const parts = line.split(/(\*\*.*?\*\*)/g);
-    
-    // Calcular ancho total para centrar
-    const cleanLine = line.replace(/\*\*/g, '');
-    const totalWidth = ctx.measureText(cleanLine).width;
-    let currentX = x - (totalWidth / 2);
-
-    parts.forEach(part => {
-      if (!part) return;
-      
-      if (part.startsWith('**') && part.endsWith('**')) {
-        const cleanPart = part.slice(2, -2);
-        ctx.save();
-        ctx.fillStyle = highlightColor;
-        ctx.font = `italic bold ${fontSize}px ${fontFamily}`;
-        ctx.textAlign = 'left';
-        ctx.fillText(cleanPart, currentX, y);
-        currentX += ctx.measureText(cleanPart).width;
-        ctx.restore();
-      } else {
-        ctx.save();
-        ctx.fillStyle = textColor;
-        ctx.font = `bold ${fontSize}px ${fontFamily}`;
-        ctx.textAlign = 'left';
-        ctx.fillText(part, currentX, y);
-        currentX += ctx.measureText(part).width;
-        ctx.restore();
-      }
-    });
   };
 
   return {
     handleExportVideo,
     isExporting,
     exportProgress,
-    exportStatus
+    exportStatus,
   };
 };
