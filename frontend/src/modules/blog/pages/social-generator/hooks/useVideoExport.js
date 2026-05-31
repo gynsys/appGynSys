@@ -42,9 +42,12 @@ export const useVideoExport = (
         // Esperar que React renderice (imágenes, gradientes SVG)
         await new Promise(resolve => setTimeout(resolve, 1200));
 
-        const slideNode = document.getElementById('main-slide-canvas');
+        const container = document.getElementById('main-slide-canvas');
+        // El div #main-slide-canvas tiene transform:scale() aplicado.
+        // Capturamos su hijo directo (el SlideCanvas real, sin escala CSS) para fidelidad pixel-perfect.
+        const slideNode = container?.firstElementChild || container;
         if (!slideNode) {
-          console.warn('[GynSys] No se encontró #main-slide-canvas para el slide', i);
+          console.warn('[GynSys] No se encontró el SlideCanvas para el slide', i);
           capturedFrames.push(null);
           continue;
         }
