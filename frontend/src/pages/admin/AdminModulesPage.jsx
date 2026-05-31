@@ -3,6 +3,7 @@ import { useAdminStore } from '../../store/adminStore'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
 import GynSysLoader from '../../components/common/GynSysLoader'
+import Spinner from '../../components/common/Spinner'
 import { useToastStore } from '../../store/toastStore'
 import { FiTrash2 } from 'react-icons/fi'
 
