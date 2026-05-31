@@ -63,7 +63,7 @@ def check_scheduled_reminders():
                     <div style="font-family: sans-serif; color: #374151; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                         <h2 style="color: {primary_color};">Recordatorio de Control Médico</h2>
                         <p>Hola <strong>{appt.patient_name}</strong>,</p>
-                        <p>Le escribimos para recordarle su próximo control médico programado con el Dr/a. {doctor_name}.</p>
+                        <p>Le escribimos para recordarle su próximo control médico programado con {doctor_name}.</p>
                         <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
                             <p style="margin: 5px 0;"><strong>Fecha sugerida:</strong> {appt.scheduled_date.strftime('%d/%m/%Y')}</p>
                             <p style="margin: 5px 0;"><strong>Motivo:</strong> {appt.notes or 'Control de seguimiento rutinario'}</p>
