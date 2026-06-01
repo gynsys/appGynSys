@@ -1,4 +1,4 @@
-from app.db.session import SessionLocal
+from app.db.base import SessionLocal
 from sqlalchemy import text
 
 def fix_db():
