@@ -204,7 +204,7 @@ const MixDesignCalculator = () => {
           <p className="text-slate-500 mt-2 text-lg">Sistema avanzado de dosificación de concreto verificado por ensayos de laboratorios.</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Panel de Entradas */}
           <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -214,28 +214,6 @@ const MixDesignCalculator = () => {
             </div>
 
             <div className="space-y-5">
-              {/* Selector de Unidad */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Dosificación en:
-                </label>
-                <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-xl">
-                  {['Kg', 'Cuñetes', 'Paladas'].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setUnit(option)}
-                      className={`py-2 text-sm font-bold rounded-lg transition-all ${
-                        unit === option
-                          ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-slate-500 hover:text-slate-900'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Cálculo de Volumen por Dimensiones */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -387,7 +365,30 @@ const MixDesignCalculator = () => {
 
           {/* Panel de Resultados */}
           <div className="lg:col-span-7">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+            {/* Selector de Unidad con Bordes y Hover */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
+              <label className="block text-sm font-extrabold text-slate-800 mb-3 uppercase tracking-wider">
+                Dosificación de Resultados en:
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {['Kg', 'Cuñetes', 'Paladas'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setUnit(option)}
+                    className={`py-2.5 px-4 text-sm font-extrabold rounded-xl border transition-all duration-200 shadow-sm ${
+                      unit === option
+                        ? 'bg-amber-500 border-amber-500 text-white hover:bg-amber-600 hover:border-amber-600'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* Tarjeta Cemento */}
               <div className="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700 relative overflow-hidden group">
