@@ -9,6 +9,7 @@ import Testimonials from './components/Testimonials.jsx';
 import Process from './components/Process.jsx';
 import Contact from './components/Contact.jsx';
 import Footer from './components/Footer.jsx';
+import EngineeringTools from './components/EngineeringTools.jsx';
 
 function LandingPage() {
   return (
@@ -35,9 +36,14 @@ function BiblioPage() {
 
 function ToolsPage() {
   return (
-    <main style={{ paddingTop: '120px', minHeight: '80vh' }} className="container">
-      <h1 className="section-title">Herramientas</h1>
-      <p>Próximamente: Calculadoras de Ingeniería.</p>
+    <main style={{ paddingTop: '120px', minHeight: '80vh', paddingBottom: '60px' }} className="container">
+      <div className="text-center" style={{ marginBottom: 48 }}>
+        <h1 className="section-title">Herramientas de <span>Ingeniería</span></h1>
+        <p className="section-subtitle" style={{ margin: '0 auto' }}>
+          Calculadoras y recursos técnicos para estimación de obra y diseño.
+        </p>
+      </div>
+      <EngineeringTools />
     </main>
   );
 }
