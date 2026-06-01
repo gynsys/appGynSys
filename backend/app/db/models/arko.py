@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base import Base
@@ -15,9 +16,20 @@ class ArkoPost(Base):
     category = Column(String(100), nullable=True)
     author = Column(String(100), nullable=True)
     status = Column(String(50), default="published") # "draft" | "published"
+    seo_config = Column(JSONB, nullable=True)
     published_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ArkoAdmin(Base):
+    __tablename__ = "arko_admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class ArkoProject(Base):

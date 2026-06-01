@@ -1,13 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Any
 from pydantic import BaseModel
 from datetime import datetime
+from fastapi.security import OAuth2PasswordRequestForm
+from passlib.context import CryptContext
 
 from app.db.session import get_db_session
-from app.db.models.arko import ArkoPost, ArkoProject
-# from app.api.deps import get_current_active_superuser # Asumiendo que existe un dep de superuser, o usamos el de usuario activo
-from app.api.api_v1.deps import get_current_active_user
+from app.db.models.arko import ArkoPost, ArkoProject, ArkoAdmin
+from app.core.security import create_access_token
+from app.core.config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 router = APIRouter()
 
@@ -22,6 +32,7 @@ class ArkoPostBase(BaseModel):
     category: Optional[str] = None
     author: Optional[str] = None
     status: Optional[str] = "published"
+    seo_config: Optional[Any] = None
 
 class ArkoPostCreate(ArkoPostBase):
     pass
@@ -71,13 +82,60 @@ def get_public_post(slug: str):
         logger.error(f"Error fetching Arko post {slug}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
-# --- Endpoints Privados (Para el Dashboard GynSys) ---
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# --- Autenticación Arko ---
+
+@router.post("/auth/login")
+def login_arko_admin(form_data: OAuth2PasswordRequestForm = Depends()):
+    try:
+        with get_db_session() as db:
+            user = db.query(ArkoAdmin).filter(ArkoAdmin.email == form_data.username).first()
+            if not user or not verify_password(form_data.password, user.hashed_password):
+                raise HTTPException(status_code=400, detail="Incorrect email or password")
+            if not user.is_active:
+                raise HTTPException(status_code=400, detail="Inactive user")
+            
+            access_token = create_access_token(
+                data={"sub": user.email, "type": "arko_admin"}
+            )
+            return {"access_token": access_token, "token_type": "bearer"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error in Arko login: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# --- Dependencia Arko ---
+from fastapi.security import OAuth2PasswordBearer
+import jwt
+
+oauth2_scheme_arko = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/arko/auth/login")
+
+def get_current_arko_admin(token: str = Depends(oauth2_scheme_arko)):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        token_type: str = payload.get("type")
+        if email is None or token_type != "arko_admin":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+    
+    with get_db_session() as db:
+        user = db.query(ArkoAdmin).filter(ArkoAdmin.email == email).first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        return user
+
+# --- Endpoints Privados (Para el Dashboard Arko) ---
 
 @router.get("/admin/posts", response_model=List[ArkoPostResponse])
 def get_admin_posts(
     skip: int = 0,
     limit: int = 50,
-    current_user = Depends(get_current_active_user)
+    current_admin = Depends(get_current_arko_admin)
 ):
     try:
         with get_db_session() as db:
@@ -91,7 +149,7 @@ def get_admin_posts(
 @router.post("/admin/posts", response_model=ArkoPostResponse, status_code=status.HTTP_201_CREATED)
 def create_post(
     post_in: ArkoPostCreate,
-    current_user = Depends(get_current_active_user)
+    current_admin = Depends(get_current_arko_admin)
 ):
     try:
         with get_db_session() as db:
@@ -101,7 +159,7 @@ def create_post(
             
             post = ArkoPost(
                 **post_in.dict(),
-                author=post_in.author or current_user.full_name
+                author=post_in.author or current_admin.full_name
             )
             db.add(post)
             db.commit()
@@ -118,7 +176,7 @@ def create_post(
 def update_post(
     post_id: int,
     post_in: ArkoPostCreate,
-    current_user = Depends(get_current_active_user)
+    current_admin = Depends(get_current_arko_admin)
 ):
     try:
         with get_db_session() as db:
@@ -148,7 +206,7 @@ def update_post(
 @router.delete("/admin/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
     post_id: int,
-    current_user = Depends(get_current_active_user)
+    current_admin = Depends(get_current_arko_admin)
 ):
     try:
         with get_db_session() as db:
