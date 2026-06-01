@@ -1,63 +1,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Settings, PencilRuler, FileSignature, HardHat, Key } from 'lucide-react';
+import { cmsData } from '../data/cmsData.js';
 
-const STEPS = [
-  {
-    icon: Settings,
-    title: '1. Consulta Inicial',
-    desc: 'Nos reunimos para entender tu visión, necesidades y presupuesto. Evaluamos el espacio y discutimos las posibilidades.',
-  },
-  {
-    icon: PencilRuler,
-    title: '2. Diseño y Planificación',
-    desc: 'Nuestros arquitectos crean propuestas de diseño, planos y renders 3D para que visualices el resultado final.',
-  },
-  {
-    icon: FileSignature,
-    title: '3. Presupuesto y Contrato',
-    desc: 'Presentamos un presupuesto detallado y transparente. Una vez aprobado, firmamos el contrato y establecemos el cronograma.',
-  },
-  {
-    icon: HardHat,
-    title: '4. Ejecución de Obra',
-    desc: 'Nuestro equipo comienza la construcción o remodelación, con supervisión constante y reportes de avance regulares.',
-  },
-  {
-    icon: Key,
-    title: '5. Entrega Final',
-    desc: 'Realizamos una inspección detallada contigo, entregamos garantías y te damos las llaves de tu nuevo espacio.',
-  },
-];
+const iconMap = {
+  Settings, PencilRuler, FileSignature, HardHat, Key
+};
 
 export default function Process() {
+  const { process } = cmsData;
+
   return (
-    <section id="proceso" className="section process">
+    <section className="section bg-alt process">
       <div className="container">
-        <motion.div
-          className="text-center"
-          style={{ marginBottom: 64 }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-tag" style={{ margin: '0 auto 16px' }}>
+        <div className="text-center" style={{ marginBottom: 64 }}>
+          <div className="section-tag">
             <Settings size={12} />
-            Metodología de Trabajo
+            {process.tag}
           </div>
-          <h2 className="section-title">
-            Nuestro proceso <span>paso a paso</span>
+          <h2 className="section-title" style={{ marginBottom: 16 }}>
+            {process.title.line1} <br />
+            <span>{process.title.accent}</span>
           </h2>
-          <p className="section-subtitle" style={{ marginTop: 16 }}>
-            Hemos perfeccionado nuestro método de trabajo para garantizar resultados predecibles,
-            entregas a tiempo y sin sorpresas en el presupuesto.
+          <p className="section-subtitle">
+            {process.subtitle}
           </p>
-        </motion.div>
+        </div>
 
         <div className="process-steps">
-          {STEPS.map((step, i) => {
-            const Icon = step.icon;
+          {process.steps.map((step, i) => {
+            const Icon = iconMap[step.icon];
             return (
               <motion.div
                 key={step.title}
@@ -67,12 +39,12 @@ export default function Process() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
               >
-                <div className="process-step-number">{i + 1}</div>
                 <div className="process-step-icon">
-                  <Icon size={40} strokeWidth={1.5} />
+                  {Icon && <Icon size={28} strokeWidth={1.5} />}
                 </div>
-                <h3 className="process-step-title">{step.title}</h3>
+                <h4 className="process-step-title">{step.title}</h4>
                 <p className="process-step-desc">{step.desc}</p>
+                {i < process.steps.length - 1 && <div className="process-step-line" />}
               </motion.div>
             );
           })}

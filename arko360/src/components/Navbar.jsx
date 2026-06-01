@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NAV_LINKS = [
-  { label: 'Servicios', href: '#servicios' },
-  { label: 'Proyectos', href: '#proyectos' },
-  { label: 'Nosotros', href: '#nosotros' },
-  { label: 'Proceso', href: '#proceso' },
-  { label: 'Testimonios', href: '#testimonios' },
+  { label: 'Servicios', href: '/#servicios' },
+  { label: 'Proyectos', href: '/#proyectos' },
+  { label: 'Nosotros', href: '/#nosotros' },
+  { label: 'BiblioARKO', href: '/biblio' },
+  { label: 'Herramientas', href: '/herramientas' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -20,45 +23,65 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleAnchorClick = (e, href) => {
-    e.preventDefault();
+  // Effect to handle scroll when navigating back to landing page hashes
+  useEffect(() => {
+    if (location.pathname === '/' && location.hash) {
+      setTimeout(() => {
+        const id = location.hash.replace('#', '');
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [location]);
+
+  const handleLinkClick = (e, href) => {
     setMobileOpen(false);
-    const id = href.replace('#', '');
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // If it's a hash link on the same page (landing)
+    if (href.startsWith('/#') && location.pathname === '/') {
+      e.preventDefault();
+      const id = href.replace('/#', '');
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update url without reload
+      window.history.pushState(null, '', href);
+    }
   };
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      <nav className={`navbar ${scrolled || location.pathname !== '/' ? 'scrolled' : ''}`}>
         <div className="container">
           <div className="navbar-inner">
-            <a href="#inicio" onClick={(e) => handleAnchorClick(e, '#inicio')}>
+            <Link to="/" onClick={() => setMobileOpen(false)}>
               <img
                 src="/arko360/images/logo_aeko360.png"
                 alt="Ingeniería Arko 360"
-                className={`navbar-logo ${!scrolled ? 'navbar-logo-white' : ''}`}
+                className={`navbar-logo ${(!scrolled && location.pathname === '/') ? 'navbar-logo-white' : ''}`}
               />
-            </a>
+            </Link>
 
             <ul className="navbar-links">
               {NAV_LINKS.map((link) => (
-                <li key={link.href}>
-                  <a href={link.href} onClick={(e) => handleAnchorClick(e, link.href)}>
+                <li key={link.label}>
+                  <Link 
+                    to={link.href} 
+                    onClick={(e) => handleLinkClick(e, link.href)}
+                  >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
 
-            <a
-              href="#contacto"
-              onClick={(e) => handleAnchorClick(e, '#contacto')}
+            <Link
+              to="/#contacto"
+              onClick={(e) => handleLinkClick(e, '/#contacto')}
               className="btn btn-primary navbar-cta navbar-links"
               style={{ display: 'inline-flex' }}
             >
               Solicitar Cotización
-            </a>
+            </Link>
 
             <button
               className="navbar-toggle"
@@ -97,19 +120,23 @@ export default function Navbar() {
             />
 
             {NAV_LINKS.map((link) => (
-              <a key={link.href} href={link.href} onClick={(e) => handleAnchorClick(e, link.href)}>
+              <Link 
+                key={link.label} 
+                to={link.href} 
+                onClick={(e) => handleLinkClick(e, link.href)}
+              >
                 {link.label}
-              </a>
+              </Link>
             ))}
 
-            <a
-              href="#contacto"
-              onClick={(e) => handleAnchorClick(e, '#contacto')}
+            <Link
+              to="/#contacto"
+              onClick={(e) => handleLinkClick(e, '/#contacto')}
               className="btn btn-primary btn-lg"
               style={{ marginTop: 16 }}
             >
               Solicitar Cotización
-            </a>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>

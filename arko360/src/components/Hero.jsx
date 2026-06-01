@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Phone, ChevronDown } from 'lucide-react';
-
-const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '+58XXXXXXXXXX';
+import { ArrowRight, ChevronDown } from 'lucide-react';
+import { cmsData } from '../data/cmsData.js';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -13,14 +12,9 @@ const fadeUp = {
   }),
 };
 
-const STATS = [
-  { number: '15+', label: 'Años de experiencia' },
-  { number: '200+', label: 'Proyectos completados' },
-  { number: '98%', label: 'Clientes satisfechos' },
-  { number: '50+', label: 'Colaboradores' },
-];
-
 export default function Hero() {
+  const { hero } = cmsData;
+
   const handleScroll = (e, href) => {
     e.preventDefault();
     const el = document.getElementById(href);
@@ -40,17 +34,17 @@ export default function Hero() {
         >
           <motion.div className="hero-badge" variants={fadeUp} custom={0}>
             <span className="hero-badge-dot" />
-            Más de 15 años construyendo confianza
+            {hero.badge}
           </motion.div>
 
           <motion.h1 className="hero-title" variants={fadeUp} custom={0.15}>
-            Ingeniería<br />
-            <span className="hero-title-accent">Arko 360</span>
+            {hero.title.line1}<br />
+            <span className="hero-title-accent">{hero.title.accent}</span><br />
+            {hero.title.line2}
           </motion.h1>
 
           <motion.p className="hero-subtitle" variants={fadeUp} custom={0.3}>
-            Expertos en construcción y remodelaciones residenciales y comerciales.
-            Transformamos espacios con calidad, innovación y compromiso en cada proyecto.
+            {hero.subtitle}
           </motion.p>
 
           <motion.div className="hero-actions" variants={fadeUp} custom={0.45}>
@@ -59,23 +53,21 @@ export default function Hero() {
               className="btn btn-primary btn-lg"
               onClick={(e) => handleScroll(e, 'contacto')}
             >
-              Solicitar Cotización
+              {hero.ctaPrimary}
               <ArrowRight size={18} />
             </a>
             <a
-              href={`https://wa.me/${WHATSAPP.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-white btn-lg"
+              href="#proyectos"
+              className="btn btn-outline btn-lg"
+              style={{ color: 'white', borderColor: 'white' }}
+              onClick={(e) => handleScroll(e, 'proyectos')}
             >
-              <Phone size={18} />
-              Llamar ahora
+              {hero.ctaSecondary}
             </a>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.a
         href="#servicios"
         onClick={(e) => handleScroll(e, 'servicios')}
@@ -102,10 +94,9 @@ export default function Hero() {
         <ChevronDown size={20} />
       </motion.a>
 
-      {/* Stats bar */}
       <div className="hero-stats">
         <div className="hero-stats-inner">
-          {STATS.map((stat) => (
+          {hero.stats.map((stat) => (
             <div className="hero-stat" key={stat.label}>
               <div className="hero-stat-number">{stat.number}</div>
               <div className="hero-stat-label">{stat.label}</div>

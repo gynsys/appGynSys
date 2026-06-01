@@ -1,36 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Award, Users, ShieldCheck } from 'lucide-react';
+import { Users, CheckCircle, Award, ShieldCheck } from 'lucide-react';
+import { cmsData } from '../data/cmsData.js';
 
-const STATS = [
-  { number: 200, suffix: '+', label: 'Proyectos Completados' },
-  { number: 500, suffix: '+', label: 'Clientes Satisfechos' },
-  { number: 15, suffix: '', label: 'Años de Experiencia' },
-  { number: 50, suffix: '+', label: 'Colaboradores Expertos' },
-];
-
-const FEATURES = [
-  {
-    icon: CheckCircle,
-    title: 'Calidad Garantizada',
-    desc: 'Utilizamos materiales certificados y técnicas constructivas de vanguardia en cada proyecto.',
-  },
-  {
-    icon: Award,
-    title: 'Empresa Certificada',
-    desc: 'Contamos con todas las certificaciones y registros necesarios para operar con plena legalidad.',
-  },
-  {
-    icon: Users,
-    title: 'Equipo Especializado',
-    desc: 'Ingenieros, arquitectos y técnicos con años de experiencia en construcción y remodelaciones.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Cumplimiento de Plazos',
-    desc: 'Entregamos a tiempo sin sacrificar calidad. Tu proyecto termina cuando dijimos que terminaría.',
-  },
-];
+const iconMap = {
+  CheckCircle, Award, Users, ShieldCheck
+};
 
 function Counter({ target, suffix }) {
   const [count, setCount] = useState(0);
@@ -71,11 +46,12 @@ function Counter({ target, suffix }) {
 }
 
 export default function About() {
+  const { about } = cmsData;
+
   return (
     <section id="nosotros" className="section about">
       <div className="container">
         <div className="about-grid">
-          {/* Images column */}
           <motion.div
             className="about-images"
             initial={{ opacity: 0, x: -40 }}
@@ -84,17 +60,17 @@ export default function About() {
             transition={{ duration: 0.7 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80"
-              alt="Equipo Arko 360 trabajando"
+              src={about.image}
+              alt="Equipo Arko 360"
               className="about-img-main"
             />
             <div className="about-img-badge">
-              <div className="about-img-badge-number">15+</div>
+              <div className="about-img-badge-number">{about.stats.find(s => s.label.includes('Años')).number}+</div>
               <div className="about-img-badge-text">Años de<br />Experiencia</div>
             </div>
 
             <div className="about-stats">
-              {STATS.map((stat) => (
+              {about.stats.map((stat) => (
                 <div key={stat.label} className="about-stat-card">
                   <Counter target={stat.number} suffix={stat.suffix} />
                   <div className="about-stat-label">{stat.label}</div>
@@ -103,7 +79,6 @@ export default function About() {
             </div>
           </motion.div>
 
-          {/* Text column */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -112,30 +87,26 @@ export default function About() {
           >
             <div className="section-tag">
               <Users size={12} />
-              Sobre Nosotros
+              {about.tag}
             </div>
             <h2 className="section-title" style={{ marginBottom: 20 }}>
-              Construyendo sueños<br />
-              <span>desde hace 15 años</span>
+              {about.title.line1}<br />
+              <span>{about.title.accent}</span>
             </h2>
             <p className="section-subtitle" style={{ marginBottom: 16 }}>
-              Ingeniería Arko 360 nació con una visión clara: ofrecer soluciones constructivas
-              de la más alta calidad, combinando innovación tecnológica con la experiencia
-              artesanal de nuestros técnicos.
+              {about.p1}
             </p>
             <p className="section-subtitle" style={{ marginBottom: 36 }}>
-              Hemos ejecutado más de 200 proyectos en todo el país, desde viviendas
-              unifamiliares hasta complejos comerciales, siempre manteniendo nuestro
-              compromiso con la excelencia y la satisfacción del cliente.
+              {about.p2}
             </p>
 
             <div className="about-features">
-              {FEATURES.map((feature) => {
-                const Icon = feature.icon;
+              {about.features.map((feature) => {
+                const Icon = iconMap[feature.icon];
                 return (
                   <div key={feature.title} className="about-feature">
                     <div className="about-feature-icon">
-                      <Icon size={20} strokeWidth={2} />
+                      {Icon && <Icon size={20} strokeWidth={2} />}
                     </div>
                     <div className="about-feature-text">
                       <strong>{feature.title}</strong>
