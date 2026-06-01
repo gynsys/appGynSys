@@ -78,7 +78,19 @@ input, textarea, select {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px; /* px-4 on mobile */
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 32px; /* md:px-8 on tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 64px; /* lg:px-16 on desktop */
+  }
 }
 
 .section {
@@ -107,11 +119,23 @@ input, textarea, select {
 
 .section-title {
   font-family: var(--font-heading);
-  font-size: clamp(32px, 5vw, 52px);
+  font-size: 30px; /* text-3xl on mobile */
   font-weight: 800;
   color: var(--secondary);
   line-height: 1.1;
   letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 36px; /* md:text-4xl on tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-title {
+    font-size: 48px; /* lg:text-5xl on desktop */
+  }
 }
 
 .section-title span {
@@ -137,6 +161,7 @@ input, textarea, select {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 14px 28px;
   border-radius: var(--radius-md);
@@ -147,6 +172,14 @@ input, textarea, select {
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  width: 100%; /* w-full on mobile */
+  min-height: 44px; /* min touch area */
+}
+
+@media (min-width: 768px) {
+  .btn {
+    width: auto; /* md:w-auto on desktop */
+  }
 }
 
 .btn-primary {
@@ -189,6 +222,14 @@ input, textarea, select {
   padding: 18px 36px;
   font-size: 16px;
   border-radius: var(--radius-lg);
+  width: 100%; /* w-full on mobile */
+  min-height: 44px;
+}
+
+@media (min-width: 768px) {
+  .btn-lg {
+    width: auto; /* md:w-auto on desktop */
+  }
 }
 
 /* ============ CARDS ============ */
@@ -233,14 +274,20 @@ input, textarea, select {
 }
 
 .navbar-logo {
-  height: 104px;
+  height: 32px; /* max h-8 (32px) on mobile */
   width: auto;
   object-fit: contain;
   transition: var(--transition);
 }
 
+@media (min-width: 768px) {
+  .navbar-logo {
+    height: 40px; /* md:h-10 (40px) on desktop */
+  }
+}
+
 .navbar.scrolled .navbar-logo {
-  height: 80px;
+  height: 32px;
 }
 
 .navbar-logo-white {
@@ -254,22 +301,16 @@ input, textarea, select {
   list-style: none;
 }
 
-@media (max-width: 768px) {
-  .navbar-logo {
-    height: 70px;
-  }
-  .navbar.scrolled .navbar-logo {
-    height: 54px;
-  }
-}
-
 .navbar-links a {
-  padding: 8px 14px;
+  padding: 10px 14px;
   font-size: 14px;
   font-weight: 600;
   color: var(--white);
   border-radius: var(--radius-sm);
   transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px; /* touch target */
 }
 
 .navbar.scrolled .navbar-links a {
@@ -301,8 +342,10 @@ input, textarea, select {
   display: none;
   flex-direction: column;
   gap: 5px;
-  padding: 8px;
+  padding: 10px; /* ensure touch target is at least 44px */
   cursor: pointer;
+  min-height: 44px;
+  justify-content: center;
 }
 
 .navbar-toggle span {
@@ -618,7 +661,7 @@ input, textarea, select {
 }
 
 .filter-btn {
-  padding: 8px 20px;
+  padding: 10px 20px;
   border-radius: 100px;
   font-size: 13px;
   font-weight: 600;
@@ -626,6 +669,10 @@ input, textarea, select {
   color: rgba(255,255,255,0.70);
   border: 1px solid rgba(255,255,255,0.12);
   transition: var(--transition);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter-btn:hover,
@@ -740,8 +787,8 @@ input, textarea, select {
   top: 16px;
   right: 16px;
   z-index: 10;
-  width: 40px;
-  height: 40px;
+  width: 44px; /* touch target min 44px */
+  height: 44px; /* touch target min 44px */
   background: var(--white);
   border-radius: 50%;
   display: flex;
@@ -1385,8 +1432,8 @@ textarea.form-input {
 }
 
 .footer-social-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px; /* touch target min 44px */
+  height: 44px; /* touch target min 44px */
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-sm);
