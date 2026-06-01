@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { FaUserShield } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -103,7 +104,7 @@ export default function Navbar() {
               }}
               title="Acceso Admin Dashboard"
             >
-              <LayoutDashboard size={20} />
+              <FaUserShield size={20} />
             </a>
 
             <button
@@ -168,7 +169,7 @@ export default function Navbar() {
               className="btn btn-outline btn-lg"
               style={{ marginTop: 8, display: 'flex', gap: '8px', alignItems: 'center' }}
             >
-              <LayoutDashboard size={20} /> Acceso Admin
+              <FaUserShield size={20} /> Acceso Admin
             </a>
           </motion.div>
         )}
