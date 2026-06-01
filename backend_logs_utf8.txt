@@ -1,0 +1,101 @@
+﻿[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:60116 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:60124 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:33530 - "GET /api/v1/appointments/?full=false&t=1780242582581 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:33534 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:33532 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:33536 - "GET /api/v1/consultations/ HTTP/1.0" 200 OK
+INFO:     172.18.0.6:33548 - "GET /api/v1/appointments/?full=false&t=1780242585069 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/patient/012409534/raw | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/consultations/113/history_data | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:42460 - "GET /api/v1/consultations/patient/012409534/raw HTTP/1.0" 200 OK
+INFO:     172.18.0.6:42476 - "GET /api/v1/consultations/113/history_data HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/113/history_pdf | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:42482 - "GET /api/v1/consultations/113/history_pdf?include_watermark=false&report_at=2026-05-31 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/113/data | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:42490 - "GET /api/v1/consultations/113/data HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:41054 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/110/history_pdf | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:37662 - "GET /api/v1/consultations/110/history_pdf?include_watermark=false&report_at=2026-05-31 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/110/history_data | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/consultations/patient/13948376/raw | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:37676 - "GET /api/v1/consultations/110/history_data HTTP/1.0" 200 OK
+INFO:     172.18.0.6:37692 - "GET /api/v1/consultations/patient/13948376/raw HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/111/data | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:37708 - "GET /api/v1/consultations/111/data HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:44698 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:60350 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:47828 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:44272 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:55150 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/auth/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:56590 - "GET /api/v1/auth/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:56592 - "GET /api/v1/appointments/?full=false&t=1780242930495 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:56602 - "GET /api/v1/appointments/?full=false&t=1780242930495 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/161 | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:40780 - "GET /api/v1/appointments/161 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/patient/all | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:40784 - "GET /api/v1/consultations/patient/all?dni=8888000 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /.env | UA: Mozilla/5.0 (X11; CrOS x86_64 12425.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3877.0 Safari/537.36
+INFO:     172.18.0.6:58360 - "GET /.env HTTP/1.0" 404 Not Found
+[UA-DEBUG] Path: /api/v1/consultations/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:58076 - "POST /api/v1/consultations/ HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/scheduled-appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:58086 - "POST /api/v1/scheduled-appointments/ HTTP/1.0" 422 Unprocessable Entity
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:58090 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/consultations/114/send-email | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:58098 - "POST /api/v1/consultations/114/send-email HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:43434 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:43460 - "GET /api/v1/appointments/?full=false&t=1780242998495 HTTP/1.0" 200 OK
+INFO:     172.18.0.6:43446 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:43224 - "GET /api/v1/appointments/?full=false&t=1780243013526 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:43226 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:43234 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:35266 - "GET /api/v1/appointments/?full=false&t=1780243028532 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:35292 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:35278 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:33584 - "GET /api/v1/appointments/?full=false&t=1780243044104 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:33596 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:33608 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/notifications/health | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0
+INFO:     172.18.0.6:35140 - "GET /api/v1/notifications/health HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:35378 - "GET /api/v1/appointments/?full=false&t=1780243058513 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:35382 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:35396 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/appointments/ | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:50888 - "GET /api/v1/appointments/?full=false&t=1780243073519 HTTP/1.0" 200 OK
+[UA-DEBUG] Path: /api/v1/users/me | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[UA-DEBUG] Path: /api/v1/dashboard/stats | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+INFO:     172.18.0.6:50894 - "GET /api/v1/users/me HTTP/1.0" 200 OK
+INFO:     172.18.0.6:50902 - "GET /api/v1/dashboard/stats HTTP/1.0" 200 OK
+
