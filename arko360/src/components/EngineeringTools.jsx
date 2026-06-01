@@ -4,6 +4,7 @@ import { Grid, Layers, Container, Calculator, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cmsData } from '../data/cmsData.js';
 import DropCeilingCalc from './tools/DropCeilingCalc.jsx';
+import MixDesignCalculator from './tools/MixDesignCalculator.jsx';
 
 const iconMap = {
   Grid, Layers, Container, Calculator
@@ -25,7 +26,7 @@ export default function EngineeringTools() {
       case 'muro-gravedad':
         return <div className="text-center p-8"><p>Herramienta Muro de Gravedad en desarrollo...</p></div>;
       case 'diseno-mezclas':
-        return <div className="text-center p-8"><p>aqui debe ir otra cosa.</p></div>;
+        return <MixDesignCalculator />;
       default:
         return null;
     }
