@@ -13,7 +13,7 @@ from app.db.models.recommendation import Recommendation
 from app.db.models.online_consultation_settings import OnlineConsultationSettings
 from app.db.models.campaign import DiffusionCampaign
 from app.db.models.llm_provider import LLMProvider
-from app.db.models.arko import ArkoPost, ArkoProject
+from app.db.models.arko import ArkoPost, ArkoProject, ArkoAdmin
 
 __all__ = [
     "Doctor",
@@ -32,4 +32,5 @@ __all__ = [
     "LLMProvider",
     "ArkoPost",
     "ArkoProject",
+    "ArkoAdmin",
 ]
