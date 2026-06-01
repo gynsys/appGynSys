@@ -62,6 +62,10 @@ import StaffManager from './pages/dashboard/StaffManager'
 import AdminNotificationManagerPage from './pages/admin/AdminNotificationManagerPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 
+import ArkoLogin from './modules/arko360/pages/ArkoLogin'
+import ArkoDashboardPage from './modules/arko360/pages/ArkoDashboardPage'
+import MixDesignPage from './modules/arko360/pages/MixDesignPage'
+
 import { WizardLayout } from './components/layout/WizardLayout'
 import { useState } from 'react'
 import { CapacitorPushListener } from './components/notifications/CapacitorPushListener'
@@ -312,6 +316,11 @@ function App() {
 
           <Route path="tools/report-editor" element={<ReportEditorPage />} />
         </Route>
+
+        {/* Arko 360 Admin Routes */}
+        <Route path="/arko-admin/login" element={<ArkoLogin />} />
+        <Route path="/arko-admin/dashboard" element={<ArkoDashboardPage />} />
+        <Route path="/arko360/calculadora" element={<MixDesignPage />} />
 
 
 

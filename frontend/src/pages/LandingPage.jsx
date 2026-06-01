@@ -248,6 +248,7 @@ export default function LandingPage() {
             <span>© 2024 GynSys SaaS System.</span>
           </div>
           <div className="flex space-x-8">
+            <Link to="/arko-admin/login" className="hover:text-indigo-600 font-semibold text-amber-600 transition-colors">Arko 360 Admin</Link>
             <a href="#" className="hover:text-indigo-600 transition-colors">Términos</a>
             <a href="#" className="hover:text-indigo-600 transition-colors">Privacidad</a>
             <a href="#" className="hover:text-indigo-600 transition-colors">Contacto</a>

@@ -1,6 +1,5 @@
-from app.db.session import SessionLocal
-from sqlalchemy import text
-db = SessionLocal()
-db.execute(text("UPDATE alembic_version SET version_num='0b11fb8ec236'"))
-db.commit()
-db.close()
+from sqlalchemy import create_engine, text
+engine = create_engine("postgresql://postgres:postgres@db/gynsys")
+with engine.connect() as conn:
+    conn.execute(text("UPDATE alembic_version SET version_num='13be905cd722'"))
+    conn.commit()

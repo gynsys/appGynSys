@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FiHome, FiLayout, FiCheckCircle, FiEdit2, FiBookOpen } from 'react-icons/fi'
-import { blogService } from '../services/blogService'
-import { doctorService } from '../../../services/doctorService'
+import { arkoService } from '../services/arkoService'
 import BlogEditor from '../components/BlogEditor'
 import Button from '../../../components/common/Button'
 import GynSysLoader from '../../../components/common/GynSysLoader'
@@ -11,15 +10,13 @@ import { useToastStore } from '../../../store/toastStore'
 import { useAuthStore } from '../../../store/authStore'
 import { getImageUrl } from '../../../lib/imageUtils'
 
-export default function BlogAdminPage() {
-  const { user } = useAuthStore()
+export default function ArkoDashboardPage() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [currentPost, setCurrentPost] = useState(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [postToDelete, setPostToDelete] = useState(null)
-  const [doctor, setDoctor] = useState(null)
   const { showToast } = useToastStore()
 
   useEffect(() => {
@@ -30,13 +27,9 @@ export default function BlogAdminPage() {
     try {
       setLoading(true)
       console.log('Loading Blog Data...')
-      const [postsData, doctorData] = await Promise.all([
-        blogService.getMyPosts(),
-        doctorService.getCurrentUser()
-      ])
+      const postsData = await arkoService.getAdminPosts()
       console.log('Blog Data Loaded:', postsData)
       setPosts(Array.isArray(postsData) ? postsData : [])
-      setDoctor(doctorData)
     } catch (error) {
       console.error('Error loading blog data:', error)
       showToast('Error al cargar datos', 'error')
@@ -65,7 +58,7 @@ export default function BlogAdminPage() {
     if (!postToDelete) return
 
     try {
-      await blogService.deletePost(postToDelete.id)
+      await arkoService.deletePost(postToDelete.id)
       showToast('Artículo eliminado', 'success')
       loadData()
       setDeleteModalOpen(false)
@@ -79,10 +72,10 @@ export default function BlogAdminPage() {
     try {
       console.log('Saving Post:', formData)
       if (currentPost) {
-        await blogService.updatePost(currentPost.id, formData)
+        await arkoService.updatePost(currentPost.id, formData)
         showToast('Artículo actualizado', 'success')
       } else {
-        await blogService.createPost(formData)
+        await arkoService.createPost(formData)
         showToast('Artículo creado', 'success')
       }
       setIsEditing(false)
@@ -116,7 +109,7 @@ export default function BlogAdminPage() {
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión del Blog</h1>
-            <Button onClick={handleCreate} variant="primary" primaryColor={doctor?.theme_primary_color}>
+            <Button onClick={handleCreate} variant="primary" primaryColor="#f59e0b">
               Nuevo Artículo
             </Button>
           </div>
@@ -179,7 +172,7 @@ export default function BlogAdminPage() {
                       onClick={() => handleEdit(post)}
                       variant="outline"
                       size="sm"
-                      primaryColor={doctor?.theme_primary_color}
+                      primaryColor="#f59e0b"
                     >
                       Editar
                     </Button>
@@ -187,7 +180,7 @@ export default function BlogAdminPage() {
                       onClick={() => handleDeleteClick(post)}
                       variant="primary"
                       size="sm"
-                      primaryColor={doctor?.theme_primary_color}
+                      primaryColor="#f59e0b"
                     >
                       Eliminar
                     </Button>

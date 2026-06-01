@@ -3,7 +3,7 @@ import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import ImageResize from 'quill-image-resize-module-react'
 import { FiCpu, FiPlus, FiSave, FiX, FiInfo } from 'react-icons/fi'
-import { blogService } from '../services/blogService'
+import { arkoService } from '../services/arkoService'
 import Button from '../../../components/common/Button'
 import DragDropUpload from '../../../components/features/DragDropUpload'
 import { useAuthStore } from '../../../store/authStore'
@@ -176,7 +176,7 @@ export default function BlogEditor({ post, onSave, onCancel }) {
 
     try {
       setGenerating(true)
-      const response = await blogService.generateAI(aiForm)
+      const response = await arkoService.generateAI(aiForm)
       
       // Super-paste method for Quill with delay to ensure state sync
       if (quillRef.current) {
