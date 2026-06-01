@@ -13,6 +13,7 @@ import EngineeringTools from './components/EngineeringTools.jsx';
 
 import BiblioGrid from './components/BiblioGrid.jsx';
 import BiblioArticle from './components/BiblioArticle.jsx';
+import MixDesignCalculator from './components/tools/MixDesignCalculator.jsx';
 
 function LandingPage() {
   return (
@@ -82,6 +83,7 @@ export default function App() {
         <Route path="/biblio" element={<BiblioPage />} />
         <Route path="/biblio/:slug" element={<BiblioArticle />} />
         <Route path="/herramientas" element={<ToolsPage />} />
+        <Route path="/herramientas/diseno-de-mezclas" element={<MixDesignCalculator />} />
       </Routes>
       <Footer />
     </>

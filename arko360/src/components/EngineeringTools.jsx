@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Grid, Layers, Container, Calculator, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cmsData } from '../data/cmsData.js';
 import DropCeilingCalc from './tools/DropCeilingCalc.jsx';
 
@@ -11,6 +12,15 @@ const iconMap = {
 export default function EngineeringTools() {
   const { tools } = cmsData;
   const [activeTool, setActiveTool] = useState(null);
+  const navigate = useNavigate();
+
+  const handleToolClick = (toolId) => {
+    if (toolId === 'diseno-mezclas') {
+      navigate('/herramientas/diseno-de-mezclas');
+    } else {
+      setActiveTool(toolId);
+    }
+  };
 
   const renderTool = () => {
     switch (activeTool) {
@@ -18,8 +28,6 @@ export default function EngineeringTools() {
         return <DropCeilingCalc />;
       case 'muro-gravedad':
         return <div className="text-center p-8"><p>Herramienta Muro de Gravedad en desarrollo...</p></div>;
-      case 'diseno-mezclas':
-        return <div className="text-center p-8"><p>Herramienta Diseño de Mezclas en desarrollo...</p></div>;
       default:
         return null;
     }
@@ -43,7 +51,7 @@ export default function EngineeringTools() {
                   key={tool.id}
                   className="service-card"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTool(tool.id)}
+                  onClick={() => handleToolClick(tool.id)}
                   whileHover={{ y: -5 }}
                 >
                   <div className="service-icon">
