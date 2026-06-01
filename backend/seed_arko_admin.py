@@ -1,4 +1,4 @@
-from app.db.session import SessionLocal
+from app.db.base import SessionLocal
 from app.db.models.arko import ArkoAdmin
 from app.api.v1.endpoints.arko import get_password_hash
 
