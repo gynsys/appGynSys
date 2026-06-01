@@ -49,6 +49,7 @@ export default function Footer() {
               <li><a href="#proceso" onClick={(e) => handleScroll(e, 'proceso')}>Metodología</a></li>
               <li><a href="#testimonios" onClick={(e) => handleScroll(e, 'testimonios')}>Testimonios</a></li>
               <li><a href="#contacto" onClick={(e) => handleScroll(e, 'contacto')}>Contacto</a></li>
+              <li><a href="https://gynsys.net/arko-admin/login" target="_blank" rel="noreferrer" style={{color: '#f59e0b', fontWeight: 'bold'}}>Acceso Admin</a></li>
             </ul>
           </div>
 
