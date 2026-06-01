@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -83,6 +83,28 @@ export default function Navbar() {
               Solicitar Cotización
             </Link>
 
+            <a
+              href="https://gynsys.net/arko-admin/login"
+              target="_blank"
+              rel="noreferrer"
+              className="navbar-links"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'var(--accent-gold)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                marginLeft: '8px'
+              }}
+              title="Acceso Admin Dashboard"
+            >
+              <LayoutDashboard size={20} />
+            </a>
+
             <button
               className="navbar-toggle"
               onClick={() => setMobileOpen(true)}
@@ -137,6 +159,16 @@ export default function Navbar() {
             >
               Solicitar Cotización
             </Link>
+
+            <a
+              href="https://gynsys.net/arko-admin/login"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-outline btn-lg"
+              style={{ marginTop: 8, display: 'flex', gap: '8px', alignItems: 'center' }}
+            >
+              <LayoutDashboard size={20} /> Acceso Admin
+            </a>
           </motion.div>
         )}
       </AnimatePresence>
