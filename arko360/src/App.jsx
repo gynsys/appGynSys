@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Hero from './components/Hero.jsx';
 import Services from './components/Services.jsx';
@@ -11,6 +11,9 @@ import Contact from './components/Contact.jsx';
 import Footer from './components/Footer.jsx';
 import EngineeringTools from './components/EngineeringTools.jsx';
 
+import BiblioGrid from './components/BiblioGrid.jsx';
+import BiblioArticle from './components/BiblioArticle.jsx';
+
 function LandingPage() {
   return (
     <main>
@@ -20,6 +23,23 @@ function LandingPage() {
       <About />
       <Testimonials />
       <Process />
+      <section className="section bg-white">
+        <div className="container">
+          <div className="text-center" style={{ marginBottom: 48 }}>
+            <div className="section-tag">
+              BiblioARKO
+            </div>
+            <h2 className="section-title" style={{ marginBottom: 16 }}>
+              Conocimiento y <br />
+              <span>Actualidad Técnica</span>
+            </h2>
+          </div>
+          <BiblioGrid limit={3} />
+          <div className="text-center" style={{ marginTop: 48 }}>
+            <Link to="/biblio" className="btn btn-outline btn-lg">Ver todos los artículos</Link>
+          </div>
+        </div>
+      </section>
       <Contact />
     </main>
   );
@@ -27,9 +47,14 @@ function LandingPage() {
 
 function BiblioPage() {
   return (
-    <main style={{ paddingTop: '120px', minHeight: '80vh' }} className="container">
-      <h1 className="section-title">BiblioARKO</h1>
-      <p>Próximamente: Artículos y Notas de Ingeniería.</p>
+    <main style={{ paddingTop: '120px', minHeight: '80vh', paddingBottom: '60px' }} className="container">
+      <div className="text-center" style={{ marginBottom: 48 }}>
+        <h1 className="section-title">Biblio<span>ARKO</span></h1>
+        <p className="section-subtitle" style={{ margin: '0 auto' }}>
+          Explora nuestros artículos, guías y casos de estudio sobre las mejores prácticas en ingeniería.
+        </p>
+      </div>
+      <BiblioGrid />
     </main>
   );
 }
@@ -55,6 +80,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/biblio" element={<BiblioPage />} />
+        <Route path="/biblio/:slug" element={<BiblioArticle />} />
         <Route path="/herramientas" element={<ToolsPage />} />
       </Routes>
       <Footer />
