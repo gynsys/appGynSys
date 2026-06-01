@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calculator, Settings2, Droplets, HardHat, Info, ChevronDown } from 'lucide-react';
+import { Calculator, Settings2, Droplets, HardHat, Info, ChevronDown, Ruler } from 'lucide-react';
 
 const AGGREGATE_FACTORS = {
   '3"': 0.82,
@@ -26,6 +26,9 @@ const MixDesignCalculator = () => {
   // Input State
   const [inputs, setInputs] = useState({
     volume: 1.0,           // Volumen (m3)
+    largo: 0.0,            // Largo (m)
+    ancho: 0.0,            // Ancho (m)
+    altura: 0.0,           // Altura (m)
     fc: 250.0,             // f'c (Kg/cm2)
     slump: 5.0,            // Asentamiento (Pulgadas)
     fractil: 10,           // Fractil (%)
@@ -42,6 +45,8 @@ const MixDesignCalculator = () => {
     absGrueso: 1.0
   });
 
+  const [unit, setUnit] = useState('Kg'); // 'Kg', 'Cuñetes', 'Paladas'
+
   const [results, setResults] = useState({
     cemento: 0,
     agua: 0,
@@ -54,10 +59,21 @@ const MixDesignCalculator = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setInputs(prev => ({
-      ...prev,
-      [name]: name === 'stoneSize' ? value : parseFloat(value) || 0
-    }));
+    const val = name === 'stoneSize' ? value : parseFloat(value) || 0;
+    
+    setInputs(prev => {
+      const newInputs = { ...prev, [name]: val };
+      // Si se modificó largo, ancho o altura, calcular el volumen automáticamente
+      if (['largo', 'ancho', 'altura'].includes(name)) {
+        const l = name === 'largo' ? val : prev.largo;
+        const w = name === 'ancho' ? val : prev.ancho;
+        const h = name === 'altura' ? val : prev.altura;
+        if (l > 0 && w > 0 && h > 0) {
+          newInputs.volume = parseFloat((l * w * h).toFixed(3));
+        }
+      }
+      return newInputs;
+    });
   };
 
   // Math Engine
@@ -130,6 +146,52 @@ const MixDesignCalculator = () => {
     }
   }, [inputs]);
 
+  // Derived values depending on selected unit
+  const displayResults = useMemo(() => {
+    const rawCement = parseFloat(results.cemento) || 0;
+    const rawWater = parseFloat(results.agua) || 0;
+    const rawSand = parseFloat(results.arena) || 0;
+    const rawStone = parseFloat(results.piedra) || 0;
+
+    if (unit === 'Paladas') {
+      return {
+        cemento: rawCement.toFixed(2),
+        cementoUnit: 'Kg',
+        agua: (rawWater / 20).toFixed(1),
+        aguaUnit: 'Cuñetes',
+        arena: Math.round(rawSand / 7.5).toString(),
+        arenaUnit: 'Paladas',
+        piedra: Math.round(rawStone / 6).toString(),
+        piedraUnit: 'Paladas'
+      };
+    } else if (unit === 'Cuñetes') {
+      return {
+        cemento: rawCement.toFixed(2),
+        cementoUnit: 'Kg',
+        agua: (rawWater / 20).toFixed(1),
+        aguaUnit: 'Cuñetes',
+        arena: (rawSand / 32).toFixed(1),
+        arenaUnit: 'Cuñetes',
+        piedra: (rawStone / 29).toFixed(1),
+        piedraUnit: 'Cuñetes'
+      };
+    } else {
+      // Default: Kg
+      return {
+        cemento: rawCement.toFixed(2),
+        cementoUnit: 'Kg',
+        agua: rawWater.toFixed(2),
+        aguaUnit: 'Kg / Litros',
+        arena: rawSand.toFixed(2),
+        arenaUnit: 'Kg',
+        piedra: rawStone.toFixed(2),
+        piedraUnit: 'Kg'
+      };
+    }
+  }, [results, unit]);
+
+  const rawCement = parseFloat(results.cemento) || 0;
+
   return (
     <div className="bg-slate-50 min-h-screen p-6 md:p-12 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -137,9 +199,9 @@ const MixDesignCalculator = () => {
         <header className="mb-10 text-center md:text-left">
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center md:justify-start gap-3">
             <Calculator className="w-10 h-10 text-amber-500" />
-            Diseño de Mezclas IDEAL
+            Diseño de Mezclas
           </h1>
-          <p className="text-slate-500 mt-2 text-lg">Sistema avanzado de dosificación de concreto basado en análisis probabilístico.</p>
+          <p className="text-slate-500 mt-2 text-lg">Sistema avanzado de dosificación de concreto verificado por ensayos de laboratorios.</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -152,11 +214,79 @@ const MixDesignCalculator = () => {
             </div>
 
             <div className="space-y-5">
+              {/* Selector de Unidad */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Dosificación en:
+                </label>
+                <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-xl">
+                  {['Kg', 'Cuñetes', 'Paladas'].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setUnit(option)}
+                      className={`py-2 text-sm font-bold rounded-lg transition-all ${
+                        unit === option
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cálculo de Volumen por Dimensiones */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <span className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Ruler className="w-4 h-4 text-amber-500" /> Cálculo de Volumen por Dimensiones
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase">Largo (m)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="largo"
+                      value={inputs.largo || ''}
+                      onChange={handleInputChange}
+                      placeholder="0.00"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase">Ancho (m)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="ancho"
+                      value={inputs.ancho || ''}
+                      onChange={handleInputChange}
+                      placeholder="0.00"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase">Altura (m)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="altura"
+                      value={inputs.altura || ''}
+                      onChange={handleInputChange}
+                      placeholder="0.00"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-600 mb-1">Volumen (m³)</label>
+                  <label className="block text-sm font-semibold text-slate-600 mb-1">Volumen Total (m³)</label>
                   <input type="number" step="0.1" name="volume" value={inputs.volume} onChange={handleInputChange} 
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" />
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all font-semibold" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-1">Resistencia f'c (Kg/cm²)</label>
@@ -267,11 +397,11 @@ const MixDesignCalculator = () => {
                   CEMENTO REQUERIDO
                 </h3>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-5xl font-black text-white tracking-tighter">{results.cemento}</span>
-                  <span className="text-slate-400 font-medium pb-2">Kg</span>
+                  <span className="text-5xl font-black text-white tracking-tighter">{displayResults.cemento}</span>
+                  <span className="text-slate-400 font-medium pb-2">{displayResults.cementoUnit}</span>
                 </div>
                 <p className="mt-4 text-xs text-slate-400 font-medium px-3 py-1 bg-slate-700/50 inline-block rounded-full">
-                  ~ {(results.cemento / 42.5).toFixed(1)} Sacos
+                  ~ {(rawCement / 42.5).toFixed(1)} Sacos
                 </p>
               </div>
 
@@ -283,8 +413,8 @@ const MixDesignCalculator = () => {
                   AGUA REQUERIDA
                 </h3>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-5xl font-black text-white tracking-tighter">{results.agua}</span>
-                  <span className="text-blue-200 font-medium pb-2">Kg / Litros</span>
+                  <span className="text-5xl font-black text-white tracking-tighter">{displayResults.agua}</span>
+                  <span className="text-blue-200 font-medium pb-2">{displayResults.aguaUnit}</span>
                 </div>
               </div>
 
@@ -292,8 +422,8 @@ const MixDesignCalculator = () => {
               <div className="bg-amber-50 p-6 rounded-2xl shadow-sm border border-amber-200 relative overflow-hidden">
                 <h3 className="text-amber-800 font-medium text-sm uppercase tracking-wider">ARENA</h3>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-4xl font-bold text-amber-600 tracking-tight">{results.arena}</span>
-                  <span className="text-amber-500 font-medium pb-1">Kg</span>
+                  <span className="text-4xl font-bold text-amber-600 tracking-tight">{displayResults.arena}</span>
+                  <span className="text-amber-500 font-medium pb-1">{displayResults.arenaUnit}</span>
                 </div>
                 <p className="mt-2 text-xs text-amber-600/70">Agregado Fino</p>
               </div>
@@ -302,8 +432,8 @@ const MixDesignCalculator = () => {
               <div className="bg-slate-100 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden">
                 <h3 className="text-slate-600 font-medium text-sm uppercase tracking-wider">PIEDRA PICADA</h3>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-4xl font-bold text-slate-800 tracking-tight">{results.piedra}</span>
-                  <span className="text-slate-500 font-medium pb-1">Kg</span>
+                  <span className="text-4xl font-bold text-slate-800 tracking-tight">{displayResults.piedra}</span>
+                  <span className="text-slate-500 font-medium pb-1">{displayResults.piedraUnit}</span>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">Agregado Grueso</p>
               </div>
