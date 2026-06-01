@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiLock, FiMail } from 'react-icons/fi'
+import { FiLock, FiMail, FiEye, FiEyeOff } from 'react-icons/fi'
 import Button from '../../../components/common/Button'
 import { useToastStore } from '../../../store/toastStore'
 import api from '../../../lib/axios'
@@ -8,6 +8,7 @@ import api from '../../../lib/axios'
 export default function ArkoLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { showToast } = useToastStore()
@@ -83,13 +84,24 @@ export default function ArkoLogin() {
                   <FiLock className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  className="bg-gray-800 border border-gray-700 text-white rounded-md pl-10 block w-full sm:text-sm p-2.5 focus:ring-amber-500 focus:border-amber-500"
+                  className="bg-gray-800 border border-gray-700 text-white rounded-md pl-10 pr-10 block w-full sm:text-sm p-2.5 focus:ring-amber-500 focus:border-amber-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="h-5 w-5" />
+                  ) : (
+                    <FiEye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
