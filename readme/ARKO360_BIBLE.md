@@ -32,6 +32,18 @@ Este documento registra la arquitectura, decisiones técnicas y el historial de 
     3. Ante la rebeldía del autogenerate, aplicamos inyección directa de SQL (DDL) mediante `fix_arko.py` para construir la tabla `arko_admins` e insertar el campo `seo_config`.
   - **Estado:** ✅ Completado. Las tablas están sanas en producción.
 
+### Iteración 4: Error de Despliegue Estático ("Ni calculadora ni icono")
+- **Desafío:** El usuario no podía ver las nuevas rutas de Arko 360 (Calculadora) ni el ícono de acceso al Dashboard en la Landing Page de GynSys, a pesar de que el código fuente local fue actualizado y pusheado a Git.
+- **Análisis del Error Raíz (Post-Mortem):**
+  - **Error:** Se realizó un despliegue manual mediante `scp -r frontend/dist/*` hacia el servidor VPS (`/var/www/html/`).
+  - **Causa:** ¡Nunca se ejecutó `npm run build` en la carpeta `frontend` antes del `scp`! Como la carpeta `dist` está en el `.gitignore`, GitHub no la versiona. El servidor de producción estaba recibiendo una carpeta `dist` antigua que **no contenía** el componente `MixDesignCalculator.jsx` ni el nuevo Header compilado.
+  - **Lección Aprendida:** Jamás confiar en hacer `scp` directo de un directorio ignorado (`dist`) sin compilar explícitamente (`npm run build`) justo antes de subir los archivos estáticos.
+- **Solución:**
+  1. Se compiló el frontend de GynSys correctamente.
+  2. Se movió el ícono React Icon (`LayoutDashboard`) al **Header** de `LandingPage.jsx` para acceso directo al admin.
+  3. Se resubió la carpeta `dist` actualizada.
+- **Estado:** ✅ Completado y documentado en la Biblia.
+
 ### Iteración 3: Sistema de Autenticación Propio
 - **Desafío:** Garantizar que GynSys y Arko no crucen credenciales de seguridad.
 - **Solución:**

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import LoginModal from '../components/features/LoginModal'
-import { Check, ArrowRight, Shield, Calendar, Clipboard, Activity, Globe, Users } from 'lucide-react'
+import { Check, ArrowRight, Shield, Calendar, Clipboard, Activity, Globe, Users, LayoutDashboard } from 'lucide-react'
 
 export default function LandingPage() {
   const { isAuthenticated, user, logout } = useAuthStore()
@@ -105,6 +105,14 @@ export default function LandingPage() {
                   Iniciar Sesión
                 </button>
               )}
+
+              <Link 
+                to="/arko-admin/login" 
+                title="Arko 360 Admin"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 hover:scale-110 transition-all border border-amber-200"
+              >
+                <LayoutDashboard size={20} />
+              </Link>
             </div>
           </div>
         </div>
@@ -248,7 +256,6 @@ export default function LandingPage() {
             <span>© 2024 GynSys SaaS System.</span>
           </div>
           <div className="flex space-x-8">
-            <Link to="/arko-admin/login" className="hover:text-indigo-600 font-semibold text-amber-600 transition-colors">Arko 360 Admin</Link>
             <a href="#" className="hover:text-indigo-600 transition-colors">Términos</a>
             <a href="#" className="hover:text-indigo-600 transition-colors">Privacidad</a>
             <a href="#" className="hover:text-indigo-600 transition-colors">Contacto</a>
