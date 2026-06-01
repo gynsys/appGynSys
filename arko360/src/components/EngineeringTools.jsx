@@ -15,11 +15,7 @@ export default function EngineeringTools() {
   const navigate = useNavigate();
 
   const handleToolClick = (toolId) => {
-    if (toolId === 'diseno-mezclas') {
-      navigate('/herramientas/diseno-de-mezclas');
-    } else {
-      setActiveTool(toolId);
-    }
+    setActiveTool(toolId);
   };
 
   const renderTool = () => {
@@ -28,6 +24,8 @@ export default function EngineeringTools() {
         return <DropCeilingCalc />;
       case 'muro-gravedad':
         return <div className="text-center p-8"><p>Herramienta Muro de Gravedad en desarrollo...</p></div>;
+      case 'diseno-mezclas':
+        return <div className="text-center p-8"><p>aqui debe ir otra cosa.</p></div>;
       default:
         return null;
     }
