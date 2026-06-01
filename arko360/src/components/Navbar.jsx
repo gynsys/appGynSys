@@ -53,12 +53,13 @@ export default function Navbar() {
       <nav className={`navbar ${scrolled || location.pathname !== '/' ? 'scrolled' : ''}`}>
         <div className="container">
           <div className="navbar-inner">
-            <Link to="/" onClick={() => setMobileOpen(false)}>
+            <Link to="/" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img
                 src="/arko360/images/logo_aeko360.png"
                 alt="Ingeniería Arko 360"
                 className={`navbar-logo ${(!scrolled && location.pathname === '/') ? 'navbar-logo-white' : ''}`}
               />
+              <div style={{ background: 'red', color: 'white', padding: '8px', borderRadius: '50%', fontWeight: 'bold' }}>TEST-DEPLOY</div>
             </Link>
 
             <ul className="navbar-links">

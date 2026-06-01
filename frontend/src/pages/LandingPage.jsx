@@ -90,6 +90,7 @@ export default function LandingPage() {
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-500">
                 GynSys
               </span>
+              <div style={{ background: 'red', color: 'white', padding: '8px', borderRadius: '50%', fontWeight: 'bold' }}>TEST-DEPLOY-FRONTEND</div>
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
