@@ -60,7 +60,6 @@ export default function Navbar() {
                 alt="Ingeniería Arko 360"
                 className={`navbar-logo ${(!scrolled && location.pathname === '/') ? 'navbar-logo-white' : ''}`}
               />
-              <div style={{ background: 'red', color: 'white', padding: '8px', borderRadius: '50%', fontWeight: 'bold' }}>TEST-DEPLOY</div>
             </Link>
 
             <ul className="navbar-links">
