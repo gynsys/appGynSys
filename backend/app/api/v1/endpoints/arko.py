@@ -6,10 +6,19 @@ from datetime import datetime
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 
-from app.db.session import get_db_session
+from app.db.base import SessionLocal
+from contextlib import contextmanager
 from app.db.models.arko import ArkoPost, ArkoProject, ArkoAdmin
 from app.core.security import create_access_token
 from app.core.config import settings
+
+@contextmanager
+def get_db_session():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -111,7 +120,7 @@ def login_arko_admin(form_data: OAuth2PasswordRequestForm = Depends()):
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 
-oauth2_scheme_arko = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/arko/auth/login")
+oauth2_scheme_arko = OAuth2PasswordBearer(tokenUrl="/api/v1/arko/auth/login")
 
 def get_current_arko_admin(token: str = Depends(oauth2_scheme_arko)):
     try:

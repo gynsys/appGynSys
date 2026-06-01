@@ -107,13 +107,6 @@ export default function LandingPage() {
                 </button>
               )}
 
-              <Link 
-                to="/arko-admin/login" 
-                title="Arko 360 Admin"
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 hover:scale-110 transition-all border border-amber-200"
-              >
-                <LayoutDashboard size={20} />
-              </Link>
             </div>
           </div>
         </div>
