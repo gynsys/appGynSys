@@ -6,6 +6,7 @@ import Button from '../../../components/common/Button';
 import { useToastStore } from '../../../store/toastStore';
 import GynSysLoader from '../../../components/common/GynSysLoader';
 import DragDropUpload from '../../../components/features/DragDropUpload';
+import { cmsData } from '../../../../arko360/src/data/cmsData.js';
 
 export default function ArkoProfileManager() {
   const [loading, setLoading] = useState(true);
@@ -13,14 +14,32 @@ export default function ArkoProfileManager() {
   const [activeTab, setActiveTab] = useState('identity');
   const { showToast } = useToastStore();
 
+  const defaultPortfolio = cmsData.portfolio.projects.map(p => ({
+    title: p.title,
+    category: p.category,
+    description: p.description,
+    imageUrl: p.image,
+    area: p.area,
+    duration: p.duration,
+    year: p.year
+  }));
+
+  const defaultTestimonials = cmsData.testimonials.list.map(t => ({
+    name: t.name,
+    role: t.role,
+    text: t.text,
+    avatarUrl: t.avatar,
+    stars: t.stars
+  }));
+
   const { register, handleSubmit, reset, watch, control, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      siteName: '',
-      logoUrl: '',
+      siteName: 'Ingeniería Arko 360',
+      logoUrl: cmsData.global.logo,
       primaryColor: '#F59E0B',
-      contactPhone: '',
-      contactEmail: '',
-      address: '',
+      contactPhone: cmsData.global.phone,
+      contactEmail: cmsData.global.email,
+      address: cmsData.global.location,
       social: {
         instagram: '',
         facebook: '',
@@ -40,10 +59,10 @@ export default function ArkoProfileManager() {
         title: '',
         p1: '',
         p2: '',
-        imageUrl: ''
+        imageUrl: cmsData.about.image
       },
-      portfolio: [],
-      testimonials: []
+      portfolio: defaultPortfolio,
+      testimonials: defaultTestimonials
     }
   });
 
@@ -72,11 +91,21 @@ export default function ArkoProfileManager() {
       if (config) {
         reset({
           ...config,
+          siteName: config.siteName || 'Ingeniería Arko 360',
+          logoUrl: config.logoUrl || cmsData.global.logo,
+          contactPhone: config.contactPhone || cmsData.global.phone,
+          contactEmail: config.contactEmail || cmsData.global.email,
+          address: config.address || cmsData.global.location,
           social: config.social || { instagram: '', facebook: '', linkedin: '', twitter: '' },
           sections: config.sections || { showAbout: true, showServices: true, showPortfolio: true, showProcess: true, showTestimonials: true, showBiblio: true, showTools: true },
-          aboutUs: config.aboutUs || { title: '', p1: '', p2: '', imageUrl: '' },
-          portfolio: config.portfolio || [],
-          testimonials: config.testimonials || []
+          aboutUs: {
+            title: config.aboutUs?.title || '',
+            p1: config.aboutUs?.p1 || '',
+            p2: config.aboutUs?.p2 || '',
+            imageUrl: config.aboutUs?.imageUrl || cmsData.about.image
+          },
+          portfolio: config.portfolio?.length > 0 ? config.portfolio : defaultPortfolio,
+          testimonials: config.testimonials?.length > 0 ? config.testimonials : defaultTestimonials
         });
       }
     } catch (error) {
