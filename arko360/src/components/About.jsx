@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, CheckCircle, Award, ShieldCheck } from 'lucide-react';
 import { cmsData } from '../data/cmsData.js';
+import { SiteConfigContext } from '../App.jsx';
 
 const iconMap = {
   CheckCircle, Award, Users, ShieldCheck
@@ -46,7 +47,13 @@ function Counter({ target, suffix }) {
 }
 
 export default function About() {
+  const config = React.useContext(SiteConfigContext);
   const { about } = cmsData;
+
+  const title = config?.aboutUs?.title || `${about.title.line1} ${about.title.accent}`;
+  const p1 = config?.aboutUs?.p1 || about.p1;
+  const p2 = config?.aboutUs?.p2 || about.p2;
+  const image = config?.aboutUs?.imageUrl || about.image;
 
   return (
     <section id="nosotros" className="section about">
@@ -60,7 +67,7 @@ export default function About() {
             transition={{ duration: 0.7 }}
           >
             <img
-              src={about.image}
+              src={image}
               alt="Equipo Arko 360"
               className="about-img-main"
             />
@@ -90,14 +97,13 @@ export default function About() {
               {about.tag}
             </div>
             <h2 className="section-title" style={{ marginBottom: 20 }}>
-              {about.title.line1}<br />
-              <span>{about.title.accent}</span>
+              {title}
             </h2>
             <p className="section-subtitle" style={{ marginBottom: 16 }}>
-              {about.p1}
+              {p1}
             </p>
             <p className="section-subtitle" style={{ marginBottom: 36 }}>
-              {about.p2}
+              {p2}
             </p>
 
             <div className="about-features">

@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ZoomIn, FolderOpen } from 'lucide-react';
 import ProjectModal from './ProjectModal.jsx';
 import { cmsData } from '../data/cmsData.js';
+import { SiteConfigContext } from '../App.jsx';
 
 export default function Portfolio() {
+  const config = useContext(SiteConfigContext);
   const { portfolio } = cmsData;
   const [filter, setFilter] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState(null);
 
+  const dynamicProjects = config?.portfolio?.length > 0 ? config.portfolio : portfolio.projects;
+
   const filteredProjects = filter === 'Todos'
-    ? portfolio.projects
-    : portfolio.projects.filter(p => p.category === filter);
+    ? dynamicProjects
+    : dynamicProjects.filter(p => p.category === filter);
 
   return (
     <section id="proyectos" className="section portfolio">
@@ -51,11 +55,11 @@ export default function Portfolio() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                key={project.id}
+                key={project.id || project.title}
                 className="portfolio-item"
                 onClick={() => setSelectedProject(project)}
               >
-                <img src={project.image} alt={project.title} />
+                <img src={project.imageUrl || project.image} alt={project.title} />
                 <div className="portfolio-item-overlay">
                   <div className="portfolio-item-info">
                     <h3>{project.title}</h3>

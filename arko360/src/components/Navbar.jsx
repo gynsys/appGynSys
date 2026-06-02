@@ -62,7 +62,7 @@ export default function Navbar() {
             <Link to="/" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img
                 src={logoUrl}
-                alt="Ingeniería Arko 360"
+                alt={siteConfig?.siteName || "Ingeniería Arko 360"}
                 className={`navbar-logo ${(!scrolled && location.pathname === '/') ? 'navbar-logo-white' : ''}`}
               />
             </Link>

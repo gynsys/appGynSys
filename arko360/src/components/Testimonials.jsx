@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquareQuote, Star } from 'lucide-react';
 import { cmsData } from '../data/cmsData.js';
+import { SiteConfigContext } from '../App.jsx';
 
 export default function Testimonials() {
+  const config = useContext(SiteConfigContext);
   const { testimonials } = cmsData;
+
+  const dynamicTestimonials = config?.testimonials?.length > 0 ? config.testimonials : testimonials.list;
 
   return (
     <section className="section bg-white">
@@ -24,9 +28,9 @@ export default function Testimonials() {
         </div>
 
         <div className="testimonials-grid">
-          {testimonials.list.map((item, i) => (
+          {dynamicTestimonials.map((item, i) => (
             <motion.div
-              key={item.id}
+              key={item.id || i}
               className="testimonial-card"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -40,7 +44,7 @@ export default function Testimonials() {
               </div>
               <p className="testimonial-text">"{item.text}"</p>
               <div className="testimonial-author">
-                <img src={item.avatar} alt={item.name} />
+                <img src={item.avatarUrl || item.avatar} alt={item.name} />
                 <div>
                   <h4>{item.name}</h4>
                   <span>{item.role}</span>

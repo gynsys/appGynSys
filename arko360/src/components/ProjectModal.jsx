@@ -27,7 +27,7 @@ export default function ProjectModal({ project, onClose }) {
           </button>
 
           <img
-            src={project.image}
+            src={project.imageUrl || project.image}
             alt={project.title}
             className="modal-image"
           />

@@ -19,31 +19,44 @@ import { getSiteConfig } from './services/api.js';
 export const SiteConfigContext = React.createContext(null);
 
 function LandingPage() {
+  const config = React.useContext(SiteConfigContext);
+  const sections = config?.sections || {
+    showAbout: true,
+    showServices: true,
+    showPortfolio: true,
+    showProcess: true,
+    showTestimonials: true,
+    showBiblio: true,
+    showTools: true
+  };
+
   return (
     <main>
       <Hero />
-      <Services />
-      <Portfolio />
-      <About />
-      <Testimonials />
-      <Process />
-      <section className="section bg-white">
-        <div className="container">
-          <div className="text-center" style={{ marginBottom: 48 }}>
-            <div className="section-tag">
-              BiblioARKO
+      {sections.showServices !== false && <Services />}
+      {sections.showPortfolio !== false && <Portfolio />}
+      {sections.showAbout !== false && <About />}
+      {sections.showTestimonials !== false && <Testimonials />}
+      {sections.showProcess !== false && <Process />}
+      {sections.showBiblio !== false && (
+        <section className="section bg-white">
+          <div className="container">
+            <div className="text-center" style={{ marginBottom: 48 }}>
+              <div className="section-tag">
+                BiblioARKO
+              </div>
+              <h2 className="section-title" style={{ marginBottom: 16 }}>
+                Conocimiento y <br />
+                <span>Actualidad Técnica</span>
+              </h2>
             </div>
-            <h2 className="section-title" style={{ marginBottom: 16 }}>
-              Conocimiento y <br />
-              <span>Actualidad Técnica</span>
-            </h2>
+            <BiblioGrid limit={3} />
+            <div className="text-center" style={{ marginTop: 48 }}>
+              <Link to="/biblio" className="btn btn-outline btn-lg">Ver todos los artículos</Link>
+            </div>
           </div>
-          <BiblioGrid limit={3} />
-          <div className="text-center" style={{ marginTop: 48 }}>
-            <Link to="/biblio" className="btn btn-outline btn-lg">Ver todos los artículos</Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
       <Contact />
     </main>
   );

@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 import { useContactForm } from '../hooks/useContactForm.js';
+import { SiteConfigContext } from '../App.jsx';
 
-const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '+58XXXXXXXXXX';
+const DEFAULT_WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '+58XXXXXXXXXX';
 
 export default function Contact() {
+  const config = useContext(SiteConfigContext);
+  const WHATSAPP = config?.contactPhone || DEFAULT_WHATSAPP;
+  const email = config?.contactEmail || 'proyectos@arko360.com';
+  const address = config?.address || 'Caracas, Venezuela';
+
   const { register, handleSubmit, errors, status, errorMessage, resetForm, isLoading, isSuccess, isError } = useContactForm();
 
   return (
@@ -57,14 +63,14 @@ export default function Contact() {
                 <div className="contact-info-icon"><Mail size={20} /></div>
                 <div>
                   <div className="contact-info-label">Correo Electrónico</div>
-                  <div className="contact-info-value">proyectos@arko360.com</div>
+                  <div className="contact-info-value">{email}</div>
                 </div>
               </div>
               <div className="contact-info-item">
                 <div className="contact-info-icon"><MapPin size={20} /></div>
                 <div>
                   <div className="contact-info-label">Ubicación Principal</div>
-                  <div className="contact-info-value">Caracas, Venezuela</div>
+                  <div className="contact-info-value">{address}</div>
                 </div>
               </div>
             </div>
