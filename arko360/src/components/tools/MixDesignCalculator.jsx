@@ -434,7 +434,7 @@ const MixDesignCalculator = () => {
                     key={option}
                     type="button"
                     onClick={() => setUnit(option)}
-                    className={`py-2.5 px-4 text-sm font-extrabold rounded-xl border transition-all duration-200 shadow-sm ${
+                    className={`py-2.5 px-4 text-sm font-extrabold rounded-xl border border-solid transition-all duration-200 shadow-sm ${
                       unit === option
                         ? 'bg-amber-500 border-amber-600 text-white hover:bg-amber-600 hover:border-amber-700'
                         : 'bg-white border-slate-300 text-slate-700 hover:text-slate-900 hover:border-slate-400 hover:bg-slate-50'
