@@ -63,13 +63,23 @@ const MixDesignCalculator = () => {
     arena: 60,
     piedra: 60,
     agua: 0,
-    obreros: 3,
+    obreros: 4,
     precioObrero: 20,
     maestros: 1,
     precioMaestro: 40,
-    precioTrompo: 60
+    precioTrompo: 60,
+    mixMethod: 'trompo',
+    rendimiento: 5.0
   });
   const [showCostModal, setShowCostModal] = useState(false);
+
+  const handleMixMethodChange = (method) => {
+    setCosts(prev => ({
+      ...prev,
+      mixMethod: method,
+      rendimiento: method === 'trompo' ? 5.0 : 2.75
+    }));
+  };
 
   const calculateTotalCost = () => {
     const rawCement = parseFloat(results.cemento) || 0;
@@ -84,9 +94,15 @@ const MixDesignCalculator = () => {
     const stoneCost = (rawStone / ((parseFloat(inputs.gGrueso) || 2.64) * 1000)) * costs.piedra;
     const waterCost = rawWater * costs.agua;
     
-    const laborCost = (costs.obreros * costs.precioObrero) + (costs.maestros * costs.precioMaestro) + costs.precioTrompo;
+    // Labor cost calculation based on yield (rendimiento)
+    const eqCost = costs.mixMethod === 'trompo' ? costs.precioTrompo : 0;
+    const dailyLaborCost = (costs.obreros * costs.precioObrero) + (costs.maestros * costs.precioMaestro) + eqCost;
     
-    return cementCost + sandCost + stoneCost + waterCost + laborCost;
+    const yieldM3 = parseFloat(costs.rendimiento) || 1; // Avoid division by zero
+    const costPerM3 = dailyLaborCost / yieldM3;
+    const totalLaborCost = costPerM3 * (parseFloat(inputs.volume) || 1);
+    
+    return cementCost + sandCost + stoneCost + waterCost + totalLaborCost;
   };
 
   const handleInputChange = (e) => {
@@ -538,7 +554,25 @@ const MixDesignCalculator = () => {
               </div>
               
               <div>
-                <h3 className="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider border-b pb-2">Mano de Obra & Equipos (Por Día)</h3>
+                <h3 className="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider border-b pb-2">Mano de Obra & Equipos (Por Jornada)</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Método de Mezclado</label>
+                    <select 
+                      value={costs.mixMethod} 
+                      onChange={(e) => handleMixMethodChange(e.target.value)} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                    >
+                      <option value="trompo">A Trompo (Mezcladora)</option>
+                      <option value="manual">Manual (A Pala)</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Rendimiento (m³ / Día)</label>
+                    <input type="number" step="0.1" value={costs.rendimiento} onChange={(e) => setCosts({...costs, rendimiento: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Nº Obreros</label>
@@ -556,10 +590,12 @@ const MixDesignCalculator = () => {
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Costo Maestro ($/Día)</label>
                     <input type="number" step="1" value={costs.precioMaestro} onChange={(e) => setCosts({...costs, precioMaestro: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
                   </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Alquiler Trompo / Equipo ($/Día)</label>
-                    <input type="number" step="1" value={costs.precioTrompo} onChange={(e) => setCosts({...costs, precioTrompo: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
-                  </div>
+                  {costs.mixMethod === 'trompo' && (
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold text-slate-500 mb-1">Alquiler Trompo / Equipo ($/Día)</label>
+                      <input type="number" step="1" value={costs.precioTrompo} onChange={(e) => setCosts({...costs, precioTrompo: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
