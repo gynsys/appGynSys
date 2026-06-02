@@ -41,7 +41,3 @@ api_router.include_router(campaigns.router, prefix="/campaigns", tags=["campaign
 api_router.include_router(logo_proxy.router, prefix="/assets", tags=["logo-proxy"])
 api_router.include_router(scheduled_appointments.router, prefix="/scheduled-appointments", tags=["scheduled-appointments"])
 api_router.include_router(staff.router, prefix="/staff", tags=["staff"])
-
-# Arko 360 Endpoints
-from app.api.v1.endpoints import arko
-api_router.include_router(arko.router, prefix="/arko", tags=["arko360"])
