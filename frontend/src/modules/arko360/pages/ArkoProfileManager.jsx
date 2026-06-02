@@ -6,7 +6,7 @@ import Button from '../../../components/common/Button';
 import { useToastStore } from '../../../store/toastStore';
 import GynSysLoader from '../../../components/common/GynSysLoader';
 import DragDropUpload from '../../../components/features/DragDropUpload';
-import { cmsData } from '../../../../arko360/src/data/cmsData.js';
+import { cmsData } from '../data/cmsData.js';
 
 export default function ArkoProfileManager() {
   const [loading, setLoading] = useState(true);
