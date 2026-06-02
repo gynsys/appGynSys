@@ -75,46 +75,35 @@ export default function Navbar() {
               ))}
             </ul>
 
-            <Link
-              to="/#contacto"
-              onClick={(e) => handleLinkClick(e, '/#contacto')}
-              className="btn btn-primary navbar-cta navbar-links"
-              style={{ display: 'inline-flex' }}
-            >
-              Solicitar Cotización
-            </Link>
+            <div className="navbar-actions">
+              <Link
+                to="/#contacto"
+                onClick={(e) => handleLinkClick(e, '/#contacto')}
+                className="btn btn-primary navbar-cta"
+              >
+                Cotízame
+              </Link>
 
-            <a
-              href="https://gynsys.net/arko-admin/login"
-              target="_blank"
-              rel="noreferrer"
-              className="navbar-links"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)',
-                color: 'var(--accent-gold)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                marginLeft: '8px'
-              }}
-              title="Acceso Admin Dashboard"
-            >
-              <FaUserShield size={20} />
-            </a>
+              <a
+                href="https://gynsys.net/arko-admin/login"
+                target="_blank"
+                rel="noreferrer"
+                className="navbar-admin-icon"
+                title="Acceso Admin Dashboard"
+              >
+                <FaUserShield className="icon" />
+              </a>
 
-            <button
-              className="navbar-toggle"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Abrir menú"
-            >
-              <span />
-              <span />
-              <span />
-            </button>
+              <button
+                className="navbar-toggle"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Abrir menú"
+              >
+                <span />
+                <span />
+                <span />
+              </button>
+            </div>
           </div>
         </div>
       </nav>

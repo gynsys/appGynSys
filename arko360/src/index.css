@@ -338,6 +338,30 @@ input, textarea, select {
   transform: translateY(-1px);
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-admin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: var(--accent-gold);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: var(--transition);
+}
+
+.navbar.scrolled .navbar-admin-icon {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
 .navbar-toggle {
   display: none;
   flex-direction: column;
@@ -1550,8 +1574,38 @@ textarea.form-input {
     display: none;
   }
 
+  .navbar-inner {
+    gap: 8px;
+  }
+
+  .navbar-logo {
+    height: 52px;
+  }
+
+  .navbar.scrolled .navbar-logo {
+    height: 44px;
+  }
+
+  .navbar-actions .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+    width: auto !important;
+  }
+
+  .navbar-admin-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .navbar-admin-icon .icon {
+    font-size: 18px;
+  }
+
   .navbar-toggle {
     display: flex;
+    padding: 8px;
+    min-height: 40px;
   }
 
   .hero-stats-inner {
