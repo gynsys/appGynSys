@@ -77,7 +77,17 @@ const MixDesignCalculator = () => {
     setCosts(prev => ({
       ...prev,
       mixMethod: method,
-      rendimiento: method === 'trompo' ? 5.0 : 2.75
+      rendimiento: parseFloat(((method === 'trompo' ? 1.25 : 0.6875) * prev.obreros).toFixed(2))
+    }));
+  };
+
+  const handleObrerosChange = (newObreros) => {
+    const obreros = parseFloat(newObreros) || 0;
+    setCosts(prev => ({
+      ...prev,
+      obreros: obreros,
+      // Auto-ajustar rendimiento basado en la cantidad de obreros
+      rendimiento: parseFloat(((prev.mixMethod === 'trompo' ? 1.25 : 0.6875) * obreros).toFixed(2))
     }));
   };
 
@@ -576,7 +586,7 @@ const MixDesignCalculator = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Nº Obreros</label>
-                    <input type="number" step="1" value={costs.obreros} onChange={(e) => setCosts({...costs, obreros: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                    <input type="number" step="1" value={costs.obreros} onChange={(e) => handleObrerosChange(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Costo Obrero ($/Día)</label>
