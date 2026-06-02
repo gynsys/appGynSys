@@ -3,6 +3,8 @@ import { Menu, X } from 'lucide-react';
 import { FaUserShield } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { SiteConfigContext } from '../App.jsx';
+import { useContext } from 'react';
 
 const NAV_LINKS = [
   { label: 'Servicios', href: '/#servicios' },
@@ -17,6 +19,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const siteConfig = useContext(SiteConfigContext);
+  
+  const logoUrl = siteConfig?.logoUrl || "/arko360/images/logo_aeko360.png";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -56,7 +61,7 @@ export default function Navbar() {
           <div className="navbar-inner">
             <Link to="/" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img
-                src="/arko360/images/logo_aeko360.png"
+                src={logoUrl}
                 alt="Ingeniería Arko 360"
                 className={`navbar-logo ${(!scrolled && location.pathname === '/') ? 'navbar-logo-white' : ''}`}
               />
@@ -126,7 +131,7 @@ export default function Navbar() {
             </button>
 
             <img
-              src="/arko360/images/logo_aeko360.png"
+              src={logoUrl}
               alt="Arko 360"
               style={{ height: 44, marginBottom: 32 }}
             />

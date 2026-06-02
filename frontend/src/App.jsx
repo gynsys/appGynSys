@@ -63,7 +63,10 @@ import AdminNotificationManagerPage from './pages/admin/AdminNotificationManager
 import { DashboardLayout } from './components/layout/DashboardLayout'
 
 import ArkoLogin from './modules/arko360/pages/ArkoLogin'
-import ArkoDashboardPage from './modules/arko360/pages/ArkoDashboardPage'
+import { ArkoDashboardLayout } from './modules/arko360/layouts/ArkoDashboardLayout'
+import ArkoProfileManager from './modules/arko360/pages/ArkoProfileManager'
+import ArkoBlogManager from './modules/arko360/pages/ArkoBlogManager'
+import ArkoToolsManager from './modules/arko360/pages/ArkoToolsManager'
 import MixDesignPage from './modules/arko360/pages/MixDesignPage'
 
 import { WizardLayout } from './components/layout/WizardLayout'
@@ -319,7 +322,12 @@ function App() {
 
         {/* Arko 360 Admin Routes */}
         <Route path="/arko-admin/login" element={<ArkoLogin />} />
-        <Route path="/arko-admin/dashboard" element={<ArkoDashboardPage />} />
+        <Route path="/arko-admin/dashboard" element={<ArkoDashboardLayout />}>
+          <Route index element={<Navigate to="/arko-admin/dashboard/profile" replace />} />
+          <Route path="profile" element={<ArkoProfileManager />} />
+          <Route path="blog" element={<ArkoBlogManager />} />
+          <Route path="tools" element={<ArkoToolsManager />} />
+        </Route>
         <Route path="/arko360/calculadora" element={<MixDesignPage />} />
 
 

@@ -14,6 +14,9 @@ import EngineeringTools from './components/EngineeringTools.jsx';
 import BiblioGrid from './components/BiblioGrid.jsx';
 import BiblioArticle from './components/BiblioArticle.jsx';
 import MixDesignCalculator from './components/tools/MixDesignCalculator.jsx';
+import { getSiteConfig } from './services/api.js';
+
+export const SiteConfigContext = React.createContext(null);
 
 function LandingPage() {
   return (
@@ -75,8 +78,21 @@ function ToolsPage() {
 }
 
 export default function App() {
+  const [config, setConfig] = React.useState(null);
+
+  React.useEffect(() => {
+    getSiteConfig().then(data => {
+      if (data) {
+        setConfig(data);
+        if (data.primaryColor) {
+          document.documentElement.style.setProperty('--primary', data.primaryColor);
+        }
+      }
+    });
+  }, []);
+
   return (
-    <>
+    <SiteConfigContext.Provider value={config}>
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -86,6 +102,6 @@ export default function App() {
         <Route path="/herramientas/diseno-de-mezclas" element={<MixDesignCalculator />} />
       </Routes>
       <Footer />
-    </>
+    </SiteConfigContext.Provider>
   );
 }

@@ -27,3 +27,17 @@ export async function submitContactForm(data) {
 
   return response.json();
 }
+
+export async function getSiteConfig() {
+  const response = await fetch(`${API_URL}/api/v1/arko/config`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    }
+  });
+
+  if (!response.ok) {
+    return null; // Silent fail, fallback to defaults
+  }
+  return response.json();
+}

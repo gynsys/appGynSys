@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Grid, Layers, Container, Calculator, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cmsData } from '../data/cmsData.js';
 import DropCeilingCalc from './tools/DropCeilingCalc.jsx';
 import MixDesignCalculator from './tools/MixDesignCalculator.jsx';
+import { SiteConfigContext } from '../App.jsx';
 
 const iconMap = {
   Grid, Layers, Container, Calculator
@@ -12,6 +13,7 @@ const iconMap = {
 
 export default function EngineeringTools() {
   const { tools } = cmsData;
+  const siteConfig = useContext(SiteConfigContext);
   const [activeTool, setActiveTool] = useState(null);
   const navigate = useNavigate();
 
@@ -43,7 +45,13 @@ export default function EngineeringTools() {
             exit={{ opacity: 0, x: -20 }}
             className="services-grid"
           >
-            {tools.list.map((tool, i) => {
+            {tools.list.filter(tool => {
+              if (!siteConfig || !siteConfig.tools) return true; // Default show all
+              if (tool.id === 'diseno-mezclas') return siteConfig.tools.mixDesign;
+              if (tool.id === 'muro-gravedad') return siteConfig.tools.wallCalculator;
+              if (tool.id === 'cielo-raso') return siteConfig.tools.budgetEstimator; // repurposing budgetEstimator for cielo-raso toggle to match
+              return true;
+            }).map((tool, i) => {
               const Icon = iconMap[tool.icon] || Calculator;
               return (
                 <motion.div

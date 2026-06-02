@@ -29,6 +29,7 @@ class ArkoAdmin(Base):
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
+    site_config = Column(JSONB, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

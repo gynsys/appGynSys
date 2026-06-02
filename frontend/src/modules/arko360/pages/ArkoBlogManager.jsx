@@ -10,7 +10,7 @@ import { useToastStore } from '../../../store/toastStore'
 import { useAuthStore } from '../../../store/authStore'
 import { getImageUrl } from '../../../lib/imageUtils'
 
-export default function ArkoDashboardPage() {
+export default function ArkoBlogManager() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -90,25 +90,22 @@ export default function ArkoDashboardPage() {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 pb-12 pt-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-              {currentPost ? 'Editar Artículo' : 'Nuevo Artículo'}
-            </h1>
-          </div>
-          <BlogEditor post={currentPost} onSave={handleSave} onCancel={() => setIsEditing(false)} />
+      <div className="w-full">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            {currentPost ? 'Editar Artículo' : 'Nuevo Artículo'}
+          </h1>
         </div>
+        <BlogEditor post={currentPost} onSave={handleSave} onCancel={() => setIsEditing(false)} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 pb-12 pt-6">
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión del Blog</h1>
+    <div className="w-full">
+      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión del Blog (BiblioARKO)</h1>
             <Button onClick={handleCreate} variant="primary" primaryColor="#f59e0b">
               Nuevo Artículo
             </Button>
@@ -223,6 +220,5 @@ export default function ArkoDashboardPage() {
           </div>
         </Modal>
       </div>
-    </div>
   )
 }

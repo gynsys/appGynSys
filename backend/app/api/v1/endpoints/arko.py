@@ -232,3 +232,38 @@ def delete_post(
         from app.core.logging import logger
         logger.error(f"Error deleting Arko post: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
+
+# --- Site Configuration Endpoints ---
+
+@router.get("/config")
+def get_site_config():
+    try:
+        with get_db_session() as db:
+            admin = db.query(ArkoAdmin).filter(ArkoAdmin.email == "admin@arko360.com").first()
+            if not admin:
+                admin = db.query(ArkoAdmin).first()
+            
+            return admin.site_config if admin and admin.site_config else {}
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error fetching Arko config: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.put("/admin/config")
+def update_site_config(
+    config_data: dict,
+    current_admin = Depends(get_current_arko_admin)
+):
+    try:
+        with get_db_session() as db:
+            admin = db.query(ArkoAdmin).filter(ArkoAdmin.id == current_admin.id).first()
+            if not admin:
+                raise HTTPException(status_code=404, detail="Admin not found")
+            
+            admin.site_config = config_data
+            db.commit()
+            return {"status": "success", "config": admin.site_config}
+    except Exception as e:
+        from app.core.logging import logger
+        logger.error(f"Error updating Arko config: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

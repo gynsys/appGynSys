@@ -35,5 +35,16 @@ export const arkoService = {
   generateAI: async (aiData) => {
     const response = await api.post('/arko/admin/posts/generate', aiData)
     return response.data
+  },
+
+  getSiteConfig: async () => {
+    // Para modo estático o lectura pública
+    const response = await api.get('/arko/config')
+    return response.data
+  },
+
+  updateSiteConfig: async (configData) => {
+    const response = await api.put('/arko/admin/config', configData)
+    return response.data
   }
 }
