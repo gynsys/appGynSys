@@ -1569,13 +1569,25 @@ textarea.form-input {
 @media (max-width: 768px) {
   .section { padding: 64px 0; }
 
+  .navbar {
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .navbar-logo-white {
+    filter: none !important;
+  }
+
   .navbar-links,
   .navbar > .container > .navbar-inner > .navbar-cta-desktop {
     display: none;
   }
 
   .navbar-inner {
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 12px;
   }
 
   .navbar-logo {
@@ -1606,6 +1618,10 @@ textarea.form-input {
     display: flex;
     padding: 8px;
     min-height: 40px;
+  }
+  
+  .navbar-toggle span {
+    background: var(--secondary) !important;
   }
 
   .hero-stats-inner {

@@ -57,6 +57,38 @@ const MixDesignCalculator = () => {
 
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // Cost States
+  const [costs, setCosts] = useState({
+    cemento: 15,
+    arena: 60,
+    piedra: 60,
+    agua: 0,
+    obreros: 3,
+    precioObrero: 20,
+    maestros: 1,
+    precioMaestro: 40,
+    precioTrompo: 60
+  });
+  const [showCostModal, setShowCostModal] = useState(false);
+
+  const calculateTotalCost = () => {
+    const rawCement = parseFloat(results.cemento) || 0;
+    const rawSand = parseFloat(results.arena) || 0;
+    const rawStone = parseFloat(results.piedra) || 0;
+    const rawWater = parseFloat(results.agua) || 0;
+    
+    // Cemento is in Kg, 1 bag = 42.5kg
+    const cementCost = (rawCement / 42.5) * costs.cemento;
+    // Arena/Piedra are in Kg, convert to m3 using their density (g * 1000)
+    const sandCost = (rawSand / ((parseFloat(inputs.gFino) || 2.7) * 1000)) * costs.arena;
+    const stoneCost = (rawStone / ((parseFloat(inputs.gGrueso) || 2.64) * 1000)) * costs.piedra;
+    const waterCost = rawWater * costs.agua;
+    
+    const laborCost = (costs.obreros * costs.precioObrero) + (costs.maestros * costs.precioMaestro) + costs.precioTrompo;
+    
+    return cementCost + sandCost + stoneCost + waterCost + laborCost;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const val = name === 'stoneSize' ? value : parseFloat(value) || 0;
@@ -451,11 +483,95 @@ const MixDesignCalculator = () => {
                 </div>
               </div>
 
+              {/* Resumen Costos */}
+              <div className="sm:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-emerald-500 mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-emerald-700 font-black text-lg">COSTO TOTAL ESTIMADO</h3>
+                  <button onClick={() => setShowCostModal(true)} className="text-emerald-600 text-sm font-bold hover:underline mt-1 flex items-center gap-1">
+                    Personalizar precios (APU) &rarr;
+                  </button>
+                </div>
+                <div className="text-right flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-emerald-600">${calculateTotalCost().toFixed(2)}</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
         </div>
       </div>
+
+      {/* Modal de Costos (APU) */}
+      {showCostModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1001] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Calculator className="w-5 h-5 text-emerald-500" />
+                Análisis de Precio Unitario
+              </h2>
+              <button onClick={() => setShowCostModal(false)} className="text-slate-400 hover:text-slate-600 font-bold text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="p-6 space-y-6 overflow-y-auto">
+              <div>
+                <h3 className="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider border-b pb-2">Materiales</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Cemento ($/Saco 42.5kg)</label>
+                    <input type="number" step="0.5" value={costs.cemento} onChange={(e) => setCosts({...costs, cemento: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Arena ($/m³)</label>
+                    <input type="number" step="1" value={costs.arena} onChange={(e) => setCosts({...costs, arena: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Piedra Picada ($/m³)</label>
+                    <input type="number" step="1" value={costs.piedra} onChange={(e) => setCosts({...costs, piedra: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Agua ($/Litro)</label>
+                    <input type="number" step="0.01" value={costs.agua} onChange={(e) => setCosts({...costs, agua: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider border-b pb-2">Mano de Obra & Equipos (Por Día)</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Nº Obreros</label>
+                    <input type="number" step="1" value={costs.obreros} onChange={(e) => setCosts({...costs, obreros: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Costo Obrero ($/Día)</label>
+                    <input type="number" step="1" value={costs.precioObrero} onChange={(e) => setCosts({...costs, precioObrero: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Nº Maestros</label>
+                    <input type="number" step="1" value={costs.maestros} onChange={(e) => setCosts({...costs, maestros: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Costo Maestro ($/Día)</label>
+                    <input type="number" step="1" value={costs.precioMaestro} onChange={(e) => setCosts({...costs, precioMaestro: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Alquiler Trompo / Equipo ($/Día)</label>
+                    <input type="number" step="1" value={costs.precioTrompo} onChange={(e) => setCosts({...costs, precioTrompo: parseFloat(e.target.value)||0})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
+              <button onClick={() => setShowCostModal(false)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold transition-colors">
+                Aplicar Precios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
