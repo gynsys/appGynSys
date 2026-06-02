@@ -12,7 +12,8 @@ export default function DragDropUpload({
   galleryId = null,
   sideBySide = false,
   compact = false,
-  autoUpload = false
+  autoUpload = false,
+  customUploadHandler = null
 }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -105,6 +106,16 @@ export default function DragDropUpload({
     setError('')
 
     try {
+      if (customUploadHandler) {
+        const uploadedUrl = await customUploadHandler(selectedFile)
+        setPreview(null)
+        setSelectedFile(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+        if (onUploadSuccess) onUploadSuccess(uploadedUrl)
+        setError('')
+        return
+      }
+
       const formData = new FormData()
       formData.append('file', selectedFile)
 

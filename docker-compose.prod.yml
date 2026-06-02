@@ -43,6 +43,8 @@ services:
       minio:
         condition: service_started
 
+
+
   minio:
     image: minio/minio
     ports:
