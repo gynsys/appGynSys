@@ -39,8 +39,8 @@ const MixDesignCalculator = () => {
     gFino: 2.7,
     gGrueso: 2.64,
     b: 0.55,
-    humFino: 0.0,
-    humGrueso: 0.0,
+    humFino: 3.5,
+    humGrueso: 0.5,
     absFino: 2.0,
     absGrueso: 1.0
   });
